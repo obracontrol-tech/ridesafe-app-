@@ -519,6 +519,222 @@
         #lm-footer span { font-size: 10px; color: #2a4a5a; }
         #lm-footer strong { color: #4a7a9b; }
 
+
+        /* ══════════════════════════════════════
+           MODO GRUPO — PELOTÓN
+        ══════════════════════════════════════ */
+
+        /* FAB Grupo */
+        #btn-grupo { order: -1; }  /* aparece primero en la columna */
+
+        /* Panel Grupo — slide desde izquierda */
+        #grupo-panel {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 3200; background: var(--black);
+            transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        #grupo-panel.open { transform: translateX(0); }
+
+        /* Header */
+        #gp-header {
+            background: #0d1921; padding: 16px;
+            border-bottom: 1px solid #1e2d3d;
+            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        }
+        #gp-back { width:36px;height:36px;border-radius:50%;background:none;border:1px solid #1e3a4a;color:#7ab8d4;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+        #gp-back:hover { border-color:var(--neon);color:var(--neon); }
+        #gp-title { flex:1;color:white;font-size:16px;font-weight:700; }
+        #gp-title span { color:var(--neon); }
+        #gp-conn-badge {
+            font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+            padding:4px 10px;border-radius:20px;
+            color:#4a7a9b;background:rgba(74,122,155,0.1);border:1px solid #1e3a4a;
+        }
+        #gp-conn-badge.connected { color:var(--neon);background:var(--neon-dim);border-color:rgba(57,255,20,0.3); }
+
+        /* Tabs */
+        #gp-tabs {
+            display:flex;border-bottom:1px solid #1e2d3d;flex-shrink:0;background:#0d1921;
+        }
+        .gp-tab {
+            flex:1;padding:11px;text-align:center;font-size:11px;font-weight:700;
+            color:#4a7a9b;cursor:pointer;border-bottom:2px solid transparent;
+            transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;
+        }
+        .gp-tab.active { color:var(--neon);border-bottom-color:var(--neon); }
+
+        /* Body scrollable */
+        #gp-body { flex:1;overflow-y:auto;padding:14px 16px; }
+        #gp-body::-webkit-scrollbar { width:3px; }
+        #gp-body::-webkit-scrollbar-thumb { background:#1e2d3d; border-radius:2px; }
+
+        /* ── TAB: CONFIGURAR ── */
+        .gp-section-title {
+            font-size:10px;font-weight:700;color:#4a7a9b;text-transform:uppercase;
+            letter-spacing:1px;margin:0 0 10px;
+        }
+        .gp-field { margin-bottom:14px; }
+        .gp-field label { display:block;font-size:11px;color:#7ab8d4;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+        .gp-field input, .gp-field select {
+            width:100%;padding:10px 14px;background:#0d1921;color:white;
+            border:1px solid #1e3a4a;border-radius:10px;font-size:13px;outline:none;transition:border 0.2s;
+        }
+        .gp-field input:focus, .gp-field select:focus { border-color:var(--neon); }
+        .gp-field input::placeholder { color:#2a4a5a; }
+
+        /* Código de grupo */
+        #gp-code-display {
+            display:flex;align-items:center;gap:8px;
+            background:#0d1921;border:1px solid #1e3a4a;border-radius:10px;padding:10px 14px;
+        }
+        #gp-code-val { flex:1;color:var(--neon);font-size:20px;font-weight:900;letter-spacing:4px;font-family:monospace; }
+        #gp-code-copy {
+            background:none;border:1px solid #1e3a4a;color:#7ab8d4;border-radius:8px;
+            padding:5px 10px;font-size:11px;cursor:pointer;transition:all 0.2s;
+        }
+        #gp-code-copy:hover { border-color:var(--neon);color:var(--neon); }
+
+        /* Botones primarios */
+        .gp-btn-primary {
+            width:100%;padding:13px;border-radius:12px;font-size:13px;font-weight:800;
+            cursor:pointer;transition:all 0.2s;border:none;letter-spacing:0.5px;
+            background:var(--neon);color:black;margin-bottom:10px;
+        }
+        .gp-btn-primary:hover { box-shadow:0 0 16px var(--neon-glow); }
+        .gp-btn-primary:disabled { opacity:0.4;cursor:not-allowed; }
+        .gp-btn-secondary {
+            width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:700;
+            cursor:pointer;transition:all 0.2s;
+            background:none;border:1px solid #1e3a4a;color:#7ab8d4;margin-bottom:10px;
+        }
+        .gp-btn-secondary:hover { border-color:var(--neon);color:var(--neon); }
+        .gp-btn-danger {
+            width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:700;
+            cursor:pointer;transition:all 0.2s;
+            background:none;border:1px solid rgba(255,68,68,0.3);color:#ff6666;
+        }
+        .gp-btn-danger:hover { background:rgba(255,68,68,0.1); }
+
+        /* Geofencing slider */
+        .gp-radio-wrap { display:flex;gap:8px;flex-wrap:wrap; }
+        .gp-radio {
+            flex:1;min-width:60px;padding:8px 10px;border-radius:10px;text-align:center;
+            font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;
+            background:#0d1921;border:1px solid #1e3a4a;color:#4a7a9b;
+        }
+        .gp-radio.active { background:var(--neon-dim);border-color:rgba(57,255,20,0.4);color:var(--neon); }
+
+        /* ── TAB: PELOTÓN (mapa + lista) ── */
+        #gp-peloton-map {
+            height:200px;border-radius:12px;overflow:hidden;
+            border:1px solid #1e2d3d;margin-bottom:14px;
+        }
+
+        /* Tarjeta de ciclista */
+        .cyclist-card {
+            background:#0d1921;border:1px solid #1e2d3d;border-radius:12px;
+            padding:12px 14px;margin-bottom:8px;
+            display:flex;align-items:center;gap:12px;transition:all 0.2s;
+            position:relative;overflow:hidden;
+        }
+        .cyclist-card::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px; }
+        .cyclist-card.online::before  { background:var(--neon);box-shadow:0 0 6px var(--neon); }
+        .cyclist-card.warning::before { background:var(--orange);box-shadow:0 0 6px var(--orange); }
+        .cyclist-card.sos::before     { background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse-bar 0.8s infinite; }
+        .cyclist-card.offline::before { background:#333; }
+
+        .cc-avatar {
+            width:36px;height:36px;border-radius:50%;
+            font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;
+        }
+        .cc-info { flex:1;min-width:0; }
+        .cc-name  { color:white;font-size:13px;font-weight:700; }
+        .cc-meta  { color:#4a7a9b;font-size:11px;margin-top:2px; }
+        .cc-dist  { font-size:11px;font-weight:700;text-align:right;flex-shrink:0; }
+        .cc-dist.ok      { color:var(--neon); }
+        .cc-dist.warning { color:var(--orange); }
+        .cc-dist.sos     { color:var(--red); }
+
+        /* ── TAB: WALKIE ── */
+        #gp-walkie-body { text-align:center; }
+        #walkie-status {
+            font-size:12px;color:#4a7a9b;margin-bottom:20px;line-height:1.5;
+        }
+        #walkie-btn {
+            width:100px;height:100px;border-radius:50%;
+            background:var(--neon-dim);border:2px solid rgba(57,255,20,0.3);
+            color:var(--neon);font-size:36px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            transition:all 0.3s;margin:0 auto 20px;
+        }
+        #walkie-btn.listening {
+            background:rgba(57,255,20,0.2);border-color:var(--neon);
+            box-shadow:0 0 0 8px rgba(57,255,20,0.1),0 0 0 16px rgba(57,255,20,0.05);
+            animation:walkie-pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes walkie-pulse {
+            0%,100% { box-shadow:0 0 0 8px rgba(57,255,20,0.1),0 0 0 16px rgba(57,255,20,0.05); }
+            50%      { box-shadow:0 0 0 12px rgba(57,255,20,0.15),0 0 0 24px rgba(57,255,20,0.07); }
+        }
+        #walkie-transcript {
+            background:#0d1921;border:1px solid #1e2d3d;border-radius:12px;
+            padding:12px 14px;min-height:60px;font-size:13px;color:#ccc;
+            text-align:left;line-height:1.5;margin-bottom:12px;
+        }
+        .walkie-msg {
+            padding:6px 0;border-bottom:1px solid #1e2d3d;font-size:12px;color:#ccc;
+        }
+        .walkie-msg:last-child { border-bottom:none; }
+        .walkie-msg .wm-who  { color:var(--neon);font-weight:700; }
+        .walkie-msg .wm-time { color:#4a7a9b;font-size:10px;float:right; }
+
+        /* SOS flotante */
+        #sos-overlay {
+            position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+            z-index:2000;display:none;
+        }
+        #sos-overlay.show { display:block; }
+        #sos-btn {
+            width:64px;height:64px;border-radius:50%;
+            background:var(--red);border:3px solid white;
+            color:white;font-size:13px;font-weight:900;cursor:pointer;
+            box-shadow:0 0 0 0 rgba(255,68,68,0.5);
+            animation:sos-pulse 1.5s ease-in-out infinite;
+            display:flex;align-items:center;justify-content:center;
+            transition:transform 0.15s;
+        }
+        #sos-btn:active { transform:scale(0.92); }
+        @keyframes sos-pulse {
+            0%   { box-shadow:0 0 0 0 rgba(255,68,68,0.5); }
+            70%  { box-shadow:0 0 0 18px rgba(255,68,68,0); }
+            100% { box-shadow:0 0 0 0 rgba(255,68,68,0); }
+        }
+
+        /* Alerta geofence (banner) */
+        #geo-alert {
+            position:absolute;top:120px;left:16px;right:16px;z-index:2500;
+            background:rgba(13,25,33,0.97);border:1px solid var(--orange);
+            border-radius:14px;padding:12px 16px;
+            display:none;transition:all 0.3s;
+        }
+        #geo-alert.show { display:flex;align-items:center;gap:10px; }
+        #geo-alert .ga-icon { font-size:22px;flex-shrink:0; }
+        #geo-alert .ga-text { flex:1;font-size:12px;color:#ccc;line-height:1.4; }
+        #geo-alert .ga-text strong { color:var(--orange);display:block;margin-bottom:2px; }
+        #geo-alert .ga-close { color:#4a7a9b;font-size:16px;cursor:pointer;padding:4px; }
+
+        /* Config Firebase card */
+        .firebase-card {
+            background:#0d1921;border:1px solid #1e2d3d;border-radius:12px;
+            padding:14px;margin-bottom:14px;
+        }
+        .firebase-card h4 { color:var(--neon);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px; }
+        .firebase-card p  { color:#4a7a9b;font-size:11px;line-height:1.5; }
+        .firebase-card code { color:#7ab8d4;font-size:10px;background:#060e14;padding:2px 6px;border-radius:4px; }
+
         /* ── LEAFLET OVERRIDES ── */
         .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid #333 !important; }
         .leaflet-bar a:hover { border-color: var(--neon) !important; }
@@ -687,10 +903,146 @@
     <button class="fab" id="btn-locate" title="Mi ubicación">📍</button>
     <button class="fab" id="btn-route" title="Iniciar ruta">🚴</button>
     <button class="fab" id="btn-history" title="Historial de rutas">📋</button>
+    <button class="fab" id="btn-grupo" title="Modo Grupo Pelotón" style="border-color:rgba(57,255,20,0.3);">👥</button>
     <button class="fab" id="btn-offline-panel" title="Mapas offline">
         🗺
         <div class="fab-badge" id="offline-badge">0</div>
     </button>
+</div>
+
+
+<!-- SOS FLOTANTE (activo solo en grupo) -->
+<div id="sos-overlay">
+    <button id="sos-btn" title="SOS — Pulsa para pedir ayuda">SOS</button>
+</div>
+
+<!-- ALERTA GEOFENCE -->
+<div id="geo-alert">
+    <div class="ga-icon">⚠️</div>
+    <div class="ga-text">
+        <strong id="geo-alert-title">Aviso de posición</strong>
+        <span id="geo-alert-msg">Ciclista fuera del radio</span>
+    </div>
+    <div class="ga-close" id="geo-alert-close">✕</div>
+</div>
+
+<!-- ══ PANEL GRUPO ══ -->
+<div id="grupo-panel">
+    <div id="gp-header">
+        <button id="gp-back">←</button>
+        <div id="gp-title">Modo <span>Pelotón</span></div>
+        <div id="gp-conn-badge">● Desconectado</div>
+    </div>
+    <div id="gp-tabs">
+        <div class="gp-tab active" data-gptab="config">⚙️ Config</div>
+        <div class="gp-tab" data-gptab="peloton">🚴 Pelotón</div>
+        <div class="gp-tab" data-gptab="walkie">🎙️ Walkie</div>
+    </div>
+    <div id="gp-body">
+
+        <!-- ═ TAB CONFIG ═ -->
+        <div id="gpt-config">
+            <div class="firebase-card">
+                <h4>🔥 Firebase — Proyecto RideSafe</h4>
+                <p>Introduce tu configuración de Firebase Realtime Database para sincronizar el grupo.</p>
+            </div>
+
+            <div class="gp-field">
+                <label>URL Firebase Realtime DB</label>
+                <input id="gp-fb-url" type="text" placeholder="https://TU-PROYECTO-default-rtdb.firebaseio.com" />
+            </div>
+            <div class="gp-field">
+                <label>API Key Firebase</label>
+                <input id="gp-fb-key" type="text" placeholder="AIzaSy..." />
+            </div>
+
+            <div style="height:1px;background:#1e2d3d;margin:16px 0;"></div>
+
+            <div class="gp-section-title">Tu perfil en el grupo</div>
+            <div class="gp-field">
+                <label>Tu nombre / alias</label>
+                <input id="gp-nombre" type="text" placeholder="Ej: JM, Paco, Líder..." />
+            </div>
+            <div class="gp-field">
+                <label>Color en el mapa</label>
+                <div class="gp-radio-wrap" id="gp-color-wrap">
+                    <div class="gp-radio active" data-color="#39FF14">🟢</div>
+                    <div class="gp-radio" data-color="#ff9900">🟠</div>
+                    <div class="gp-radio" data-color="#4fc3f7">🔵</div>
+                    <div class="gp-radio" data-color="#ff4444">🔴</div>
+                    <div class="gp-radio" data-color="#e040fb">🟣</div>
+                    <div class="gp-radio" data-color="#ffee58">🟡</div>
+                </div>
+            </div>
+
+            <div style="height:1px;background:#1e2d3d;margin:16px 0;"></div>
+            <div class="gp-section-title">Código de grupo</div>
+            <div style="margin-bottom:10px;">
+                <div class="gp-code-display" id="gp-code-display">
+                    <div id="gp-code-val">––––</div>
+                    <button id="gp-code-copy">📋 Copiar</button>
+                </div>
+            </div>
+            <button class="gp-btn-primary" id="btn-crear-grupo">🚴 Crear nuevo grupo</button>
+            <div class="gp-field">
+                <label>O únete con el código de otro</label>
+                <input id="gp-join-code" type="text" placeholder="Ej: RIDE-7X4K" maxlength="9" style="text-transform:uppercase;letter-spacing:3px;font-family:monospace;font-size:16px;" />
+            </div>
+            <button class="gp-btn-secondary" id="btn-unirse-grupo">🔗 Unirse al grupo</button>
+            <button class="gp-btn-danger" id="btn-salir-grupo" style="display:none;">✕ Salir del grupo</button>
+
+            <div style="height:1px;background:#1e2d3d;margin:16px 0;"></div>
+            <div class="gp-section-title">Valla virtual (Geofencing)</div>
+            <div class="gp-field">
+                <label>Radio de alerta</label>
+                <div class="gp-radio-wrap" id="gp-radio-wrap">
+                    <div class="gp-radio" data-radio="200">200m</div>
+                    <div class="gp-radio active" data-radio="500">500m</div>
+                    <div class="gp-radio" data-radio="1000">1km</div>
+                    <div class="gp-radio" data-radio="2000">2km</div>
+                </div>
+            </div>
+            <div class="gp-field">
+                <label>Alertas de voz</label>
+                <div class="gp-radio-wrap">
+                    <div class="gp-radio active" id="gp-voz-si" data-voz="si">🔊 Activadas</div>
+                    <div class="gp-radio" id="gp-voz-no" data-voz="no">🔇 Solo visual</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═ TAB PELOTÓN ═ -->
+        <div id="gpt-peloton" style="display:none;">
+            <div id="gp-peloton-map"></div>
+            <div class="gp-section-title" id="gp-peloton-count">Ciclistas conectados: 0</div>
+            <div id="gp-cyclist-list">
+                <div style="text-align:center;padding:30px 0;color:#2a4a5a;font-size:13px;">
+                    Únete a un grupo para ver el pelotón
+                </div>
+            </div>
+        </div>
+
+        <!-- ═ TAB WALKIE ═ -->
+        <div id="gpt-walkie" style="display:none;">
+            <div id="gp-walkie-body">
+                <div id="walkie-status">
+                    Mantén pulsado el micrófono para hablar.<br>
+                    Tu voz se transmite al grupo en tiempo real.
+                </div>
+                <button id="walkie-btn" title="Pulsa para hablar">🎙️</button>
+                <div id="walkie-transcript">
+                    <div style="color:#2a4a5a;font-size:12px;text-align:center;padding:10px 0;">
+                        Los mensajes de voz del grupo aparecen aquí
+                    </div>
+                </div>
+                <div style="color:#2a4a5a;font-size:11px;text-align:center;line-height:1.6;">
+                    💡 Consejo: Usa auriculares Bluetooth para modo manos libres completo.<br>
+                    El sistema reconoce tu voz y la reproduce en los dispositivos del grupo.
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -1595,6 +1947,475 @@ function checkAutoNight() {
 // Comprobar al arrancar
 checkAutoNight();
 
+
+
+// ════════════════════════════════════════════════════════════════
+//  MODO GRUPO — PELOTÓN 🚴
+//  Firebase Realtime DB + Geofencing + SOS + Walkie
+// ════════════════════════════════════════════════════════════════
+
+// ── Estado del grupo ──
+let grupoState = {
+    active:    false,
+    codigo:    null,
+    nombre:    'Ciclista',
+    color:     '#39FF14',
+    radio:     500,        // metros, valla virtual
+    vozActiva: true,
+    fbUrl:     '',
+    fbKey:     '',
+    myId:      null,
+    members:   {},         // { id: { nombre, color, lat, lng, sos, ts } }
+    pelotonMapInstance: null,
+    pelotonMarkers: {},
+    syncInterval: null,
+    geoInterval: null,
+};
+
+// Firebase REST helpers (sin SDK — funciona en HTML estático)
+async function fbSet(path, data) {
+    if (!grupoState.fbUrl) return;
+    const url = grupoState.fbUrl.replace(/\/$/, '') + path + '.json?auth=' + grupoState.fbKey;
+    await fetch(url, { method: 'PUT', body: JSON.stringify(data) });
+}
+async function fbUpdate(path, data) {
+    if (!grupoState.fbUrl) return;
+    const url = grupoState.fbUrl.replace(/\/$/, '') + path + '.json?auth=' + grupoState.fbKey;
+    await fetch(url, { method: 'PATCH', body: JSON.stringify(data) });
+}
+async function fbGet(path) {
+    if (!grupoState.fbUrl) return null;
+    const url = grupoState.fbUrl.replace(/\/$/, '') + path + '.json?auth=' + grupoState.fbKey;
+    const r = await fetch(url);
+    return r.ok ? r.json() : null;
+}
+async function fbDelete(path) {
+    if (!grupoState.fbUrl) return;
+    const url = grupoState.fbUrl.replace(/\/$/, '') + path + '.json?auth=' + grupoState.fbKey;
+    await fetch(url, { method: 'DELETE' });
+}
+
+// ── Generar ID y código únicos ──
+function genId()     { return Math.random().toString(36).substr(2,9); }
+function genCodigo() { const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c='RIDE-'; for(let i=0;i<4;i++) c+=chars[Math.floor(Math.random()*chars.length)]; return c; }
+
+// ── Cargar configuración guardada ──
+function loadGrupoConfig() {
+    try {
+        const cfg = JSON.parse(localStorage.getItem('ridesafe_grupo_cfg') || '{}');
+        if (cfg.fbUrl)  { document.getElementById('gp-fb-url').value  = cfg.fbUrl;  grupoState.fbUrl  = cfg.fbUrl; }
+        if (cfg.fbKey)  { document.getElementById('gp-fb-key').value  = cfg.fbKey;  grupoState.fbKey  = cfg.fbKey; }
+        if (cfg.nombre) { document.getElementById('gp-nombre').value  = cfg.nombre; grupoState.nombre = cfg.nombre; }
+        if (cfg.color)  { grupoState.color = cfg.color; highlightColorBtn(cfg.color); }
+        if (cfg.radio)  { grupoState.radio = cfg.radio; highlightRadioBtn(cfg.radio); }
+        if (cfg.myId)   grupoState.myId = cfg.myId;
+        else            { grupoState.myId = genId(); saveGrupoConfig(); }
+    } catch(e) { grupoState.myId = genId(); }
+}
+function saveGrupoConfig() {
+    try {
+        localStorage.setItem('ridesafe_grupo_cfg', JSON.stringify({
+            fbUrl: grupoState.fbUrl, fbKey: grupoState.fbKey,
+            nombre: grupoState.nombre, color: grupoState.color,
+            radio: grupoState.radio, myId: grupoState.myId
+        }));
+    } catch(e) {}
+}
+
+// ── Helpers UI ──
+function highlightColorBtn(color) {
+    document.querySelectorAll('#gp-color-wrap .gp-radio').forEach(b => b.classList.toggle('active', b.dataset.color === color));
+}
+function highlightRadioBtn(val) {
+    document.querySelectorAll('#gp-radio-wrap .gp-radio').forEach(b => b.classList.toggle('active', parseInt(b.dataset.radio) === parseInt(val)));
+}
+
+// ── Panel Grupo ──
+function openGrupoPanel() {
+    loadGrupoConfig();
+    document.getElementById('grupo-panel').classList.add('open');
+    if (grupoState.active) renderPelotonList();
+}
+function closeGrupoPanel() { document.getElementById('grupo-panel').classList.remove('open'); }
+
+// ── Tabs ──
+let activeGpTab = 'config';
+document.querySelectorAll('.gp-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        activeGpTab = tab.dataset.gptab;
+        document.querySelectorAll('.gp-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('gpt-config').style.display   = activeGpTab === 'config'  ? 'block' : 'none';
+        document.getElementById('gpt-peloton').style.display  = activeGpTab === 'peloton' ? 'block' : 'none';
+        document.getElementById('gpt-walkie').style.display   = activeGpTab === 'walkie'  ? 'block' : 'none';
+        if (activeGpTab === 'peloton') { renderPelotonList(); initPelotonMap(); }
+    });
+});
+
+// ── Color picker ──
+document.querySelectorAll('#gp-color-wrap .gp-radio').forEach(b => {
+    b.addEventListener('click', () => { grupoState.color = b.dataset.color; highlightColorBtn(b.dataset.color); });
+});
+
+// ── Radio geofence ──
+document.querySelectorAll('#gp-radio-wrap .gp-radio').forEach(b => {
+    b.addEventListener('click', () => { grupoState.radio = parseInt(b.dataset.radio); highlightRadioBtn(b.dataset.radio); });
+});
+
+// ── Voz toggle ──
+document.querySelectorAll('[data-voz]').forEach(b => {
+    b.addEventListener('click', () => {
+        grupoState.vozActiva = b.dataset.voz === 'si';
+        document.querySelectorAll('[data-voz]').forEach(x => x.classList.toggle('active', x.dataset.voz === b.dataset.voz));
+    });
+});
+
+// ── Leer campos Firebase ──
+document.getElementById('gp-fb-url').addEventListener('change', e => { grupoState.fbUrl = e.target.value.trim(); saveGrupoConfig(); });
+document.getElementById('gp-fb-key').addEventListener('change', e => { grupoState.fbKey = e.target.value.trim(); saveGrupoConfig(); });
+document.getElementById('gp-nombre').addEventListener('change', e => { grupoState.nombre = e.target.value.trim() || 'Ciclista'; saveGrupoConfig(); });
+
+// ── Crear grupo ──
+document.getElementById('btn-crear-grupo').addEventListener('click', async () => {
+    grupoState.fbUrl   = document.getElementById('gp-fb-url').value.trim();
+    grupoState.fbKey   = document.getElementById('gp-fb-key').value.trim();
+    grupoState.nombre  = document.getElementById('gp-nombre').value.trim() || 'Ciclista';
+    if (!grupoState.fbUrl) { showToast('⚠️ Introduce la URL de Firebase'); return; }
+    const codigo = genCodigo();
+    grupoState.codigo = codigo;
+    document.getElementById('gp-code-val').textContent = codigo;
+    saveGrupoConfig();
+    // Crear en Firebase
+    await fbSet('/grupos/' + codigo + '/info', { creado: Date.now(), radio: grupoState.radio });
+    await unirseComo(codigo);
+    showToast('✅ Grupo ' + codigo + ' creado');
+});
+
+// ── Unirse con código ──
+document.getElementById('btn-unirse-grupo').addEventListener('click', async () => {
+    grupoState.fbUrl  = document.getElementById('gp-fb-url').value.trim();
+    grupoState.fbKey  = document.getElementById('gp-fb-key').value.trim();
+    grupoState.nombre = document.getElementById('gp-nombre').value.trim() || 'Ciclista';
+    const codigo = document.getElementById('gp-join-code').value.trim().toUpperCase();
+    if (!codigo || !grupoState.fbUrl) { showToast('⚠️ Introduce código y URL Firebase'); return; }
+    const info = await fbGet('/grupos/' + codigo + '/info');
+    if (!info) { showToast('❌ Código de grupo no encontrado'); return; }
+    grupoState.codigo = codigo;
+    document.getElementById('gp-code-val').textContent = codigo;
+    await unirseComo(codigo);
+    showToast('✅ Unido al grupo ' + codigo);
+});
+
+async function unirseComo(codigo) {
+    grupoState.active = true;
+    // Escribir mi entrada
+    await fbSet('/grupos/' + codigo + '/members/' + grupoState.myId, {
+        nombre: grupoState.nombre,
+        color:  grupoState.color,
+        lat:    currentLat || 0,
+        lng:    currentLng || 0,
+        sos:    false,
+        ts:     Date.now()
+    });
+    // Activar SOS btn
+    document.getElementById('sos-overlay').classList.add('show');
+    document.getElementById('btn-salir-grupo').style.display = 'block';
+    document.getElementById('btn-crear-grupo').disabled = true;
+    // Badge conexión
+    const badge = document.getElementById('gp-conn-badge');
+    badge.textContent = '● Conectado';
+    badge.classList.add('connected');
+    // Iniciar sincronización
+    startGrupoSync(codigo);
+    startGeofencing();
+    saveGrupoConfig();
+}
+
+// ── Salir del grupo ──
+document.getElementById('btn-salir-grupo').addEventListener('click', async () => {
+    if (!grupoState.codigo) return;
+    await fbDelete('/grupos/' + grupoState.codigo + '/members/' + grupoState.myId);
+    stopGrupoSync();
+    grupoState.active = false;
+    grupoState.codigo = null;
+    document.getElementById('sos-overlay').classList.remove('show');
+    document.getElementById('btn-salir-grupo').style.display = 'none';
+    document.getElementById('btn-crear-grupo').disabled = false;
+    document.getElementById('gp-code-val').textContent = '––––';
+    const badge = document.getElementById('gp-conn-badge');
+    badge.textContent = '● Desconectado';
+    badge.classList.remove('connected');
+    // Limpiar markers
+    Object.values(grupoState.pelotonMarkers).forEach(m => m.remove());
+    grupoState.pelotonMarkers = {};
+    showToast('👋 Has salido del grupo');
+});
+
+// ── Copiar código ──
+document.getElementById('gp-code-copy').addEventListener('click', () => {
+    const cod = document.getElementById('gp-code-val').textContent;
+    if (cod !== '––––') { navigator.clipboard.writeText(cod).catch(()=>{}); showToast('📋 Código copiado'); }
+});
+
+// ══ SINCRONIZACIÓN FIREBASE ══
+function startGrupoSync(codigo) {
+    grupoState.syncInterval = setInterval(async () => {
+        if (!grupoState.active) return;
+        // Actualizar mi posición
+        if (currentLat !== null) {
+            await fbUpdate('/grupos/' + codigo + '/members/' + grupoState.myId, {
+                lat: currentLat, lng: currentLng, ts: Date.now()
+            });
+        }
+        // Leer todos los miembros
+        const members = await fbGet('/grupos/' + codigo + '/members');
+        if (members) {
+            grupoState.members = members;
+            renderPelotonList();
+            updatePelotonMapMarkers();
+            checkGeofence();
+            checkSOS(members);
+        }
+    }, 3000); // cada 3 segundos
+}
+function stopGrupoSync() {
+    clearInterval(grupoState.syncInterval);
+    clearInterval(grupoState.geoInterval);
+}
+
+// ══ GEOFENCING ══
+function startGeofencing() {
+    grupoState.geoInterval = setInterval(checkGeofence, 5000);
+}
+function checkGeofence() {
+    if (!grupoState.active || !currentLat) return;
+    const members = grupoState.members;
+    Object.entries(members).forEach(([id, m]) => {
+        if (id === grupoState.myId) return;
+        const dist = haversine(currentLat, currentLng, m.lat, m.lng);
+        if (dist > grupoState.radio) {
+            const nombre = m.nombre || 'Ciclista';
+            const km = dist >= 1000 ? (dist/1000).toFixed(1)+'km' : Math.round(dist)+'m';
+            showGeoAlert('⚠️ ' + nombre + ' está fuera del radio', nombre + ' está a ' + km + ' de ti (límite: ' + grupoState.radio + 'm)');
+            if (grupoState.vozActiva) speak('¡Atención! ' + nombre + ' se está quedando atrás a ' + km);
+        }
+    });
+}
+function showGeoAlert(title, msg) {
+    document.getElementById('geo-alert-title').textContent = title;
+    document.getElementById('geo-alert-msg').textContent   = msg;
+    const el = document.getElementById('geo-alert');
+    el.classList.add('show');
+    clearTimeout(window._geoAlertTimer);
+    window._geoAlertTimer = setTimeout(() => el.classList.remove('show'), 8000);
+}
+document.getElementById('geo-alert-close').addEventListener('click', () => {
+    document.getElementById('geo-alert').classList.remove('show');
+});
+
+// ══ SOS ══
+document.getElementById('sos-btn').addEventListener('click', async () => {
+    if (!grupoState.active || !grupoState.codigo) { showToast('⚠️ No estás en ningún grupo'); return; }
+    const confirm = window.confirm('🆘 ¿Enviar ALERTA SOS al grupo?\nTodos recibirán tu posición exacta.');
+    if (!confirm) return;
+    await fbUpdate('/grupos/' + grupoState.codigo + '/members/' + grupoState.myId, {
+        sos: true, lat: currentLat, lng: currentLng, ts: Date.now()
+    });
+    showToast('🆘 SOS enviado — El grupo viene hacia ti');
+    if (grupoState.vozActiva) speak('SOS enviado. El grupo está siendo notificado de tu posición.');
+});
+
+function checkSOS(members) {
+    Object.entries(members).forEach(([id, m]) => {
+        if (id === grupoState.myId || !m.sos) return;
+        const nombre = m.nombre || 'Ciclista';
+        showGeoAlert('🆘 SOS DE ' + nombre.toUpperCase(), 'Necesita ayuda. Localización recibida — ve a su posición.');
+        if (grupoState.vozActiva) speak('¡SOS! ' + nombre + ' necesita ayuda. Cambia de ruta hacia su posición.');
+        // Pin rojo en el mapa principal
+        if (m.lat && m.lng) {
+            const sosIcon = L.divIcon({
+                className: '',
+                html: '<div style="width:20px;height:20px;border-radius:50%;background:#ff4444;border:3px solid white;box-shadow:0 0 0 4px rgba(255,68,68,0.3),0 0 20px #ff4444;animation:sos-pulse 1s infinite;"></div>',
+                iconSize: [20,20], iconAnchor: [10,10]
+            });
+            if (grupoState.pelotonMarkers['sos_' + id]) grupoState.pelotonMarkers['sos_' + id].remove();
+            grupoState.pelotonMarkers['sos_' + id] = L.marker([m.lat, m.lng], { icon: sosIcon })
+                .addTo(map).bindPopup('<b style="color:#ff4444">🆘 SOS — ' + nombre + '</b><br>Necesita ayuda urgente').openPopup();
+        }
+    });
+}
+
+// ══ PELOTÓN — MAPA MINI ══
+function initPelotonMap() {
+    if (grupoState.pelotonMapInstance) { setTimeout(()=>grupoState.pelotonMapInstance.invalidateSize(), 50); return; }
+    grupoState.pelotonMapInstance = L.map('gp-peloton-map', { zoomControl: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '', subdomains: 'abcd', maxZoom: 19
+    }).addTo(grupoState.pelotonMapInstance);
+    if (currentLat) grupoState.pelotonMapInstance.setView([currentLat, currentLng], 14);
+    setTimeout(()=>grupoState.pelotonMapInstance.invalidateSize(), 100);
+}
+
+function updatePelotonMapMarkers() {
+    const members = grupoState.members;
+    Object.entries(members).forEach(([id, m]) => {
+        if (!m.lat || !m.lng) return;
+        const color = m.color || '#39FF14';
+        const initial = (m.nombre || 'C')[0].toUpperCase();
+        const isMe = id === grupoState.myId;
+        const iconHtml = '<div style="width:28px;height:28px;border-radius:50%;background:' + color + ';border:3px solid ' + (isMe?'white':'rgba(255,255,255,0.6)') + ';box-shadow:0 0 10px ' + color + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:black;">' + initial + '</div>';
+        const icon = L.divIcon({ className:'', html: iconHtml, iconSize:[28,28], iconAnchor:[14,14] });
+
+        if (grupoState.pelotonMarkers[id]) {
+            grupoState.pelotonMarkers[id].setLatLng([m.lat, m.lng]);
+        } else if (grupoState.pelotonMapInstance) {
+            grupoState.pelotonMarkers[id] = L.marker([m.lat, m.lng], { icon })
+                .addTo(grupoState.pelotonMapInstance)
+                .bindPopup('<b style="color:' + color + '">' + (m.nombre||'Ciclista') + '</b>' + (isMe ? ' (tú)' : ''));
+        }
+        // También en mapa principal
+        if (grupoState.pelotonMarkers['main_' + id]) {
+            grupoState.pelotonMarkers['main_' + id].setLatLng([m.lat, m.lng]);
+        } else if (!isMe) {
+            const mainIcon = L.divIcon({ className:'', html: '<div style="width:20px;height:20px;border-radius:50%;background:' + color + ';border:2px solid white;box-shadow:0 0 8px ' + color + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:black;">' + initial + '</div>', iconSize:[20,20], iconAnchor:[10,10] });
+            grupoState.pelotonMarkers['main_' + id] = L.marker([m.lat, m.lng], { icon: mainIcon })
+                .addTo(map).bindPopup('<b style="color:' + color + '">' + (m.nombre||'Ciclista') + '</b>');
+        }
+    });
+    // Ajustar vista del mini mapa a todos
+    if (grupoState.pelotonMapInstance) {
+        const pts = Object.values(members).filter(m=>m.lat&&m.lng).map(m=>[m.lat,m.lng]);
+        if (pts.length > 1) {
+            grupoState.pelotonMapInstance.fitBounds(pts, { padding:[20,20] });
+        }
+    }
+}
+
+// ══ PELOTÓN — LISTA CICLISTAS ══
+function renderPelotonList() {
+    const list = document.getElementById('gp-cyclist-list');
+    const members = grupoState.members;
+    const count = Object.keys(members).length;
+    document.getElementById('gp-peloton-count').textContent = 'Ciclistas conectados: ' + count;
+    list.innerHTML = '';
+    Object.entries(members).forEach(([id, m]) => {
+        const isMe = id === grupoState.myId;
+        const color = m.color || '#39FF14';
+        const initial = (m.nombre || 'C')[0].toUpperCase();
+        const now = Date.now();
+        const stale = now - (m.ts || 0) > 15000;
+        const dist = (!isMe && currentLat && m.lat) ? Math.round(haversine(currentLat, currentLng, m.lat, m.lng)) : null;
+        const distStr = dist !== null ? (dist >= 1000 ? (dist/1000).toFixed(1)+'km' : dist+'m') : '–';
+        const distClass = dist === null ? '' : dist > grupoState.radio ? 'warning' : 'ok';
+        const status = m.sos ? 'sos' : stale ? 'offline' : dist !== null && dist > grupoState.radio ? 'warning' : 'online';
+
+        const card = document.createElement('div');
+        card.className = 'cyclist-card ' + status;
+        card.innerHTML = '<div class="cc-avatar" style="background:' + color + ';color:black;">' + initial + '</div>' +
+            '<div class="cc-info">' +
+                '<div class="cc-name">' + (m.nombre||'Ciclista') + (isMe?' <span style="color:#4a7a9b;font-size:10px;">(tú)</span>':'') + (m.sos?' 🆘':'') + '</div>' +
+                '<div class="cc-meta">' + (stale?'Sin señal':'Activo') + (m.sos?' · ¡NECESITA AYUDA!':'') + '</div>' +
+            '</div>' +
+            '<div class="cc-dist ' + distClass + '">' + (isMe?'📍':distStr) + '</div>';
+        list.appendChild(card);
+    });
+}
+
+// ══ WALKIE-TALKIE ══
+let recognition = null;
+let walkieActive = false;
+
+function initWalkie() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        document.getElementById('walkie-status').innerHTML = '⚠️ Tu navegador no soporta reconocimiento de voz.<br>Usa Chrome en Android para el walkie.';
+        document.getElementById('walkie-btn').disabled = true;
+        return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = async e => {
+        const texto = e.results[0][0].transcript;
+        addWalkieMsg(grupoState.nombre, texto, true);
+        // Enviar al grupo via Firebase
+        if (grupoState.active && grupoState.codigo) {
+            await fbSet('/grupos/' + grupoState.codigo + '/walkie/' + Date.now(), {
+                quien: grupoState.nombre,
+                msg:   texto,
+                ts:    Date.now()
+            });
+        }
+        setWalkieIdle();
+    };
+    recognition.onerror = () => setWalkieIdle();
+    recognition.onend   = () => setWalkieIdle();
+}
+
+function setWalkieIdle() {
+    walkieActive = false;
+    document.getElementById('walkie-btn').classList.remove('listening');
+    document.getElementById('walkie-btn').textContent = '🎙️';
+    document.getElementById('walkie-status').textContent = 'Pulsa el micrófono para hablar.';
+}
+
+document.getElementById('walkie-btn').addEventListener('click', () => {
+    if (!recognition) { initWalkie(); return; }
+    if (!grupoState.active) { showToast('⚠️ Únete a un grupo primero'); return; }
+    if (walkieActive) { recognition.stop(); return; }
+    walkieActive = true;
+    document.getElementById('walkie-btn').classList.add('listening');
+    document.getElementById('walkie-btn').textContent = '🛑';
+    document.getElementById('walkie-status').textContent = 'Escuchando... Habla ahora.';
+    recognition.start();
+});
+
+function addWalkieMsg(quien, texto, esPropio) {
+    const box = document.getElementById('walkie-transcript');
+    // Eliminar placeholder
+    if (box.querySelector('div[style]')) box.innerHTML = '';
+    const now = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    const msg = document.createElement('div');
+    msg.className = 'walkie-msg';
+    msg.innerHTML = '<span class="wm-who">' + quien + '</span> ' + texto + '<span class="wm-time">' + now + '</span>';
+    box.appendChild(msg);
+    box.scrollTop = box.scrollHeight;
+    // Reproducir voz si no es propio
+    if (!esPropio && grupoState.vozActiva) speak(quien + ' dice: ' + texto);
+}
+
+// Polling walkie messages desde Firebase
+let lastWalkieTs = Date.now();
+setInterval(async () => {
+    if (!grupoState.active || !grupoState.codigo) return;
+    const msgs = await fbGet('/grupos/' + grupoState.codigo + '/walkie');
+    if (!msgs) return;
+    Object.entries(msgs).forEach(([ts, m]) => {
+        if (parseInt(ts) > lastWalkieTs && m.quien !== grupoState.nombre) {
+            addWalkieMsg(m.quien, m.msg, false);
+            lastWalkieTs = parseInt(ts);
+        }
+    });
+}, 2000);
+
+// ══ WEB SPEECH SYNTHESIS (voz) ══
+function speak(texto) {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-ES'; u.rate = 1.0; u.pitch = 1.0;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+}
+
+// ── FAB y panel ──
+document.getElementById('btn-grupo').addEventListener('click', openGrupoPanel);
+document.getElementById('gp-back').addEventListener('click', closeGrupoPanel);
+
+// Inicializar
+loadGrupoConfig();
+initWalkie();
 
 </script>
 </body>
