@@ -1,72 +1,193 @@
-// ════════════════════════════════════════════════
-//  RideSafe AI — Service Worker
-//  Gestión de tiles offline + assets estáticos
-// ════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+//  RideSafe AI — Service Worker v2
+//  PWA completo: precache + tile cache + offline fallback
+// ════════════════════════════════════════════════════════════════
 
-const SW_VERSION = 'ridesafe-v1';
-const TILE_CACHE  = 'ridesafe-tiles-v1';
-const APP_CACHE   = 'ridesafe-app-v1';
+const APP_VERSION  = 'ridesafe-app-v2';
+const TILE_CACHE   = 'ridesafe-tiles-v2';
+const FONT_CACHE   = 'ridesafe-fonts-v1';
 
-const APP_ASSETS = [
+// Recursos de la app que se precargan en la instalación
+const APP_SHELL = [
   './',
   './index.html',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
 ];
 
-// ── Instalación: cachear assets de la app ──
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(APP_CACHE).then(cache => cache.addAll(APP_ASSETS)).then(() => self.skipWaiting())
+// ── INSTALL: precachear el app shell ──
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(APP_VERSION)
+      .then(cache => {
+        // addAll falla si cualquier recurso falla — usamos add individual
+        return Promise.allSettled(
+          APP_SHELL.map(url => cache.add(url).catch(() => null))
+        );
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
-// ── Activación: limpiar caches antiguas ──
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// ── ACTIVATE: limpiar caches antiguas ──
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== TILE_CACHE && k !== APP_CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter(k => k !== APP_VERSION && k !== TILE_CACHE && k !== FONT_CACHE)
+          .map(k => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: tiles → cache-first; resto → network-first ──
-self.addEventListener('fetch', e => {
-  const url = e.request.url;
+// ── FETCH: estrategia por tipo de recurso ──
+self.addEventListener('fetch', event => {
+  const url = event.request.url;
 
-  // Tiles de CartoDB / OSM
-  if (url.includes('basemaps.cartocdn.com') || url.includes('tile.openstreetmap.org')) {
-    e.respondWith(
-      caches.open(TILE_CACHE).then(cache =>
-        cache.match(e.request).then(cached => {
-          if (cached) return cached;
-          return fetch(e.request).then(res => {
-            if (res.ok) cache.put(e.request, res.clone());
-            return res;
-          }).catch(() => cached || new Response('', { status: 503 }));
-        })
-      )
-    );
+  // 1. Tiles de mapa → Cache First (offline primero)
+  if (isTileRequest(url)) {
+    event.respondWith(tileStrategy(event.request));
     return;
   }
 
-  // App assets — cache-first con fallback a red
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  // 2. Fuentes Google → Cache First
+  if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
+    event.respondWith(cacheFirst(event.request, FONT_CACHE));
+    return;
+  }
+
+  // 3. App Shell → Cache First con fallback a red
+  if (isAppShell(url)) {
+    event.respondWith(cacheFirst(event.request, APP_VERSION));
+    return;
+  }
+
+  // 4. Firebase / Nominatim / APIs externas → Network First (no cachear datos vivos)
+  if (isExternalAPI(url)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  // 5. Todo lo demás → Stale While Revalidate
+  event.respondWith(staleWhileRevalidate(event.request));
 });
 
-// ── Mensaje desde la app: precachear zona ──
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'CACHE_ZONE') {
-    const { tiles, zoneId } = e.data;
-    cacheZoneTiles(tiles, zoneId, e.source);
+// ── Clasificadores de URL ──
+function isTileRequest(url) {
+  return url.includes('basemaps.cartocdn.com') ||
+         url.includes('tile.openstreetmap.org') ||
+         url.includes('opentopomap.org') ||
+         url.includes('arcgisonline.com/ArcGIS');
+}
+function isAppShell(url) {
+  return url.includes(self.location.origin) || APP_SHELL.includes(url);
+}
+function isExternalAPI(url) {
+  return url.includes('nominatim.openstreetmap.org') ||
+         url.includes('firebaseio.com') ||
+         url.includes('googleapis.com/');
+}
+
+// ── Estrategias de caché ──
+
+// Cache First: sirve desde caché, si falla va a red y guarda
+async function cacheFirst(request, cacheName) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return offlineFallback(request);
   }
-  if (e.data && e.data.type === 'DELETE_ZONE') {
-    deleteZoneTiles(e.data.zoneId, e.source);
+}
+
+// Network First: intenta red, si falla usa caché
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || offlineFallback(request);
   }
-  if (e.data && e.data.type === 'GET_CACHE_SIZE') {
-    getCacheSize().then(size => e.source.postMessage({ type: 'CACHE_SIZE', size }));
+}
+
+// Stale While Revalidate: sirve caché inmediatamente, actualiza en background
+async function staleWhileRevalidate(request) {
+  const cached = await caches.match(request);
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      caches.open(APP_VERSION).then(cache => cache.put(request, response.clone()));
+    }
+    return response;
+  }).catch(() => cached);
+  return cached || fetchPromise;
+}
+
+// Tiles: cache first con límite de tiempo (7 días)
+async function tileStrategy(request) {
+  const cache = await caches.open(TILE_CACHE);
+  const cached = await cache.match(request);
+  if (cached) {
+    const dateHeader = cached.headers.get('date');
+    if (dateHeader) {
+      const age = Date.now() - new Date(dateHeader).getTime();
+      if (age < 7 * 24 * 60 * 60 * 1000) return cached; // < 7 días → usar caché
+    } else {
+      return cached; // sin fecha → confiar en caché
+    }
+  }
+  try {
+    const response = await fetch(request);
+    if (response.ok) cache.put(request, response.clone());
+    return response;
+  } catch {
+    return cached || new Response('', { status: 503, statusText: 'Tile offline' });
+  }
+}
+
+// Fallback offline: página o imagen vacía
+function offlineFallback(request) {
+  if (request.destination === 'document') {
+    return caches.match('./index.html');
+  }
+  if (request.destination === 'image') {
+    return new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
+      { headers: { 'Content-Type': 'image/svg+xml' } }
+    );
+  }
+  return new Response('', { status: 503 });
+}
+
+// ── Mensajes desde la app (gestión de zonas offline) ──
+self.addEventListener('message', event => {
+  const { type, tiles, zoneId } = event.data || {};
+
+  if (type === 'CACHE_ZONE') {
+    cacheZoneTiles(tiles, zoneId, event.source);
+  }
+  if (type === 'DELETE_ZONE') {
+    // Limpiamos tiles marcados con el prefijo de zona
+    deleteZone(event.source);
+  }
+  if (type === 'GET_CACHE_SIZE') {
+    getCacheSize().then(size =>
+      event.source.postMessage({ type: 'CACHE_SIZE', size })
+    );
+  }
+  if (type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 
@@ -77,33 +198,35 @@ async function cacheZoneTiles(tiles, zoneId, client) {
 
   for (const url of tiles) {
     try {
-      const existing = await cache.match(url);
-      if (!existing) {
+      if (!await cache.match(url)) {
         const res = await fetch(url);
         if (res.ok) await cache.put(url, res.clone());
       }
-    } catch(err) { /* tile no disponible, seguimos */ }
+    } catch { /* tile no disponible, continuar */ }
+
     done++;
     if (done % 5 === 0 || done === total) {
       client.postMessage({ type: 'CACHE_PROGRESS', zoneId, done, total });
     }
+    // Pausa pequeña para no saturar la red
+    if (done % 20 === 0) await sleep(50);
   }
   client.postMessage({ type: 'CACHE_DONE', zoneId, total });
 }
 
-async function deleteZoneTiles(zoneId, client) {
-  // Las URLs de zona se guardan en metadata — aquí borramos por prefijo de zona
-  const cache = await caches.open(TILE_CACHE);
-  const keys = await cache.keys();
-  const zoneKeys = keys.filter(r => r.url.includes(`zone_${zoneId}`));
-  // Si no hay marca de zona, no podemos filtrar por zona — notificamos igualmente
-  // En esta implementación simplificada notificamos éxito
-  client.postMessage({ type: 'DELETE_DONE', zoneId });
+async function deleteZone(client) {
+  // Borrar toda la caché de tiles (se regenera al navegar)
+  await caches.delete(TILE_CACHE);
+  client.postMessage({ type: 'DELETE_DONE' });
 }
 
 async function getCacheSize() {
   try {
-    const estimate = await navigator.storage.estimate();
-    return estimate.usage || 0;
+    const est = await navigator.storage.estimate();
+    return est.usage || 0;
   } catch { return 0; }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

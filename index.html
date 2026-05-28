@@ -2,9 +2,37 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RideSafe AI - Mapa Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>RideSafe AI</title>
+
+    <!-- ══ PWA CORE ══ -->
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#39FF14">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- ══ iOS Safari ══ -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RideSafe">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72"  href="icons/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96"  href="icons/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+
+    <!-- ══ Android / General ══ -->
+    <meta name="application-name" content="RideSafe AI">
+    <meta name="description" content="App de seguridad para ciclistas con modo pelotón, mapas offline y flash de seguridad">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="shortcut icon" href="icons/icon-96.png">
+
+    <!-- ══ Microsoft Tiles ══ -->
+    <meta name="msapplication-TileColor" content="#0a0a0a">
+    <meta name="msapplication-TileImage" content="icons/icon-144.png">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -23,6 +51,8 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { height: 100%; background: var(--black); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        /* Safe area iOS */
+        body { padding-bottom: env(safe-area-inset-bottom); padding-top: env(safe-area-inset-top); }
         #map { height: 100vh; width: 100vw; }
 
         /* ── HEADER ── */
@@ -735,6 +765,222 @@
         .firebase-card p  { color:#4a7a9b;font-size:11px;line-height:1.5; }
         .firebase-card code { color:#7ab8d4;font-size:10px;background:#060e14;padding:2px 6px;border-radius:4px; }
 
+
+        /* ══════════════════════════════════════
+           PANTALLA CONDUCCIÓN DEL PELOTÓN
+        ══════════════════════════════════════ */
+        #driving-screen {
+            position:absolute;top:0;left:0;right:0;bottom:0;
+            z-index:3300;background:#0a0e14;
+            display:flex;flex-direction:column;overflow:hidden;
+            transform:translateY(100%);
+            transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        #driving-screen.open { transform:translateY(0); }
+
+        /* Topbar conducción */
+        #ds-topbar {
+            display:flex;align-items:center;justify-content:space-between;
+            padding:12px 14px 8px;background:#0d1520;
+            border-bottom:1px solid #1a2a3a;flex-shrink:0;
+        }
+        .ds-logo { font-size:13px;font-weight:800;color:#00e5ff;letter-spacing:.5px; }
+        .ds-logo span { color:#4a7a9b;font-weight:400; }
+        #ds-group-code { font-size:11px;color:#4a7a9b;letter-spacing:1px;text-transform:uppercase; }
+        #ds-group-code span { color:#00e5ff;font-weight:700; }
+        #ds-signal { display:flex;align-items:center;gap:5px;font-size:10px;color:#4a7a9b; }
+        .ds-dot { width:6px;height:6px;border-radius:50%;background:#39ff14;animation:pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;}50%{opacity:.3;} }
+        #ds-back {
+            background:none;border:none;color:#4a7a9b;font-size:18px;cursor:pointer;
+            padding:0 6px 0 0;transition:color .2s;
+        }
+        #ds-back:hover { color:#00e5ff; }
+
+        /* Mapa conducción */
+        #ds-map-wrap {
+            position:relative;flex-shrink:0;
+            height:200px;background:#0d1a26;overflow:hidden;
+        }
+        #ds-map { height:200px;width:100%; }
+
+        /* Flash badge */
+        #flash-badge {
+            position:absolute;top:10px;left:12px;
+            background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.35);
+            border-radius:20px;padding:5px 10px;
+            display:none;align-items:center;gap:6px;
+            font-size:10px;color:#00e5ff;font-weight:700;
+            letter-spacing:.5px;text-transform:uppercase;z-index:10;
+        }
+        #flash-badge.show { display:flex; }
+        .flash-icon-dot {
+            width:8px;height:8px;border-radius:50%;background:#00e5ff;
+            animation:flash-blink .8s steps(1) infinite;
+        }
+        @keyframes flash-blink { 0%,100%{opacity:1;}50%{opacity:0;} }
+
+        /* Radar esquina */
+        #ds-radar {
+            position:absolute;top:8px;right:8px;width:76px;height:76px;z-index:10;
+        }
+        .radar-sweep-path {
+            transform-origin:38px 38px;
+            animation:radar-sweep 3s linear infinite;
+        }
+        @keyframes radar-sweep { to{transform:rotate(360deg);} }
+        .radar-blink { animation:rblink 2s infinite; }
+        @keyframes rblink { 0%,100%{opacity:1;}50%{opacity:.4;} }
+
+        /* Alerta geofence visual (banner) */
+        #ds-alert {
+            position:absolute;bottom:6px;left:10px;right:90px;
+            background:rgba(255,180,0,.08);border:1px solid rgba(255,180,0,.3);
+            border-radius:8px;padding:4px 10px;
+            display:none;align-items:center;gap:7px;font-size:10px;color:#ffb400;
+        }
+        #ds-alert.show { display:flex; }
+        #ds-alert-dot {
+            width:7px;height:7px;border-radius:50%;background:#ffb400;flex-shrink:0;
+            animation:adot 1s infinite;
+        }
+        @keyframes adot { 0%,100%{box-shadow:0 0 0 0 rgba(255,180,0,.4);}70%{box-shadow:0 0 0 5px rgba(255,180,0,0);} }
+
+        /* Stats strip */
+        #ds-stats {
+            display:grid;grid-template-columns:repeat(4,1fr);
+            gap:1px;background:#1a2a3a;border-bottom:1px solid #1a2a3a;flex-shrink:0;
+        }
+        .ds-stat {
+            background:#0d1520;padding:7px 4px;text-align:center;
+        }
+        .ds-stat label { display:block;font-size:9px;color:#2a5a6a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px; }
+        .ds-stat value { display:block;font-size:14px;font-weight:700;color:#00e5ff;line-height:1; }
+        .ds-stat value span { font-size:9px;color:#4a7a9b;font-weight:400; }
+        .ds-stat.warn value { color:#ffb400; }
+
+        /* Lista pelotón conducción */
+        #ds-section-title {
+            font-size:9px;color:#2a5a6a;text-transform:uppercase;
+            letter-spacing:1px;padding:7px 14px 3px;border-bottom:1px solid #0f1e2a;
+            flex-shrink:0;
+        }
+        #ds-cyclist-list { flex:1;overflow-y:auto;padding:4px 8px; }
+        #ds-cyclist-list::-webkit-scrollbar { width:2px; }
+        #ds-cyclist-list::-webkit-scrollbar-thumb { background:#1e2d3d; }
+
+        .ds-cyclist-row {
+            display:flex;align-items:center;gap:8px;
+            padding:6px 6px;border-radius:8px;margin-bottom:1px;
+        }
+        .ds-cr-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+        .ds-cr-dot.on   { background:#39ff14;box-shadow:0 0 4px #39ff14; }
+        .ds-cr-dot.warn { background:#ffb400; }
+        .ds-cr-dot.you  { background:#00e5ff;box-shadow:0 0 4px #00e5ff; }
+        .ds-cr-av {
+            width:26px;height:26px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:11px;font-weight:900;flex-shrink:0;
+        }
+        .ds-cr-info { flex:1;min-width:0; }
+        .ds-cr-name { font-size:11px;font-weight:700;color:#c8d8e8; }
+        .ds-cr-meta { font-size:9px;color:#4a7a9b; }
+        .ds-cr-right { text-align:right;flex-shrink:0; }
+        .ds-cr-dist { font-size:11px;font-weight:700; }
+        .ds-cr-dist.ok   { color:#39ff14; }
+        .ds-cr-dist.warn { color:#ffb400;animation:blink-warn .9s infinite; }
+        .ds-cr-dist.you  { color:#00e5ff; }
+        .ds-cr-bat { font-size:9px;color:#2a5a6a; }
+        .ds-you-tag {
+            display:inline-block;font-size:8px;
+            background:rgba(0,229,255,.12);border:1px solid rgba(0,229,255,.25);
+            color:#00e5ff;border-radius:4px;padding:1px 4px;margin-left:3px;
+            vertical-align:middle;font-weight:700;
+        }
+
+        /* Bottom bar conducción */
+        #ds-bottom {
+            background:#0d1520;border-top:1px solid #1a2a3a;
+            padding:8px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0;
+        }
+        #ds-walkie-btn {
+            flex:1;height:50px;border-radius:12px;
+            background:rgba(0,229,255,.08);border:1.5px solid rgba(0,229,255,.3);
+            color:#00e5ff;font-size:11px;font-weight:800;letter-spacing:.5px;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+            transition:all .2s;
+        }
+        #ds-walkie-btn.talking {
+            background:rgba(0,229,255,.18);border-color:#00e5ff;
+            box-shadow:0 0 14px rgba(0,229,255,.2);
+        }
+        #ds-walkie-pulse {
+            display:none;width:7px;height:7px;border-radius:50%;
+            background:#00e5ff;animation:flash-blink .5s infinite;
+        }
+        #ds-walkie-btn.talking #ds-walkie-pulse { display:block; }
+        #ds-flash-btn {
+            width:50px;height:50px;border-radius:12px;
+            background:rgba(0,229,255,.06);border:1px solid #1a2a3a;
+            color:#4a7a9b;font-size:18px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;transition:all .2s;
+        }
+        #ds-flash-btn.on {
+            background:rgba(0,229,255,.15);border-color:#00e5ff;
+            color:#00e5ff;box-shadow:0 0 10px rgba(0,229,255,.2);
+        }
+        #ds-sos-btn {
+            width:50px;height:50px;border-radius:12px;
+            background:rgba(255,68,68,.08);border:1.5px solid rgba(255,68,68,.3);
+            color:#ff6666;font-size:10px;font-weight:900;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            flex-direction:column;gap:1px;letter-spacing:.4px;transition:all .2s;
+        }
+        #ds-sos-btn:active { background:rgba(255,68,68,.25);border-color:#ff4444; }
+
+
+        /* ══════════════════════════════════════
+           BANNER DE INSTALACIÓN PWA
+        ══════════════════════════════════════ */
+        #install-banner {
+            position: absolute; bottom: 90px; left: 12px; right: 12px;
+            z-index: 2500;
+            background: var(--card); border: 1px solid var(--neon);
+            border-radius: 16px; padding: 14px 16px;
+            box-shadow: 0 0 20px rgba(57,255,20,0.2);
+            display: none; align-items: center; gap: 12px;
+            animation: slide-up 0.4s ease;
+        }
+        #install-banner.show { display: flex; }
+        @keyframes slide-up {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        #install-banner .ib-icon {
+            font-size: 32px; flex-shrink: 0;
+        }
+        #install-banner .ib-text { flex: 1; }
+        #install-banner .ib-title {
+            color: white; font-size: 13px; font-weight: 700; margin-bottom: 2px;
+        }
+        #install-banner .ib-sub {
+            color: var(--text-muted); font-size: 11px; line-height: 1.4;
+        }
+        #install-banner .ib-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        #install-btn {
+            background: var(--neon); color: black; border: none;
+            border-radius: 20px; padding: 7px 14px;
+            font-size: 11px; font-weight: 800; cursor: pointer;
+            letter-spacing: 0.5px; white-space: nowrap;
+            transition: box-shadow 0.2s;
+        }
+        #install-btn:hover { box-shadow: 0 0 12px var(--neon-glow); }
+        #install-dismiss {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 10px; cursor: pointer; text-align: center;
+            text-decoration: underline;
+        }
+
         /* ── LEAFLET OVERRIDES ── */
         .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid #333 !important; }
         .leaflet-bar a:hover { border-color: var(--neon) !important; }
@@ -1162,6 +1408,34 @@
 let swReady = false;
 let sw = null;
 
+// ══ SERVICE WORKER + PWA INSTALL ══
+let deferredInstallPrompt = null;
+
+// Capturar el evento de instalación del navegador
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    // Mostrar banner de instalación si no está ya instalada
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+        setTimeout(showInstallBanner, 3000);
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+    showToast('✅ RideSafe AI instalada como app');
+});
+
+function showInstallBanner() {
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.classList.add('show');
+}
+function hideInstallBanner() {
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.classList.remove('show');
+}
+
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(reg => {
         swReady = true;
@@ -1169,6 +1443,15 @@ if ('serviceWorker' in navigator) {
         document.getElementById('op-sw-status').textContent = '✅ SW activo';
         document.getElementById('op-sw-status').style.color = 'var(--neon)';
         refreshStorageBar();
+        // Notificar al SW de nueva versión disponible
+        reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            nw.addEventListener('statechange', () => {
+                if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                    showToast('🔄 Nueva versión disponible — recarga la app');
+                }
+            });
+        });
     }).catch(() => {
         document.getElementById('op-sw-status').textContent = '⚠️ Sin SW';
     });
@@ -2416,6 +2699,387 @@ document.getElementById('gp-back').addEventListener('click', closeGrupoPanel);
 // Inicializar
 loadGrupoConfig();
 initWalkie();
+
+// ── Botones del banner de instalación ──
+const installBtn = document.getElementById('install-btn');
+const dismissBtn = document.getElementById('install-dismiss');
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        hideInstallBanner();
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') showToast('✅ Instalando RideSafe AI...');
+            deferredInstallPrompt = null;
+        } else {
+            // iOS: instrucciones manuales
+            showToast('En Safari: pulsa Compartir → Añadir a pantalla de inicio');
+        }
+    });
+}
+if (dismissBtn) {
+    dismissBtn.addEventListener('click', () => {
+        hideInstallBanner();
+        try { localStorage.setItem('rs_install_dismissed', '1'); } catch(e){}
+    });
+}
+// No volver a mostrar si ya lo descartó
+try {
+    if (localStorage.getItem('rs_install_dismissed') === '1') {
+        window.removeEventListener('beforeinstallprompt', ()=>{});
+    }
+} catch(e){}
+
+
+// ════════════════════════════════════════════════════════════════
+//  PANTALLA DE CONDUCCIÓN DEL PELOTÓN
+// ════════════════════════════════════════════════════════════════
+
+let drivingMap = null;
+let drivingMarkers = {};
+let drivingOpen = false;
+let drivingRoutePolyline = null;
+let drivingTimer = null;
+let drivingTalkingActive = false;
+let drivingStartTime = null;
+
+// ── Flash de seguridad (Torch API) ──
+let flashStream = null;
+let flashActive = false;
+let flashIntervalId = null;
+
+async function toggleFlash() {
+    const btn = document.getElementById('ds-flash-btn');
+    const badge = document.getElementById('flash-badge');
+
+    if (flashActive) {
+        // Apagar flash
+        flashActive = false;
+        clearInterval(flashIntervalId);
+        if (flashStream) {
+            const track = flashStream.getVideoTracks()[0];
+            try { await track.applyConstraints({ advanced:[{torch:false}] }); } catch(e){}
+            flashStream.getTracks().forEach(t=>t.stop());
+            flashStream = null;
+        }
+        btn.classList.remove('on');
+        badge.classList.remove('show');
+        showToast('⚡ Flash de seguridad apagado');
+    } else {
+        // Encender flash
+        try {
+            flashStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+            const track = flashStream.getVideoTracks()[0];
+            const caps = track.getCapabilities();
+            if (!caps.torch) {
+                showToast('⚠️ Tu cámara no tiene flash');
+                flashStream.getTracks().forEach(t=>t.stop());
+                flashStream = null;
+                return;
+            }
+            flashActive = true;
+            btn.classList.add('on');
+            badge.classList.add('show');
+            // Patrón de parpadeo de seguridad: ON 200ms OFF 800ms
+            let flashOn = false;
+            flashIntervalId = setInterval(async () => {
+                flashOn = !flashOn;
+                try { await track.applyConstraints({ advanced:[{torch:flashOn}] }); } catch(e){}
+            }, flashOn ? 200 : 800);
+            showToast('⚡ Flash de seguridad activado');
+        } catch(e) {
+            showToast('⚠️ Permiso de cámara denegado');
+        }
+    }
+}
+
+// ── Abrir pantalla de conducción ──
+function openDrivingScreen() {
+    if (!grupoState.active) {
+        showToast('⚠️ Únete a un grupo primero');
+        openGrupoPanel();
+        return;
+    }
+    drivingOpen = true;
+    drivingStartTime = drivingStartTime || Date.now();
+    document.getElementById('ds-code-val').textContent = grupoState.codigo || '––––';
+    document.getElementById('driving-screen').classList.add('open');
+    initDrivingMap();
+    updateDrivingScreen();
+    drivingTimer = setInterval(updateDrivingScreen, 2000);
+}
+
+function closeDrivingScreen() {
+    drivingOpen = false;
+    clearInterval(drivingTimer);
+    document.getElementById('driving-screen').classList.remove('open');
+}
+
+// ── Mini mapa de conducción ──
+function initDrivingMap() {
+    if (drivingMap) { setTimeout(()=>drivingMap.invalidateSize(),50); return; }
+    drivingMap = L.map('ds-map', { zoomControl:false, dragging:false, scrollWheelZoom:false, attributionControl:false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains:'abcd', maxZoom:19
+    }).addTo(drivingMap);
+    if (currentLat) drivingMap.setView([currentLat, currentLng], 15);
+    setTimeout(()=>drivingMap.invalidateSize(), 100);
+}
+
+// ── Actualizar toda la pantalla de conducción ──
+function updateDrivingScreen() {
+    const members = grupoState.members;
+    const myId = grupoState.myId;
+    const count = Object.keys(members).length;
+
+    document.getElementById('ds-members-count').textContent = count + ' conectados';
+    document.getElementById('ds-count-label').textContent = count + ' ciclistas';
+    document.getElementById('ds-radar-label').textContent = grupoState.radio + 'm';
+
+    // Stats live
+    if (routeActive) {
+        const elapsed = Math.round((Date.now() - routeStartTime) / 1000);
+        const km = (totalDistance/1000).toFixed(1);
+        const mins = Math.floor(elapsed/60), secs = String(elapsed%60).padStart(2,'0');
+        const spd = elapsed>0 ? ((totalDistance/1000)/(elapsed/3600)).toFixed(1) : '–';
+        document.getElementById('ds-spd').innerHTML = spd + ' <span>km/h</span>';
+        document.getElementById('ds-dist').innerHTML = km + ' <span>km</span>';
+        document.getElementById('ds-time').innerHTML = mins + ':' + secs + ' <span>h</span>';
+    }
+
+    // Quien va más atrás
+    let maxDist = 0, maxName = '–';
+    Object.entries(members).forEach(([id, m]) => {
+        if (id === myId || !currentLat || !m.lat) return;
+        const d = Math.round(haversine(currentLat, currentLng, m.lat, m.lng));
+        if (d > maxDist) { maxDist = d; maxName = m.nombre || 'Ciclista'; }
+    });
+    const warnEl = document.getElementById('ds-stat-warn');
+    const warnVal = document.getElementById('ds-warn-val');
+    if (maxDist > grupoState.radio) {
+        warnEl.classList.add('warn');
+        warnVal.innerHTML = maxName + ' <span>' + (maxDist>=1000?(maxDist/1000).toFixed(1)+'km':maxDist+'m') + '</span>';
+        document.getElementById('ds-alert').classList.add('show');
+        document.getElementById('ds-alert-text').innerHTML = '<strong>' + maxName + '</strong> fuera del radio · ' + (maxDist>=1000?(maxDist/1000).toFixed(1)+'km':maxDist+'m');
+    } else {
+        warnEl.classList.remove('warn');
+        warnVal.innerHTML = '– <span></span>';
+        document.getElementById('ds-alert').classList.remove('show');
+    }
+
+    // Lista ciclistas
+    const list = document.getElementById('ds-cyclist-list');
+    list.innerHTML = '';
+    Object.entries(members).forEach(([id, m]) => {
+        const isMe = id === myId;
+        const color = m.color || '#39ff14';
+        const initial = (m.nombre||'C')[0].toUpperCase();
+        const now = Date.now();
+        const stale = now - (m.ts||0) > 15000;
+        const dist = (!isMe && currentLat && m.lat) ? Math.round(haversine(currentLat,currentLng,m.lat,m.lng)) : null;
+        const distStr = dist!==null ? (dist>=1000?(dist/1000).toFixed(1)+'km':dist+'m') : '📍';
+        const distClass = isMe ? 'you' : dist===null ? '' : dist > grupoState.radio ? 'warn' : 'ok';
+        const dotClass  = isMe ? 'you' : dist!==null && dist > grupoState.radio ? 'warn' : 'on';
+
+        const row = document.createElement('div');
+        row.className = 'ds-cyclist-row';
+        row.innerHTML =
+            '<div class="ds-cr-dot ' + dotClass + '"></div>' +
+            '<div class="ds-cr-av" style="background:' + color.replace('#','rgba(').replace(')',',0.15)') + ';color:' + color + ';">' + initial + '</div>' +
+            '<div class="ds-cr-info">' +
+                '<div class="ds-cr-name">' + (m.nombre||'Ciclista') + (isMe?'<span class="ds-you-tag">tú</span>':'') + (m.sos?' 🆘':'') + '</div>' +
+                '<div class="ds-cr-meta">' + (stale?'Sin señal':isMe?'Líder · Flash ⚡':'En grupo') + '</div>' +
+            '</div>' +
+            '<div class="ds-cr-right">' +
+                '<div class="ds-cr-dist ' + distClass + '">' + distStr + '</div>' +
+                '<div class="ds-cr-bat">🔋' + (m.bat||'–') + '%</div>' +
+            '</div>';
+        list.appendChild(row);
+    });
+
+    // Markers en mapa de conducción
+    Object.entries(members).forEach(([id, m]) => {
+        if (!m.lat || !m.lng) return;
+        const isMe = id === myId;
+        const color = m.color || '#39ff14';
+        const initial = (m.nombre||'C')[0].toUpperCase();
+        const iconHtml = '<div style="width:' + (isMe?'22':'18') + 'px;height:' + (isMe?'22':'18') + 'px;border-radius:50%;background:' + color + ';border:2px solid ' + (isMe?'white':'rgba(255,255,255,.5)') + ';display:flex;align-items:center;justify-content:center;font-size:' + (isMe?'10':'9') + 'px;font-weight:900;color:black;box-shadow:0 0 8px ' + color + ';">' + initial + '</div>';
+        const icon = L.divIcon({ className:'', html:iconHtml, iconSize:[isMe?22:18,isMe?22:18], iconAnchor:[isMe?11:9,isMe?11:9] });
+        if (drivingMarkers[id]) {
+            drivingMarkers[id].setLatLng([m.lat, m.lng]);
+        } else if (drivingMap) {
+            drivingMarkers[id] = L.marker([m.lat,m.lng],{icon}).addTo(drivingMap)
+                .bindPopup('<b style="color:' + color + '">' + (m.nombre||'Ciclista') + '</b>');
+        }
+    });
+    if (currentLat && drivingMap) drivingMap.setView([currentLat,currentLng],15);
+
+    // Radar dots
+    updateRadarDots(members);
+}
+
+function updateRadarDots(members) {
+    const dotsG = document.getElementById('ds-radar-dots');
+    dotsG.innerHTML = '';
+    const cx=38, cy=38, R=32;
+    Object.entries(members).forEach(([id, m]) => {
+        if (id === grupoState.myId || !currentLat || !m.lat) return;
+        const dist = haversine(currentLat, currentLng, m.lat, m.lng);
+        const bear = Math.atan2(m.lng - currentLng, m.lat - currentLat);
+        const r = Math.min((dist / grupoState.radio) * R, R-2);
+        const x = cx + r * Math.cos(bear);
+        const y = cy - r * Math.sin(bear);
+        const color = dist > grupoState.radio ? '#ffb400' : '#39ff14';
+        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx', x.toFixed(1));
+        c.setAttribute('cy', y.toFixed(1));
+        c.setAttribute('r', '3');
+        c.setAttribute('fill', color);
+        c.setAttribute('class', 'radar-blink');
+        dotsG.appendChild(c);
+    });
+}
+
+// ── Walkie en pantalla de conducción ──
+document.getElementById('ds-walkie-btn').addEventListener('pointerdown', () => {
+    if (!grupoState.active) { showToast('⚠️ No estás en un grupo'); return; }
+    drivingTalkingActive = true;
+    document.getElementById('ds-walkie-btn').classList.add('talking');
+    document.getElementById('ds-walkie-label').textContent = 'TRANSMITIENDO...';
+    if (recognition) { try { recognition.start(); } catch(e){} }
+});
+document.getElementById('ds-walkie-btn').addEventListener('pointerup', () => {
+    drivingTalkingActive = false;
+    document.getElementById('ds-walkie-btn').classList.remove('talking');
+    document.getElementById('ds-walkie-label').textContent = 'HABLAR';
+    if (recognition) { try { recognition.stop(); } catch(e){} }
+});
+document.getElementById('ds-walkie-btn').addEventListener('pointerleave', () => {
+    if (drivingTalkingActive) {
+        drivingTalkingActive = false;
+        document.getElementById('ds-walkie-btn').classList.remove('talking');
+        document.getElementById('ds-walkie-label').textContent = 'HABLAR';
+        if (recognition) { try { recognition.stop(); } catch(e){} }
+    }
+});
+
+// ── Flash btn ──
+document.getElementById('ds-flash-btn').addEventListener('click', toggleFlash);
+
+// ── SOS desde pantalla conducción ──
+document.getElementById('ds-sos-btn').addEventListener('click', async () => {
+    if (!grupoState.active) return;
+    if (!confirm('🆘 ¿Enviar SOS al grupo?')) return;
+    await fbUpdate('/grupos/' + grupoState.codigo + '/members/' + grupoState.myId, {
+        sos:true, lat:currentLat, lng:currentLng, ts:Date.now()
+    });
+    showToast('🆘 SOS enviado — el grupo viene hacia ti');
+    if (grupoState.vozActiva) speak('SOS enviado. El grupo está siendo notificado.');
+});
+
+// ── Back ──
+document.getElementById('ds-back').addEventListener('click', closeDrivingScreen);
+
+// ── Abrir pantalla de conducción desde FAB grupo si ya está activo ──
+const originalOpenGrupo = openGrupoPanel;
+document.getElementById('btn-grupo').removeEventListener('click', openGrupoPanel);
+document.getElementById('btn-grupo').addEventListener('click', () => {
+    if (grupoState.active) openDrivingScreen();
+    else openGrupoPanel();
+});
+
+// Voz entrante → mostrar también en pantalla conducción (ya lo gestiona addWalkieMsg)
+
+
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA DE CONDUCCIÓN DEL PELOTÓN
+     (sube desde abajo al entrar en grupo activo)
+══════════════════════════════════════════════ -->
+<div id="driving-screen">
+
+    <div id="ds-topbar">
+        <button id="ds-back" title="Volver al mapa">←</button>
+        <div class="ds-logo">🛡️ Ride<span>Safe</span></div>
+        <div id="ds-group-code">Grupo <span id="ds-code-val">––––</span></div>
+        <div id="ds-signal"><div class="ds-dot"></div><span id="ds-members-count">0</span></div>
+    </div>
+
+    <div id="ds-map-wrap">
+        <div id="ds-map"></div>
+
+        <div id="flash-badge">
+            <div class="flash-icon-dot"></div>
+            Flash activo
+        </div>
+
+        <div id="ds-alert">
+            <div id="ds-alert-dot"></div>
+            <span id="ds-alert-text">Ciclista fuera del radio</span>
+        </div>
+
+        <svg id="ds-radar" viewBox="0 0 76 76" role="img">
+            <title>Radar del pelotón</title>
+            <circle cx="38" cy="38" r="36" fill="#0a1520" stroke="#1a3a4a" stroke-width=".5"/>
+            <circle cx="38" cy="38" r="26" fill="none" stroke="#1a3a4a" stroke-width=".5" stroke-dasharray="2 3"/>
+            <circle cx="38" cy="38" r="16" fill="none" stroke="#1a3a4a" stroke-width=".5" stroke-dasharray="2 3"/>
+            <circle cx="38" cy="38" r="6"  fill="none" stroke="#1a3a4a" stroke-width=".5"/>
+            <line x1="38" y1="2" x2="38" y2="74" stroke="#1a3a4a" stroke-width=".5"/>
+            <line x1="2" y1="38" x2="74" y2="38" stroke="#1a3a4a" stroke-width=".5"/>
+            <path d="M38 38 L38 2 A36 36 0 0 1 74 38 Z" fill="rgba(0,229,255,.05)" class="radar-sweep-path"/>
+            <circle cx="38" cy="38" r="4" fill="#00e5ff"/>
+            <g id="ds-radar-dots"></g>
+            <text x="38" y="72" text-anchor="middle" font-size="7" fill="#2a5a6a" font-family="Segoe UI,sans-serif" id="ds-radar-label">500m</text>
+        </svg>
+    </div>
+
+    <div id="ds-stats">
+        <div class="ds-stat">
+            <label>Velocidad</label>
+            <value id="ds-spd">– <span>km/h</span></value>
+        </div>
+        <div class="ds-stat">
+            <label>Distancia</label>
+            <value id="ds-dist">– <span>km</span></value>
+        </div>
+        <div class="ds-stat">
+            <label>Tiempo</label>
+            <value id="ds-time">–:– <span>h</span></value>
+        </div>
+        <div class="ds-stat warn" id="ds-stat-warn">
+            <label>Atrás</label>
+            <value id="ds-warn-val">–</value>
+        </div>
+    </div>
+
+    <div id="ds-section-title">Pelotón — <span id="ds-count-label">0 ciclistas</span></div>
+    <div id="ds-cyclist-list"></div>
+
+    <div id="ds-bottom">
+        <button id="ds-flash-btn" title="Flash de seguridad">⚡</button>
+        <button id="ds-walkie-btn" id="ds-walkie-btn">
+            <span style="font-size:18px;">🎙️</span>
+            <span id="ds-walkie-label">HABLAR</span>
+            <div id="ds-walkie-pulse"></div>
+        </button>
+        <button id="ds-sos-btn">🆘<span style="font-size:8px;">SOS</span></button>
+    </div>
+
+</div>
+
+
+<!-- ══ BANNER INSTALACIÓN PWA ══ -->
+<div id="install-banner">
+    <div class="ib-icon">📲</div>
+    <div class="ib-text">
+        <div class="ib-title">Instalar RideSafe AI</div>
+        <div class="ib-sub">Añade la app a tu pantalla de inicio y úsala sin navegador.</div>
+    </div>
+    <div class="ib-actions">
+        <button id="install-btn">Instalar</button>
+        <button id="install-dismiss">Ahora no</button>
+    </div>
+</div>
 
 </script>
 </body>
