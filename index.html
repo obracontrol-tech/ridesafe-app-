@@ -354,6 +354,171 @@
         .zm-btn.confirm { background: var(--neon); border-color: var(--neon); color: black; }
         .zm-btn.confirm:hover { box-shadow: 0 0 14px var(--neon-glow); }
 
+
+        /* ══════════════════════════════════════
+           MENÚ LATERAL — SELECTOR DE CAPAS
+        ══════════════════════════════════════ */
+
+        /* Overlay oscuro */
+        #layer-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 3500; background: rgba(0,0,0,0); pointer-events: none;
+            transition: background 0.35s;
+        }
+        #layer-overlay.open { background: rgba(0,0,0,0.6); pointer-events: all; }
+
+        /* Panel lateral — desliza desde la DERECHA */
+        #layer-menu {
+            position: absolute; top: 0; right: 0; bottom: 0; width: 280px;
+            z-index: 3600; background: #0f1923;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-left: 1px solid #1e2d3d;
+        }
+        #layer-menu.open { transform: translateX(0); }
+
+        /* Cabecera del menú */
+        #lm-header {
+            padding: 20px 18px 16px;
+            background: #0d1921;
+            border-bottom: 1px solid #1e2d3d;
+            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        }
+        #lm-user-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--neon); color: black;
+            font-size: 16px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; box-shadow: 0 0 10px var(--neon-glow);
+        }
+        #lm-user-name { color: white; font-size: 15px; font-weight: 700; }
+        #lm-user-sub  { color: #4a7a9b; font-size: 11px; margin-top: 2px; }
+        #lm-close {
+            margin-left: auto; width: 30px; height: 30px; border-radius: 50%;
+            background: none; border: 1px solid #1e2d3d; color: #4a7a9b;
+            font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        #lm-close:hover { border-color: var(--neon); color: var(--neon); }
+
+        /* Sección tipo de mapa */
+        #lm-body { flex: 1; overflow-y: auto; padding: 0 0 20px; }
+        #lm-body::-webkit-scrollbar { width: 3px; }
+        #lm-body::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 2px; }
+
+        .lm-section-title {
+            padding: 16px 18px 8px;
+            font-size: 10px; font-weight: 700; color: #4a7a9b;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* Grid de capas — 2 columnas */
+        #lm-layers-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; padding: 0 14px 6px;
+        }
+        .layer-tile {
+            border-radius: 12px; overflow: hidden; cursor: pointer;
+            border: 2px solid transparent; transition: all 0.2s;
+            position: relative;
+        }
+        .layer-tile:hover { border-color: rgba(57,255,20,0.5); }
+        .layer-tile.active { border-color: var(--neon); box-shadow: 0 0 12px var(--neon-glow); }
+        .layer-thumb {
+            width: 100%; height: 72px; object-fit: cover;
+            display: block; pointer-events: none;
+        }
+        /* Miniaturas generadas con CSS (sin imágenes externas) */
+        .lt-voyager   { background: linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 40%, #c8d8b0 70%, #a0c890 100%); }
+        .lt-dark      { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%); }
+        .lt-topo      { background: linear-gradient(135deg, #c8e6b0 0%, #a0c890 30%, #88b870 50%, #608850 70%, #907060 100%); }
+        .lt-satellite { background: linear-gradient(135deg, #1a3010 0%, #2a4020 30%, #1a2010 50%, #3a5030 70%, #2a3820 100%); }
+
+        /* Patrón de calles simulado */
+        .lt-voyager::after, .lt-dark::after, .lt-topo::after, .lt-satellite::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 28px;
+            background-image:
+                linear-gradient(transparent 45%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.15) 55%, transparent 55%),
+                linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.1) 35%, transparent 35%);
+            background-size: 40px 40px, 60px 60px;
+        }
+        .lt-satellite::after {
+            background-image:
+                linear-gradient(transparent 45%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.08) 55%, transparent 55%),
+                linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 35%, transparent 35%);
+        }
+
+        .layer-label {
+            background: rgba(0,0,0,0.75); color: white;
+            font-size: 11px; font-weight: 700; padding: 5px 8px;
+            text-align: center; position: relative; z-index: 1;
+        }
+        .layer-tile.active .layer-label { color: var(--neon); background: rgba(0,0,0,0.85); }
+        .layer-check {
+            position: absolute; top: 6px; right: 6px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--neon); color: black;
+            font-size: 10px; font-weight: 900;
+            display: none; align-items: center; justify-content: center;
+            z-index: 2; box-shadow: 0 0 6px var(--neon-glow);
+        }
+        .layer-tile.active .layer-check { display: flex; }
+
+        /* Info capa activa */
+        #lm-active-info {
+            margin: 10px 14px 6px; padding: 10px 14px;
+            background: rgba(57,255,20,0.06); border: 1px solid rgba(57,255,20,0.2);
+            border-radius: 10px;
+        }
+        #lm-active-info .ai-name { color: var(--neon); font-size: 12px; font-weight: 700; }
+        #lm-active-info .ai-desc { color: #4a7a9b; font-size: 11px; margin-top: 3px; line-height: 1.4; }
+
+        /* Divider */
+        .lm-divider { height: 1px; background: #1e2d3d; margin: 12px 14px; }
+
+        /* Opciones adicionales (toggle) */
+        .lm-option {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 18px; cursor: pointer; transition: background 0.15s;
+        }
+        .lm-option:hover { background: rgba(255,255,255,0.03); }
+        .lm-option-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+        .lm-option-text { flex: 1; }
+        .lm-option-label { color: #ccc; font-size: 13px; font-weight: 600; }
+        .lm-option-sub   { color: #4a7a9b; font-size: 11px; margin-top: 2px; }
+        .lm-toggle {
+            width: 38px; height: 22px; border-radius: 11px;
+            background: #1e2d3d; position: relative; flex-shrink: 0; transition: background 0.2s;
+            cursor: pointer;
+        }
+        .lm-toggle.on { background: var(--neon); }
+        .lm-toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%; background: white;
+            transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .lm-toggle.on::after { transform: translateX(16px); }
+
+        /* Botón capas en header — reemplaza el ◆ */
+        #btn-layers {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(13,25,33,0.9); border: 1px solid #1e3a4a;
+            color: #7ab8d4; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        #btn-layers:hover { border-color: var(--neon); color: var(--neon); }
+        #btn-layers.active { border-color: var(--neon); color: var(--neon); background: rgba(57,255,20,0.1); }
+
+        /* Pie del menú */
+        #lm-footer {
+            padding: 12px 18px; border-top: 1px solid #1e2d3d;
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        #lm-footer span { font-size: 10px; color: #2a4a5a; }
+        #lm-footer strong { color: #4a7a9b; }
+
         /* ── LEAFLET OVERRIDES ── */
         .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid #333 !important; }
         .leaflet-bar a:hover { border-color: var(--neon) !important; }
@@ -381,6 +546,108 @@
 </head>
 <body>
 
+<!-- LAYER OVERLAY + MENU -->
+<div id="layer-overlay"></div>
+<div id="layer-menu">
+    <div id="lm-header">
+        <div id="lm-user-avatar">J</div>
+        <div>
+            <div id="lm-user-name">RideSafe AI</div>
+            <div id="lm-user-sub">Modo ciclista activo</div>
+        </div>
+        <button id="lm-close">✕</button>
+    </div>
+    <div id="lm-body">
+        <div class="lm-section-title">Tipo de mapa</div>
+        <div id="lm-layers-grid">
+            <div class="layer-tile active" data-layer="voyager">
+                <div class="layer-check">✓</div>
+                <div class="lt-voyager layer-thumb"></div>
+                <div class="layer-label">Estándar</div>
+            </div>
+            <div class="layer-tile" data-layer="dark">
+                <div class="layer-check">✓</div>
+                <div class="lt-dark layer-thumb"></div>
+                <div class="layer-label">Noche</div>
+            </div>
+            <div class="layer-tile" data-layer="topo">
+                <div class="layer-check">✓</div>
+                <div class="lt-topo layer-thumb"></div>
+                <div class="layer-label">Terreno</div>
+            </div>
+            <div class="layer-tile" data-layer="satellite">
+                <div class="layer-check">✓</div>
+                <div class="lt-satellite layer-thumb"></div>
+                <div class="layer-label">Satélite</div>
+            </div>
+        </div>
+
+        <div id="lm-active-info">
+            <div class="ai-name" id="lm-active-name">🗺 Estándar — CartoDB Voyager</div>
+            <div class="ai-desc" id="lm-active-desc">Ideal para rutas urbanas. Calles claras y puntos de interés.</div>
+        </div>
+
+        <div class="lm-divider"></div>
+        <div class="lm-section-title">Opciones de visualización</div>
+
+        <div class="lm-option">
+            <div class="lm-option-icon">🚲</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Carriles bici</div>
+                <div class="lm-option-sub">Resaltar vías ciclistas (próximamente)</div>
+            </div>
+            <div class="lm-toggle" id="tog-bike"></div>
+        </div>
+        <div class="lm-option">
+            <div class="lm-option-icon">🌙</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Auto modo noche</div>
+                <div class="lm-option-sub">Cambiar al mapa oscuro al atardecer</div>
+            </div>
+            <div class="lm-toggle" id="tog-autonoche"></div>
+        </div>
+        <div class="lm-option">
+            <div class="lm-option-icon">📍</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Centrar en mi posición</div>
+                <div class="lm-option-sub">Mantener el mapa centrado mientras pedaleas</div>
+            </div>
+            <div class="lm-toggle" id="tog-follow" class="on"></div>
+        </div>
+
+        <div class="lm-divider"></div>
+        <div class="lm-section-title">Accesos rápidos</div>
+
+        <div class="lm-option" id="lm-goto-history" style="cursor:pointer;">
+            <div class="lm-option-icon">📋</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Historial de rutas</div>
+                <div class="lm-option-sub">Ver y gestionar rutas grabadas</div>
+            </div>
+            <span style="color:#4a7a9b;font-size:14px;">›</span>
+        </div>
+        <div class="lm-option" id="lm-goto-offline" style="cursor:pointer;">
+            <div class="lm-option-icon">💾</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Mapas offline</div>
+                <div class="lm-option-sub">Descargar zonas para usar sin internet</div>
+            </div>
+            <span style="color:#4a7a9b;font-size:14px;">›</span>
+        </div>
+        <div class="lm-option" id="lm-goto-organic" style="cursor:pointer;">
+            <div class="lm-option-icon">🗺</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Organic Maps</div>
+                <div class="lm-option-sub">Abrir app de mapas offline</div>
+            </div>
+            <span style="color:#4a7a9b;font-size:14px;">›</span>
+        </div>
+    </div>
+    <div id="lm-footer">
+        <span>RideSafe AI · <strong>v2.0</strong> · © 2025 JM Prestige</span>
+    </div>
+</div>
+
 <!-- HEADER -->
 <div id="header">
     <div id="logo">🛡️ Ride<span>Safe</span></div>
@@ -389,6 +656,7 @@
         <button id="search-btn">🔍</button>
         <div id="suggestions"></div>
     </div>
+    <button id="btn-layers" title="Capas del mapa">⊞</button>
 </div>
 
 <div id="status">● Online</div>
@@ -1194,7 +1462,140 @@ window.addEventListener('online',  () => { const s=document.getElementById('stat
 
 // Init
 updateOfflineBadge();
+initLayer();
 locateUser(false);
+
+// ════════════════════════════════════════════════════════════════
+//  SELECTOR DE CAPAS — MENÚ LATERAL
+// ════════════════════════════════════════════════════════════════
+const LAYERS = {
+    voyager: {
+        name: 'Estándar — CartoDB Voyager',
+        desc: 'Ideal para rutas urbanas. Calles claras y puntos de interés.',
+        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        attribution: '© OSM © CARTO',
+        subdomains: 'abcd', maxZoom: 20
+    },
+    dark: {
+        name: 'Noche — CartoDB Dark Matter',
+        desc: 'Mapa oscuro para ciclismo nocturno. Reduce deslumbramiento.',
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        attribution: '© OSM © CARTO',
+        subdomains: 'abcd', maxZoom: 20
+    },
+    topo: {
+        name: 'Terreno — OpenTopoMap',
+        desc: 'Curvas de nivel y relieve. Perfecto para rutas de montaña.',
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        attribution: '© OSM · © OpenTopoMap',
+        subdomains: 'abc', maxZoom: 17
+    },
+    satellite: {
+        name: 'Satélite — Esri World Imagery',
+        desc: 'Imagen aérea real. Reconocimiento de terreno y caminos.',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: '© Esri, Maxar, GeoEye',
+        subdomains: null, maxZoom: 19
+    }
+};
+
+let currentLayerKey = 'voyager';
+let currentTileLayer = null;
+
+function setMapLayer(key) {
+    const cfg = LAYERS[key];
+    if (!cfg) return;
+    if (currentTileLayer) map.removeLayer(currentTileLayer);
+    const opts = { attribution: cfg.attribution, maxZoom: cfg.maxZoom };
+    if (cfg.subdomains) opts.subdomains = cfg.subdomains;
+    currentTileLayer = L.tileLayer(cfg.url, opts).addTo(map);
+    currentLayerKey = key;
+
+    // Actualizar UI del menú
+    document.querySelectorAll('.layer-tile').forEach(t => {
+        t.classList.toggle('active', t.dataset.layer === key);
+    });
+    document.getElementById('lm-active-name').textContent = '🗺 ' + cfg.name;
+    document.getElementById('lm-active-desc').textContent = cfg.desc;
+
+    // Guardar preferencia
+    try { localStorage.setItem('ridesafe_layer', key); } catch(e) {}
+}
+
+// Inicializar con la capa guardada o Voyager
+function initLayer() {
+    let saved = 'voyager';
+    try { saved = localStorage.getItem('ridesafe_layer') || 'voyager'; } catch(e) {}
+    setMapLayer(saved);
+}
+
+// Click en tiles del grid
+document.querySelectorAll('.layer-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+        setMapLayer(tile.dataset.layer);
+        showToast('🗺 ' + LAYERS[tile.dataset.layer].name.split('—')[0].trim());
+    });
+});
+
+// Abrir / cerrar menú
+function openLayerMenu() {
+    document.getElementById('layer-menu').classList.add('open');
+    document.getElementById('layer-overlay').classList.add('open');
+    document.getElementById('btn-layers').classList.add('active');
+}
+function closeLayerMenu() {
+    document.getElementById('layer-menu').classList.remove('open');
+    document.getElementById('layer-overlay').classList.remove('open');
+    document.getElementById('btn-layers').classList.remove('active');
+}
+
+document.getElementById('btn-layers').addEventListener('click', openLayerMenu);
+document.getElementById('lm-close').addEventListener('click', closeLayerMenu);
+document.getElementById('layer-overlay').addEventListener('click', closeLayerMenu);
+
+// Accesos rápidos del menú
+document.getElementById('lm-goto-history').addEventListener('click', () => { closeLayerMenu(); openHistoryPanel(); });
+document.getElementById('lm-goto-offline').addEventListener('click', () => { closeLayerMenu(); openOfflinePanel(); });
+document.getElementById('lm-goto-organic').addEventListener('click', () => {
+    closeLayerMenu();
+    if (currentLat !== null) openOrganicLocation(currentLat, currentLng, 'Mi ubicación');
+    else openOrganicStore();
+});
+
+// Toggles
+function initToggle(id, storageKey, defaultVal) {
+    const el = document.getElementById(id);
+    let val = defaultVal;
+    try { const s = localStorage.getItem(storageKey); if (s !== null) val = s === '1'; } catch(e) {}
+    if (val) el.classList.add('on');
+    el.addEventListener('click', () => {
+        el.classList.toggle('on');
+        try { localStorage.setItem(storageKey, el.classList.contains('on') ? '1' : '0'); } catch(e) {}
+        if (id === 'tog-autonoche') checkAutoNight();
+    });
+}
+initToggle('tog-bike',       'rs_tog_bike',   false);
+initToggle('tog-autonoche',  'rs_tog_night',  false);
+initToggle('tog-follow',     'rs_tog_follow', true);
+
+// Auto modo noche: comprueba hora y cambia capa si procede
+function checkAutoNight() {
+    const tog = document.getElementById('tog-autonoche');
+    if (!tog.classList.contains('on')) return;
+    const h = new Date().getHours();
+    const isNight = h >= 21 || h < 7;
+    if (isNight && currentLayerKey !== 'dark') {
+        setMapLayer('dark');
+        showToast('🌙 Modo noche activado automáticamente');
+    } else if (!isNight && currentLayerKey === 'dark') {
+        setMapLayer('voyager');
+        showToast('☀️ Modo día activado automáticamente');
+    }
+}
+// Comprobar al arrancar
+checkAutoNight();
+
+
 </script>
 </body>
 </html>
