@@ -1047,6 +1047,7 @@ function abrirSeguridad() {
   document.getElementById('panel-seg').classList.add('open');
 }
 function cerrarSeguridad() {
+  document.getElementById('panel-seg').style.display = 'none';
   document.getElementById('panel-seg').classList.remove('open');
 }
 
@@ -1730,10 +1731,12 @@ initVoz();
 var miniMapas = {};
 
 function abrirRutas() {
+    document.getElementById('panel-rutas').style.display = 'grid';
     document.getElementById('panel-rutas').classList.add('open');
     renderRutas();
 }
 function cerrarRutas() {
+    document.getElementById('panel-rutas').style.display = 'none';
     document.getElementById('panel-rutas').classList.remove('open');
 }
 
@@ -1840,6 +1843,7 @@ var planGeoJSON = null;
 try { var ok = localStorage.getItem('rs_ors_key'); if(ok) orsKey = ok; } catch(e) {}
 
 function abrirPlanificar() {
+    document.getElementById('panel-planificar').style.display = 'flex';
     document.getElementById('panel-planificar').classList.add('open');
     setTimeout(function() {
         if (!planMapa) initPlanMapa();
@@ -1848,6 +1852,7 @@ function abrirPlanificar() {
     }, 100);
 }
 function cerrarPlanificar() {
+    document.getElementById('panel-planificar').style.display = 'none';
     document.getElementById('panel-planificar').classList.remove('open');
 }
 
@@ -2010,6 +2015,7 @@ function iniciarNavRuta() {
     toast('🚴 Cargando en el mapa...');
 
     // 1. Cerrar planificador
+    document.getElementById('panel-planificar').style.display = 'none';
     cerrarPlanificar();
 
     // 2. Abrir nav con delay para que se complete el cierre
