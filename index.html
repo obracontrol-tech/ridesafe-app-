@@ -1998,22 +1998,16 @@ function closePanel(id) {
 function abrirSeguridad()   { openPanel('panel-seg'); updateSegUI(); }
 function cerrarSeguridad()  { closePanel('panel-seg'); }
 function abrirNav() {
-    console.log('abrirNav llamado');
     var el = document.getElementById('panel-nav');
-    console.log('panel-nav display antes:', el.style.display);
-    el.style.display = 'grid';
-    el.style.gridTemplateRows = '52px 1fr 60px';
-    el.style.position = 'fixed';
-    el.style.top = '0';
-    el.style.left = '0';
-    el.style.right = '0';
-    el.style.height = '100dvh';
-    el.style.zIndex = '500';
-    console.log('panel-nav display después:', el.style.display);
-    setTimeout(function(){ if(!navMap) initNavMap(); else navMap.invalidateSize(); }, 100);
+    el.style.cssText = 'display:grid;grid-template-rows:52px 1fr 60px;position:fixed;top:0;left:0;right:0;height:100dvh;z-index:500;background:#0a0a0a;overflow:hidden;';
+    // Cargar tokens guardados
+    try { var t=localStorage.getItem('rs_mapbox'); if(t){MAPBOX_TOKEN=t;LAYERS.mapbox.url='https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;} var l=localStorage.getItem('rs_layer'); if(l) navLayerKey=l; } catch(e){}
+    // Inicializar mapa con múltiples intentos
+    if(!navMap) { setTimeout(initNavMap, 50); setTimeout(initNavMap, 200); }
+    else { setTimeout(function(){ navMap.invalidateSize(); }, 100); setTimeout(function(){ navMap.invalidateSize(); }, 400); }
     try { var t=localStorage.getItem('rs_mapbox'); if(t){MAPBOX_TOKEN=t;LAYERS.mapbox.url='https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;} var l=localStorage.getItem('rs_layer'); if(l) navLayerKey=l; } catch(e){}
 }
-function cerrarNav()        { closePanel('panel-nav'); document.getElementById('layer-picker').classList.remove('show'); }
+function cerrarNav() { var el=document.getElementById('panel-nav'); el.style.display='none'; document.getElementById('layer-picker').classList.remove('show'); }
 function abrirAI()          { openPanel('panel-ai'); if(!aiKey) document.getElementById('ai-key-setup').classList.add('show'); }
 function cerrarAI()         { closePanel('panel-ai'); }
 function abrirRutas()       { openPanel('panel-rutas'); renderRutas(); }
