@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI v7</title>
+<title>RideSafe AI v8</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1603,7 +1603,7 @@ window.addEventListener('online',function(){document.getElementById('act-status'
 
 
 // ══ PANEL SEGURIDAD ══
-window.openSeguridad = function() {
+function openSeguridad() {
     document.getElementById('panel-seguridad').classList.add('show');
     updateSegUI();
 }
