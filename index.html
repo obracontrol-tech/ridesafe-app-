@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI v6</title>
+<title>RideSafe AI v7</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1028,7 +1028,7 @@ body {
 <!-- ══ PANEL SEGURIDAD ══ -->
 <div id="panel-seguridad">
     <div class="seg-header">
-        <button class="seg-back" id="seg-back">←</button>
+        <button class="seg-back" id="seg-back" onclick="document.getElementById('panel-seguridad').classList.remove('show')">←</button>
         <div class="seg-title">🛡️ <span>Seguridad</span></div>
         <div class="seg-status-badge" id="seg-badge">● Inactivo</div>
     </div>
@@ -1116,7 +1116,7 @@ body {
 <!-- PANEL ASISTENTE IA -->
 <div id="ai-panel">
     <div class="ai-head">
-        <button class="ai-head-back" id="ai-back">←</button>
+        <button class="ai-head-back" id="ai-back" onclick="document.getElementById('ai-panel').classList.remove('show')">←</button>
         <div class="ai-head-title">Asistente <span>IA</span> Ciclista</div>
         <span style="font-size:11px;color:var(--g);font-family:'Barlow Condensed',sans-serif;font-weight:700;">🚴 PRO</span>
     </div>
@@ -1146,7 +1146,7 @@ body {
 <!-- PANEL OFFLINE (dentro de Perfil) -->
 <div id="offline-panel" style="position:fixed;inset:0;z-index:7000;background:var(--black);display:none;flex-direction:column;animation:slideUp .3s ease;">
     <div class="ai-head">
-        <button class="ai-head-back" id="offline-back">←</button>
+        <button class="ai-head-back" id="offline-back" onclick="document.getElementById('offline-panel').style.display='none'">←</button>
         <div class="ai-head-title">Mapas <span>Offline</span></div>
         <span id="op-sw" style="font-size:9px;color:var(--text3);">SW –</span>
     </div>
@@ -1477,7 +1477,7 @@ document.getElementById('pf-diag').addEventListener('click',function(){runDiag()
 function loadAIKey(){try{var k=localStorage.getItem('rs_ai_key');if(k){aiKey=k;return true;}}catch(e){}return false;}
 function saveAIKey(k){aiKey=k;try{localStorage.setItem('rs_ai_key',k);}catch(e){}}
 function openAI(){document.getElementById('ai-panel').classList.add('show');if(!aiKey)document.getElementById('ai-key-wrap').classList.add('show');}
-document.getElementById('ai-back').addEventListener('click',function(){document.getElementById('ai-panel').classList.remove('show');});
+// ai-back manejado por onclick en HTML
 document.getElementById('ai-key-save').addEventListener('click',function(){
   var k=document.getElementById('ai-key-input').value.trim();
   if(!k.startsWith('sk-ant-')){showToast('⚠️ La key debe empezar por sk-ant-');return;}
@@ -1554,7 +1554,7 @@ function loadZones(){try{return JSON.parse(localStorage.getItem(ZKEY))||[];}catc
 function saveZone(z){var zs=loadZones();zs.unshift(z);localStorage.setItem(ZKEY,JSON.stringify(zs));}
 function delZone(id){localStorage.setItem(ZKEY,JSON.stringify(loadZones().filter(function(z){return z.id!==id;})));}
 function openOffline(){renderZones();document.getElementById('offline-panel').style.display='flex';refreshStorage();}
-document.getElementById('offline-back').addEventListener('click',function(){document.getElementById('offline-panel').style.display='none';});
+// offline-back manejado por onclick en HTML
 function latLngToTile(lat,lng,z){var n=Math.pow(2,z);var x=Math.floor((lng+180)/360*n);var lr=lat*Math.PI/180;var y=Math.floor((1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n);return{x:x,y:y};}
 function countTiles(b,z0,z1){var c=0;for(var z=z0;z<=z1;z++){var nw=latLngToTile(b.getNorth(),b.getWest(),z);var se=latLngToTile(b.getSouth(),b.getEast(),z);c+=(Math.abs(se.x-nw.x)+1)*(Math.abs(se.y-nw.y)+1);}return c;}
 function getTileUrls(b,z0,z1){var us=[],ss=['a','b','c','d'];for(var z=z0;z<=z1;z++){var nw=latLngToTile(b.getNorth(),b.getWest(),z);var se=latLngToTile(b.getSouth(),b.getEast(),z);var x0=Math.min(nw.x,se.x),x1=Math.max(nw.x,se.x),y0=Math.min(nw.y,se.y),y1=Math.max(nw.y,se.y);for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++)us.push('https://'+ss[(x+y)%4]+'.basemaps.cartocdn.com/rastertiles/voyager/'+z+'/'+x+'/'+y+'.png');}return us;}
@@ -1607,9 +1607,7 @@ window.openSeguridad = function() {
     document.getElementById('panel-seguridad').classList.add('show');
     updateSegUI();
 }
-document.getElementById('seg-back').addEventListener('click', function() {
-    document.getElementById('panel-seguridad').classList.remove('show');
-});
+// seg-back manejado por onclick en HTML
 
 function updateSegUI() {
     var on = shieldActive;
@@ -1744,31 +1742,7 @@ initVoice();
 setTimeout(function(){if(!currentLat)showToast('📍 Ve a Actividad y pulsa el GPS');},3000);
 
 
-// ── Funciones globales (onclick en HTML) ──
-window.openSeguridad = window.openSeguridad || function() {
-    document.getElementById('panel-seguridad').classList.add('show');
-    updateSegUI();
-};
-window.goTo = function(name) {
-    var sc = {inicio:'screen-inicio',rutas:'screen-rutas',actividad:'screen-actividad',analisis:'screen-analisis',perfil:'screen-perfil'};
-    var tb = {inicio:'tab-inicio',rutas:'tab-rutas',actividad:'tab-actividad',analisis:'tab-analisis',perfil:'tab-perfil'};
-    Object.keys(sc).forEach(function(k){ document.getElementById(sc[k]).classList.toggle('active',k===name); });
-    Object.keys(tb).forEach(function(k){ document.getElementById(tb[k]).classList.toggle('active',k===name); });
-    currentScreen = name;
-    if(name==='actividad'){ setTimeout(function(){ if(mapInstance) mapInstance.invalidateSize(); else initMap(); }, 100); }
-    if(name==='rutas') renderRouteList();
-    if(name==='analisis') renderAnalisis();
-    if(name==='perfil') renderPerfil();
-};
-window.openAI = function() {
-    document.getElementById('ai-panel').classList.add('show');
-    if(!aiKey) document.getElementById('ai-key-wrap').classList.add('show');
-};
-window.showToast = window.showToast || function(msg) {
-    var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2800);
-};
-window.tryShield = window.tryShield || tryShield;
+
 
 </script>
 </body>
