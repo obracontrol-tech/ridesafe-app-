@@ -1,692 +1,838 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>RideSafe AI v4</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#39FF14">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="RideSafe">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root {
-            --neon: #00e5ff;
-            --neon2: #0077ff;
-            --neon-dim: rgba(0,229,255,0.10);
-            --neon-glow: rgba(0,229,255,0.35);
-            --black: #060c14;
-            --dark: #0a1520;
-            --dark2: #0d1a2a;
-            --card: rgba(10,21,32,0.97);
-            --border: #1a3040;
-            --muted: #2a5a7a;
-            --mid: #5aaac8;
-            --red: #ff3355;
-            --orange: #ff8800;
-            --green: #39ff14;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; background: var(--black); font-family: 'Segoe UI', sans-serif; overflow: hidden; color: white; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RideSafe AI</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a8e63d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RideSafe AI">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root {
+  --g: #a8e63d;         /* verde neón principal */
+  --g2: #c5f060;        /* verde claro hover */
+  --g-dim: rgba(168,230,61,0.12);
+  --g-glow: rgba(168,230,61,0.3);
+  --black: #0a0a0a;
+  --dark: #111111;
+  --dark2: #181818;
+  --card: #1c1c1c;
+  --card2: #222222;
+  --border: #2a2a2a;
+  --text: #ffffff;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --red: #ff3355;
+  --blue: #4488ff;
+  --orange: #ff8833;
+  --purple: #9966ff;
+  --cyan: #33ddff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
 
-        /* ── MAPA ── */
-        /* Layout FIJO — sin movimiento en Chrome Android */
-        html, body {
-            height: 100%;
-            height: 100dvh; /* dynamic viewport — se ajusta a la barra Chrome */
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            top: 0; left: 0;
-        }
-        /* Los paneles internos SÍ tienen scroll */
-        .sp-body, #ai-msgs, #hp-list, #zone-list, #lm-body {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        #map { position: absolute; top: 0; left: 0; right: 0; bottom: 64px; }
+/* ══════════════════════════════════
+   PANTALLAS
+══════════════════════════════════ */
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn .25s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-        /* ── HEADER ── */
-        #header {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 500;
-            background: linear-gradient(180deg, rgba(6,12,20,0.99) 70%, transparent 100%);
-            padding: 10px 14px 32px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        #logo {
-            display: flex; flex-direction: column; white-space: nowrap; flex-shrink: 0;
-        }
-        #logo-top {
-            font-size: 15px; font-weight: 900; letter-spacing: 2px;
-            color: var(--neon); text-shadow: 0 0 12px var(--neon), 0 0 24px rgba(0,229,255,.3);
-            line-height: 1;
-        }
-        #logo-sub {
-            font-size: 8px; font-weight: 600; color: var(--muted);
-            letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px;
-        }
-        /* Separador vertical */
-        #logo-sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
-        /* Info ruta activa en header */
-        #header-route {
-            flex: 1; min-width: 0; display: flex; flex-direction: column;
-        }
-        #header-route-name {
-            font-size: 11px; font-weight: 700; color: white;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        #header-route-stats {
-            font-size: 10px; color: var(--muted); margin-top: 1px;
-            display: flex; gap: 8px;
-        }
-        #header-route-stats span { color: var(--neon); font-weight: 700; }
-        /* Sin ruta activa — mostrar buscador */
-        #search-wrap { flex: 1; position: relative; display: none; }
-        #search-wrap.show { display: block; }
-        #header-route { display: none; }
-        #header-route.show { display: flex; }
-        #search-wrap { flex: 1; position: relative; }
-        #search-input {
-            width: 100%; padding: 9px 38px 9px 14px;
-            background: var(--dark); color: white; border: 1px solid var(--border);
-            border-radius: 22px; font-size: 13px; outline: none; transition: border .2s;
-        }
-        #search-input:focus { border-color: var(--neon); }
-        #search-input::placeholder { color: var(--muted); }
-        #search-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--neon); cursor: pointer; font-size: 15px; }
-        #suggestions {
-            position: absolute; top: 42px; left: 0; right: 0;
-            background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-            overflow: hidden; z-index: 1000; max-height: 200px; overflow-y: auto;
-        }
-        .sug-item { padding: 10px 14px; color: #ccc; font-size: 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
-        .sug-item:hover { background: var(--dark2); color: var(--neon); }
-        .sug-item:last-child { border-bottom: none; }
+/* ══════════════════════════════════
+   BARRA INFERIOR GLOBAL
+══════════════════════════════════ */
+#tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: #0f0f0f;
+  border-top: 1px solid #1e1e1e;
+  display: flex; align-items: stretch;
+  height: 62px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  background: none; border: none; cursor: pointer;
+  transition: all .2s; position: relative;
+}
+.tab-btn svg { width: 22px; height: 22px; stroke: var(--text3); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s; }
+.tab-btn .tb-lbl { font-size: 9px; font-weight: 600; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; transition: color .2s; font-family: 'Barlow Condensed', sans-serif; }
+.tab-btn.active svg { stroke: var(--g); }
+.tab-btn.active .tb-lbl { color: var(--g); }
+/* Botón central Actividad */
+#tab-actividad {
+  position: relative;
+}
+#tab-actividad .tab-central {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--g); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px; margin-top: -14px;
+  box-shadow: 0 0 16px var(--g-glow);
+  transition: all .2s;
+}
+#tab-actividad .tab-central svg { stroke: #0a0a0a; width: 22px; height: 22px; }
+#tab-actividad.active .tab-central { background: var(--g2); box-shadow: 0 0 24px var(--g-glow); }
+#tab-actividad .tb-lbl { color: var(--text3); font-size: 9px; font-weight: 700; }
+#tab-actividad.active .tb-lbl { color: var(--g); }
 
-        /* ── STATUS ── */
-        #status {
-            position: absolute; top: 68px; right: 14px; z-index: 500;
-            background: var(--card); color: var(--neon); padding: 5px 12px;
-            border-radius: 20px; border: 1px solid var(--neon);
-            font-size: 10px; font-weight: 700; letter-spacing: 1px;
-            box-shadow: 0 0 10px rgba(0,229,255,0.2); transition: all .3s;
-        }
-        #status.offline { color: var(--orange); border-color: var(--orange); }
-        #status.recording { animation: pulse-badge 1.2s infinite; }
-        @keyframes pulse-badge { 0%,100%{box-shadow:0 0 10px rgba(57,255,20,.2);}50%{box-shadow:0 0 20px rgba(57,255,20,.6);} }
+/* ══════════════════════════════════
+   PANTALLA INICIO
+══════════════════════════════════ */
+#screen-inicio {
+  background: var(--black);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 72px;
+}
+#screen-inicio::-webkit-scrollbar { display: none; }
 
-        /* ── GPS FAB ── */
-        #fab-gps {
-            position: absolute; top: 68px; left: 14px; z-index: 500;
-            width: 38px; height: 38px; border-radius: 10px;
-            background: var(--card); border: 1px solid var(--border);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all .2s; box-shadow: 0 2px 8px rgba(0,0,0,.4);
-        }
-        #fab-gps:hover { border-color: var(--neon); }
-        #fab-gps svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        #fab-gps.located svg { stroke: var(--neon); }
+/* Header inicio */
+.inicio-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 10px;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+}
+.ih-menu { width: 36px; height: 36px; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; }
+.ih-menu span { width: 20px; height: 2px; background: white; border-radius: 1px; display: block; }
+.ih-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; font-weight: 900; letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 2px;
+}
+.ih-logo .ride { color: white; }
+.ih-logo .safe { color: var(--g); }
+.ih-logo .ai {
+  color: var(--g); font-size: 18px;
+  position: relative; top: -2px;
+}
+.ih-logo .ai-star {
+  color: var(--g); font-size: 12px; position: relative; top: -8px; right: 2px;
+}
+.ih-bell {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--card); border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  position: relative; font-size: 16px;
+}
+.ih-bell .bell-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--g); border: 2px solid var(--black); }
 
-        /* ── LIVE STATS ── */
-        #live-stats {
-            position: absolute; top: 116px; left: 14px; z-index: 500;
-            background: var(--card); border: 1px solid var(--neon);
-            border-radius: 14px; padding: 12px 14px; min-width: 180px; display: none;
-            box-shadow: 0 0 14px rgba(57,255,20,.15);
-        }
-        #live-stats.show { display: block; }
-        .ls-title { color: var(--neon); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .ls-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon); animation: blink 1s infinite; }
-        @keyframes blink { 0%,100%{opacity:1;}50%{opacity:.2;} }
-        .ls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .ls-item label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; }
-        .ls-item value { display: block; font-size: 17px; font-weight: 700; color: white; line-height: 1.1; }
-        .ls-item value span { font-size: 9px; color: var(--mid); font-weight: 400; }
+/* Subtítulo */
+.inicio-subtitle {
+  text-align: center; padding: 4px 20px 0;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  letter-spacing: 2px; text-transform: uppercase;
+  font-family: 'Barlow Condensed', sans-serif;
+}
 
-        /* ── INFO CARD ── */
-        #info-card {
-            position: absolute; bottom: 80px; left: 14px; z-index: 500;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 12px 14px; min-width: 180px; display: none;
-        }
-        #info-card.show { display: block; }
-        #info-card h4 { color: var(--neon); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        #info-card p { color: #aaa; font-size: 11px; line-height: 1.6; }
-        #info-card strong { color: white; }
+/* Hero */
+.inicio-hero {
+  margin: 14px 16px 0;
+  border-radius: 18px; overflow: hidden;
+  position: relative; height: 200px;
+}
+.hero-img {
+  width: 100%; height: 100%; object-fit: cover;
+  background: linear-gradient(135deg, #1a2a1a 0%, #0d1a0d 40%, #1a1a2a 70%, #0d0d1a 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
 
-        /* ── SPINNER ── */
-        #spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 900; display: none; }
-        #spinner.show { display: block; }
-        .spin { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--neon); border-radius: 50%; animation: spin .7s linear infinite; }
-        @keyframes spin { to{transform:rotate(360deg);} }
+.hero-text {
+  position: absolute; bottom: 16px; left: 0; right: 0; text-align: center;
+}
+.hero-text h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+.hero-text p { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
 
-        /* ── TOAST ── */
-        #toast {
-            position: absolute; top: 76px; left: 50%; transform: translateX(-50%) translateY(-16px);
-            z-index: 2000; background: var(--card); border: 1px solid var(--neon);
-            color: var(--neon); padding: 7px 16px; border-radius: 20px;
-            font-size: 11px; font-weight: 600; opacity: 0; transition: all .3s;
-            white-space: nowrap; box-shadow: 0 0 14px var(--neon-glow);
-            pointer-events: none;
-        }
-        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Botón Iniciar */
+.btn-iniciar {
+  margin: 14px 16px;
+  width: calc(100% - 32px);
+  height: 52px; border-radius: 14px;
+  background: var(--g); border: none; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; letter-spacing: 1.5px;
+  color: #0a0a0a; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .2s;
+  box-shadow: 0 4px 20px var(--g-glow);
+}
+.btn-iniciar:active { transform: scale(.97); background: var(--g2); }
+.btn-iniciar svg { width: 22px; height: 22px; stroke: #0a0a0a; fill: none; stroke-width: 2.5; }
 
-        /* ══════════════════════════════════════
-           BARRA NAVEGACIÓN INFERIOR — BikeTrax style
-        ══════════════════════════════════════ */
-        #bottom-nav {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            height: 64px; z-index: 600;
-            background: rgba(6,12,20,0.98);
-            border-top: 1px solid #1a3040;
-            display: flex; align-items: stretch;
-            padding-bottom: env(safe-area-inset-bottom);
-            backdrop-filter: blur(10px);
-        }
-        .nav-btn {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 4px;
-            background: none; border: none; cursor: pointer; padding: 6px 2px;
-            transition: all .2s; -webkit-tap-highlight-color: transparent;
-            position: relative;
-        }
-        .nav-btn::after {
-            content: ''; position: absolute; bottom: 0; left: 25%; right: 25%;
-            height: 2px; border-radius: 2px 2px 0 0;
-            background: var(--neon); opacity: 0; transition: opacity .2s;
-        }
-        .nav-btn.active::after { opacity: 1; }
-        .nav-btn svg { width: 22px; height: 22px; stroke: #2a5a7a; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: all .2s; }
-        .nav-btn .nav-lbl { font-size: 9px; font-weight: 700; color: #2a5a7a; letter-spacing: .5px; text-transform: uppercase; transition: color .2s; }
-        .nav-btn:active svg { stroke: var(--neon); }
-        .nav-btn.active svg { stroke: var(--neon); filter: drop-shadow(0 0 4px var(--neon)); }
-        .nav-btn.active .nav-lbl { color: var(--neon); }
-        /* SOS — botón central especial */
-        #nav-sos {
-            position: relative;
-        }
-        #nav-sos::before {
-            content: ''; position: absolute;
-            top: 8px; left: 50%; transform: translateX(-50%);
-            width: 42px; height: 42px; border-radius: 50%;
-            background: rgba(255,51,85,0.12);
-            border: 1px solid rgba(255,51,85,0.3);
-        }
-        #nav-sos svg { stroke: var(--red); width: 22px; height: 22px; position: relative; }
-        #nav-sos .nav-lbl { color: #ff6688; position: relative; }
-        #nav-sos:active::before { background: rgba(255,51,85,0.25); }
-        /* Ruta grabando */
-        #nav-ruta.rec svg { stroke: var(--green); filter: drop-shadow(0 0 4px var(--green)); }
-        #nav-ruta.rec .nav-lbl { color: var(--green); }
-        .rec-dot { display: none; position: absolute; top: 5px; right: calc(50% - 14px); width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: blink 1s infinite; border: 1.5px solid rgba(6,12,20,.8); }
-        #nav-ruta.rec .rec-dot { display: block; }
-        /* Badge */
-        .n-badge { position: absolute; top: 5px; right: calc(50% - 16px); background: var(--neon); color: #060c14; font-size: 8px; font-weight: 900; min-width: 14px; height: 14px; border-radius: 7px; padding: 0 3px; display: none; align-items: center; justify-content: center; }
-        .n-badge.show { display: flex; }
+/* Grid módulos */
+.modulos-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 0 16px;
+}
+.modulo-card {
+  background: var(--card); border-radius: 14px;
+  padding: 16px 14px; cursor: pointer;
+  transition: all .2s; border: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+}
+.modulo-card:active { transform: scale(.97); background: var(--card2); }
+.modulo-icon { font-size: 28px; line-height: 1; }
+.modulo-icon svg { width: 28px; height: 28px; fill: none; stroke-width: 2; stroke-linecap: round; }
+.modulo-title { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: white; }
+.modulo-sub { font-size: 11px; color: var(--text2); line-height: 1.3; }
 
-        /* ══════════════════════════════════════
-           MENÚ MÁS
-        ══════════════════════════════════════ */
-        #mas-overlay { position: absolute; inset: 0; z-index: 700; background: rgba(0,0,0,.6); display: none; backdrop-filter: blur(2px); }
-        #mas-overlay.show { display: block; }
-        #mas-drawer {
-            position: absolute; left: 0; right: 0; bottom: 64px; z-index: 800;
-            background: #0a1828;
-            border-top: 1px solid #1a3040;
-            border-radius: 18px 18px 0 0;
-            transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
-            padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -8px 32px rgba(0,0,0,.6);
-        }
-        #mas-drawer.open { transform: translateY(0); }
-        .mas-handle { width: 36px; height: 3px; background: #1a3040; border-radius: 2px; margin: 10px auto 12px; }
-        .mas-item {
-            display: flex; align-items: center; gap: 14px; padding: 13px 18px;
-            cursor: pointer; transition: background .15s; border-bottom: 1px solid rgba(30,45,58,.5);
-        }
-        .mas-item:last-child { border-bottom: none; }
-        .mas-item:hover, .mas-item:active { background: rgba(57,255,20,.04); }
-        .mas-icon {
-            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-            background: var(--dark2); border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .mas-icon svg { width: 20px; height: 20px; stroke: var(--mid); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-        .mas-icon.neon svg { stroke: var(--neon); }
-        .mas-icon.red svg { stroke: var(--red); }
-        .mas-text { flex: 1; }
-        .mas-title { font-size: 13px; font-weight: 600; color: white; }
-        .mas-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .mas-arrow { color: var(--border); font-size: 16px; }
-        /* Toggle escudo */
-        .mas-toggle { width: 40px; height: 22px; border-radius: 11px; background: var(--border); position: relative; flex-shrink: 0; transition: background .2s; }
-        .mas-toggle.on { background: var(--neon); }
-        .mas-toggle::after { content:''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-        .mas-toggle.on::after { transform: translateX(18px); }
+/* Dispositivos */
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; }
+.section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text2); }
+.section-link { font-size: 12px; color: var(--g); font-weight: 600; cursor: pointer; }
+.devices-scroll { display: flex; gap: 10px; padding: 0 16px 4px; overflow-x: auto; }
+.devices-scroll::-webkit-scrollbar { display: none; }
+.device-card { flex-shrink: 0; background: var(--card); border-radius: 12px; padding: 12px 14px; min-width: 140px; border: 1px solid var(--border); }
+.device-icon { font-size: 20px; margin-bottom: 6px; }
+.device-type { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.device-name { font-size: 13px; font-weight: 700; color: white; margin: 2px 0 6px; }
+.device-status { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--g); font-weight: 600; }
+.device-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--g); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1}50%{opacity:.4} }
 
-        /* ══════════════════════════════════════
-           PANEL SLIDE BASE
-        ══════════════════════════════════════ */
-        .slide-panel {
-            position: absolute; inset: 0; z-index: 1000;
-            background: var(--black); display: flex; flex-direction: column;
-            transform: translateX(100%); transition: transform .35s cubic-bezier(.4,0,.2,1);
-            overflow: hidden;
-        }
-        .slide-panel.open { transform: translateX(0); }
-        .sp-header {
-            background: var(--dark); padding: 14px 16px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-        }
-        .sp-back { width: 34px; height: 34px; border-radius: 50%; background: none; border: 1px solid var(--border); color: white; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
-        .sp-back:hover { border-color: var(--neon); color: var(--neon); }
-        .sp-title { flex: 1; font-size: 15px; font-weight: 700; }
-        .sp-title span { color: var(--neon); }
-        .sp-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--dark); flex-shrink: 0; }
-        .sp-tab { flex: 1; padding: 11px; text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; text-transform: uppercase; letter-spacing: .5px; }
-        .sp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
-        .sp-body { flex: 1; overflow-y: auto; }
-        .sp-body::-webkit-scrollbar { width: 3px; }
-        .sp-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-        .sp-section { padding: 12px 16px; }
+/* ══════════════════════════════════
+   PANTALLA RUTAS
+══════════════════════════════════ */
+#screen-rutas { background: var(--black); padding-bottom: 72px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#screen-rutas::-webkit-scrollbar { display: none; }
+.screen-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; position: sticky; top: 0; background: rgba(10,10,10,.97); backdrop-filter: blur(12px); z-index: 100; }
+.screen-topbar-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+.screen-topbar-title span { color: var(--g); }
+.route-card {
+  margin: 0 16px 10px; background: var(--card); border-radius: 14px;
+  padding: 14px; cursor: pointer; transition: all .2s; border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.route-card::before { content:''; position:absolute; left:0;top:0;bottom:0;width:3px;background:var(--g);border-radius:3px 0 0 3px; }
+.route-card:active { transform: scale(.99); }
+.rc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.rc-name { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 800; color: white; }
+.rc-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.rc-del { width: 28px; height: 28px; border-radius: 50%; background: none; border: 1px solid var(--border); color: var(--text3); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.rc-del:active { border-color: var(--red); color: var(--red); }
+.rc-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.rc-stat label { display: block; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
+.rc-stat value { display: block; font-size: 18px; font-weight: 800; color: var(--g); font-family: 'Barlow Condensed', sans-serif; }
+.rc-stat value span { font-size: 10px; color: var(--text3); font-weight: 400; }
+.rc-minimap { height: 100px; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid var(--border); }
+.empty-rutas { text-align: center; padding: 60px 30px; color: var(--text3); }
+.empty-rutas .ei { font-size: 52px; margin-bottom: 14px; opacity: .5; }
+.empty-rutas p { font-size: 14px; line-height: 1.6; }
 
-        /* ══════════════════════════════════════
-           PANEL HISTORIAL
-        ══════════════════════════════════════ */
-        .stats-bar { display: none; padding: 12px 16px; gap: 12px; background: var(--dark2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .stats-bar.show { display: grid; grid-template-columns: repeat(3,1fr); }
-        .sb-item { text-align: center; }
-        .sb-item label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
-        .sb-item value { display: block; font-size: 20px; font-weight: 800; color: var(--neon); }
-        .sb-item value span { font-size: 10px; color: var(--mid); font-weight: 400; }
-        #hp-minimap-wrap { display: none; padding: 12px 16px; flex-shrink: 0; }
-        #hp-minimap-wrap.show { display: block; }
-        #hp-minimap { height: 160px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-        #hp-minimap-label { font-size: 10px; color: var(--muted); text-align: center; margin-top: 5px; }
+/* ══════════════════════════════════
+   PANTALLA ACTIVIDAD (MAPA)
+══════════════════════════════════ */
+#screen-actividad { background: var(--black); }
+#mapa { position: absolute; top: 0; left: 0; right: 0; bottom: 62px; }
+/* HUD encima del mapa */
+#actividad-hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 500;
+  background: linear-gradient(180deg, rgba(10,10,10,.98) 55%, transparent 100%);
+  padding: 12px 16px 32px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hud-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; flex-shrink: 0; }
+.hud-logo .ride { color: white; }
+.hud-logo .safe { color: var(--g); }
+#hud-search-wrap { flex: 1; position: relative; }
+#hud-search {
+  width: 100%; padding: 8px 36px 8px 12px;
+  background: rgba(28,28,28,.95); color: white;
+  border: 1px solid #2a2a2a; border-radius: 20px;
+  font-size: 13px; outline: none; font-family: 'Barlow', sans-serif;
+}
+#hud-search:focus { border-color: var(--g); }
+#hud-search::placeholder { color: var(--text3); }
+#hud-search-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--g); cursor: pointer; font-size: 14px; }
+#hud-suggestions { position: absolute; top: 40px; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; z-index: 1000; max-height: 180px; overflow-y: auto; }
+.hud-sug { padding: 9px 14px; color: #ccc; font-size: 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.hud-sug:hover { background: var(--card2); color: var(--g); }
+#hud-layers { width: 34px; height: 34px; border-radius: 8px; background: rgba(28,28,28,.95); border: 1px solid #2a2a2a; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: all .2s; }
+#hud-layers:active { border-color: var(--g); color: var(--g); }
+/* Status */
+#act-status {
+  position: absolute; top: 68px; right: 16px; z-index: 500;
+  background: rgba(28,28,28,.97); color: var(--g);
+  padding: 5px 12px; border-radius: 20px; border: 1px solid var(--g);
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+#act-status.rec { animation: pulse-rec 1.2s infinite; }
+@keyframes pulse-rec { 0%,100%{box-shadow:0 0 6px var(--g-glow);}50%{box-shadow:0 0 16px var(--g-glow);} }
+/* GPS FAB */
+#act-gps {
+  position: absolute; top: 68px; left: 16px; z-index: 500;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(28,28,28,.97); border: 1px solid #2a2a2a;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+#act-gps svg { width: 18px; height: 18px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; }
+#act-gps.on svg { stroke: var(--g); }
+/* Live stats */
+#act-live {
+  position: absolute; top: 116px; left: 16px; z-index: 500;
+  background: rgba(28,28,28,.97); border: 1px solid var(--g);
+  border-radius: 14px; padding: 12px 14px; min-width: 176px;
+  display: none; box-shadow: 0 0 16px var(--g-glow);
+}
+#act-live.show { display: block; }
+.live-title { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700; color: var(--g); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: pulse-dot 1s infinite; }
+.live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.live-item label { display: block; font-size: 9px; color: var(--text3); text-transform: uppercase; }
+.live-item value { display: block; font-size: 18px; font-weight: 800; color: white; font-family: 'Barlow Condensed', sans-serif; line-height: 1.1; }
+.live-item value span { font-size: 9px; color: var(--text3); font-weight: 400; }
+/* Botón REC en mapa */
+#act-rec-btn {
+  position: absolute; bottom: 80px; right: 16px; z-index: 500;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--g); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px var(--g-glow); transition: all .2s;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 800; color: #0a0a0a;
+  flex-direction: column; gap: 2px;
+}
+#act-rec-btn:active { transform: scale(.93); }
+#act-rec-btn svg { width: 22px; height: 22px; stroke: #0a0a0a; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+#act-rec-btn.rec { background: var(--red); box-shadow: 0 4px 18px rgba(255,51,85,.3); }
+#act-rec-btn.rec svg { stroke: white; }
+/* SOS */
+#act-sos-btn {
+  position: absolute; bottom: 80px; left: 16px; z-index: 500;
+  width: 48px; height: 48px; border-radius: 12px;
+  background: rgba(255,51,85,.12); border: 1.5px solid rgba(255,51,85,.3);
+  color: var(--red); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 800;
+}
+/* Info card */
+#act-info {
+  position: absolute; bottom: 80px; left: 74px; z-index: 500;
+  background: rgba(28,28,28,.97); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+}
+#act-info.show { display: block; }
+#act-info p { font-size: 11px; color: var(--text2); line-height: 1.6; }
+#act-info strong { color: white; }
 
-        .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
-        .empty-state .ei { font-size: 44px; margin-bottom: 12px; opacity: .5; }
-        .empty-state p { font-size: 13px; line-height: 1.6; }
+/* ══════════════════════════════════
+   PANTALLA ANÁLISIS
+══════════════════════════════════ */
+#screen-analisis { background: var(--black); padding-bottom: 72px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#screen-analisis::-webkit-scrollbar { display: none; }
+.analisis-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.as-card { background: var(--card); border-radius: 14px; padding: 16px; border: 1px solid var(--border); }
+.as-card label { display: block; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.as-card value { display: block; font-size: 28px; font-weight: 900; color: var(--g); font-family: 'Barlow Condensed', sans-serif; line-height: 1; }
+.as-card value span { font-size: 12px; color: var(--text3); font-weight: 400; }
+.as-card.full { grid-column: 1 / -1; }
+.chart-wrap { height: 100px; display: flex; align-items: flex-end; gap: 4px; padding-top: 8px; }
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--g); opacity: .7; transition: height .5s; min-height: 4px; }
+.chart-bar.active { opacity: 1; box-shadow: 0 0 8px var(--g-glow); }
 
-        .route-card {
-            background: var(--dark); border: 1px solid var(--border); border-radius: 12px;
-            padding: 13px; margin-bottom: 8px; cursor: pointer; transition: all .2s;
-            position: relative; overflow: hidden;
-        }
-        .route-card::before { content:''; position: absolute; left:0; top:0; bottom:0; width:3px; background: var(--neon); box-shadow: 0 0 6px var(--neon); }
-        .route-card:hover { border-color: #2a4a5a; }
-        .route-card.sel { border-color: var(--neon); background: rgba(57,255,20,.03); }
-        .rc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .rc-date { font-size: 12px; font-weight: 700; }
-        .rc-time-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
-        .rc-del { width: 26px; height: 26px; border-radius: 50%; background: none; border: 1px solid var(--border); color: var(--muted); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
-        .rc-del:hover { border-color: var(--red); color: var(--red); }
-        .rc-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
-        .rc-stat label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; }
-        .rc-stat value { display: block; font-size: 14px; font-weight: 700; color: var(--neon); }
-        .rc-stat value span { font-size: 9px; color: var(--mid); font-weight: 400; }
+/* ══════════════════════════════════
+   PANTALLA PERFIL
+══════════════════════════════════ */
+#screen-perfil { background: var(--black); padding-bottom: 72px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#screen-perfil::-webkit-scrollbar { display: none; }
+.perfil-hero { padding: 20px 20px 16px; display: flex; align-items: center; gap: 16px; }
+.perfil-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--g), #5aaa20); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #0a0a0a; font-family: 'Barlow Condensed', sans-serif; flex-shrink: 0; }
+.perfil-name { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; }
+.perfil-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.perfil-tag { display: inline-block; background: var(--g-dim); border: 1px solid rgba(168,230,61,.3); color: var(--g); font-size: 10px; font-weight: 700; border-radius: 10px; padding: 2px 8px; margin-top: 4px; letter-spacing: .5px; }
+.perfil-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); margin: 0 16px; border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+.ps-item { background: var(--card); padding: 14px 8px; text-align: center; }
+.ps-item value { display: block; font-size: 22px; font-weight: 900; color: var(--g); font-family: 'Barlow Condensed', sans-serif; }
+.ps-item label { display: block; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.perfil-section { margin: 0 16px 10px; }
+.ps-row { display: flex; align-items: center; gap: 14px; background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 8px; cursor: pointer; border: 1px solid var(--border); transition: all .2s; }
+.ps-row:active { background: var(--card2); }
+.ps-row-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.ps-row-text { flex: 1; }
+.ps-row-title { font-size: 14px; font-weight: 600; color: white; }
+.ps-row-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.ps-row-arr { color: var(--text3); font-size: 16px; }
 
-        /* ══════════════════════════════════════
-           PANEL OFFLINE
-        ══════════════════════════════════════ */
-        .storage-wrap { padding: 12px 16px; background: var(--dark2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .storage-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 10px; color: var(--muted); }
-        .storage-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-        .storage-fill { height: 100%; background: var(--neon); border-radius: 3px; transition: width .5s; }
-        .add-zone-btn { margin: 12px 16px; width: calc(100% - 32px); padding: 11px; background: var(--neon-dim); border: 1px solid rgba(57,255,20,.3); color: var(--neon); border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
-        .add-zone-btn:hover { background: rgba(57,255,20,.2); }
+/* ══════════════════════════════════
+   MENÚ CAPAS (overlay)
+══════════════════════════════════ */
+#layer-overlay { position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,.7); display: none; backdrop-filter: blur(2px); }
+#layer-overlay.show { display: block; }
+#layer-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 260px; z-index: 8001;
+  background: #111; border-left: 1px solid var(--border);
+  transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#layer-panel.open { transform: translateX(0); }
+.lp-head { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.lp-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; }
+.lp-close { width: 28px; height: 28px; border-radius: 50%; background: var(--card); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lp-body { flex: 1; overflow-y: auto; padding: 14px; }
+.lp-sec { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; font-family: 'Barlow Condensed', sans-serif; }
+.lp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.lp-tile { border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all .2s; }
+.lp-tile.on { border-color: var(--g); box-shadow: 0 0 10px var(--g-glow); }
+.lp-thumb { height: 60px; }
+.lt-v { background: linear-gradient(135deg,#e8e0d0,#c8d0a8); }
+.lt-d { background: linear-gradient(135deg,#0a0e18,#0d1a2a); }
+.lt-t { background: linear-gradient(135deg,#a8c878,#789050,#887060); }
+.lt-s { background: linear-gradient(135deg,#1a2810,#2a3818); }
+.lp-lbl { background: rgba(0,0,0,.75); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; text-align: center; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; }
+.lp-tile.on .lp-lbl { color: var(--g); }
 
-        .zone-card { background: var(--dark); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin: 0 16px 8px; position: relative; overflow: hidden; }
-        .zone-card::before { content:''; position: absolute; left:0; top:0; bottom:0; width:3px; background: var(--neon); }
-        .zc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .zc-name { font-size: 12px; font-weight: 700; }
-        .zc-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
-        .zc-saved { font-size: 9px; color: var(--neon); background: var(--neon-dim); border: 1px solid rgba(57,255,20,.3); border-radius: 8px; padding: 2px 7px; }
-        .zc-downloading { font-size: 9px; color: var(--orange); }
-        .zc-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 4px; }
-        .zc-stat label { display: block; font-size: 9px; color: var(--muted); }
-        .zc-stat value { display: block; font-size: 13px; font-weight: 700; color: white; }
-        .zc-del { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 5px 10px; font-size: 10px; cursor: pointer; margin-top: 8px; transition: all .2s; }
-        .zc-del:hover { border-color: var(--red); color: var(--red); }
-        .zc-progress { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 6px 0; }
-        .zc-progress-fill { height: 100%; background: var(--orange); border-radius: 2px; transition: width .3s; }
+/* ══════════════════════════════════
+   MODAL ANTICAÍDA
+══════════════════════════════════ */
+#caida-modal { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; padding: 24px; }
+#caida-modal.show { display: flex; }
+.caida-box { background: #1a0808; border: 2px solid var(--red); border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 0 40px rgba(255,51,85,.4); }
+.caida-icon { font-size: 54px; margin-bottom: 10px; animation: shake .5s infinite; }
+@keyframes shake { 0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)} }
+.caida-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; color: var(--red); text-transform: uppercase; margin-bottom: 6px; }
+.caida-sub { font-size: 13px; color: #aaa; line-height: 1.5; margin-bottom: 18px; }
+.cd-wrap { position: relative; width: 76px; height: 76px; margin: 0 auto 18px; }
+.cd-wrap svg { transform: rotate(-90deg); }
+#cd-arc { fill: none; stroke: var(--red); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 208; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+#cd-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 26px; font-weight: 900; color: var(--red); font-family: 'Barlow Condensed', sans-serif; }
+.caida-ok { width: 100%; padding: 14px; border-radius: 12px; background: var(--g); border: none; color: #0a0a0a; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; cursor: pointer; margin-bottom: 10px; letter-spacing: .5px; }
+.caida-sos-btn { width: 100%; padding: 11px; border-radius: 12px; background: none; border: 1px solid rgba(255,51,85,.4); color: var(--red); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; }
 
-        /* Modal zona ── */
-        #zone-modal { position: absolute; inset: 0; z-index: 2000; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; padding: 20px; }
-        #zone-modal.show { display: flex; }
-        .zm-box { background: var(--dark); border: 1px solid var(--border); border-radius: 18px; padding: 22px; width: 100%; max-width: 340px; }
-        .zm-title { color: var(--neon); font-size: 14px; font-weight: 800; margin-bottom: 4px; }
-        .zm-sub { color: var(--muted); font-size: 11px; margin-bottom: 16px; line-height: 1.5; }
-        .zm-field { margin-bottom: 12px; }
-        .zm-field label { display: block; font-size: 10px; color: var(--mid); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
-        .zm-field input, .zm-field select { width: 100%; padding: 9px 12px; background: var(--dark2); color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; outline: none; }
-        .zm-field input:focus, .zm-field select:focus { border-color: var(--neon); }
-        .zm-preview { font-size: 10px; color: var(--muted); background: #060e18; border-radius: 7px; padding: 7px 10px; margin-bottom: 14px; line-height: 1.6; }
-        .zm-preview span { color: var(--neon); font-weight: 700; }
-        .zm-btns { display: flex; gap: 8px; }
-        .zm-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; border: 1px solid; }
-        .zm-btn.cancel { background: none; border-color: var(--border); color: var(--mid); }
-        .zm-btn.confirm { background: var(--neon); border-color: var(--neon); color: black; }
+/* ══════════════════════════════════
+   ASISTENTE IA (panel)
+══════════════════════════════════ */
+#ai-panel {
+  position: fixed; inset: 0; z-index: 7000;
+  background: var(--black); display: none; flex-direction: column;
+  animation: slideUp .3s ease;
+}
+#ai-panel.show { display: flex; }
+@keyframes slideUp { from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1} }
+.ai-head { padding: 14px 16px; background: var(--dark); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ai-head-back { width: 36px; height: 36px; border-radius: 50%; background: var(--card); border: none; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.ai-head-title { flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; }
+.ai-head-title span { color: var(--g); }
+.ai-key-wrap { padding: 14px 16px; background: var(--dark); border-bottom: 1px solid var(--border); display: none; flex-shrink: 0; }
+.ai-key-wrap.show { display: block; }
+.ai-key-wrap p { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
+.ai-key-input { width: 100%; padding: 9px 12px; background: var(--black); color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; outline: none; font-family: monospace; margin-bottom: 8px; }
+.ai-key-input:focus { border-color: var(--g); }
+.ai-key-save { width: 100%; padding: 10px; background: var(--g); border: none; border-radius: 8px; color: #0a0a0a; font-size: 13px; font-weight: 800; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; }
+.ai-chips { display: flex; gap: 7px; padding: 10px 16px 6px; overflow-x: auto; flex-shrink: 0; }
+.ai-chips::-webkit-scrollbar { display: none; }
+.ai-chip { white-space: nowrap; padding: 6px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all .2s; flex-shrink: 0; font-family: 'Barlow', sans-serif; }
+.ai-chip:active { border-color: var(--g); color: var(--g); background: var(--g-dim); }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msgs::-webkit-scrollbar { width: 2px; }
+.ai-msgs::-webkit-scrollbar-thumb { background: var(--border); }
+.ai-msg { max-width: 88%; font-size: 13px; line-height: 1.55; padding: 10px 14px; border-radius: 14px; word-break: break-word; }
+.ai-msg.user { align-self: flex-end; background: var(--g-dim); border: 1px solid rgba(168,230,61,.25); color: #d8f0b0; border-radius: 14px 14px 4px 14px; }
+.ai-msg.bot { align-self: flex-start; background: var(--card); border: 1px solid var(--border); color: #ddd; border-radius: 14px 14px 14px 4px; }
+.ai-msg-name { font-size: 9px; color: var(--g); font-weight: 700; margin-bottom: 4px; letter-spacing: .3px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; }
+.ai-thinking { display: flex; gap: 5px; align-items: center; }
+.ai-thinking span { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); animation: ai-b .9s infinite; }
+.ai-thinking span:nth-child(2){animation-delay:.15s} .ai-thinking span:nth-child(3){animation-delay:.3s}
+@keyframes ai-b { 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)} }
+.ai-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--dark); flex-shrink: 0; }
+#ai-input { flex: 1; padding: 10px 14px; background: var(--black); color: white; border: 1px solid var(--border); border-radius: 22px; font-size: 13px; outline: none; font-family: 'Barlow', sans-serif; }
+#ai-input:focus { border-color: rgba(168,230,61,.4); }
+#ai-input::placeholder { color: var(--text3); }
+#ai-voice-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card); border: none; color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+#ai-voice-btn.on { background: var(--g-dim); color: var(--g); animation: pulse-rec 1s infinite; }
+#ai-send-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--g); border: none; color: #0a0a0a; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+#ai-send-btn:disabled { opacity: .4; }
 
-        /* ══════════════════════════════════════
-           PANEL ASISTENTE IA
-        ══════════════════════════════════════ */
-        #ai-panel { z-index: 1100; }
-        #ai-key-wrap { padding: 14px 16px; background: var(--dark2); border-bottom: 1px solid var(--border); display: none; flex-shrink: 0; }
-        #ai-key-wrap.show { display: block; }
-        #ai-key-wrap p { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
-        #ai-key-input { width: 100%; padding: 9px 12px; background: var(--dark); color: white; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; outline: none; font-family: monospace; margin-bottom: 8px; }
-        #ai-key-input:focus { border-color: var(--neon); }
-        #ai-key-save { width: 100%; padding: 9px; background: var(--neon); border: none; border-radius: 8px; color: black; font-size: 12px; font-weight: 800; cursor: pointer; }
-        #ai-ctx { padding: 6px 16px; background: rgba(57,255,20,.04); border-bottom: 1px solid var(--border); font-size: 10px; color: var(--muted); display: none; flex-shrink: 0; }
-        #ai-ctx.show { display: flex; align-items: center; gap: 6px; }
-        #ai-ctx span { color: var(--neon); font-weight: 700; }
-        #ai-chips { display: flex; gap: 6px; padding: 8px 16px 4px; overflow-x: auto; flex-shrink: 0; }
-        #ai-chips::-webkit-scrollbar { display: none; }
-        .ai-chip { white-space: nowrap; padding: 5px 10px; background: var(--dark); border: 1px solid var(--border); border-radius: 18px; font-size: 11px; color: var(--mid); cursor: pointer; transition: all .2s; flex-shrink: 0; }
-        .ai-chip:hover { border-color: var(--neon); color: var(--neon); }
-        #ai-msgs { flex: 1; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
-        #ai-msgs::-webkit-scrollbar { width: 2px; }
-        #ai-msgs::-webkit-scrollbar-thumb { background: var(--border); }
-        .ai-msg { max-width: 88%; font-size: 12px; line-height: 1.55; padding: 8px 12px; border-radius: 12px; word-break: break-word; }
-        .ai-msg.user { align-self: flex-end; background: rgba(57,255,20,.1); border: 1px solid rgba(57,255,20,.2); color: #d0ecd0; border-radius: 12px 12px 3px 12px; }
-        .ai-msg.bot { align-self: flex-start; background: var(--dark); border: 1px solid var(--border); color: #c8d8e8; border-radius: 12px 12px 12px 3px; }
-        .ai-msg.bot .ai-name { font-size: 9px; color: var(--neon); font-weight: 700; margin-bottom: 3px; letter-spacing: .3px; }
-        .ai-thinking { display: flex; gap: 4px; align-items: center; }
-        .ai-thinking span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: ai-b .9s infinite; }
-        .ai-thinking span:nth-child(2){animation-delay:.15s;} .ai-thinking span:nth-child(3){animation-delay:.3s;}
-        @keyframes ai-b { 0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-4px);} }
-        #ai-bar { display: flex; align-items: center; gap: 7px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--dark); flex-shrink: 0; }
-        #ai-input { flex: 1; padding: 8px 12px; background: var(--dark2); color: white; border: 1px solid var(--border); border-radius: 20px; font-size: 12px; outline: none; }
-        #ai-input:focus { border-color: rgba(57,255,20,.4); }
-        #ai-input::placeholder { color: var(--muted); }
-        #ai-voice { width: 36px; height: 36px; border-radius: 50%; background: var(--dark2); border: 1px solid var(--border); color: var(--muted); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
-        #ai-voice.on { background: rgba(57,255,20,.1); border-color: var(--neon); color: var(--neon); animation: pulse-badge 1s infinite; }
-        #ai-send { width: 36px; height: 36px; border-radius: 50%; background: var(--neon); border: none; color: black; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
-        #ai-send:disabled { opacity: .4; cursor: not-allowed; }
+/* ══════════════════════════════════
+   TOAST + SPINNER
+══════════════════════════════════ */
+#toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-16px); z-index: 9999; background: var(--card); border: 1px solid var(--g); color: var(--g); padding: 8px 18px; border-radius: 22px; font-size: 12px; font-weight: 600; opacity: 0; transition: all .3s; white-space: nowrap; pointer-events: none; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#spinner { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 9998; display: none; }
+#spinner.show { display: block; }
+.spin { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--g); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
 
-        /* ══════════════════════════════════════
-           MODAL ANTICAÍDA
-        ══════════════════════════════════════ */
-        #caida-modal { position: absolute; inset: 0; z-index: 3000; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; padding: 20px; }
-        #caida-modal.show { display: flex; }
-        .caida-box { background: #0d0808; border: 2px solid var(--red); border-radius: 18px; padding: 26px 22px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 0 32px rgba(255,68,68,.4); }
-        .caida-icon { font-size: 52px; margin-bottom: 10px; animation: shake .5s infinite; }
-        @keyframes shake { 0%,100%{transform:rotate(0);}25%{transform:rotate(-7deg);}75%{transform:rotate(7deg);} }
-        .caida-title { color: var(--red); font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
-        .caida-sub { color: #aaa; font-size: 12px; line-height: 1.5; margin-bottom: 16px; }
-        .cd-wrap { position: relative; width: 72px; height: 72px; margin: 0 auto 16px; }
-        .cd-wrap svg { transform: rotate(-90deg); }
-        #cd-arc { fill: none; stroke: var(--red); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 198; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
-        #cd-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 24px; font-weight: 900; color: var(--red); }
-        .caida-ok { width: 100%; padding: 13px; border-radius: 10px; background: var(--neon); border: none; color: black; font-size: 14px; font-weight: 900; cursor: pointer; margin-bottom: 8px; transition: all .2s; }
-        .caida-sos { width: 100%; padding: 10px; border-radius: 10px; background: none; border: 1px solid rgba(255,68,68,.4); color: #ff6666; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
+/* Leaflet */
+.leaflet-bar a { background: var(--dark)!important; color: var(--g)!important; border: 1px solid var(--border)!important; }
+.leaflet-popup-content-wrapper { background: var(--card); color: white; border: 1px solid var(--border); border-radius: 12px; }
+.leaflet-popup-tip { background: var(--card); }
+.leaflet-popup-content { color: #ccc; font-size: 12px; }
+.leaflet-popup-content b { color: var(--g); }
 
-        /* ══════════════════════════════════════
-           MENÚ CAPAS
-        ══════════════════════════════════════ */
-        #layer-overlay { position: absolute; inset: 0; z-index: 700; background: rgba(0,0,0,0); pointer-events: none; transition: background .3s; }
-        #layer-overlay.open { background: rgba(0,0,0,.6); pointer-events: all; }
-        #layer-menu {
-            position: absolute; top: 0; right: 0; bottom: 0; width: 270px; z-index: 800;
-            background: #0d1521; border-left: 1px solid var(--border);
-            transform: translateX(100%); transition: transform .35s cubic-bezier(.4,0,.2,1);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-        #layer-menu.open { transform: translateX(0); }
-        #lm-head { padding: 16px 16px 12px; background: #080e18; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        #lm-av { width: 34px; height: 34px; border-radius: 50%; background: var(--neon-dim); border: 1px solid rgba(57,255,20,.3); display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        #lm-name { font-size: 13px; font-weight: 700; }
-        #lm-sub { font-size: 10px; color: var(--muted); }
-        #lm-close { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        #lm-body { flex: 1; overflow-y: auto; padding-bottom: 16px; }
-        .lm-sec { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 14px 16px 6px; }
-        .lm-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px; }
-        .lm-tile { border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all .2s; position: relative; }
-        .lm-tile:hover { border-color: rgba(57,255,20,.4); }
-        .lm-tile.on { border-color: var(--neon); box-shadow: 0 0 10px var(--neon-glow); }
-        .lm-thumb { height: 64px; width: 100%; }
-        .lt-voyager   { background: linear-gradient(135deg,#f0ebe0,#d8d0bc,#b8c89a); }
-        .lt-dark      { background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); }
-        .lt-topo      { background: linear-gradient(135deg,#b8d89a,#88b060,#607848,#886858); }
-        .lt-satellite { background: linear-gradient(135deg,#1a3010,#2a4020,#1a2010,#3a5030); }
-        .lm-tile-lbl { background: rgba(0,0,0,.75); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; text-align: center; }
-        .lm-tile.on .lm-tile-lbl { color: var(--neon); }
-        .lm-check { position: absolute; top: 5px; right: 5px; width: 16px; height: 16px; border-radius: 50%; background: var(--neon); color: black; font-size: 9px; font-weight: 900; display: none; align-items: center; justify-content: center; }
-        .lm-tile.on .lm-check { display: flex; }
-        #lm-active { margin: 8px 12px; padding: 9px 12px; background: var(--neon-dim); border: 1px solid rgba(57,255,20,.2); border-radius: 8px; }
-        #lm-active-name { font-size: 11px; font-weight: 700; color: var(--neon); }
-        #lm-active-desc { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
-        .lm-div { height: 1px; background: var(--border); margin: 10px 12px; }
-        .lm-opt { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; transition: background .15s; }
-        .lm-opt:hover { background: rgba(255,255,255,.03); }
-        .lm-opt-icon { font-size: 16px; width: 22px; text-align: center; }
-        .lm-opt-text { flex: 1; }
-        .lm-opt-lbl { font-size: 12px; font-weight: 600; color: #ccc; }
-        .lm-opt-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
-        .lm-opt-arr { color: var(--border); font-size: 14px; }
-        .lm-toggle { width: 36px; height: 20px; border-radius: 10px; background: var(--border); position: relative; transition: background .2s; }
-        .lm-toggle.on { background: var(--neon); }
-        .lm-toggle::after { content:''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform .2s; }
-        .lm-toggle.on::after { transform: translateX(16px); }
-        #btn-layers { width: 34px; height: 34px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }
-        #btn-layers:hover { border-color: var(--neon); color: var(--neon); }
+/* ══════════════════════════════════
+   HERO — CSS por GPT (ciclistas)
+══════════════════════════════════ */
+.ridesafe-hero {
+  position: relative; width: 100%; height: 200px;
+  overflow: hidden; border-radius: 16px;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(57,255,20,0.16), transparent 28%),
+    radial-gradient(circle at 75% 35%, rgba(57,255,20,0.12), transparent 30%),
+    linear-gradient(135deg, #050805 0%, #0a0f0a 45%, #020302 100%);
+  margin: 14px 16px 0;
+}
+.hero-gradient { position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15),rgba(0,0,0,.78)),linear-gradient(to right,rgba(0,0,0,.15),rgba(57,255,20,.05),rgba(0,0,0,.2));z-index:4; }
+.ridesafe-hero::before { content:"";position:absolute;top:-20%;left:50%;width:2px;height:140%;background:linear-gradient(to bottom,transparent,rgba(57,255,20,.28),transparent);transform:rotate(8deg);z-index:3; }
+.cyclist { position:absolute;top:0;width:50%;height:100%;overflow:hidden; }
+.cyclist-road { left:0; }
+.cyclist-mtb { right:0; }
+.mountains { position:absolute;bottom:70px;width:160px;height:90px;opacity:.48; }
+.mountains::before,.mountains::after { content:"";position:absolute;bottom:0;width:110px;height:110px;background:linear-gradient(135deg,#202920,#070907);clip-path:polygon(50% 0%,100% 100%,0% 100%); }
+.mountains::after { left:58px;width:130px;height:130px;opacity:.72; }
+.mountains.left { left:4px; }
+.mountains.right { right:2px; }
+.road { position:absolute;left:-20px;bottom:0;width:160px;height:95px;background:linear-gradient(115deg,transparent 15%,#151915 16%,#050605 100%);clip-path:polygon(10% 100%,58% 0%,78% 0%,100% 100%);opacity:.8; }
+.road::after { content:"";position:absolute;left:70px;bottom:8px;width:2px;height:75px;background:repeating-linear-gradient(to top,rgba(255,255,255,.7) 0 12px,transparent 12px 22px);transform:rotate(19deg); }
+.trail { position:absolute;right:-10px;bottom:-8px;width:160px;height:95px;background:linear-gradient(115deg,transparent 12%,#2b2214 18%,#090806 100%);clip-path:polygon(0 100%,32% 0,52% 0,100% 100%);opacity:.78; }
+.trail::before { content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 70%,rgba(57,255,20,.18) 0 2px,transparent 3px),radial-gradient(circle at 60% 40%,rgba(255,255,255,.12) 0 2px,transparent 3px),radial-gradient(circle at 75% 80%,rgba(255,255,255,.1) 0 2px,transparent 3px); }
+.bike { position:absolute;left:42px;bottom:42px;width:105px;height:58px;z-index:2;transform:scale(.92); }
+.cyclist-mtb .bike { left:auto;right:34px;bottom:45px;transform:scale(.9) rotate(-6deg); }
+.wheel { position:absolute;bottom:0;width:34px;height:34px;border:3px solid rgba(220,220,220,.82);border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.8),0 0 12px rgba(57,255,20,.18); }
+.wheel-left { left:0; } .wheel-right { right:0; }
+.frame { position:absolute;left:18px;bottom:17px;width:66px;height:32px;border-left:3px solid rgba(57,255,20,.9);border-bottom:3px solid rgba(57,255,20,.9);transform:skewX(-24deg); }
+.frame::before { content:"";position:absolute;left:20px;bottom:-2px;width:3px;height:38px;background:rgba(57,255,20,.85);transform:rotate(32deg); }
+.handlebar { position:absolute;right:1px;top:10px;width:22px;height:12px;border-top:3px solid rgba(230,230,230,.9);border-right:3px solid rgba(230,230,230,.9);border-radius:0 8px 0 0;transform:rotate(-12deg); }
+.seat { position:absolute;left:37px;top:13px;width:20px;height:4px;background:rgba(230,230,230,.9);border-radius:999px;transform:rotate(-8deg); }
+.rider { position:absolute;left:70px;bottom:82px;width:72px;height:72px;z-index:3;transform:rotate(-8deg); }
+.cyclist-mtb .rider { left:auto;right:58px;bottom:84px;transform:rotate(9deg); }
+.head { position:absolute;top:0;left:22px;width:18px;height:18px;background:#101510;border:2px solid rgba(57,255,20,.55);border-radius:50%;box-shadow:0 -3px 0 rgba(230,230,230,.22); }
+.body { position:absolute;top:18px;left:26px;width:15px;height:38px;background:linear-gradient(to bottom,#1d241d,#050605);border-radius:10px;transform:rotate(32deg);box-shadow:0 0 14px rgba(57,255,20,.16); }
+.arm { position:absolute;top:28px;left:39px;width:34px;height:4px;background:rgba(220,220,220,.78);border-radius:999px;transform:rotate(16deg); }
+.leg { position:absolute;width:38px;height:5px;background:rgba(220,220,220,.75);border-radius:999px; }
+.leg-one { left:22px;top:52px;transform:rotate(45deg); }
+.leg-two { left:36px;top:51px;transform:rotate(112deg); }
+.hero-content { position:absolute;left:20px;right:20px;bottom:22px;z-index:5;text-align:center;color:#fff; }
+.hero-content h1 { margin:0 0 6px;font-size:20px;line-height:1.15;font-weight:800;letter-spacing:-.4px;text-shadow:0 3px 14px rgba(0,0,0,.95);font-family:'Barlow Condensed',sans-serif; }
+.hero-content p { margin:0;font-size:13px;line-height:1.35;font-weight:500;color:rgba(255,255,255,.78);text-shadow:0 2px 10px rgba(0,0,0,.95); }
+.ridesafe-hero::after { content:"";position:absolute;left:50%;bottom:-45px;width:180px;height:90px;background:rgba(57,255,20,.16);filter:blur(32px);transform:translateX(-50%);z-index:1; }
+@media(max-width:420px){.ridesafe-hero{height:200px;border-radius:0 0 24px 24px;}.hero-content h1{font-size:18px;}.hero-content p{font-size:12px;}.bike{transform:scale(.82);left:28px;}.cyclist-mtb .bike{transform:scale(.82) rotate(-6deg);right:20px;}.rider{left:54px;transform:scale(.88) rotate(-8deg);}.cyclist-mtb .rider{right:42px;transform:scale(.88) rotate(9deg);}}
 
-        /* Leaflet overrides */
-        .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid var(--border) !important; }
-        .leaflet-popup-content-wrapper { background: var(--card); color: white; border: 1px solid var(--border); border-radius: 10px; }
-        .leaflet-popup-tip { background: var(--card); }
-        .leaflet-popup-content { color: #ccc; font-size: 12px; }
-        .leaflet-popup-content b { color: var(--neon); }
-    </style>
+</style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div id="header">
-    <div id="logo">
-        <div id="logo-top">RIDESAFE</div>
-        <div id="logo-sub">AI · Safety</div>
-    </div>
-    <div id="logo-sep"></div>
+<!-- TOAST + SPINNER -->
+<div id="toast"></div>
+<div id="spinner"><div class="spin"></div></div>
 
-    <!-- Modo búsqueda -->
-    <div id="search-wrap" class="show">
-        <input id="search-input" type="text" placeholder="Buscar lugar..." autocomplete="off"/>
-        <button id="search-btn">🔍</button>
-        <div id="suggestions"></div>
+<!-- ══════════════════════════════════
+     PANTALLA INICIO
+══════════════════════════════════ -->
+<div id="screen-inicio" class="screen active">
+
+    <div class="inicio-header">
+        <button class="ih-menu" id="btn-menu">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="ih-logo">
+            <span class="ride">Ride</span><span class="safe">Safe</span>
+            <span class="ai"> AI</span><span class="ai-star">✦</span>
+        </div>
+        <button class="ih-bell">🔔<div class="bell-dot"></div></button>
     </div>
 
-    <!-- Modo ruta activa -->
-    <div id="header-route">
-        <div id="header-route-name">🔴 Ruta activa</div>
-        <div id="header-route-stats">
-            <span id="hr-km">0.0</span>km &nbsp;
-            <span id="hr-spd">–</span>km/h &nbsp;
-            <span id="hr-time">0:00</span>
+    <div class="inicio-subtitle">Ciclismo de Carretera &amp; MTB</div>
+
+    <section class="ridesafe-hero">
+      <div class="hero-gradient"></div>
+      <div class="cyclist cyclist-road">
+        <div class="mountains left"></div>
+        <div class="road"></div>
+        <div class="bike">
+          <span class="wheel wheel-left"></span>
+          <span class="wheel wheel-right"></span>
+          <span class="frame"></span>
+          <span class="handlebar"></span>
+          <span class="seat"></span>
+        </div>
+        <div class="rider">
+          <span class="head"></span>
+          <span class="body"></span>
+          <span class="arm"></span>
+          <span class="leg leg-one"></span>
+          <span class="leg leg-two"></span>
+        </div>
+      </div>
+      <div class="cyclist cyclist-mtb">
+        <div class="mountains right"></div>
+        <div class="trail"></div>
+        <div class="bike mtb-bike">
+          <span class="wheel wheel-left"></span>
+          <span class="wheel wheel-right"></span>
+          <span class="frame"></span>
+          <span class="handlebar"></span>
+          <span class="seat"></span>
+        </div>
+        <div class="rider mtb-rider">
+          <span class="head"></span>
+          <span class="body"></span>
+          <span class="arm"></span>
+          <span class="leg leg-one"></span>
+          <span class="leg leg-two"></span>
+        </div>
+      </div>
+      <div class="hero-content">
+        <h1>¡Listo para tu próxima aventura!</h1>
+        <p>Pedalea seguro. Disfruta más. Llega lejos.</p>
+      </div>
+    </section>
+
+    <button class="btn-iniciar" id="btn-iniciar-actividad">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+        INICIAR ACTIVIDAD
+    </button>
+
+    <div class="modulos-grid">
+        <div class="modulo-card" id="mod-seguridad">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#a8e63d"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
+            <div class="modulo-title">Seguridad</div>
+            <div class="modulo-sub">SOS, Detección de caídas</div>
+        </div>
+        <div class="modulo-card" id="mod-navegacion">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#4488ff"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+            <div class="modulo-title">Navegación</div>
+            <div class="modulo-sub">Rutas, Mapas, GPX</div>
+        </div>
+        <div class="modulo-card" id="mod-rendimiento">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ffaa00"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <div class="modulo-title">Rendimiento</div>
+            <div class="modulo-sub">Estadísticas, Análisis</div>
+        </div>
+        <div class="modulo-card" id="mod-asistente">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#9966ff"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div class="modulo-title">Asistente IA</div>
+            <div class="modulo-sub">Consejos, Mecánica</div>
+        </div>
+        <div class="modulo-card" id="mod-salud">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ff4466"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <div class="modulo-title">Salud</div>
+            <div class="modulo-sub">Frecuencia cardíaca, Zonas</div>
+        </div>
+        <div class="modulo-card" id="mod-grupo">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ff8833"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div class="modulo-title">Grupo</div>
+            <div class="modulo-sub">Pelotón, Seguimiento</div>
+        </div>
+        <div class="modulo-card" id="mod-logros">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#33ddff"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+            <div class="modulo-title">Logros</div>
+            <div class="modulo-sub">Medallas, Historial</div>
+        </div>
+        <div class="modulo-card" id="mod-ajustes">
+            <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#888888"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <div class="modulo-title">Ajustes</div>
+            <div class="modulo-sub">Perfil, Preferencias</div>
         </div>
     </div>
 
-    <button id="btn-layers" title="Capas del mapa" style="flex-shrink:0;">⊞</button>
+    <div class="section-header">
+        <div class="section-title">Dispositivos conectados</div>
+        <div class="section-link">Ver todos</div>
+    </div>
+    <div class="devices-scroll">
+        <div class="device-card">
+            <div class="device-icon">📱</div>
+            <div class="device-type">Ciclocomputador</div>
+            <div class="device-name">Garmin Edge 840</div>
+            <div class="device-status"><div class="device-dot"></div>Conectado</div>
+        </div>
+        <div class="device-card">
+            <div class="device-icon">💓</div>
+            <div class="device-type">Banda Cardíaca</div>
+            <div class="device-name">Polar H10</div>
+            <div class="device-status"><div class="device-dot"></div>Conectado</div>
+        </div>
+        <div class="device-card">
+            <div class="device-icon">💡</div>
+            <div class="device-type">Luz Trasera</div>
+            <div class="device-name">Garmin Varia RTL515</div>
+            <div class="device-status"><div class="device-dot"></div>Conectado</div>
+        </div>
+    </div>
+
 </div>
 
-<div id="status">● Online</div>
-<div id="spinner"><div class="spin"></div></div>
-<div id="toast"></div>
-<div id="map"></div>
-
-<!-- GPS FAB -->
-<button id="fab-gps" title="Mi ubicación">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
-</button>
-
-<!-- LIVE STATS -->
-<div id="live-stats">
-    <div class="ls-title"><div class="ls-dot"></div> Ruta activa</div>
-    <div class="ls-grid">
-        <div class="ls-item"><label>Km</label><value id="ls-km">0.0 <span>km</span></value></div>
-        <div class="ls-item"><label>Tiempo</label><value id="ls-time">0:00</value></div>
-        <div class="ls-item"><label>Puntos</label><value id="ls-pts">0 <span>GPS</span></value></div>
-        <div class="ls-item"><label>Vel</label><value id="ls-spd">– <span>km/h</span></value></div>
+<!-- ══════════════════════════════════
+     PANTALLA RUTAS (HISTORIAL)
+══════════════════════════════════ -->
+<div id="screen-rutas" class="screen">
+    <div class="screen-topbar">
+        <div class="screen-topbar-title">Mis <span>Rutas</span></div>
+        <button id="btn-clear-routes" style="font-size:11px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:16px;padding:5px 12px;cursor:pointer;font-family:'Barlow',sans-serif;">🗑 Borrar</button>
+    </div>
+    <div id="rutas-list">
+        <div class="empty-rutas"><div class="ei">🚴</div><p>Todavía no tienes rutas.<br><strong style="color:var(--text2)">Pulsa Actividad para empezar.</strong></p></div>
     </div>
 </div>
 
-<!-- INFO CARD -->
-<div id="info-card">
-    <h4>📍 Ubicación</h4>
-    <p id="info-text">–</p>
+<!-- ══════════════════════════════════
+     PANTALLA ACTIVIDAD (MAPA)
+══════════════════════════════════ -->
+<div id="screen-actividad" class="screen">
+    <div id="mapa"></div>
+
+    <div id="actividad-hud">
+        <div class="hud-logo"><span class="ride">Ride</span><span class="safe">Safe</span></div>
+        <div id="hud-search-wrap">
+            <input id="hud-search" type="text" placeholder="Buscar lugar..." autocomplete="off"/>
+            <button id="hud-search-btn">🔍</button>
+            <div id="hud-suggestions"></div>
+        </div>
+        <button id="hud-layers">⊞</button>
+    </div>
+
+    <div id="act-status">● Online</div>
+    <button id="act-gps" title="Mi ubicación">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+    </button>
+
+    <div id="act-live">
+        <div class="live-title"><div class="live-dot"></div>Ruta activa</div>
+        <div class="live-grid">
+            <div class="live-item"><label>km</label><value id="lv-km">0.0 <span>km</span></value></div>
+            <div class="live-item"><label>Tiempo</label><value id="lv-time">0:00</value></div>
+            <div class="live-item"><label>Puntos</label><value id="lv-pts">0 <span>GPS</span></value></div>
+            <div class="live-item"><label>Vel</label><value id="lv-spd">– <span>km/h</span></value></div>
+        </div>
+    </div>
+
+    <button id="act-sos-btn">🆘<span style="font-size:9px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;">SOS</span></button>
+    <button id="act-rec-btn">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+        <span id="rec-lbl" style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.5px;">REC</span>
+    </button>
+    <div id="act-info"><p id="act-info-text">–</p></div>
+</div>
+
+<!-- ══════════════════════════════════
+     PANTALLA ANÁLISIS
+══════════════════════════════════ -->
+<div id="screen-analisis" class="screen">
+    <div class="screen-topbar">
+        <div class="screen-topbar-title">Mi <span>Análisis</span></div>
+    </div>
+    <div class="analisis-stats" id="analisis-stats">
+        <div class="as-card"><label>Total km</label><value id="as-km">0 <span>km</span></value></div>
+        <div class="as-card"><label>Total rutas</label><value id="as-count">0</value></div>
+        <div class="as-card"><label>Tiempo total</label><value id="as-time">0 <span>min</span></value></div>
+        <div class="as-card"><label>Vel. media</label><value id="as-spd">0 <span>km/h</span></value></div>
+        <div class="as-card full">
+            <label>Distancia por ruta (últimas 7)</label>
+            <div class="chart-wrap" id="as-chart"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PANTALLA PERFIL
+══════════════════════════════════ -->
+<div id="screen-perfil" class="screen">
+    <div class="screen-topbar">
+        <div class="screen-topbar-title">Mi <span>Perfil</span></div>
+    </div>
+    <div class="perfil-hero">
+        <div class="perfil-avatar" id="perfil-avatar">JM</div>
+        <div>
+            <div class="perfil-name" id="perfil-name">JM Prestige</div>
+            <div class="perfil-sub">Ciclista · Lleida, Catalunya</div>
+            <div class="perfil-tag">⭐ PRO</div>
+        </div>
+    </div>
+    <div class="perfil-stats">
+        <div class="ps-item"><value id="pf-rutas">0</value><label>Rutas</label></div>
+        <div class="ps-item"><value id="pf-km">0</value><label>Km</label></div>
+        <div class="ps-item"><value id="pf-time">0</value><label>Horas</label></div>
+    </div>
+    <div class="perfil-section">
+        <div class="ps-row" id="pf-asistente">
+            <div class="ps-row-icon">🤖</div>
+            <div class="ps-row-text"><div class="ps-row-title">Asistente IA</div><div class="ps-row-sub">Configura tu API key de Anthropic</div></div>
+            <div class="ps-row-arr">›</div>
+        </div>
+        <div class="ps-row" id="pf-sensor">
+            <div class="ps-row-icon">🛡️</div>
+            <div class="ps-row-text"><div class="ps-row-title">Sensor anticaída</div><div id="pf-sensor-sub" class="ps-row-sub">Inactivo</div></div>
+            <div class="ps-row-arr">›</div>
+        </div>
+        <div class="ps-row" id="pf-offline">
+            <div class="ps-row-icon">💾</div>
+            <div class="ps-row-text"><div class="ps-row-title">Mapas offline</div><div class="ps-row-sub">Descargar zonas sin internet</div></div>
+            <div class="ps-row-arr">›</div>
+        </div>
+        <div class="ps-row" id="pf-diag">
+            <div class="ps-row-icon">🔧</div>
+            <div class="ps-row-text"><div class="ps-row-title">Diagnóstico</div><div class="ps-row-sub">GPS, sensores y permisos</div></div>
+            <div class="ps-row-arr">›</div>
+        </div>
+    </div>
 </div>
 
 <!-- BARRA INFERIOR -->
-<div id="bottom-nav">
-    <button class="nav-btn" id="nav-mapa" title="Mapa">
-        <svg viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-        <span class="nav-lbl">Mapa</span>
+<div id="tab-bar">
+    <button class="tab-btn active" id="tab-inicio">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <span class="tb-lbl">Inicio</span>
     </button>
-    <button class="nav-btn" id="nav-ruta" title="Ruta">
-        <div class="rec-dot"></div>
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
-        <span class="nav-lbl">Ruta</span>
-    </button>
-    <button class="nav-btn" id="nav-sos" title="SOS">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span class="nav-lbl">SOS</span>
-    </button>
-    <button class="nav-btn" id="nav-historial" title="Historial">
+    <button class="tab-btn" id="tab-rutas">
         <svg viewBox="0 0 24 24"><polyline points="12,8 12,12 14,14"/><path d="M3.05 11a9 9 0 1 1 .5 4"/><polyline points="3,21 3,15 9,15"/></svg>
-        <span class="nav-lbl">Rutas</span>
+        <span class="tb-lbl">Rutas</span>
     </button>
-    <button class="nav-btn" id="nav-mas" title="Más">
-        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="#3a5a6a" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="#3a5a6a" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="#3a5a6a" stroke="none"/></svg>
-        <span class="nav-lbl">Más</span>
+    <button class="tab-btn" id="tab-actividad">
+        <div class="tab-central">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+        </div>
+        <span class="tb-lbl">Actividad</span>
     </button>
-</div>
-
-<!-- DRAWER MÁS -->
-<div id="mas-overlay"></div>
-<div id="mas-drawer">
-    <div class="mas-handle"></div>
-    <div class="mas-item" id="mas-offline">
-        <div class="mas-icon"><svg viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
-        <div class="mas-text"><div class="mas-title">Mapas offline</div><div class="mas-sub">Descargar zonas sin internet</div></div>
-        <div class="n-badge" id="offline-badge">0</div>
-        <span class="mas-arrow">›</span>
-    </div>
-    <div class="mas-item" id="mas-shield-item">
-        <div class="mas-icon" id="mas-shield-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div class="mas-text"><div class="mas-title">Sensor anticaída</div><div class="mas-sub" id="mas-shield-sub">Toca para activar</div></div>
-        <div class="mas-toggle" id="mas-shield-tog"></div>
-    </div>
-    <div class="mas-item" id="mas-ai-item">
-        <div class="mas-icon neon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div class="mas-text"><div class="mas-title">Asistente IA ciclista</div><div class="mas-sub">Mecánica · Rutas · Nutrición</div></div>
-        <span class="mas-arrow">›</span>
-    </div>
+    <button class="tab-btn" id="tab-analisis">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="tb-lbl">Análisis</span>
+    </button>
+    <button class="tab-btn" id="tab-perfil">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tb-lbl">Perfil</span>
+    </button>
 </div>
 
 <!-- MENÚ CAPAS -->
 <div id="layer-overlay"></div>
-<div id="layer-menu">
-    <div id="lm-head">
-        <div id="lm-av">🚴</div>
-        <div><div id="lm-name">RideSafe AI</div><div id="lm-sub">Modo ciclista activo</div></div>
-        <button id="lm-close">✕</button>
+<div id="layer-panel">
+    <div class="lp-head">
+        <div class="lp-title">Tipo de mapa</div>
+        <button class="lp-close" id="lp-close">✕</button>
     </div>
-    <div id="lm-body">
-        <div class="lm-sec">Tipo de mapa</div>
-        <div class="lm-layers">
-            <div class="lm-tile on" data-layer="voyager"><div class="lm-check">✓</div><div class="lm-thumb lt-voyager"></div><div class="lm-tile-lbl">Estándar</div></div>
-            <div class="lm-tile" data-layer="dark"><div class="lm-check">✓</div><div class="lm-thumb lt-dark"></div><div class="lm-tile-lbl">Noche</div></div>
-            <div class="lm-tile" data-layer="topo"><div class="lm-check">✓</div><div class="lm-thumb lt-topo"></div><div class="lm-tile-lbl">Terreno</div></div>
-            <div class="lm-tile" data-layer="satellite"><div class="lm-check">✓</div><div class="lm-thumb lt-satellite"></div><div class="lm-tile-lbl">Satélite</div></div>
+    <div class="lp-body">
+        <div class="lp-sec">Selecciona la capa</div>
+        <div class="lp-grid">
+            <div class="lp-tile on" data-layer="voyager"><div class="lp-thumb lt-v"></div><div class="lp-lbl">Estándar</div></div>
+            <div class="lp-tile" data-layer="dark"><div class="lp-thumb lt-d"></div><div class="lp-lbl">Noche</div></div>
+            <div class="lp-tile" data-layer="topo"><div class="lp-thumb lt-t"></div><div class="lp-lbl">Terreno</div></div>
+            <div class="lp-tile" data-layer="satellite"><div class="lp-thumb lt-s"></div><div class="lp-lbl">Satélite</div></div>
         </div>
-        <div id="lm-active"><div id="lm-active-name">🗺 Estándar</div><div id="lm-active-desc">Ideal para rutas urbanas</div></div>
-        <div class="lm-div"></div>
-        <div class="lm-sec">Opciones</div>
-        <div class="lm-opt"><div class="lm-opt-icon">🌙</div><div class="lm-opt-text"><div class="lm-opt-lbl">Auto modo noche</div><div class="lm-opt-sub">Cambiar al oscuro al atardecer</div></div><div class="lm-toggle" id="tog-night"></div></div>
-        <div class="lm-div"></div>
-        <div class="lm-opt" id="lm-diag" style="cursor:pointer"><div class="lm-opt-icon">🔧</div><div class="lm-opt-text"><div class="lm-opt-lbl">Diagnóstico</div><div class="lm-opt-sub">GPS, sensores y permisos</div></div><span class="lm-opt-arr">›</span></div>
-    </div>
-</div>
-
-<!-- PANEL HISTORIAL -->
-<div id="history-panel" class="slide-panel">
-    <div class="sp-header">
-        <button class="sp-back" id="hp-back">←</button>
-        <div class="sp-title">Historial de <span>Rutas</span></div>
-        <button id="hp-clear" style="font-size:10px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:18px;padding:4px 10px;cursor:pointer;">🗑 Borrar</button>
-    </div>
-    <div class="sp-tabs">
-        <div class="sp-tab active" data-tab="lista">📋 Rutas</div>
-        <div class="sp-tab" data-tab="stats">📊 Estadísticas</div>
-    </div>
-    <div class="stats-bar" id="hp-stats-bar">
-        <div class="sb-item"><label>Rutas</label><value id="sb-count">0</value></div>
-        <div class="sb-item"><label>Total km</label><value id="sb-km">0 <span>km</span></value></div>
-        <div class="sb-item"><label>Tiempo</label><value id="sb-time">0 <span>min</span></value></div>
-    </div>
-    <div id="hp-minimap-wrap">
-        <div id="hp-minimap"></div>
-        <div id="hp-minimap-label">Selecciona una ruta</div>
-    </div>
-    <div class="sp-body">
-        <div class="sp-section" id="hp-list">
-            <div class="empty-state"><div class="ei">🚴</div><p>Todavía no tienes rutas.<br><strong style="color:var(--mid)">Pulsa "Ruta" para empezar.</strong></p></div>
-        </div>
-    </div>
-</div>
-
-<!-- PANEL OFFLINE -->
-<div id="offline-panel" class="slide-panel">
-    <div class="sp-header">
-        <button class="sp-back" id="op-back">←</button>
-        <div class="sp-title">Mapas <span>Offline</span></div>
-        <span id="op-sw" style="font-size:9px;color:var(--muted);">SW –</span>
-    </div>
-    <div class="storage-wrap">
-        <div class="storage-header"><span>Almacenamiento usado</span><span id="storage-lbl">– MB</span></div>
-        <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
-    </div>
-    <button class="add-zone-btn" id="btn-add-zone">➕ Guardar zona visible</button>
-    <div class="sp-body">
-        <div id="zone-list">
-            <div class="empty-state" id="zone-empty"><div class="ei">💾</div><p>No hay zonas guardadas.<br><strong style="color:var(--mid)">Pulsa el botón de arriba.</strong></p></div>
-        </div>
-    </div>
-</div>
-
-<!-- PANEL ASISTENTE IA -->
-<div id="ai-panel" class="slide-panel">
-    <div class="sp-header">
-        <button class="sp-back" id="ai-back">←</button>
-        <div class="sp-title">Asistente <span>IA</span></div>
-        <span style="font-size:10px;color:var(--neon);">🚴 Ciclista</span>
-    </div>
-    <div id="ai-key-wrap">
-        <p>Introduce tu API key de Anthropic para activar el asistente. Se guarda solo en tu dispositivo.</p>
-        <input id="ai-key-input" type="password" placeholder="sk-ant-api03-..."/>
-        <button id="ai-key-save">✅ Guardar y activar</button>
-    </div>
-    <div id="ai-ctx">🛰️ Ruta: <span id="ai-ctx-km">–</span> km · <span id="ai-ctx-spd">–</span> km/h</div>
-    <div id="ai-chips">
-        <div class="ai-chip" data-q="Tengo un ruido metálico al pedalear, ¿qué puede ser?">🔧 Ruido</div>
-        <div class="ai-chip" data-q="¿Qué debería comer después de 2 horas pedaleando?">🍌 Nutrición</div>
-        <div class="ai-chip" data-q="¿Lloverá hoy en Lleida para salir en bici?">🌤️ Tiempo</div>
-        <div class="ai-chip" data-q="Dame una ruta fácil de 30km desde Lleida">🗺️ Ruta 30km</div>
-        <div class="ai-chip" data-q="Me duele la rodilla al subir, ¿qué hago?">🦵 Rodilla</div>
-        <div class="ai-chip" data-q="¿Cómo regulo el sillín correctamente?">⚙️ Sillín</div>
-    </div>
-    <div id="ai-msgs">
-        <div class="ai-msg bot"><div class="ai-name">🚴 RideSafe IA</div>¡Hola! Soy tu asistente ciclista. Pregúntame sobre mecánica, rutas, nutrición o emergencias.</div>
-    </div>
-    <div id="ai-bar">
-        <button id="ai-voice">🎤</button>
-        <input id="ai-input" type="text" placeholder="Escribe o habla..."/>
-        <button id="ai-send">➤</button>
     </div>
 </div>
 
@@ -695,34 +841,74 @@
     <div class="caida-box">
         <div class="caida-icon">🚨</div>
         <div class="caida-title">¡Caída detectada!</div>
-        <div class="caida-sub">Pulsa <strong style="color:var(--neon)">ESTOY BIEN</strong> para cancelar. Si no respondes en 10 segundos se enviará una alerta.</div>
+        <div class="caida-sub">Pulsa <strong style="color:var(--g)">ESTOY BIEN</strong> para cancelar. Si no respondes en 10 segundos se enviará una alerta.</div>
         <div class="cd-wrap">
-            <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="31.5" fill="none" stroke="#2a0808" stroke-width="6"/><circle id="cd-arc" cx="36" cy="36" r="31.5"/></svg>
+            <svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="33" fill="none" stroke="#2a0808" stroke-width="6"/><circle id="cd-arc" cx="38" cy="38" r="33"/></svg>
             <div id="cd-num">10</div>
         </div>
         <button class="caida-ok" id="caida-ok">✅ ESTOY BIEN — Cancelar</button>
-        <button class="caida-sos" id="caida-sos">🆘 Enviar alerta ahora</button>
+        <button class="caida-sos-btn" id="caida-sos">🆘 Enviar alerta ahora</button>
     </div>
 </div>
 
-<!-- MODAL ZONA OFFLINE -->
-<div id="zone-modal">
-    <div class="zm-box">
-        <div class="zm-title">💾 Guardar zona offline</div>
-        <div class="zm-sub">Guarda los tiles del área visible para usarlos sin internet.</div>
-        <div class="zm-field"><label>Nombre</label><input type="text" id="zm-name" placeholder="Ej: Lleida centro, Montsec..."/></div>
-        <div class="zm-field"><label>Zoom máximo</label>
-            <select id="zm-zoom">
-                <option value="14">Zoom 14 — Barrios (ligero)</option>
-                <option value="15">Zoom 15 — Calles (medio)</option>
-                <option value="16" selected>Zoom 16 — Detalle ciclista ✓</option>
-                <option value="17">Zoom 17 — Muy detallado (pesado)</option>
-            </select>
-        </div>
-        <div class="zm-preview" id="zm-preview">Calculando...</div>
-        <div class="zm-btns">
-            <button class="zm-btn cancel" id="zm-cancel">Cancelar</button>
-            <button class="zm-btn confirm" id="zm-confirm">💾 Guardar</button>
+<!-- PANEL ASISTENTE IA -->
+<div id="ai-panel">
+    <div class="ai-head">
+        <button class="ai-head-back" id="ai-back">←</button>
+        <div class="ai-head-title">Asistente <span>IA</span> Ciclista</div>
+        <span style="font-size:11px;color:var(--g);font-family:'Barlow Condensed',sans-serif;font-weight:700;">🚴 PRO</span>
+    </div>
+    <div class="ai-key-wrap" id="ai-key-wrap">
+        <p>Introduce tu API key de Anthropic para activar el asistente inteligente. Se guarda solo en tu dispositivo.</p>
+        <input class="ai-key-input" id="ai-key-input" type="password" placeholder="sk-ant-api03-..."/>
+        <button class="ai-key-save" id="ai-key-save">✅ GUARDAR Y ACTIVAR</button>
+    </div>
+    <div class="ai-chips">
+        <div class="ai-chip" data-q="Tengo un ruido metálico al pedalear, ¿qué puede ser?">🔧 Ruido</div>
+        <div class="ai-chip" data-q="¿Qué como después de 2 horas pedaleando?">🍌 Nutrición</div>
+        <div class="ai-chip" data-q="¿Lloverá hoy en Lleida para salir en bici?">🌤️ Tiempo</div>
+        <div class="ai-chip" data-q="Dame una ruta fácil de 30km desde Lleida">🗺️ Ruta 30km</div>
+        <div class="ai-chip" data-q="Me duele la rodilla al subir puertos, ¿qué hago?">🦵 Rodilla</div>
+        <div class="ai-chip" data-q="¿Cómo ajusto correctamente el sillín?">⚙️ Sillín</div>
+    </div>
+    <div class="ai-msgs" id="ai-msgs">
+        <div class="ai-msg bot"><div class="ai-msg-name">RideSafe IA</div>¡Hola! Soy tu asistente ciclista personal. Pregúntame sobre mecánica, rutas, nutrición, tiempo o emergencias. ¿En qué te ayudo?</div>
+    </div>
+    <div class="ai-bar">
+        <button id="ai-voice-btn">🎤</button>
+        <input id="ai-input" type="text" placeholder="Escribe tu pregunta..."/>
+        <button id="ai-send-btn">➤</button>
+    </div>
+</div>
+
+<!-- PANEL OFFLINE (dentro de Perfil) -->
+<div id="offline-panel" style="position:fixed;inset:0;z-index:7000;background:var(--black);display:none;flex-direction:column;animation:slideUp .3s ease;">
+    <div class="ai-head">
+        <button class="ai-head-back" id="offline-back">←</button>
+        <div class="ai-head-title">Mapas <span>Offline</span></div>
+        <span id="op-sw" style="font-size:9px;color:var(--text3);">SW –</span>
+    </div>
+    <div style="padding:14px 16px;background:var(--dark);border-bottom:1px solid var(--border);flex-shrink:0;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:6px;"><span>Almacenamiento usado</span><span id="storage-lbl">– MB</span></div>
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;"><div id="storage-fill" style="height:100%;background:var(--g);border-radius:3px;width:0%;transition:width .5s;"></div></div>
+    </div>
+    <button id="btn-add-zone" style="margin:14px 16px;padding:12px;background:var(--g-dim);border:1px solid rgba(168,230,61,.3);color:var(--g);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;">➕ GUARDAR ZONA VISIBLE</button>
+    <div style="flex:1;overflow-y:auto;padding:0 16px;" id="zone-list">
+        <div style="text-align:center;padding:50px 20px;color:var(--text3);"><div style="font-size:44px;margin-bottom:12px;opacity:.4;">💾</div><p style="font-size:13px;">No hay zonas guardadas.</p></div>
+    </div>
+</div>
+
+<!-- MODAL ZONA -->
+<div id="zone-modal" style="position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--dark);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;max-width:340px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--g);margin-bottom:4px;">💾 Guardar zona offline</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Guarda los tiles del área visible para usar sin internet.</div>
+        <div style="margin-bottom:12px;"><label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Nombre</label><input type="text" id="zm-name" placeholder="Ej: Lleida centro..." style="width:100%;padding:9px 12px;background:var(--black);color:white;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Barlow',sans-serif;"/></div>
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Zoom máximo</label><select id="zm-zoom" style="width:100%;padding:9px 12px;background:var(--black);color:white;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Barlow',sans-serif;"><option value="14">Zoom 14 — Barrios</option><option value="15">Zoom 15 — Calles</option><option value="16" selected>Zoom 16 — Detalle ciclista ✓</option><option value="17">Zoom 17 — Muy detallado</option></select></div>
+        <div id="zm-preview" style="font-size:10px;color:var(--text3);background:#060606;border-radius:7px;padding:8px 10px;margin-bottom:14px;line-height:1.6;">Calculando...</div>
+        <div style="display:flex;gap:8px;">
+            <button id="zm-cancel" style="flex:1;padding:10px;border-radius:10px;background:none;border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:'Barlow',sans-serif;">Cancelar</button>
+            <button id="zm-confirm" style="flex:1;padding:10px;border-radius:10px;background:var(--g);border:none;color:#0a0a0a;font-size:13px;font-weight:800;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;">GUARDAR</button>
         </div>
     </div>
 </div>
@@ -731,663 +917,417 @@
 <script>
 'use strict';
 
-// ════════════════════════════════════
-//  ESTADO GLOBAL
-// ════════════════════════════════════
-var currentLat = null, currentLng = null;
-var routeActive = false, routePoints = [], routeStartTime = null;
-var routeTimer = null, watchId = null, totalDistance = 0;
-var userMarker = null, searchMarker = null, routePolyline = null;
-var miniMap = null, miniPoly = null, selectedRoute = null;
-var swReady = false;
-var zoneProgressMap = {};
-var aiKey = '', aiHistory = [], aiThinking = false;
-var aiRec = null, aiVoiceMode = false;
-var shieldActive = false, shieldAlertFired = false;
-var shieldHighG = false, shieldImpactTime = null;
-var shieldLastG = 0, shieldTimer = null;
-var countdownTimer = null;
-var audioCtx = null;
-var currentLayerKey = 'voyager';
-var currentTileLayer = null;
+// ══════════════════════
+//  ESTADO
+// ══════════════════════
+var currentLat=null,currentLng=null;
+var routeActive=false,routePoints=[],routeStartTime=null;
+var routeTimer=null,watchId=null,totalDistance=0;
+var userMarker=null,searchMarker=null,routePoly=null;
+var mapInstance=null,currentLayerKey='voyager',currentTile=null;
+var swReady=false,zoneProgress={},pendingZone=null;
+var aiKey='',aiHistory=[],aiThinking=false,aiRec=null,aiVoice=false;
+var shieldActive=false,shieldAlert=false,shieldHighG=false,shieldImpact=null,shieldLastG=0;
+var countdownTimer=null,audioCtx=null;
+var miniMaps={};
 
-// ════════════════════════════════════
+// ══════════════════════
+//  NAVEGACIÓN PANTALLAS
+// ══════════════════════
+var screens={
+  'inicio':'screen-inicio',
+  'rutas':'screen-rutas',
+  'actividad':'screen-actividad',
+  'analisis':'screen-analisis',
+  'perfil':'screen-perfil'
+};
+var tabs={
+  'inicio':'tab-inicio',
+  'rutas':'tab-rutas',
+  'actividad':'tab-actividad',
+  'analisis':'tab-analisis',
+  'perfil':'tab-perfil'
+};
+var currentScreen='inicio';
+
+function goTo(name){
+  Object.keys(screens).forEach(function(k){
+    document.getElementById(screens[k]).classList.toggle('active',k===name);
+  });
+  Object.keys(tabs).forEach(function(k){
+    document.getElementById(tabs[k]).classList.toggle('active',k===name);
+  });
+  currentScreen=name;
+  if(name==='actividad'){
+    setTimeout(function(){if(mapInstance)mapInstance.invalidateSize();else initMap();},100);
+  }
+  if(name==='rutas') renderRouteList();
+  if(name==='analisis') renderAnalisis();
+  if(name==='perfil') renderPerfil();
+}
+
+document.getElementById('tab-inicio').addEventListener('click',function(){goTo('inicio');});
+document.getElementById('tab-rutas').addEventListener('click',function(){goTo('rutas');});
+document.getElementById('tab-actividad').addEventListener('click',function(){goTo('actividad');});
+document.getElementById('tab-analisis').addEventListener('click',function(){goTo('analisis');});
+document.getElementById('tab-perfil').addEventListener('click',function(){goTo('perfil');});
+
+// Botones de inicio rápido
+document.getElementById('btn-iniciar-actividad').addEventListener('click',function(){goTo('actividad');});
+document.getElementById('mod-navegacion').addEventListener('click',function(){goTo('actividad');});
+document.getElementById('mod-rutas') && document.getElementById('mod-rutas').addEventListener('click',function(){goTo('rutas');});
+document.getElementById('mod-rendimiento').addEventListener('click',function(){goTo('analisis');});
+document.getElementById('mod-asistente').addEventListener('click',function(){openAI();});
+document.getElementById('mod-seguridad').addEventListener('click',function(){tryShield();});
+document.getElementById('mod-grupo').addEventListener('click',function(){showToast('🚴 Modo Grupo — próximamente');});
+document.getElementById('mod-logros').addEventListener('click',function(){goTo('analisis');});
+document.getElementById('mod-ajustes').addEventListener('click',function(){goTo('perfil');});
+document.getElementById('mod-salud').addEventListener('click',function(){showToast('💓 Salud — próximamente');});
+
+// ══════════════════════
 //  MAPA
-// ════════════════════════════════════
-var map = L.map('map', {zoomControl:true}).setView([41.6176, 0.6200], 13);
-
-var LAYERS = {
-    voyager:   { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',   sub:'abcd', max:20, name:'Estándar — CartoDB Voyager',   desc:'Ideal para rutas urbanas. Calles claras.' },
-    dark:      { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',              sub:'abcd', max:20, name:'Noche — CartoDB Dark',          desc:'Fondo oscuro para ciclismo nocturno.' },
-    topo:      { url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',                           sub:'abc',  max:17, name:'Terreno — OpenTopoMap',         desc:'Curvas de nivel para rutas de montaña.' },
-    satellite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', sub:null, max:19, name:'Satélite — Esri', desc:'Imagen aérea real.' }
+// ══════════════════════
+var LAYERS={
+  voyager:{url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',sub:'abcd',max:20},
+  dark:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',sub:'abcd',max:20},
+  topo:{url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',sub:'abc',max:17},
+  satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',sub:null,max:19}
 };
 
-function setLayer(key) {
-    var cfg = LAYERS[key]; if (!cfg) return;
-    if (currentTileLayer) map.removeLayer(currentTileLayer);
-    var opts = { attribution:'© OSM', maxZoom:cfg.max };
-    if (cfg.sub) opts.subdomains = cfg.sub;
-    currentTileLayer = L.tileLayer(cfg.url, opts).addTo(map);
-    currentLayerKey = key;
-    document.querySelectorAll('.lm-tile').forEach(function(t){ t.classList.toggle('on', t.dataset.layer===key); });
-    document.getElementById('lm-active-name').textContent = '🗺 ' + cfg.name.split('—')[0].trim();
-    document.getElementById('lm-active-desc').textContent = cfg.desc;
-    try { localStorage.setItem('rs_layer', key); } catch(e){}
+function initMap(){
+  if(mapInstance)return;
+  mapInstance=L.map('mapa',{zoomControl:true}).setView([41.6176,0.6200],13);
+  setLayer('voyager');
+  try{var sl=localStorage.getItem('rs_layer');if(sl)setLayer(sl);}catch(e){}
+  locateUser(false);
 }
 
-var savedLayer = 'voyager';
-try { savedLayer = localStorage.getItem('rs_layer') || 'voyager'; } catch(e){}
-setLayer(savedLayer);
-
-var bikeIcon = L.divIcon({
-    className:'',
-    html:'<div style="width:16px;height:16px;border-radius:50%;background:#39FF14;border:3px solid white;box-shadow:0 0 0 4px rgba(57,255,20,.25),0 0 16px #39FF14;"></div>',
-    iconSize:[16,16], iconAnchor:[8,8]
-});
-
-// ════════════════════════════════════
-//  GPS
-// ════════════════════════════════════
-function locateUser(showCard) {
-    if (!navigator.geolocation) { showToast('⚠️ GPS no disponible'); return; }
-    showSpinner(true);
-    navigator.geolocation.getCurrentPosition(
-        function(pos) {
-            showSpinner(false);
-            var lat = pos.coords.latitude, lng = pos.coords.longitude, acc = pos.coords.accuracy;
-            if (isNaN(lat)||isNaN(lng)||lat<-90||lat>90||lng<-180||lng>180) { showToast('⚠️ Coordenadas GPS inválidas'); return; }
-            currentLat = lat; currentLng = lng;
-            map.setView([lat,lng], 16);
-            if (userMarker) userMarker.remove();
-            userMarker = L.marker([lat,lng],{icon:bikeIcon}).addTo(map).bindPopup('<b>Estás aquí</b><br>🛡️ Protección activa').openPopup();
-            document.getElementById('fab-gps').classList.add('located');
-            if (showCard) {
-                showInfoCard('Lat: <strong>' + lat.toFixed(5) + '</strong><br>Lng: <strong>' + lng.toFixed(5) + '</strong><br>Precisión: ±' + Math.round(acc) + 'm');
-            }
-        },
-        function(err) {
-            showSpinner(false);
-            var msgs = {1:'🔒 GPS bloqueado — actívalo en Ajustes del navegador',2:'📡 Sin señal GPS — sal a campo abierto',3:'⏱️ Tiempo GPS agotado — inténtalo de nuevo'};
-            showToast(msgs[err.code] || '⚠️ Error GPS');
-        },
-        { enableHighAccuracy:true, timeout:10000, maximumAge:5000 }
-    );
+function setLayer(key){
+  var cfg=LAYERS[key];if(!cfg)return;
+  if(currentTile)mapInstance.removeLayer(currentTile);
+  var opts={attribution:'© OSM',maxZoom:cfg.max};
+  if(cfg.sub)opts.subdomains=cfg.sub;
+  currentTile=L.tileLayer(cfg.url,opts).addTo(mapInstance);
+  currentLayerKey=key;
+  document.querySelectorAll('.lp-tile').forEach(function(t){t.classList.toggle('on',t.dataset.layer===key);});
+  try{localStorage.setItem('rs_layer',key);}catch(e){}
 }
 
-// ════════════════════════════════════
-//  BUSCADOR
-// ════════════════════════════════════
-var searchTimeout = null;
-document.getElementById('search-input').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    var q = this.value.trim();
-    if (q.length < 3) { document.getElementById('suggestions').innerHTML=''; return; }
-    searchTimeout = setTimeout(function(){ fetchSuggestions(q); }, 400);
-});
-document.getElementById('search-input').addEventListener('keydown', function(e) {
-    if (e.key==='Enter') { clearTimeout(searchTimeout); fetchSuggestions(this.value.trim(), true); }
-});
-document.getElementById('search-btn').addEventListener('click', function() {
-    fetchSuggestions(document.getElementById('search-input').value.trim(), true);
-});
+var bikeIcon=L.divIcon({className:'',html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:3px solid white;box-shadow:0 0 0 4px rgba(168,230,61,.25),0 0 14px #a8e63d;"></div>',iconSize:[16,16],iconAnchor:[8,8]});
 
-async function fetchSuggestions(q, goFirst) {
-    if (!q) return;
-    showSpinner(true);
-    try {
-        var res = await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=5', {headers:{'Accept-Language':'es'}});
-        var data = await res.json();
-        showSpinner(false);
-        if (goFirst && data.length) { goToResult(data[0]); document.getElementById('suggestions').innerHTML=''; }
-        else renderSugs(data);
-    } catch(e) { showSpinner(false); }
-}
-function renderSugs(results) {
-    var box = document.getElementById('suggestions');
-    box.innerHTML = '';
-    results.forEach(function(r) {
-        var d = document.createElement('div'); d.className='sug-item';
-        d.textContent = r.display_name;
-        d.addEventListener('click', function(){ goToResult(r); box.innerHTML=''; document.getElementById('search-input').value=r.display_name; });
-        box.appendChild(d);
-    });
-}
-function goToResult(r) {
-    var lat=parseFloat(r.lat), lng=parseFloat(r.lon);
-    if (isNaN(lat)||isNaN(lng)) return;
-    map.setView([lat,lng],16);
-    if (searchMarker) searchMarker.remove();
-    var pin = L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#39FF14;border:2px solid white;box-shadow:0 0 10px #39FF14;"></div>',iconSize:[14,14],iconAnchor:[7,7]});
-    searchMarker = L.marker([lat,lng],{icon:pin}).addTo(map).bindPopup('<b>'+r.display_name.split(',')[0]+'</b>').openPopup();
-    showInfoCard('<strong>'+r.display_name.split(',')[0]+'</strong><br><small>'+r.display_name.split(',').slice(1,3).join(',')+'</small>');
-}
-document.addEventListener('click', function(e){ if (!document.getElementById('search-wrap').contains(e.target)) document.getElementById('suggestions').innerHTML=''; });
-
-// ════════════════════════════════════
-//  GRABACIÓN DE RUTA
-// ════════════════════════════════════
-function haversine(lat1,lon1,lat2,lon2) {
-    var R=6371000, f1=lat1*Math.PI/180, f2=lat2*Math.PI/180;
-    var df=(lat2-lat1)*Math.PI/180, dl=(lon2-lon1)*Math.PI/180;
-    var a=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);
-    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function startRoute() {
-    routePoints=[]; totalDistance=0; routeStartTime=Date.now();
-    routePolyline = L.polyline([],{color:'#39FF14',weight:4,opacity:.85}).addTo(map);
-    if (navigator.geolocation) {
-        watchId = navigator.geolocation.watchPosition(function(pos) {
-            var lat=pos.coords.latitude, lng=pos.coords.longitude;
-            if (isNaN(lat)||isNaN(lng)) return;
-            currentLat=lat; currentLng=lng;
-            var pt=[lat,lng];
-            if (routePoints.length>0) {
-                var prev=routePoints[routePoints.length-1];
-                totalDistance += haversine(prev[0],prev[1],lat,lng);
-            }
-            routePoints.push(pt);
-            routePolyline.addLatLng(pt);
-            if (userMarker) userMarker.remove();
-            userMarker = L.marker(pt,{icon:bikeIcon}).addTo(map);
-            if (pt[0]&&pt[1]) map.panTo(pt);
-            updateLiveStats();
-        }, null, {enableHighAccuracy:true,maximumAge:3000});
+function locateUser(showCard){
+  if(!navigator.geolocation){showToast('⚠️ GPS no disponible');return;}
+  showSpinner(true);
+  navigator.geolocation.getCurrentPosition(function(pos){
+    showSpinner(false);
+    var lat=pos.coords.latitude,lng=pos.coords.longitude,acc=pos.coords.accuracy;
+    if(isNaN(lat)||lat<-90||lat>90||isNaN(lng)||lng<-180||lng>180){showToast('⚠️ Coordenadas GPS inválidas');return;}
+    currentLat=lat;currentLng=lng;
+    if(mapInstance){
+      mapInstance.setView([lat,lng],16);
+      if(userMarker)userMarker.remove();
+      userMarker=L.marker([lat,lng],{icon:bikeIcon}).addTo(mapInstance).bindPopup('<b>Estás aquí</b><br>🛡️ Protección activa').openPopup();
     }
-    routeTimer = setInterval(updateLiveStats,1000);
-    document.getElementById('live-stats').classList.add('show');
-    document.getElementById('info-card').classList.remove('show');
-    var s=document.getElementById('status'); s.textContent='● Grabando'; s.classList.add('recording');
-    // Cambiar header a modo ruta
-    document.getElementById('search-wrap').classList.remove('show');
-    document.getElementById('header-route').classList.add('show');
+    document.getElementById('act-gps').classList.add('on');
+    if(showCard) showActInfo('Lat: <strong>'+lat.toFixed(5)+'</strong><br>Lng: <strong>'+lng.toFixed(5)+'</strong><br>Precisión: ±'+Math.round(acc)+'m');
+  },function(err){
+    showSpinner(false);
+    var m={1:'🔒 GPS bloqueado — actívalo en Ajustes',2:'📡 Sin señal GPS',3:'⏱️ Tiempo GPS agotado'};
+    showToast(m[err.code]||'⚠️ Error GPS');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:5000});
 }
 
-function stopRoute() {
+// Buscador
+var searchTO=null;
+document.getElementById('hud-search').addEventListener('input',function(){
+  clearTimeout(searchTO);var q=this.value.trim();
+  if(q.length<3){document.getElementById('hud-suggestions').innerHTML='';return;}
+  searchTO=setTimeout(function(){fetchSugs(q);},400);
+});
+document.getElementById('hud-search').addEventListener('keydown',function(e){if(e.key==='Enter'){clearTimeout(searchTO);fetchSugs(this.value.trim(),true);}});
+document.getElementById('hud-search-btn').addEventListener('click',function(){fetchSugs(document.getElementById('hud-search').value.trim(),true);});
+
+async function fetchSugs(q,goFirst){
+  if(!q)return;showSpinner(true);
+  try{
+    var r=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=5',{headers:{'Accept-Language':'es'}});
+    var d=await r.json();showSpinner(false);
+    if(goFirst&&d.length){goToResult(d[0]);document.getElementById('hud-suggestions').innerHTML='';}
+    else renderSugs(d);
+  }catch(e){showSpinner(false);}
+}
+function renderSugs(r){
+  var b=document.getElementById('hud-suggestions');b.innerHTML='';
+  r.forEach(function(x){var d=document.createElement('div');d.className='hud-sug';d.textContent=x.display_name;
+  d.addEventListener('click',function(){goToResult(x);b.innerHTML='';document.getElementById('hud-search').value=x.display_name;});b.appendChild(d);});
+}
+function goToResult(r){
+  var lat=parseFloat(r.lat),lng=parseFloat(r.lon);if(isNaN(lat)||isNaN(lng))return;
+  mapInstance.setView([lat,lng],16);
+  if(searchMarker)searchMarker.remove();
+  var pin=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#a8e63d;border:2px solid white;box-shadow:0 0 10px #a8e63d;"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+  searchMarker=L.marker([lat,lng],{icon:pin}).addTo(mapInstance).bindPopup('<b>'+r.display_name.split(',')[0]+'</b>').openPopup();
+  showActInfo('<strong>'+r.display_name.split(',')[0]+'</strong><br><small style="color:#888;">'+r.display_name.split(',').slice(1,3).join(',')+'</small>');
+}
+document.addEventListener('click',function(e){if(!document.getElementById('hud-search-wrap').contains(e.target))document.getElementById('hud-suggestions').innerHTML='';});
+
+// Capas
+document.getElementById('hud-layers').addEventListener('click',function(){document.getElementById('layer-overlay').classList.add('show');document.getElementById('layer-panel').classList.add('open');});
+document.getElementById('lp-close').addEventListener('click',function(){document.getElementById('layer-overlay').classList.remove('show');document.getElementById('layer-panel').classList.remove('open');});
+document.getElementById('layer-overlay').addEventListener('click',function(){document.getElementById('layer-overlay').classList.remove('show');document.getElementById('layer-panel').classList.remove('open');});
+document.querySelectorAll('.lp-tile').forEach(function(t){t.addEventListener('click',function(){setLayer(t.dataset.layer);showToast('🗺 Capa: '+t.querySelector('.lp-lbl').textContent);});});
+
+// GPS btn
+document.getElementById('act-gps').addEventListener('click',function(){locateUser(true);});
+
+// Info card mapa
+function showActInfo(html){document.getElementById('act-info-text').innerHTML=html;document.getElementById('act-info').classList.add('show');}
+
+// ══════════════════════
+//  GRABACIÓN
+// ══════════════════════
+function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+document.getElementById('act-rec-btn').addEventListener('click',function(){
+  routeActive=!routeActive;
+  var btn=document.getElementById('act-rec-btn');
+  var lbl=document.getElementById('rec-lbl');
+  if(routeActive){
+    btn.classList.add('rec');lbl.textContent='STOP';
+    routePoints=[];totalDistance=0;routeStartTime=Date.now();
+    routePoly=L.polyline([],{color:'#a8e63d',weight:4,opacity:.85}).addTo(mapInstance);
+    if(navigator.geolocation){
+      watchId=navigator.geolocation.watchPosition(function(pos){
+        var lat=pos.coords.latitude,lng=pos.coords.longitude;
+        if(isNaN(lat)||isNaN(lng))return;
+        currentLat=lat;currentLng=lng;
+        var pt=[lat,lng];
+        if(routePoints.length>0){var p=routePoints[routePoints.length-1];totalDistance+=haversine(p[0],p[1],lat,lng);}
+        routePoints.push(pt);routePoly.addLatLng(pt);
+        if(userMarker)userMarker.remove();
+        userMarker=L.marker(pt,{icon:bikeIcon}).addTo(mapInstance);
+        mapInstance.panTo(pt);updateLive();
+      },null,{enableHighAccuracy:true,maximumAge:3000});
+    }
+    routeTimer=setInterval(updateLive,1000);
+    document.getElementById('act-live').classList.add('show');
+    document.getElementById('act-status').textContent='● Grabando';
+    document.getElementById('act-status').classList.add('rec');
+    showToast('🔴 Grabando ruta...');
+  } else {
+    btn.classList.remove('rec');lbl.textContent='REC';
     clearInterval(routeTimer);
-    if (watchId!==null) { navigator.geolocation.clearWatch(watchId); watchId=null; }
+    if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;}
     var elapsed=Math.round((Date.now()-routeStartTime)/1000);
-    if (routePoints.length>=2) {
-        saveRoute({id:Date.now(),points:routePoints,distance:totalDistance,duration:elapsed,timestamp:routeStartTime});
-        showToast('✅ Ruta guardada');
-    } else { showToast('⚠️ Ruta muy corta'); }
-    document.getElementById('live-stats').classList.remove('show');
-    var s=document.getElementById('status'); s.textContent='● Online'; s.classList.remove('recording');
-    // Restaurar header
-    document.getElementById('search-wrap').classList.add('show');
-    document.getElementById('header-route').classList.remove('show');
+    if(routePoints.length>=2){
+      saveRoute(p:routeStartTime});
+      showToast('✅ Ruta guardada');
+    }else{showToast('⚠️ Ruta muy corta');}
+    document.getElementById('act-live').classList.remove('show');
+    document.getElementById('act-status').textContent='● Online';
+    document.getElementById('act-status').classList.remove('rec');
+  }
+});
+
+function updateLive(){
+  var el=Math.round((Date.now()-routeStartTime)/1000);
+  var km=(totalDistance/1000).toFixed(2);
+  var mins=Math.floor(el/60),secs=String(el%60).padStart(2,'0');
+  var spd=el>0?((totalDistance/1000)/(el/3600)).toFixed(1):'–';
+  document.getElementById('lv-km').innerHTML=km+' <span>km</span>';
+  document.getElementById('lv-time').textContent=mins+':'+secs;
+  document.getElementById('lv-pts').innerHTML=routePoints.length+' <span>GPS</span>';
+  document.getElementById('lv-spd').innerHTML=spd+' <span>km/h</span>';
 }
 
-function updateLiveStats() {
-    var el=Math.round((Date.now()-routeStartTime)/1000);
-    var km=(totalDistance/1000).toFixed(2);
-    var mins=Math.floor(el/60), secs=String(el%60).padStart(2,'0');
-    var spd=el>0?((totalDistance/1000)/(el/3600)).toFixed(1):'–';
-    // Panel live stats
-    document.getElementById('ls-km').innerHTML=km+' <span>km</span>';
-    document.getElementById('ls-time').textContent=mins+':'+secs;
-    document.getElementById('ls-pts').innerHTML=routePoints.length+' <span>GPS</span>';
-    document.getElementById('ls-spd').innerHTML=spd+' <span>km/h</span>';
-    // Header en tiempo real
-    document.getElementById('hr-km').textContent=km;
-    document.getElementById('hr-spd').textContent=spd;
-    document.getElementById('hr-time').textContent=mins+':'+secs;
-}
+document.getElementById('act-sos-btn').addEventListener('click',function(){
+  if(!confirm('🆘 ¿Enviar ALERTA SOS?'))return;
+  if(navigator.vibrate)navigator.vibrate([300,100,300,100,600]);
+  try{playAlarm();}catch(e){}
+  showToast('🆘 SOS enviado');
+});
 
-// ════════════════════════════════════
-//  LOCALSTORAGE — RUTAS
-// ════════════════════════════════════
-var ROUTES_KEY='rs_routes';
-function loadRoutes(){try{return JSON.parse(localStorage.getItem(ROUTES_KEY))||[];}catch(e){return[];}}
-function saveRoute(r){var rs=loadRoutes();rs.unshift(r);localStorage.setItem(ROUTES_KEY,JSON.stringify(rs));}
-function deleteRoute(id){localStorage.setItem(ROUTES_KEY,JSON.stringify(loadRoutes().filter(function(r){return r.id!==id;})));}
-
-// ════════════════════════════════════
-//  PANEL HISTORIAL
-// ════════════════════════════════════
-var activeTab='lista';
-
-function openHistoryPanel(){
-    renderRouteList();
-    renderRouteStats();
-    document.getElementById('history-panel').classList.add('open');
-    setNavActive('nav-historial');
-}
+// RUTAS
+var RKEY='rs_routes';
+function loadRoutes(){try{return JSON.parse(localStorage.getItem(RKEY))||[];}catch(e){return[];}}
+function saveRoute(r){var rs=loadRoutes();rs.unshift(r);localStorage.setItem(RKEY,JSON.stringify(rs));}
+function deleteRoute(id){localStorage.setItem(RKEY,JSON.stringify(loadRoutes().filter(function(r){return r.id!==id;})));}
 
 function renderRouteList(){
-    var routes=loadRoutes();
-    var list=document.getElementById('hp-list');
-    list.querySelectorAll('.route-card').forEach(function(c){c.remove();});
-    var empty=list.querySelector('.empty-state');
-    if (!routes.length){if(empty)empty.style.display='block';return;}
-    if(empty)empty.style.display='none';
-    routes.forEach(function(route){
-        var dt=new Date(route.timestamp);
-        var dateStr=dt.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
-        var timeStr=dt.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-        var km=(route.distance/1000).toFixed(2);
-        var mins=Math.floor(route.duration/60), secs=String(route.duration%60).padStart(2,'0');
-        var spd=route.duration>0?((route.distance/1000)/(route.duration/3600)).toFixed(1):'–';
-        var card=document.createElement('div'); card.className='route-card';
-        card.innerHTML='<div class="rc-top"><div><div class="rc-date">🗓 '+dateStr+'</div><div class="rc-time-label">⏰ '+timeStr+'</div></div><button class="rc-del" title="Eliminar">✕</button></div><div class="rc-stats"><div class="rc-stat"><label>Dist</label><value>'+km+' <span>km</span></value></div><div class="rc-stat"><label>Tiempo</label><value>'+mins+':'+secs+'</value></div><div class="rc-stat"><label>Vel</label><value>'+spd+' <span>km/h</span></value></div></div>';
-        card.addEventListener('click',function(e){if(e.target.classList.contains('rc-del'))return;showRouteOnMiniMap(route);list.querySelectorAll('.route-card').forEach(function(c){c.classList.remove('sel');});card.classList.add('sel');selectedRoute=route;});
-        card.querySelector('.rc-del').addEventListener('click',function(e){e.stopPropagation();if(confirm('¿Eliminar esta ruta?')){deleteRoute(route.id);renderRouteList();renderRouteStats();}});
-        list.appendChild(card);
-    });
+  var routes=loadRoutes();var list=document.getElementById('rutas-list');list.innerHTML='';
+  if(!routes.length){list.innerHTML='<div class="empty-rutas"><div class="ei">🚴</div><p>Todavía no tienes rutas.<br><strong style="color:#aaa">Pulsa Actividad para empezar.</strong></p></div>';return;}
+  routes.forEach(function(r,i){
+    var dt=new Date(r.timestamp).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+    var tm=new Date(r.timestamp).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    var km=(r.distance/1000).toFixed(2);
+    var mins=Math.floor(r.duration/60),secs=String(r.duration%60).padStart(2,'0');
+    var spd=r.duration>0?((r.distance/1000)/(r.duration/3600)).toFixed(1):'–';
+    var card=document.createElement('div');card.className='route-card';
+    var mapId='mm-'+r.id;
+    card.innerHTML='<div class="rc-top"><div><div class="rc-name">Ruta #'+(routes.length-i)+'</div><div class="rc-date">🗓 '+dt+' · '+tm+'</div></div><button class="rc-del" data-id="'+r.id+'">✕</button></div><div class="rc-stats"><div class="rc-stat"><label>Dist</label><value>'+km+' <span>km</span></value></div><div class="rc-stat"><label>Tiempo</label><value>'+mins+':'+secs+'</value></div><div class="rc-stat"><label>Vel</label><value>'+spd+' <span>km/h</span></value></div></div><div class="rc-minimap" id="'+mapId+'"></div>';
+    card.querySelector('.rc-del').addEventListener('click',function(e){e.stopPropagation();if(confirm('¿Eliminar?')){deleteRoute(r.id);renderRouteList();}});
+    list.appendChild(card);
+    setTimeout(function(){
+      if(miniMaps[mapId])return;
+      var mm=L.map(mapId,{zoomControl:false,dragging:false,scrollWheelZoom:false,attributionControl:false});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(mm);
+      if(r.points.length>1){var poly=L.polyline(r.points,{color:'#a8e63d',weight:3}).addTo(mm);mm.fitBounds(poly.getBounds(),{padding:[6,6]});}
+      miniMaps[mapId]=mm;setTimeout(function(){mm.invalidateSize();},50);
+    },100);
+  });
+}
+document.getElementById('btn-clear-routes').addEventListener('click',function(){if(confirm('¿Borrar todo el historial?')){localStorage.removeItem(RKEY);renderRouteList();}});
+
+// ANÁLISIS
+function renderAnalisis(){
+  var routes=loadRoutes();
+  var totalKm=routes.reduce(function(a,r){return a+r.distance;},0)/1000;
+  var totalMin=routes.reduce(function(a,r){return a+r.duration;},0)/60;
+  var avgSpd=totalMin>0?(totalKm/(totalMin/60)).toFixed(1):0;
+  document.getElementById('as-km').innerHTML=totalKm.toFixed(1)+' <span>km</span>';
+  document.getElementById('as-count').textContent=routes.length;
+  document.getElementById('as-time').innerHTML=Math.round(totalMin)+' <span>min</span>';
+  document.getElementById('as-spd').innerHTML=avgSpd+' <span>km/h</span>';
+  var chart=document.getElementById('as-chart');chart.innerHTML='';
+  var last7=routes.slice(0,7).reverse();var maxD=Math.max.apply(null,last7.map(function(r){return r.distance;})||[0]);
+  last7.forEach(function(r,i){var bar=document.createElement('div');bar.className='chart-bar'+(i===last7.length-1?' active':'');bar.style.height=maxD>0?Math.max(6,(r.distance/maxD)*90)+'px':'6px';chart.appendChild(bar);});
 }
 
-function renderRouteStats(){
-    var routes=loadRoutes();
-    var td=routes.reduce(function(a,r){return a+r.distance;},0);
-    var tt=routes.reduce(function(a,r){return a+r.duration;},0);
-    document.getElementById('sb-count').textContent=routes.length;
-    document.getElementById('sb-km').innerHTML=(td/1000).toFixed(1)+' <span>km</span>';
-    document.getElementById('sb-time').innerHTML=Math.round(tt/60)+' <span>min</span>';
+// PERFIL
+function renderPerfil(){
+  var routes=loadRoutes();
+  var totalKm=routes.reduce(function(a,r){return a+r.distance;},0)/1000;
+  var totalH=routes.reduce(function(a,r){return a+r.duration;},0)/3600;
+  document.getElementById('pf-rutas').textContent=routes.length;
+  document.getElementById('pf-km').textContent=totalKm.toFixed(0);
+  document.getElementById('pf-time').textContent=totalH.toFixed(1);
+  document.getElementById('pf-sensor-sub').textContent=shieldActive?'Activo — detectando caídas':'Inactivo';
 }
+document.getElementById('pf-asistente').addEventListener('click',function(){openAI();});
+document.getElementById('pf-sensor').addEventListener('click',function(){tryShield();});
+document.getElementById('pf-offline').addEventListener('click',function(){openOffline();});
+document.getElementById('pf-diag').addEventListener('click',function(){runDiag();});
 
-function showRouteOnMiniMap(route){
-    var w=document.getElementById('hp-minimap-wrap');
-    w.classList.add('show');
-    document.getElementById('hp-minimap-label').textContent='Ruta del '+new Date(route.timestamp).toLocaleDateString('es-ES');
-    if(!miniMap){
-        miniMap=L.map('hp-minimap',{zoomControl:false,dragging:false,scrollWheelZoom:false});
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'',subdomains:'abcd',maxZoom:19}).addTo(miniMap);
-    }
-    if(miniPoly)miniPoly.remove();
-    if(route.points.length>1){
-        miniPoly=L.polyline(route.points,{color:'#39FF14',weight:3}).addTo(miniMap);
-        miniMap.fitBounds(miniPoly.getBounds(),{padding:[10,10]});
-        var si=L.divIcon({className:'',html:'<div style="width:9px;height:9px;border-radius:50%;background:#39FF14;border:2px solid white;"></div>',iconSize:[9,9],iconAnchor:[4,4]});
-        var ei=L.divIcon({className:'',html:'<div style="width:9px;height:9px;border-radius:50%;background:#ff4444;border:2px solid white;"></div>',iconSize:[9,9],iconAnchor:[4,4]});
-        L.marker(route.points[0],{icon:si}).addTo(miniMap);
-        L.marker(route.points[route.points.length-1],{icon:ei}).addTo(miniMap);
-    }
-    setTimeout(function(){miniMap.invalidateSize();},50);
-}
-
-// Tabs historial
-document.querySelectorAll('.sp-tab').forEach(function(tab){
-    tab.addEventListener('click',function(){
-        activeTab=tab.dataset.tab;
-        document.querySelectorAll('.sp-tab').forEach(function(t){t.classList.remove('active');});
-        tab.classList.add('active');
-        var sb=document.getElementById('hp-stats-bar');
-        var mw=document.getElementById('hp-minimap-wrap');
-        var bl=document.getElementById('hp-list').parentElement;
-        if(activeTab==='stats'){sb.classList.add('show');mw.classList.remove('show');bl.style.display='none';}
-        else{sb.classList.remove('show');bl.style.display='block';if(selectedRoute)mw.classList.add('show');}
-    });
-});
-
-document.getElementById('hp-back').addEventListener('click',function(){document.getElementById('history-panel').classList.remove('open');setNavActive('nav-mapa');});
-document.getElementById('hp-clear').addEventListener('click',function(){if(confirm('¿Borrar todo el historial?')){localStorage.removeItem(ROUTES_KEY);selectedRoute=null;document.getElementById('hp-minimap-wrap').classList.remove('show');renderRouteList();renderRouteStats();showToast('🗑 Historial borrado');}});
-
-// ════════════════════════════════════
-//  SERVICE WORKER
-// ════════════════════════════════════
-if('serviceWorker' in navigator){
-    // Desregistrar todos los SW antiguos primero
-    navigator.serviceWorker.getRegistrations().then(function(regs){
-        regs.forEach(function(reg){ reg.unregister(); });
-    });
-    // Limpiar caches antiguas
-    if(window.caches){
-        caches.keys().then(function(keys){
-            keys.forEach(function(k){ caches.delete(k); });
-        });
-    }
-    // Registrar el nuevo SW
-    navigator.serviceWorker.register('./sw.js').then(function(reg){
-        swReady=true;
-        document.getElementById('op-sw').textContent='✅ SW activo';
-        document.getElementById('op-sw').style.color='var(--neon)';
-        refreshStorage();
-        navigator.serviceWorker.addEventListener('message',function(e){
-            var d=e.data;
-            if(d.type==='CACHE_PROGRESS')updateZoneProgress(d.zoneId,d.done,d.total);
-            if(d.type==='CACHE_DONE'){finishZone(d.zoneId,d.total);}
-            if(d.type==='DELETE_DONE'){renderZones();showToast('🗑 Zona eliminada');refreshStorage();}
-            if(d.type==='CACHE_SIZE')renderStorageBar(d.size);
-        });
-    }).catch(function(){document.getElementById('op-sw').textContent='⚠️ Sin SW';});
-}
-
-function refreshStorage(){if(swReady&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_SIZE'});}
-function renderStorageBar(bytes){var mb=(bytes/(1024*1024)).toFixed(1);var pct=Math.min((bytes/(50*1024*1024))*100,100);document.getElementById('storage-lbl').textContent=mb+' MB';document.getElementById('storage-fill').style.width=pct+'%';}
-
-// ════════════════════════════════════
-//  ZONAS OFFLINE
-// ════════════════════════════════════
-var ZONES_KEY='rs_zones';
-function loadZones(){try{return JSON.parse(localStorage.getItem(ZONES_KEY))||[];}catch(e){return[];}}
-function saveZone(z){var zs=loadZones();zs.unshift(z);localStorage.setItem(ZONES_KEY,JSON.stringify(zs));updateOfflineBadge();}
-function deleteZoneMeta(id){localStorage.setItem(ZONES_KEY,JSON.stringify(loadZones().filter(function(z){return z.id!==id;})));updateOfflineBadge();}
-function updateOfflineBadge(){var n=loadZones().filter(function(z){return z.status==='saved';}).length;var b=document.getElementById('offline-badge');b.textContent=n;b.classList.toggle('show',n>0);}
-
-function latLngToTile(lat,lng,z){var n=Math.pow(2,z);var x=Math.floor((lng+180)/360*n);var lr=lat*Math.PI/180;var y=Math.floor((1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n);return{x:x,y:y,z:z};}
-function getTileUrls(bounds,minZ,maxZ){var urls=[];var subs=['a','b','c','d'];for(var z=minZ;z<=maxZ;z++){var nw=latLngToTile(bounds.getNorth(),bounds.getWest(),z);var se=latLngToTile(bounds.getSouth(),bounds.getEast(),z);var x0=Math.min(nw.x,se.x),x1=Math.max(nw.x,se.x);var y0=Math.min(nw.y,se.y),y1=Math.max(nw.y,se.y);for(var x=x0;x<=x1;x++){for(var y=y0;y<=y1;y++){var s=subs[(x+y)%4];urls.push('https://'+s+'.basemaps.cartocdn.com/rastertiles/voyager/'+z+'/'+x+'/'+y+'.png');}}}return urls;}
-function estimateTiles(bounds,minZ,maxZ){var c=0;for(var z=minZ;z<=maxZ;z++){var nw=latLngToTile(bounds.getNorth(),bounds.getWest(),z);var se=latLngToTile(bounds.getSouth(),bounds.getEast(),z);c+=(Math.abs(se.x-nw.x)+1)*(Math.abs(se.y-nw.y)+1);}return c;}
-
-var pendingZone=null;
-document.getElementById('btn-add-zone').addEventListener('click',function(){
-    var bounds=map.getBounds();
-    var maxZ=parseInt(document.getElementById('zm-zoom').value);
-    var minZ=Math.max(map.getZoom()-2,10);
-    var count=estimateTiles(bounds,minZ,maxZ);
-    var sizeMB=(count*15/1024).toFixed(1);
-    document.getElementById('zm-preview').innerHTML='Zoom <span>'+minZ+'–'+maxZ+'</span> · Tiles: <span>~'+count+'</span> · Tamaño: <span>~'+sizeMB+' MB</span>';
-    pendingZone={bounds:bounds,minZ:minZ,maxZ:maxZ,count:count};
-    document.getElementById('zm-name').value='';
-    document.getElementById('zone-modal').classList.add('show');
-});
-document.getElementById('zm-cancel').addEventListener('click',function(){document.getElementById('zone-modal').classList.remove('show');pendingZone=null;});
-document.getElementById('zm-confirm').addEventListener('click',function(){
-    var name=document.getElementById('zm-name').value.trim()||'Zona sin nombre';
-    var pz=pendingZone||{bounds:map.getBounds(),minZ:10,maxZ:16,count:0};
-    var zid=Date.now();
-    var zone={id:zid,name:name,timestamp:Date.now(),bounds:{n:pz.bounds.getNorth(),s:pz.bounds.getSouth(),e:pz.bounds.getEast(),w:pz.bounds.getWest()},minZ:pz.minZ,maxZ:pz.maxZ,tileCount:pz.count,status:'downloading'};
-    saveZone(zone);
-    document.getElementById('zone-modal').classList.remove('show');
-    renderZones();
-    if(swReady&&navigator.serviceWorker.controller){
-        var urls=getTileUrls(pz.bounds,pz.minZ,pz.maxZ);
-        navigator.serviceWorker.controller.postMessage({type:'CACHE_ZONE',tiles:urls,zoneId:zid});
-        showToast('💾 Descargando '+pz.count+' tiles...');
-    } else {
-        setTimeout(function(){finishZone(zid,pz.count);showToast('✅ Zona registrada');},800);
-    }
-});
-document.getElementById('zm-zoom').addEventListener('change',function(){
-    if(!pendingZone)return;
-    var maxZ=parseInt(this.value);
-    var count=estimateTiles(pendingZone.bounds,pendingZone.minZ,maxZ);
-    document.getElementById('zm-preview').innerHTML='Zoom <span>'+pendingZone.minZ+'–'+maxZ+'</span> · Tiles: <span>~'+count+'</span> · ~<span>'+(count*15/1024).toFixed(1)+' MB</span>';
-    pendingZone.maxZ=maxZ;pendingZone.count=count;
-});
-
-function updateZoneProgress(zid,done,total){zoneProgressMap[zid]={done:done,total:total};var pct=Math.round((done/total)*100);var fill=document.querySelector('[data-zone="'+zid+'"] .zc-progress-fill');if(fill)fill.style.width=pct+'%';}
-function finishZone(zid,total){var zs=loadZones();var z=zs.find(function(z){return z.id===zid;});if(z){z.status='saved';z.tileCount=total;localStorage.setItem(ZONES_KEY,JSON.stringify(zs));}renderZones();refreshStorage();updateOfflineBadge();showToast('✅ Zona guardada offline');}
-
-function renderZones(){
-    var zones=loadZones();
-    var list=document.getElementById('zone-list');
-    list.querySelectorAll('.zone-card').forEach(function(c){c.remove();});
-    document.getElementById('zone-empty').style.display=zones.length?'none':'block';
-    zones.forEach(function(zone){
-        var prog=zoneProgressMap[zone.id];
-        var pct=prog?Math.round((prog.done/prog.total)*100):(zone.status==='saved'?100:0);
-        var dt=new Date(zone.timestamp).toLocaleDateString('es-ES',{day:'numeric',month:'short'});
-        var mb=(zone.tileCount*15/1024).toFixed(1);
-        var card=document.createElement('div');card.className='zone-card';card.dataset.zone=zone.id;
-        card.innerHTML='<div class="zc-top"><div><div class="zc-name">📦 '+zone.name+'</div><div class="zc-meta">'+dt+'</div></div><span class="'+(zone.status==='saved'?'zc-saved':'zc-downloading')+'">'+(zone.status==='saved'?'✅ Lista':'⬇ Descargando')+'</span></div>'+(zone.status==='downloading'?'<div class="zc-progress"><div class="zc-progress-fill" style="width:'+pct+'%"></div></div>':'')+'<div class="zc-stats"><div class="zc-stat"><label>Tiles</label><value>'+zone.tileCount+'</value></div><div class="zc-stat"><label>Zoom</label><value>'+zone.minZ+'–'+zone.maxZ+'</value></div><div class="zc-stat"><label>Tamaño</label><value>~'+mb+'MB</value></div></div><button class="zc-del" data-id="'+zone.id+'">🗑 Eliminar</button>';
-        card.querySelector('.zc-del').addEventListener('click',function(){if(confirm('¿Eliminar zona "'+zone.name+'"?')){deleteZoneMeta(zone.id);if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'DELETE_ZONE',zoneId:zone.id});else{renderZones();showToast('🗑 Zona eliminada');refreshStorage();}}});
-        list.appendChild(card);
-    });
-}
-
-// ════════════════════════════════════
-//  ASISTENTE IA
-// ════════════════════════════════════
+// ASISTENTE IA
 function loadAIKey(){try{var k=localStorage.getItem('rs_ai_key');if(k){aiKey=k;return true;}}catch(e){}return false;}
 function saveAIKey(k){aiKey=k;try{localStorage.setItem('rs_ai_key',k);}catch(e){}}
-
-function buildSystemPrompt(){
-    var now=new Date().toLocaleString('es-ES');
-    var ctx='Eres un asistente experto en ciclismo integrado en RideSafe AI. Respondes siempre en español, de forma concisa (máximo 3-4 frases). Fecha: '+now+'.';
-    if(currentLat)ctx+='\nPosición GPS: '+currentLat.toFixed(4)+', '+currentLng.toFixed(4)+' (Lleida, Catalunya).';
-    if(routeActive){var km=(totalDistance/1000).toFixed(1);var el=Math.round((Date.now()-routeStartTime)/1000);ctx+='\nRuta activa: '+km+' km, '+Math.floor(el/60)+' min.';}
-    ctx+='\nÁreas: mecánica, nutrición ciclista, meteorología, rutas, primeros auxilios, entrenamiento. Si hay emergencia médica grave, indica llamar al 112.';
-    return ctx;
-}
-
-async function askClaude(msg){
-    if(!aiKey){document.getElementById('ai-key-wrap').classList.add('show');return;}
-    if(aiThinking)return;
-    aiThinking=true;
-    document.getElementById('ai-send').disabled=true;
-    aiHistory.push({role:'user',content:msg});
-    appendMsg('user',msg);
-    var tid=appendThinking();
-    try{
-        var res=await fetch('https://api.anthropic.com/v1/messages',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-            body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:buildSystemPrompt(),messages:aiHistory.slice(-10)})
-        });
-        removeThinking(tid);
-        if(!res.ok){var er=await res.json().catch(function(){return{};});if(res.status===401){appendMsg('bot','❌ API key incorrecta. Actualízala arriba.');document.getElementById('ai-key-wrap').classList.add('show');}else{appendMsg('bot','⚠️ Error '+res.status+'. Comprueba tu conexión.');}aiThinking=false;document.getElementById('ai-send').disabled=false;return;}
-        var data=await res.json();
-        var reply=data.content&&data.content[0]?data.content[0].text:'(Sin respuesta)';
-        aiHistory.push({role:'assistant',content:reply});
-        appendMsg('bot',reply);
-        if(aiVoiceMode&&window.speechSynthesis){var u=new SpeechSynthesisUtterance(reply.replace(/[🚴🔧🍌🌤️🗺️🦵⚙️❌⚠️✅]/g,''));u.lang='es-ES';u.rate=1.05;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
-    }catch(e){removeThinking(tid);appendMsg('bot','⚠️ Sin conexión. El asistente necesita internet.');}
-    aiThinking=false;document.getElementById('ai-send').disabled=false;
-}
-
-function appendMsg(role,text){
-    var box=document.getElementById('ai-msgs');
-    var d=document.createElement('div');d.className='ai-msg '+role;
-    if(role==='bot')d.innerHTML='<div class="ai-name">🚴 RideSafe IA</div>'+text.replace(/\n/g,'<br>');
-    else d.textContent=text;
-    box.appendChild(d);box.scrollTop=box.scrollHeight;
-}
-var thinkN=0;
-function appendThinking(){var id='tk'+(++thinkN);var box=document.getElementById('ai-msgs');var d=document.createElement('div');d.className='ai-msg bot';d.id=id;d.innerHTML='<div class="ai-thinking"><span></span><span></span><span></span></div>';box.appendChild(d);box.scrollTop=box.scrollHeight;return id;}
-function removeThinking(id){var el=document.getElementById(id);if(el)el.remove();}
-
-function updateAICtx(){var bar=document.getElementById('ai-ctx');if(routeActive){bar.classList.add('show');document.getElementById('ai-ctx-km').textContent=(totalDistance/1000).toFixed(1);var el=Math.round((Date.now()-routeStartTime)/1000);document.getElementById('ai-ctx-spd').textContent=el>0?((totalDistance/1000)/(el/3600)).toFixed(1):'–';}else{bar.classList.remove('show');}}
-
-// Voz AI
-function initAIVoice(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;aiRec=new SR();aiRec.lang='es-ES';aiRec.continuous=false;aiRec.interimResults=false;aiRec.onresult=function(e){var t=e.results[0][0].transcript;document.getElementById('ai-input').value=t;aiVoiceMode=true;sendAI();stopAIVoice();};aiRec.onerror=stopAIVoice;aiRec.onend=stopAIVoice;}
-function stopAIVoice(){try{if(aiRec)aiRec.stop();}catch(e){}document.getElementById('ai-voice').classList.remove('on');document.getElementById('ai-voice').textContent='🎤';}
-function sendAI(){var t=document.getElementById('ai-input').value.trim();if(!t||aiThinking)return;document.getElementById('ai-input').value='';aiVoiceMode=false;askClaude(t);}
-
-document.getElementById('ai-key-save').addEventListener('click',function(){var k=document.getElementById('ai-key-input').value.trim();if(!k.startsWith('sk-ant-')){showToast('⚠️ La key debe empezar por sk-ant-');return;}saveAIKey(k);document.getElementById('ai-key-wrap').classList.remove('show');showToast('✅ API key guardada');askClaude('Hola, acabo de configurar el asistente. ¿Qué puedes hacer por mí?');});
-document.getElementById('ai-send').addEventListener('click',sendAI);
+function openAI(){document.getElementById('ai-panel').classList.add('show');if(!aiKey)document.getElementById('ai-key-wrap').classList.add('show');}
+document.getElementById('ai-back').addEventListener('click',function(){document.getElementById('ai-panel').classList.remove('show');});
+document.getElementById('ai-key-save').addEventListener('click',function(){
+  var k=document.getElementById('ai-key-input').value.trim();
+  if(!k.startsWith('sk-ant-')){showToast('⚠️ La key debe empezar por sk-ant-');return;}
+  saveAIKey(k);document.getElementById('ai-key-wrap').classList.remove('show');
+  showToast('✅ Asistente IA activado');
+  askClaude('Hola, acabo de activar el asistente. ¿Qué puedes hacer por mí como ciclista?');
+});
+document.getElementById('ai-send-btn').addEventListener('click',sendAI);
 document.getElementById('ai-input').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();sendAI();}});
-document.getElementById('ai-voice').addEventListener('click',function(){if(!aiRec)initAIVoice();if(!aiRec){showToast('⚠️ Voz no disponible en este navegador');return;}if(this.classList.contains('on')){aiVoiceMode=false;stopAIVoice();}else{this.classList.add('on');this.textContent='🛑';try{aiRec.start();}catch(e){stopAIVoice();}}});
-document.querySelectorAll('.ai-chip').forEach(function(chip){chip.addEventListener('click',function(){document.getElementById('ai-input').value=chip.dataset.q;sendAI();});});
-document.getElementById('ai-back').addEventListener('click',function(){document.getElementById('ai-panel').classList.remove('open');setNavActive('nav-mapa');});
+document.querySelectorAll('.ai-chip').forEach(function(c){c.addEventListener('click',function(){document.getElementById('ai-input').value=c.dataset.q;sendAI();});});
 
-// ════════════════════════════════════
-//  SENSOR ANTICAÍDA
-// ════════════════════════════════════
-function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
-function playBeep(freq,dur){try{var ctx=getAudioCtx();var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=freq;g.gain.setValueAtTime(0.25,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
-function playAlarm(){try{var ctx=getAudioCtx();[0,.35,.7].forEach(function(d){var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='square';o.frequency.setValueAtTime(880,ctx.currentTime+d);o.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+d+.25);g.gain.setValueAtTime(.35,ctx.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d+.28);o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.3);});}catch(e){}}
+function buildSys(){
+  var s='Eres un asistente experto en ciclismo de RideSafe AI. Respondes en español, conciso (máximo 3-4 frases). Fecha: '+new Date().toLocaleString('es-ES')+'.';
+  if(currentLat)s+='
+Posición: '+currentLat.toFixed(4)+', '+currentLng.toFixed(4)+' (Lleida).';
+  if(routeActive)s+='
+Ruta activa: '+(totalDistance/1000).toFixed(1)+' km.';
+  s+='
+Áreas: mecánica, nutrición ciclista, rutas, tiempo, emergencias. Emergencia grave: indicar llamar al 112.';
+  return s;
+}
+async function askClaude(msg){
+  if(!aiKey){openAI();return;}if(aiThinking)return;
+  aiThinking=true;document.getElementById('ai-send-btn').disabled=true;
+  aiHistory.push({role:'user',content:msg});appendMsg('user',msg);
+  var tid=appendThink();
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:buildSys(),messages:aiHistory.slice(-10)})});
+    removeThink(tid);
+    if(!res.ok){if(res.status===401){appendMsg('bot','❌ API key incorrecta.');document.getElementById('ai-key-wrap').classList.add('show');}else{appendMsg('bot','⚠️ Error '+res.status+'.');}aiThinking=false;document.getElementById('ai-send-btn').disabled=false;return;}
+    var d=await res.json();var reply=d.content&&d.content[0]?d.content[0].text:'(Sin respuesta)';
+    aiHistory.push({role:'assistant',content:reply});appendMsg('bot',reply);
+    if(aiVoice&&window.speechSynthesis){var u=new SpeechSynthesisUtterance(reply);u.lang='es-ES';window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
+  }catch(e){removeThink(tid);appendMsg('bot','⚠️ Sin conexión.');}
+  aiThinking=false;document.getElementById('ai-send-btn').disabled=false;
+}
+function sendAI(){var t=document.getElementById('ai-input').value.trim();if(!t||aiThinking)return;document.getElementById('ai-input').value='';aiVoice=false;askClaude(t);}
+function appendMsg(role,text){var box=document.getElementById('ai-msgs');var d=document.createElement('div');d.className='ai-msg '+role;if(role==='bot')d.innerHTML='<div class="ai-msg-name">RideSafe IA ✦</div>'+text.replace(/
+/g,'<br>');else d.textContent=text;box.appendChild(d);box.scrollTop=box.scrollHeight;}
+var tkN=0;
+function appendThink(){var id='tk'+(++tkN);var box=document.getElementById('ai-msgs');var d=document.createElement('div');d.className='ai-msg bot';d.id=id;d.innerHTML='<div class="ai-thinking"><span></span><span></span><span></span></div>';box.appendChild(d);box.scrollTop=box.scrollHeight;return id;}
+function removeThink(id){var e=document.getElementById(id);if(e)e.remove();}
+function initVoice(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;aiRec=new SR();aiRec.lang='es-ES';aiRec.continuous=false;aiRec.interimResults=false;aiRec.onresult=function(e){var t=e.results[0][0].transcript;document.getElementById('ai-input').value=t;aiVoice=true;sendAI();stopVoice();};aiRec.onerror=stopVoice;aiRec.onend=stopVoice;}
+function stopVoice(){try{if(aiRec)aiRec.stop();}catch(e){}document.getElementById('ai-voice-btn').classList.remove('on');document.getElementById('ai-voice-btn').textContent='🎤';}
+document.getElementById('ai-voice-btn').addEventListener('click',function(){if(!aiRec)initVoice();if(!aiRec){showToast('⚠️ Voz no disponible');return;}if(this.classList.contains('on')){aiVoice=false;stopVoice();}else{this.classList.add('on');this.textContent='🛑';try{aiRec.start();}catch(e){stopVoice();}}});
 
+// ANTICAÍDA
+function getACtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playBeep(f,d){try{var c=getACtx();var o=c.createOscillator();var g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(.25,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function playAlarm(){try{var c=getACtx();[0,.35,.7].forEach(function(d){var o=c.createOscillator();var g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';o.frequency.setValueAtTime(880,c.currentTime+d);o.frequency.exponentialRampToValueAtTime(440,c.currentTime+d+.25);g.gain.setValueAtTime(.35,c.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d+.28);o.start(c.currentTime+d);o.stop(c.currentTime+d+.3);});}catch(e){}}
+async function tryShield(){try{getACtx().resume();}catch(e){}if(shieldActive){deactivateShield();}else{await activateShield();}}
 async function activateShield(){
-    if(!window.DeviceMotionEvent){showToast('⚠️ Sin acelerómetro');return;}
-    if(typeof DeviceMotionEvent.requestPermission==='function'){
-        try{var p=await DeviceMotionEvent.requestPermission();if(p!=='granted'){showToast('🔒 Permiso denegado en iOS');return;}}
-        catch(e){showToast('⚠️ Pulsa el botón directamente para activar');return;}
-    }
-    shieldActive=true;shieldAlertFired=false;shieldHighG=false;shieldLastG=0;
-    window.addEventListener('devicemotion',onMotion);
-    updateShieldUI(true);
-    playBeep(880,.08);setTimeout(function(){playBeep(1100,.08);},120);
-    showToast('🛡️ Sensor anticaída activado');
-    setTimeout(function(){if(shieldActive&&shieldLastG===0)showToast('⚠️ Sin datos del acelerómetro — comprueba permisos');},3000);
+  if(!window.DeviceMotionEvent){showToast('⚠️ Sin acelerómetro');return;}
+  if(typeof DeviceMotionEvent.requestPermission==='function'){try{var p=await DeviceMotionEvent.requestPermission();if(p!=='granted'){showToast('🔒 Permiso denegado');return;}}catch(e){showToast('⚠️ Pulsa directamente para activar');return;}}
+  shieldActive=true;shieldAlert=false;shieldHighG=false;shieldLastG=0;
+  window.addEventListener('devicemotion',onMotion);
+  document.getElementById('pf-sensor-sub').textContent='Activo — detectando caídas';
+  playBeep(880,.08);setTimeout(function(){playBeep(1100,.08);},120);
+  showToast('🛡️ Sensor anticaída ACTIVADO');
+  setTimeout(function(){if(shieldActive&&shieldLastG===0)showToast('⚠️ Sin datos del acelerómetro');},3000);
 }
-function deactivateShield(){
-    shieldActive=false;
-    window.removeEventListener('devicemotion',onMotion);
-    clearTimeout(shieldTimer);
-    updateShieldUI(false);
-    playBeep(440,.1);
-    showToast('🛡️ Sensor anticaída desactivado');
-}
-function updateShieldUI(on){
-    var tog=document.getElementById('mas-shield-tog');
-    var sub=document.getElementById('mas-shield-sub');
-    var icon=document.getElementById('mas-shield-icon');
-    if(tog)tog.classList.toggle('on',on);
-    if(sub)sub.textContent=on?'Activo — detectando caídas':'Toca para activar';
-    if(icon)icon.style.borderColor=on?'rgba(57,255,20,.4)':'var(--border)';
-}
+function deactivateShield(){shieldActive=false;window.removeEventListener('devicemotion',onMotion);document.getElementById('pf-sensor-sub').textContent='Inactivo';playBeep(440,.1);showToast('🛡️ Sensor desactivado');}
+function onMotion(e){if(!shieldActive||shieldAlert)return;var a=e.accelerationIncludingGravity;if(!a)return;var g=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));shieldLastG=g;if(!shieldHighG&&g>25){shieldHighG=true;shieldImpact=Date.now();return;}if(shieldHighG){var t=Date.now()-shieldImpact;if(t<3000){if(g<3){shieldHighG=false;triggerCaida();}}else{shieldHighG=false;}}}
+function triggerCaida(){if(shieldAlert)return;shieldAlert=true;playAlarm();if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);try{var u=new SpeechSynthesisUtterance('Atención, posible caída detectada. Cancelando en diez segundos.');u.lang='es-ES';window.speechSynthesis.speak(u);}catch(e){}document.getElementById('caida-modal').classList.add('show');startCountdown();}
+function startCountdown(){var s=10;document.getElementById('cd-num').textContent=s;document.getElementById('cd-arc').style.strokeDashoffset=0;countdownTimer=setInterval(function(){s--;document.getElementById('cd-num').textContent=s;document.getElementById('cd-arc').style.strokeDashoffset=((10-s)/10)*208;playBeep(660,.05);if(s<=0){clearInterval(countdownTimer);closeCaida();sendSOS();}},1000);}
+function closeCaida(){clearInterval(countdownTimer);document.getElementById('caida-modal').classList.remove('show');shieldAlert=false;shieldHighG=false;}
+function sendSOS(){playAlarm();if(navigator.vibrate)navigator.vibrate([400,200,400,200,800]);showToast('🆘 Alerta de caída enviada');}
+document.getElementById('caida-ok').addEventListener('click',function(){closeCaida();playBeep(1100,.12);showToast('✅ Falsa alarma cancelada');});
+document.getElementById('caida-sos').addEventListener('click',function(){closeCaida();sendSOS();});
 
-function onMotion(e){
-    if(!shieldActive||shieldAlertFired)return;
-    var a=e.accelerationIncludingGravity;if(!a)return;
-    var g=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
-    shieldLastG=g;
-    if(!shieldHighG&&g>25){shieldHighG=true;shieldImpactTime=Date.now();return;}
-    if(shieldHighG){
-        var t=Date.now()-shieldImpactTime;
-        if(t<3000){if(g<3){shieldHighG=false;triggerCaida();}}
-        else{shieldHighG=false;}
-    }
-}
+// OFFLINE
+var ZKEY='rs_zones';
+function loadZones(){try{return JSON.parse(localStorage.getItem(ZKEY))||[];}catch(e){return[];}}
+function saveZone(z){var zs=loadZones();zs.unshift(z);localStorage.setItem(ZKEY,JSON.stringify(zs));}
+function delZone(id){localStorage.setItem(ZKEY,JSON.stringify(loadZones().filter(function(z){return z.id!==id;})));}
+function openOffline(){renderZones();document.getElementById('offline-panel').style.display='flex';refreshStorage();}
+document.getElementById('offline-back').addEventListener('click',function(){document.getElementById('offline-panel').style.display='none';});
+function latLngToTile(lat,lng,z){var n=Math.pow(2,z);var x=Math.floor((lng+180)/360*n);var lr=lat*Math.PI/180;var y=Math.floor((1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n);return{x:x,y:y};}
+function countTiles(b,z0,z1){var c=0;for(var z=z0;z<=z1;z++){var nw=latLngToTile(b.getNorth(),b.getWest(),z);var se=latLngToTile(b.getSouth(),b.getEast(),z);c+=(Math.abs(se.x-nw.x)+1)*(Math.abs(se.y-nw.y)+1);}return c;}
+function getTileUrls(b,z0,z1){var us=[],ss=['a','b','c','d'];for(var z=z0;z<=z1;z++){var nw=latLngToTile(b.getNorth(),b.getWest(),z);var se=latLngToTile(b.getSouth(),b.getEast(),z);var x0=Math.min(nw.x,se.x),x1=Math.max(nw.x,se.x),y0=Math.min(nw.y,se.y),y1=Math.max(nw.y,se.y);for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++)us.push('https://'+ss[(x+y)%4]+'.basemaps.cartocdn.com/rastertiles/voyager/'+z+'/'+x+'/'+y+'.png');}return us;}
+document.getElementById('btn-add-zone').addEventListener('click',function(){if(!mapInstance){showToast('⚠️ Abre el mapa primero');return;}var b=mapInstance.getBounds(),z1=parseInt(document.getElementById('zm-zoom').value),z0=Math.max(mapInstance.getZoom()-2,10);var n=countTiles(b,z0,z1);document.getElementById('zm-preview').innerHTML='Zoom <strong style="color:var(--g)">'+z0+'–'+z1+'</strong> · Tiles: <strong style="color:var(--g)">~'+n+'</strong> · ~<strong style="color:var(--g)">'+(n*15/1024).toFixed(1)+' MB</strong>';pendingZone={bounds:b,z0:z0,z1:z1,count:n};document.getElementById('zm-name').value='';document.getElementById('zone-modal').style.display='flex';});
+document.getElementById('zm-cancel').addEventListener('click',function(){document.getElementById('zone-modal').style.display='none';});
+document.getElementById('zm-confirm').addEventListener('click',function(){var name=document.getElementById('zm-name').value.trim()||'Zona sin nombre';var pz=pendingZone;if(!pz)return;var zid=Date.now();saveZone({id:zid,name:name,timestamp:Date.now(),z0:pz.z0,z1:pz.z1,count:pz.count,status:'saved'});document.getElementById('zone-modal').style.display='none';renderZones();if(swReady&&navigator.serviceWorker.controller){var urls=getTileUrls(pz.bounds,pz.z0,pz.z1);navigator.serviceWorker.controller.postMessage({type:'CACHE_ZONE',tiles:urls,zoneId:zid});showToast('💾 Descargando...');}else{showToast('✅ Zona registrada');}});
+function renderZones(){var zs=loadZones();var list=document.getElementById('zone-list');list.innerHTML='';if(!zs.length){list.innerHTML='<div style="text-align:center;padding:40px;color:#666;"><div style="font-size:40px;opacity:.4;margin-bottom:10px;">💾</div><p>No hay zonas guardadas.</p></div>';return;}zs.forEach(function(z){var d=document.createElement('div');d.style.cssText='background:#1c1c1c;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #2a2a2a;position:relative;overflow:hidden;';d.innerHTML='<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#a8e63d;"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;">📦 '+z.name+'</div><span style="font-size:10px;color:#a8e63d;background:rgba(168,230,61,.1);border:1px solid rgba(168,230,61,.3);border-radius:8px;padding:2px 8px;">✅ Lista</span></div><button data-id="'+z.id+'" style="margin-top:8px;background:none;border:1px solid #2a2a2a;color:#666;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;">🗑 Eliminar</button>';d.querySelector('button').addEventListener('click',function(){if(confirm('¿Eliminar zona "'+z.name+'"?')){delZone(z.id);renderZones();}});list.appendChild(d);});}
+function refreshStorage(){if(swReady&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_SIZE'});}
 
-function triggerCaida(){
-    if(shieldAlertFired)return;
-    shieldAlertFired=true;
-    playAlarm();
-    if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
-    if(window.speechSynthesis){var u=new SpeechSynthesisUtterance('Atención, posible caída detectada. Cancelando en diez segundos.');u.lang='es-ES';window.speechSynthesis.speak(u);}
-    document.getElementById('caida-modal').classList.add('show');
-    startCountdown();
+// SW
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister();});});
+  if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});
+  navigator.serviceWorker.register('./sw.js').then(function(reg){
+    swReady=true;document.getElementById('op-sw').textContent='✅ SW';document.getElementById('op-sw').style.color='var(--g)';refreshStorage();
+    navigator.serviceWorker.addEventListener('message',function(e){var d=e.data;if(d.type==='CACHE_SIZE'){var mb=(d.size/(1024*1024)).toFixed(1);document.getElementById('storage-lbl').textContent=mb+' MB';document.getElementById('storage-fill').style.width=Math.min((d.size/(50*1024*1024))*100,100)+'%';}if(d.type==='CACHE_DONE')showToast('✅ Zona guardada offline');});
+  }).catch(function(){});
 }
 
-function startCountdown(){
-    var secs=10;
-    document.getElementById('cd-num').textContent=secs;
-    document.getElementById('cd-arc').style.strokeDashoffset=0;
-    countdownTimer=setInterval(function(){
-        secs--;
-        document.getElementById('cd-num').textContent=secs;
-        document.getElementById('cd-arc').style.strokeDashoffset=((10-secs)/10)*198;
-        playBeep(660,.05);
-        if(secs<=0){clearInterval(countdownTimer);closeCaidaModal();sendAlertaSOS();}
-    },1000);
-}
-function closeCaidaModal(){clearInterval(countdownTimer);document.getElementById('caida-modal').classList.remove('show');shieldAlertFired=false;shieldHighG=false;}
-function sendAlertaSOS(){playAlarm();if(navigator.vibrate)navigator.vibrate([400,200,400,200,800]);showToast('🆘 Alerta de caída enviada');}
-
-document.getElementById('caida-ok').addEventListener('click',function(){closeCaidaModal();playBeep(1100,.12);showToast('✅ Falsa alarma cancelada');});
-document.getElementById('caida-sos').addEventListener('click',function(){closeCaidaModal();sendAlertaSOS();});
-
-// ════════════════════════════════════
-//  MENÚ CAPAS
-// ════════════════════════════════════
-document.getElementById('btn-layers').addEventListener('click',function(){document.getElementById('layer-menu').classList.add('open');document.getElementById('layer-overlay').classList.add('open');});
-document.getElementById('lm-close').addEventListener('click',function(){document.getElementById('layer-menu').classList.remove('open');document.getElementById('layer-overlay').classList.remove('open');});
-document.getElementById('layer-overlay').addEventListener('click',function(){document.getElementById('layer-menu').classList.remove('open');document.getElementById('layer-overlay').classList.remove('open');});
-document.querySelectorAll('.lm-tile').forEach(function(tile){
-    tile.addEventListener('click',function(){setLayer(tile.dataset.layer);showToast('🗺 '+LAYERS[tile.dataset.layer].name.split('—')[0].trim());});
-});
-var togNight=document.getElementById('tog-night');
-try{if(localStorage.getItem('rs_night')==='1')togNight.classList.add('on');}catch(e){}
-togNight.addEventListener('click',function(){this.classList.toggle('on');try{localStorage.setItem('rs_night',this.classList.contains('on')?'1':'0');}catch(e){}checkAutoNight();});
-function checkAutoNight(){var on=document.getElementById('tog-night').classList.contains('on');if(!on)return;var h=new Date().getHours();if((h>=21||h<7)&&currentLayerKey!=='dark'){setLayer('dark');showToast('🌙 Modo noche automático');}else if(h>=7&&h<21&&currentLayerKey==='dark'){setLayer('voyager');showToast('☀️ Modo día automático');}}
-
-document.getElementById('lm-diag').addEventListener('click',function(){
-    document.getElementById('layer-menu').classList.remove('open');
-    document.getElementById('layer-overlay').classList.remove('open');
-    runDiag();
-});
+// DIAGNÓSTICO
 async function runDiag(){
-    var lines=['<strong style="color:#00e5ff">Diagnóstico</strong><br>'];
-    if(!navigator.geolocation){lines.push('❌ GPS: No soportado');}
-    else{try{var p=navigator.permissions?((await navigator.permissions.query({name:'geolocation'})).state):'unknown';lines.push((p==='granted'?'✅':'⚠️')+' GPS: '+p);}catch(e){lines.push('⚠️ GPS: Estado desconocido');}}
-    lines.push(window.DeviceMotionEvent?'✅ Acelerómetro: Disponible':'❌ Acelerómetro: No disponible');
-    lines.push(('serviceWorker' in navigator)?'✅ Service Worker: Activo':'❌ Service Worker: No soportado');
-    lines.push(location.protocol==='https:'?'✅ HTTPS: Seguro':'⚠️ HTTPS: Sin HTTPS');
-    showInfoCard(lines.join('<br>'));
+  var r=['GPS: '+(navigator.geolocation?'OK':'No'),'Acelerómetro: '+(window.DeviceMotionEvent?'OK':'No'),'SW: '+('serviceWorker' in navigator?'OK':'No'),'HTTPS: '+(location.protocol==='https:'?'OK':'No')];
+  alert('RideSafe AI — Diagnóstico
+
+'+r.join('
+'));
 }
 
-// ════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════
+// HELPERS
 function showSpinner(s){document.getElementById('spinner').classList.toggle('show',s);}
-function showInfoCard(html){document.getElementById('info-text').innerHTML=html;document.getElementById('info-card').classList.add('show');}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){t.classList.remove('show');},2800);}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2800);}
+window.addEventListener('offline',function(){document.getElementById('act-status').textContent='● Offline';});
+window.addEventListener('online',function(){document.getElementById('act-status').textContent='● Online';});
 
-// ════════════════════════════════════
-//  NAVEGACIÓN INFERIOR
-// ════════════════════════════════════
-function setNavActive(id){document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
-
-var masOpen=false;
-function openMas(){masOpen=true;document.getElementById('mas-drawer').classList.add('open');document.getElementById('mas-overlay').classList.add('show');setNavActive('nav-mas');}
-function closeMas(){masOpen=false;document.getElementById('mas-drawer').classList.remove('open');document.getElementById('mas-overlay').classList.remove('show');if(!document.querySelector('.slide-panel.open'))setNavActive('nav-mapa');}
-
-document.getElementById('nav-mapa').addEventListener('click',function(){
-    closeMas();
-    document.querySelectorAll('.slide-panel').forEach(function(p){p.classList.remove('open');});
-    document.getElementById('layer-menu').classList.remove('open');
-    document.getElementById('layer-overlay').classList.remove('open');
-    setNavActive('nav-mapa');
-});
-
-document.getElementById('nav-ruta').addEventListener('click',function(){
-    closeMas();
-    routeActive=!routeActive;
-    var btn=document.getElementById('nav-ruta');
-    if(routeActive){btn.classList.add('rec');startRoute();}
-    else{btn.classList.remove('rec');stopRoute();}
-});
-
-document.getElementById('nav-sos').addEventListener('click',function(){
-    closeMas();
-    if(!confirm('🆘 ¿Enviar ALERTA SOS?\nSe notificará tu posición.'))return;
-    if(navigator.vibrate)navigator.vibrate([300,100,300,100,600]);
-    try{playAlarm();}catch(e){}
-    showToast('🆘 SOS enviado');
-});
-
-document.getElementById('nav-historial').addEventListener('click',function(){
-    closeMas();
-    openHistoryPanel();
-});
-
-document.getElementById('nav-mas').addEventListener('click',function(){
-    if(masOpen)closeMas();else openMas();
-});
-
-document.getElementById('mas-overlay').addEventListener('click',closeMas);
-
-document.getElementById('mas-offline').addEventListener('click',function(){
-    closeMas();
-    renderZones();
-    document.getElementById('offline-panel').classList.add('open');
-    setNavActive('nav-mas');
-});
-
-document.getElementById('mas-shield-item').addEventListener('click',function(){
-    try{getAudioCtx().resume();}catch(e){}
-    if(shieldActive)deactivateShield();else activateShield();
-});
-
-document.getElementById('mas-ai-item').addEventListener('click',function(){
-    closeMas();
-    if(!aiKey)document.getElementById('ai-key-wrap').classList.add('show');
-    updateAICtx();
-    document.getElementById('ai-panel').classList.add('open');
-    setNavActive('nav-mas');
-});
-
-document.getElementById('op-back').addEventListener('click',function(){document.getElementById('offline-panel').classList.remove('open');setNavActive('nav-mapa');});
-document.getElementById('fab-gps').addEventListener('click',function(){locateUser(true);});
-
-// ════════════════════════════════════
-//  ONLINE / OFFLINE
-// ════════════════════════════════════
-window.addEventListener('offline',function(){var s=document.getElementById('status');s.textContent='● Offline 🛡️';s.classList.add('offline');});
-window.addEventListener('online',function(){var s=document.getElementById('status');s.textContent='● Online';s.classList.remove('offline');});
-
-// ════════════════════════════════════
-//  INIT
-// ════════════════════════════════════
-updateOfflineBadge();
-checkAutoNight();
+// INIT
 loadAIKey();
-initAIVoice();
-setNavActive('nav-mapa');
-locateUser(false);
-setTimeout(function(){if(!currentLat)showToast('📍 Pulsa el botón de crosshair para activar GPS');},3000);
+initVoice();
+setTimeout(function(){if(!currentLat)showToast('📍 Ve a Actividad y pulsa el GPS');},3000);
 
 </script>
 </body>
