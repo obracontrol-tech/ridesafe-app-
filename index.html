@@ -1057,10 +1057,7 @@ function toast(msg) {
 function abrirSeguridad() {
   document.getElementById('panel-seg').classList.add('open');
 }
-function cerrarSeguridad() {
-  document.getElementById('panel-seg').style.display = 'none';
-  document.getElementById('panel-seg').classList.remove('open');
-}
+// [eliminado — ver sistema universal]
 
 // ── ANTICAÍDA ──
 var shieldOn = false;
@@ -1402,26 +1399,9 @@ function toggleLayerPicker() {
     document.getElementById('layer-picker').classList.toggle('show');
 }
 
-function abrirNav() {
-    var pn = document.getElementById('panel-nav');
-    pn.style.display = 'grid';
-    setTimeout(function(){ pn.classList.add('open'); }, 10);
-    setTimeout(initNavMap, 100);
-    // Cargar token guardado
-    try {
-        var t = localStorage.getItem('rs_mapbox');
-        if (t) { MAPBOX_TOKEN = t; LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token=' + t; }
-        var l = localStorage.getItem('rs_layer');
-        if (l) navLayerKey = l;
-    } catch(e) {}
-}
+// [eliminado — ver sistema universal]
 
-function cerrarNav() {
-    var pn = document.getElementById('panel-nav');
-    pn.classList.remove('open');
-    document.getElementById('layer-picker').classList.remove('show');
-    setTimeout(function(){ if(!pn.classList.contains('open')) pn.style.display = 'none'; }, 350);
-}
+// [eliminado — ver sistema universal]
 
 // GPS
 function centrarGPS() {
@@ -1576,25 +1556,7 @@ var aiRec = null;
 var aiVoz = false;
 var aiTkN = 0;
 
-function abrirAI() {
-    document.getElementById('panel-ai').classList.add('open');
-    if (!aiKey) {
-        // Mostrar mensaje de bienvenida con instrucciones
-        var box = document.getElementById('ai-msgs');
-        if (box.querySelectorAll('.ai-msg').length === 1) {
-            // Solo el mensaje inicial — añadir instrucciones
-            var d = document.createElement('div');
-            d.className = 'ai-msg bot';
-            d.innerHTML = '<div class="ai-msg-name">RideSafe IA ✦</div>Para activar el asistente inteligente, introduce tu API key de Anthropic.<br><br>👉 Ve a <strong style="color:#a8e63d">console.anthropic.com</strong> → API Keys → Create Key.<br><br>Es gratuita para uso personal. Solo la necesitas una vez.';
-            box.appendChild(d);
-            box.scrollTop = box.scrollHeight;
-        }
-        document.getElementById('ai-key-setup').classList.add('show');
-    }
-}
-function cerrarAI() {
-    document.getElementById('panel-ai').classList.remove('open');
-}
+// [limpiado]
 
 function guardarAPIKey() {
     var k = document.getElementById('ai-key-input').value.trim();
@@ -1741,15 +1703,8 @@ initVoz();
 // ══ PANEL RUTAS ══
 var miniMapas = {};
 
-function abrirRutas() {
-    document.getElementById('panel-rutas').style.display = 'grid';
-    document.getElementById('panel-rutas').classList.add('open');
-    renderRutas();
-}
-function cerrarRutas() {
-    document.getElementById('panel-rutas').style.display = 'none';
-    document.getElementById('panel-rutas').classList.remove('open');
-}
+// [eliminado — ver sistema universal]
+// [eliminado — ver sistema universal]
 
 function cargarRutas() {
     try { return JSON.parse(localStorage.getItem('rs_routes') || '[]'); } catch(e) { return []; }
@@ -1853,19 +1808,8 @@ var planGeoJSON = null;
 // Cargar key guardada
 try { var ok = localStorage.getItem('rs_ors_key'); if(ok) orsKey = ok; } catch(e) {}
 
-function abrirPlanificar() {
-    document.getElementById('panel-planificar').style.display = 'flex';
-    document.getElementById('panel-planificar').classList.add('open');
-    setTimeout(function() {
-        if (!planMapa) initPlanMapa();
-        else planMapa.invalidateSize();
-        if (!orsKey) document.getElementById('ors-key-setup').classList.add('show');
-    }, 100);
-}
-function cerrarPlanificar() {
-    document.getElementById('panel-planificar').style.display = 'none';
-    document.getElementById('panel-planificar').classList.remove('open');
-}
+// [eliminado — ver sistema universal]
+// [eliminado — ver sistema universal]
 
 function guardarORSKey() {
     var k = document.getElementById('ors-key-input').value.trim();
@@ -2020,45 +1964,10 @@ async function calcularRuta() {
     btn.innerHTML = '🗺 CALCULAR RUTA';
 }
 
-function iniciarNavRuta() {
-    if (!planGeoJSON) return;
-    var coords = planGeoJSON.features[0].geometry.coordinates;
-    toast('🚴 Cargando en el mapa...');
-
-    // 1. Cerrar planificador
-    document.getElementById('panel-planificar').style.display = 'none';
-    cerrarPlanificar();
-
-    // 2. Abrir nav con delay para que se complete el cierre
-    setTimeout(function() {
-        abrirNav();
-
-        // 3. Dibujar ruta cuando el mapa esté listo
-        setTimeout(function() {
-            if (!navMap) { initNavMap(); }
-            navMap.invalidateSize();
-            if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
-            rutaPlanLayer = L.polyline(
-                coords.map(function(c){ return [c[1], c[0]]; }),
-                { color:'#a8e63d', weight:5, opacity:.9, dashArray:'10 5' }
-            ).addTo(navMap);
-            navMap.fitBounds(rutaPlanLayer.getBounds(), { padding:[30,30] });
-            toast('✅ Ruta lista — pulsa REC para grabar');
-        }, 500);
-    }, 400);
-}
-
 // Variable para la ruta planificada en el mapa nav
 var rutaPlanLayer = null;
 
-function cerrarNavYPlanificar() {
-    // Primero cerrar el nav completamente
-    document.getElementById('panel-nav').classList.remove('open');
-    // Esperar que termine la animación de cierre (300ms) antes de abrir planificador
-    setTimeout(function() {
-        abrirPlanificar();
-    }, 350);
-}
+// [eliminado — ver sistema universal]
 
 
 // ══ SISTEMA NAVEGACIÓN UNIVERSAL ══
