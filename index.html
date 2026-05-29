@@ -793,7 +793,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     <!-- Barra inferior -->
     <div id="nav-bottombar">
         <div id="nav-status">● Online</div>
-        <button style="width:48px;height:48px;border-radius:12px;background:#1a1a1a;border:1px solid rgba(168,230,61,.3);color:#a8e63d;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;" onclick="cerrarNav();abrirPlanificar()" title="Planificar ruta">🗺</button>
+        <button style="width:48px;height:48px;border-radius:12px;background:#1a1a1a;border:1px solid rgba(168,230,61,.3);color:#a8e63d;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;" onclick="cerrarNavYPlanificar()" title="Planificar ruta">🗺</button>
         <button id="nav-gps-btn" onclick="centrarGPS()">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
         </button>
@@ -2011,6 +2011,15 @@ function iniciarNavRuta() {
 
 // Variable para la ruta planificada en el mapa nav
 var rutaPlanLayer = null;
+
+function cerrarNavYPlanificar() {
+    // Primero cerrar el nav completamente
+    document.getElementById('panel-nav').classList.remove('open');
+    // Esperar que termine la animación de cierre (300ms) antes de abrir planificador
+    setTimeout(function() {
+        abrirPlanificar();
+    }, 350);
+}
 
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
