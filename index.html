@@ -3311,8 +3311,7 @@ async function runDiagnostics() {
 loadGrupoConfig();
 initWalkie();
 
-// ════════════════════════════════════════════════════════════════
-//  NAVEGACIÓN INFERIOR — rewire completo
+// [nav rewired below]
 // ════════════════════════════════════════════════════════════════
 
 // ── GPS FAB ──
@@ -4389,15 +4388,7 @@ document.getElementById('ds-sos-btn').addEventListener('click', async () => {
 // ── Back ──
 document.getElementById('ds-back').addEventListener('click', closeDrivingScreen);
 
-// ── Abrir pantalla de conducción desde FAB grupo si ya está activo ──
-const originalOpenGrupo = openGrupoPanel;
-document.getElementById('btn-grupo').removeEventListener('click', openGrupoPanel);
-document.getElementById('btn-grupo').addEventListener('click', () => {
-    if (grupoState.active) openDrivingScreen();
-    else openGrupoPanel();
-});
-
-// Voz entrante → mostrar también en pantalla conducción (ya lo gestiona addWalkieMsg)
+// Navegación gestionada por bottom-nav JS
 
 
 
@@ -4572,6 +4563,171 @@ document.getElementById('btn-grupo').addEventListener('click', () => {
         <button id="install-dismiss">Ahora no</button>
     </div>
 </div>
+
+
+// ════════════════════════════════════════════════════════════════
+//  NAVEGACIÓN INFERIOR — versión limpia (sin conflictos)
+// ════════════════════════════════════════════════════════════════
+window.addEventListener('load', function() {
+
+    // ── Helpers ──
+    function setActive(id) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        var el = document.getElementById(id);
+        if (el) el.classList.add('active');
+    }
+
+    var masOpen = false;
+    function openMas() {
+        masOpen = true;
+        document.getElementById('mas-drawer').style.bottom = '62px';
+        setActive('nav-mas');
+    }
+    function closeMas() {
+        masOpen = false;
+        document.getElementById('mas-drawer').style.bottom = '-400px';
+        document.getElementById('nav-mas').classList.remove('active');
+    }
+    window.closeMasDrawer = closeMas;
+
+    function closeAllPanels() {
+        ['history-panel','offline-panel','grupo-panel','driving-screen','ai-panel'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.classList.remove('open');
+        });
+        var lm = document.getElementById('layer-menu');
+        var lo = document.getElementById('layer-overlay');
+        if (lm) lm.classList.remove('open');
+        if (lo) lo.classList.remove('open');
+    }
+
+    // ── GPS FAB ──
+    var fabGps = document.getElementById('fab-gps');
+    if (fabGps) fabGps.addEventListener('click', function() {
+        locateUser(true);
+        fabGps.classList.add('located');
+    });
+
+    // ── Mapa ──
+    var navMapa = document.getElementById('nav-mapa');
+    if (navMapa) navMapa.addEventListener('click', function() {
+        closeMas();
+        closeAllPanels();
+        setActive('nav-mapa');
+    });
+
+    // ── Ruta ──
+    var navRuta = document.getElementById('nav-ruta');
+    if (navRuta) navRuta.addEventListener('click', function() {
+        closeMas();
+        routeActive = !routeActive;
+        if (routeActive) {
+            navRuta.classList.add('recording');
+            startRoute();
+            showToast('🔴 Grabando ruta...');
+        } else {
+            navRuta.classList.remove('recording');
+            stopRoute();
+        }
+    });
+
+    // ── SOS ──
+    var navSos = document.getElementById('nav-sos');
+    if (navSos) navSos.addEventListener('click', function() {
+        closeMas();
+        var ok = window.confirm('🆘 ¿Enviar ALERTA SOS?\nTodos recibirán tu posición.');
+        if (!ok) return;
+        if (grupoState.active && grupoState.codigo) {
+            fbUpdate('/grupos/' + grupoState.codigo + '/members/' + grupoState.myId, {
+                sos: true, lat: currentLat, lng: currentLng, ts: Date.now()
+            });
+        }
+        if (navigator.vibrate) navigator.vibrate([300,100,300,100,600]);
+        try { playAlarm(); } catch(e) {}
+        try { if (grupoState.vozActiva) speak('SOS enviado. Ayuda en camino.'); } catch(e) {}
+        showToast('🆘 SOS enviado');
+    });
+
+    // ── Grupo ──
+    var navGrupo = document.getElementById('nav-grupo');
+    if (navGrupo) navGrupo.addEventListener('click', function() {
+        closeMas();
+        if (grupoState.active) {
+            openDrivingScreen();
+        } else {
+            openGrupoPanel();
+        }
+        setActive('nav-grupo');
+    });
+
+    // ── Más ──
+    var navMas = document.getElementById('nav-mas');
+    if (navMas) navMas.addEventListener('click', function() {
+        if (masOpen) closeMas(); else openMas();
+    });
+
+    // ── Items del drawer Más ──
+    var itHistorial = document.getElementById('mas-item-historial');
+    if (itHistorial) itHistorial.addEventListener('click', function() {
+        closeMas();
+        openHistoryPanel();
+        setActive('nav-mas');
+    });
+
+    var itOffline = document.getElementById('mas-item-offline');
+    if (itOffline) itOffline.addEventListener('click', function() {
+        closeMas();
+        openOfflinePanel();
+        setActive('nav-mas');
+    });
+
+    var itShield = document.getElementById('mas-item-shield');
+    if (itShield) itShield.addEventListener('click', function() {
+        try { initAudioCtx().resume(); } catch(e) {}
+        toggleShield();
+        // Actualizar toggle visual
+        setTimeout(function() {
+            var on = shieldState.active;
+            var tog = document.getElementById('mas-shield-toggle');
+            var knob = document.getElementById('mas-shield-knob');
+            var lbl = document.getElementById('mas-shield-label');
+            if (tog) tog.style.background = on ? '#39FF14' : '#1e2d3a';
+            if (knob) knob.style.transform = on ? 'translateX(16px)' : 'translateX(0)';
+            if (lbl) lbl.textContent = on ? 'Activo — detectando caídas' : 'Toca para activar';
+        }, 300);
+    });
+
+    var itAI = document.getElementById('mas-item-ai');
+    if (itAI) itAI.addEventListener('click', function() {
+        closeMas();
+        openAIPanel();
+        setActive('nav-mas');
+    });
+
+    // ── Cerrar drawer al tocar fuera ──
+    document.addEventListener('click', function(e) {
+        if (!masOpen) return;
+        var drawer = document.getElementById('mas-drawer');
+        var btnMas = document.getElementById('nav-mas');
+        if (drawer && btnMas &&
+            !drawer.contains(e.target) &&
+            !btnMas.contains(e.target)) {
+            closeMas();
+        }
+    });
+
+    // ── Ocultar botones viejos por si quedó alguno visible ──
+    ['btn-grupo','btn-history','btn-route','btn-locate',
+     'btn-offline-panel','btn-ai','btn-shield'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    // ── Activar mapa por defecto ──
+    setActive('nav-mapa');
+
+    console.log('✅ RideSafe AI nav inicializada');
+});
 
 </script>
 </body>
