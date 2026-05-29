@@ -15,18 +15,20 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --neon: #39FF14;
-            --neon-dim: rgba(57,255,20,0.12);
-            --neon-glow: rgba(57,255,20,0.35);
-            --black: #080e18;
-            --dark: #0d1521;
-            --dark2: #111a28;
-            --card: rgba(13,21,33,0.97);
-            --border: #1e2d3a;
-            --muted: #3a5a6a;
-            --mid: #7ab8d4;
-            --red: #ff4444;
-            --orange: #ff9900;
+            --neon: #00e5ff;
+            --neon2: #0077ff;
+            --neon-dim: rgba(0,229,255,0.10);
+            --neon-glow: rgba(0,229,255,0.35);
+            --black: #060c14;
+            --dark: #0a1520;
+            --dark2: #0d1a2a;
+            --card: rgba(10,21,32,0.97);
+            --border: #1a3040;
+            --muted: #2a5a7a;
+            --mid: #5aaac8;
+            --red: #ff3355;
+            --orange: #ff8800;
+            --green: #39ff14;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { height: 100%; background: var(--black); font-family: 'Segoe UI', sans-serif; overflow: hidden; color: white; }
@@ -35,17 +37,47 @@
         /* Layout estable en móvil */
         html { height: 100%; overflow: hidden; }
         body { height: 100%; overflow: hidden; touch-action: pan-x pan-y; }
-        #map { position: absolute; top: 0; left: 0; right: 0; bottom: 62px; }
+        #map { position: absolute; top: 0; left: 0; right: 0; bottom: 64px; }
 
         /* ── HEADER ── */
         #header {
             position: absolute; top: 0; left: 0; right: 0; z-index: 500;
-            background: linear-gradient(180deg, rgba(8,14,24,0.97) 60%, transparent 100%);
-            padding: 12px 14px 28px;
+            background: linear-gradient(180deg, rgba(6,12,20,0.99) 70%, transparent 100%);
+            padding: 10px 14px 32px;
             display: flex; align-items: center; gap: 10px;
         }
-        #logo { color: var(--neon); font-size: 17px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; text-shadow: 0 0 8px var(--neon); }
-        #logo span { color: white; font-weight: 400; }
+        #logo {
+            display: flex; flex-direction: column; white-space: nowrap; flex-shrink: 0;
+        }
+        #logo-top {
+            font-size: 15px; font-weight: 900; letter-spacing: 2px;
+            color: var(--neon); text-shadow: 0 0 12px var(--neon), 0 0 24px rgba(0,229,255,.3);
+            line-height: 1;
+        }
+        #logo-sub {
+            font-size: 8px; font-weight: 600; color: var(--muted);
+            letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px;
+        }
+        /* Separador vertical */
+        #logo-sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+        /* Info ruta activa en header */
+        #header-route {
+            flex: 1; min-width: 0; display: flex; flex-direction: column;
+        }
+        #header-route-name {
+            font-size: 11px; font-weight: 700; color: white;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        #header-route-stats {
+            font-size: 10px; color: var(--muted); margin-top: 1px;
+            display: flex; gap: 8px;
+        }
+        #header-route-stats span { color: var(--neon); font-weight: 700; }
+        /* Sin ruta activa — mostrar buscador */
+        #search-wrap { flex: 1; position: relative; display: none; }
+        #search-wrap.show { display: block; }
+        #header-route { display: none; }
+        #header-route.show { display: flex; }
         #search-wrap { flex: 1; position: relative; }
         #search-input {
             width: 100%; padding: 9px 38px 9px 14px;
@@ -70,7 +102,7 @@
             background: var(--card); color: var(--neon); padding: 5px 12px;
             border-radius: 20px; border: 1px solid var(--neon);
             font-size: 10px; font-weight: 700; letter-spacing: 1px;
-            box-shadow: 0 0 10px rgba(57,255,20,0.2); transition: all .3s;
+            box-shadow: 0 0 10px rgba(0,229,255,0.2); transition: all .3s;
         }
         #status.offline { color: var(--orange); border-color: var(--orange); }
         #status.recording { animation: pulse-badge 1.2s infinite; }
@@ -133,58 +165,74 @@
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* ══════════════════════════════════════
-           BARRA NAVEGACIÓN INFERIOR
+           BARRA NAVEGACIÓN INFERIOR — BikeTrax style
         ══════════════════════════════════════ */
         #bottom-nav {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 62px;
-            z-index: 600; background: rgba(8,14,24,0.97);
-            border-top: 1px solid var(--border);
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 64px; z-index: 600;
+            background: rgba(6,12,20,0.98);
+            border-top: 1px solid #1a3040;
             display: flex; align-items: stretch;
             padding-bottom: env(safe-area-inset-bottom);
+            backdrop-filter: blur(10px);
         }
         .nav-btn {
             flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 3px;
+            align-items: center; justify-content: center; gap: 4px;
             background: none; border: none; cursor: pointer; padding: 6px 2px;
             transition: all .2s; -webkit-tap-highlight-color: transparent;
             position: relative;
         }
-        .nav-btn svg { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s; }
-        .nav-btn .nav-lbl { font-size: 9px; font-weight: 600; color: var(--muted); letter-spacing: .3px; text-transform: uppercase; transition: color .2s; }
-        .nav-btn:hover svg, .nav-btn.active svg { stroke: var(--neon); }
-        .nav-btn:hover .nav-lbl, .nav-btn.active .nav-lbl { color: var(--neon); }
-        /* SOS destacado */
-        #nav-sos svg { stroke: var(--red); width: 22px; height: 22px; }
-        #nav-sos .nav-lbl { color: #ff6666; }
-        #nav-sos:active { background: rgba(255,68,68,.1); }
+        .nav-btn::after {
+            content: ''; position: absolute; bottom: 0; left: 25%; right: 25%;
+            height: 2px; border-radius: 2px 2px 0 0;
+            background: var(--neon); opacity: 0; transition: opacity .2s;
+        }
+        .nav-btn.active::after { opacity: 1; }
+        .nav-btn svg { width: 22px; height: 22px; stroke: #2a5a7a; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: all .2s; }
+        .nav-btn .nav-lbl { font-size: 9px; font-weight: 700; color: #2a5a7a; letter-spacing: .5px; text-transform: uppercase; transition: color .2s; }
+        .nav-btn:active svg { stroke: var(--neon); }
+        .nav-btn.active svg { stroke: var(--neon); filter: drop-shadow(0 0 4px var(--neon)); }
+        .nav-btn.active .nav-lbl { color: var(--neon); }
+        /* SOS — botón central especial */
+        #nav-sos {
+            position: relative;
+        }
+        #nav-sos::before {
+            content: ''; position: absolute;
+            top: 8px; left: 50%; transform: translateX(-50%);
+            width: 42px; height: 42px; border-radius: 50%;
+            background: rgba(255,51,85,0.12);
+            border: 1px solid rgba(255,51,85,0.3);
+        }
+        #nav-sos svg { stroke: var(--red); width: 22px; height: 22px; position: relative; }
+        #nav-sos .nav-lbl { color: #ff6688; position: relative; }
+        #nav-sos:active::before { background: rgba(255,51,85,0.25); }
         /* Ruta grabando */
-        #nav-ruta.rec svg { stroke: var(--neon); }
-        #nav-ruta.rec .nav-lbl { color: var(--neon); }
-        .rec-dot { display: none; position: absolute; top: 5px; right: calc(50% - 13px); width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: blink 1s infinite; }
+        #nav-ruta.rec svg { stroke: var(--green); filter: drop-shadow(0 0 4px var(--green)); }
+        #nav-ruta.rec .nav-lbl { color: var(--green); }
+        .rec-dot { display: none; position: absolute; top: 5px; right: calc(50% - 14px); width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: blink 1s infinite; border: 1.5px solid rgba(6,12,20,.8); }
         #nav-ruta.rec .rec-dot { display: block; }
         /* Badge */
-        .n-badge { position: absolute; top: 4px; right: calc(50% - 15px); background: var(--neon); color: black; font-size: 8px; font-weight: 900; min-width: 13px; height: 13px; border-radius: 7px; padding: 0 2px; display: none; align-items: center; justify-content: center; }
+        .n-badge { position: absolute; top: 5px; right: calc(50% - 16px); background: var(--neon); color: #060c14; font-size: 8px; font-weight: 900; min-width: 14px; height: 14px; border-radius: 7px; padding: 0 3px; display: none; align-items: center; justify-content: center; }
         .n-badge.show { display: flex; }
-        /* Dot estado */
-        .n-dot { position: absolute; top: 5px; right: calc(50% - 14px); width: 7px; height: 7px; border-radius: 50%; display: none; }
-        .n-dot.show { display: block; }
-        .n-dot.green { background: var(--neon); }
-        .n-dot.red { background: var(--red); animation: blink .8s infinite; }
 
         /* ══════════════════════════════════════
            MENÚ MÁS
         ══════════════════════════════════════ */
-        #mas-overlay { position: absolute; inset: 0; z-index: 700; background: rgba(0,0,0,.5); display: none; }
+        #mas-overlay { position: absolute; inset: 0; z-index: 700; background: rgba(0,0,0,.6); display: none; backdrop-filter: blur(2px); }
         #mas-overlay.show { display: block; }
         #mas-drawer {
-            position: absolute; left: 0; right: 0; bottom: 62px; z-index: 800;
-            background: var(--dark); border-top: 1px solid var(--border);
-            border-radius: 16px 16px 0 0;
+            position: absolute; left: 0; right: 0; bottom: 64px; z-index: 800;
+            background: #0a1828;
+            border-top: 1px solid #1a3040;
+            border-radius: 18px 18px 0 0;
             transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
             padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -8px 32px rgba(0,0,0,.6);
         }
         #mas-drawer.open { transform: translateY(0); }
-        .mas-handle { width: 32px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 12px; }
+        .mas-handle { width: 36px; height: 3px; background: #1a3040; border-radius: 2px; margin: 10px auto 12px; }
         .mas-item {
             display: flex; align-items: center; gap: 14px; padding: 13px 18px;
             cursor: pointer; transition: background .15s; border-bottom: 1px solid rgba(30,45,58,.5);
@@ -429,13 +477,30 @@
 
 <!-- HEADER -->
 <div id="header">
-    <div id="logo">🛡️ Ride<span>Safe</span></div>
-    <div id="search-wrap">
+    <div id="logo">
+        <div id="logo-top">RIDESAFE</div>
+        <div id="logo-sub">AI · Safety</div>
+    </div>
+    <div id="logo-sep"></div>
+
+    <!-- Modo búsqueda -->
+    <div id="search-wrap" class="show">
         <input id="search-input" type="text" placeholder="Buscar lugar..." autocomplete="off"/>
         <button id="search-btn">🔍</button>
         <div id="suggestions"></div>
     </div>
-    <button id="btn-layers" title="Capas del mapa">⊞</button>
+
+    <!-- Modo ruta activa -->
+    <div id="header-route">
+        <div id="header-route-name">🔴 Ruta activa</div>
+        <div id="header-route-stats">
+            <span id="hr-km">0.0</span>km &nbsp;
+            <span id="hr-spd">–</span>km/h &nbsp;
+            <span id="hr-time">0:00</span>
+        </div>
+    </div>
+
+    <button id="btn-layers" title="Capas del mapa" style="flex-shrink:0;">⊞</button>
 </div>
 
 <div id="status">● Online</div>
@@ -822,7 +887,10 @@ function startRoute() {
     routeTimer = setInterval(updateLiveStats,1000);
     document.getElementById('live-stats').classList.add('show');
     document.getElementById('info-card').classList.remove('show');
-    var s=document.getElementById('status'); s.textContent='● Grabando ruta'; s.classList.add('recording');
+    var s=document.getElementById('status'); s.textContent='● Grabando'; s.classList.add('recording');
+    // Cambiar header a modo ruta
+    document.getElementById('search-wrap').classList.remove('show');
+    document.getElementById('header-route').classList.add('show');
 }
 
 function stopRoute() {
@@ -835,6 +903,9 @@ function stopRoute() {
     } else { showToast('⚠️ Ruta muy corta'); }
     document.getElementById('live-stats').classList.remove('show');
     var s=document.getElementById('status'); s.textContent='● Online'; s.classList.remove('recording');
+    // Restaurar header
+    document.getElementById('search-wrap').classList.add('show');
+    document.getElementById('header-route').classList.remove('show');
 }
 
 function updateLiveStats() {
@@ -842,10 +913,15 @@ function updateLiveStats() {
     var km=(totalDistance/1000).toFixed(2);
     var mins=Math.floor(el/60), secs=String(el%60).padStart(2,'0');
     var spd=el>0?((totalDistance/1000)/(el/3600)).toFixed(1):'–';
+    // Panel live stats
     document.getElementById('ls-km').innerHTML=km+' <span>km</span>';
     document.getElementById('ls-time').textContent=mins+':'+secs;
     document.getElementById('ls-pts').innerHTML=routePoints.length+' <span>GPS</span>';
     document.getElementById('ls-spd').innerHTML=spd+' <span>km/h</span>';
+    // Header en tiempo real
+    document.getElementById('hr-km').textContent=km;
+    document.getElementById('hr-spd').textContent=spd;
+    document.getElementById('hr-time').textContent=mins+':'+secs;
 }
 
 // ════════════════════════════════════
