@@ -241,23 +241,6 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 .nlive-item label { display:block;font-size:9px;color:#555;text-transform:uppercase; }
 .nlive-item value { display:block;font-size:16px;font-weight:800;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1.1; }
 .nlive-item value span { font-size:9px;color:#666;font-weight:400; }
-/* Selector capas */
-#nav-layer-menu {
-    position:absolute;top:52px;right:0;z-index:20;
-    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
-    padding:8px;display:none;min-width:150px;
-}
-#nav-layer-menu.show { display:block; }
-.nlm-opt { display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background .15s; }
-.nlm-opt:active,.nlm-opt.on { background:rgba(168,230,61,.08); }
-.nlm-thumb { width:32px;height:22px;border-radius:4px;flex-shrink:0;border:1px solid #333; }
-.lt-voyager { background:linear-gradient(135deg,#e8e0d0,#c8d0a8); }
-.lt-dark    { background:linear-gradient(135deg,#0a0e18,#1a2a3a); }
-.lt-topo    { background:linear-gradient(135deg,#a8c878,#789050); }
-.lt-mapbox  { background:linear-gradient(135deg,#1a2030,#2a3848); }
-.nlm-name { font-size:12px;font-weight:700;font-family:'Barlow Condensed',sans-serif; }
-.nlm-opt.on .nlm-name { color:#a8e63d; }
-.nlm-sub { font-size:9px;color:#666; }
 
 /* ══ PANEL ASISTENTE IA ══ */
 /* ══ PANEL NAVEGACIÓN ══ */
@@ -354,23 +337,6 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 .nlive-item label { display:block;font-size:9px;color:#555;text-transform:uppercase; }
 .nlive-item value { display:block;font-size:16px;font-weight:800;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1.1; }
 .nlive-item value span { font-size:9px;color:#666;font-weight:400; }
-/* Selector capas */
-#nav-layer-menu {
-    position:absolute;top:52px;right:0;z-index:20;
-    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
-    padding:8px;display:none;min-width:150px;
-}
-#nav-layer-menu.show { display:block; }
-.nlm-opt { display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background .15s; }
-.nlm-opt:active,.nlm-opt.on { background:rgba(168,230,61,.08); }
-.nlm-thumb { width:32px;height:22px;border-radius:4px;flex-shrink:0;border:1px solid #333; }
-.lt-voyager { background:linear-gradient(135deg,#e8e0d0,#c8d0a8); }
-.lt-dark    { background:linear-gradient(135deg,#0a0e18,#1a2a3a); }
-.lt-topo    { background:linear-gradient(135deg,#a8c878,#789050); }
-.lt-mapbox  { background:linear-gradient(135deg,#1a2030,#2a3848); }
-.nlm-name { font-size:12px;font-weight:700;font-family:'Barlow Condensed',sans-serif; }
-.nlm-opt.on .nlm-name { color:#a8e63d; }
-.nlm-sub { font-size:9px;color:#666; }
 
 /* ══ PANEL ASISTENTE IA ══ */
 #panel-ai {
@@ -1077,13 +1043,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
             <button id="nav-search-btn" onclick="navBuscar()">🔍</button>
             <div id="nav-sugs"></div>
         </div>
-        <button id="nav-layer-btn" onclick="document.getElementById('nav-layer-menu').classList.toggle('show')">⊞</button>
-        <div id="nav-layer-menu">
-            <div class="nlm-opt on" onclick="navSetLayer('mapbox',this)" data-l="mapbox"><div class="nlm-thumb lt-mapbox"></div><div><div class="nlm-name">Mapbox</div><div class="nlm-sub">Profesional</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('voyager',this)" data-l="voyager"><div class="nlm-thumb lt-voyager"></div><div><div class="nlm-name">Estándar</div><div class="nlm-sub">CartoDB</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('dark',this)" data-l="dark"><div class="nlm-thumb lt-dark"></div><div><div class="nlm-name">Noche</div><div class="nlm-sub">CartoDB</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('topo',this)" data-l="topo"><div class="nlm-thumb lt-topo"></div><div><div class="nlm-name">Terreno</div><div class="nlm-sub">OpenTopo</div></div></div>
-        </div>
+
     </div>
 
     <div id="nav-mapa"></div>
@@ -1121,13 +1081,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
             <button id="nav-search-btn" onclick="navBuscar()">🔍</button>
             <div id="nav-sugs"></div>
         </div>
-        <button id="nav-layer-btn" onclick="document.getElementById('nav-layer-menu').classList.toggle('show')">⊞</button>
-        <div id="nav-layer-menu">
-            <div class="nlm-opt on" onclick="navSetLayer('mapbox',this)" data-l="mapbox"><div class="nlm-thumb lt-mapbox"></div><div><div class="nlm-name">Mapbox</div><div class="nlm-sub">Profesional</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('voyager',this)" data-l="voyager"><div class="nlm-thumb lt-voyager"></div><div><div class="nlm-name">Estándar</div><div class="nlm-sub">CartoDB</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('dark',this)" data-l="dark"><div class="nlm-thumb lt-dark"></div><div><div class="nlm-name">Noche</div><div class="nlm-sub">CartoDB</div></div></div>
-            <div class="nlm-opt" onclick="navSetLayer('topo',this)" data-l="topo"><div class="nlm-thumb lt-topo"></div><div><div class="nlm-name">Terreno</div><div class="nlm-sub">OpenTopo</div></div></div>
-        </div>
+
     </div>
 
     <div id="nav-mapa"></div>
@@ -1554,53 +1508,29 @@ var NAV_STYLES = {
 
 function navInit() {
     if (navMap) return;
-    
-    // Si no hay token Mapbox, pedir
     if (!MAPBOX_TOKEN) {
-        var t = prompt('Introduce tu Mapbox token (pk.eyJ1...) para activar el mapa:');
-        if (!t) {
-            // Usar CartoDB como fallback sin token
-            navInitLeaflet();
-            return;
-        }
+        var t = prompt('Introduce tu Mapbox token (pk.eyJ1...):');
+        if (!t) { toast('⚠️ Token requerido'); return; }
         MAPBOX_TOKEN = t;
         try { localStorage.setItem('rs_mapbox', t); } catch(e) {}
     }
-    
-    try {
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-        navMap = new mapboxgl.Map({
-            container: 'nav-mapa',
-            style: NAV_STYLES.mapbox,
-            center: [0.6200, 41.6176],
-            zoom: 12
-        });
-        navMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        navMap.addControl(new mapboxgl.GeolocateControl({
-            positionOptions: { enableHighAccuracy: true },
-            trackUserLocation: true,
-            showUserHeading: true
-        }), 'top-right');
-        navMap.on('load', function() {
-            toast('🗺 Mapa Mapbox cargado');
-            navCurrentLayer = 'mapbox';
-            document.querySelectorAll('.nlm-opt').forEach(function(o){ o.classList.toggle('on', o.dataset.l==='mapbox'); });
-        });
-        navMap.on('error', function(e) {
-            console.error('Mapbox error:', e);
-            // Si falla Mapbox, usar Leaflet como fallback
-            navMap = null;
-            navInitLeaflet();
-        });
-    } catch(e) {
-        navMap = null;
-        navInitLeaflet();
-    }
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    navMap = new mapboxgl.Map({
+        container: 'nav-mapa',
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        center: [0.6200, 41.6176],
+        zoom: 12
+    });
+    navMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    navMap.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true
+    }), 'top-right');
+    navMap.on('load', function() { toast('🗺 Mapa listo'); });
 }
 
-// Fallback con Leaflet si no hay Mapbox
-var navLeafMap = null;
-function navInitLeaflet() {
+function navInitLeafletfunction navInitLeaflet() {
     if (navLeafMap) { navLeafMap.invalidateSize(); return; }
     navLeafMap = L.map('nav-mapa').setView([41.6176, 0.6200], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -1653,11 +1583,7 @@ function navGPS() {
     navigator.geolocation.getCurrentPosition(function(pos) {
         var lat=pos.coords.latitude, lng=pos.coords.longitude;
         document.getElementById('nav-gps-btn').classList.add('on');
-        if (navMap && navMap.flyTo) {
-            navMap.flyTo({center:[lng,lat], zoom:16});
-        } else if (navLeafMap) {
-            navLeafMap.setView([lat,lng],16);
-        }
+        if (navMap) navMap.flyTo({center:[lng,lat], zoom:16});
     }, function(err){
         var m={1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
         toast(m[err.code]||'⚠️ Error GPS');
@@ -1689,8 +1615,7 @@ async function navFetchSugs(q, goFirst) {
 
 function navGoTo(r) {
     var lat=parseFloat(r.lat),lng=parseFloat(r.lon);if(isNaN(lat)||isNaN(lng))return;
-    if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat],zoom:15});}
-    else if(navLeafMap){navLeafMap.setView([lat,lng],15);}
+    if(navMap) navMap.flyTo({center:[lng,lat],zoom:15});
 }
 
 function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
@@ -1708,8 +1633,7 @@ function navToggleRuta() {
                 var pt=[lat,lng];
                 if(navPoints.length>0){var p=navPoints[navPoints.length-1];navDist+=haversine(p[0],p[1],lat,lng);}
                 navPoints.push(pt);navUpdateLive();
-                if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat]});}
-                else if(navLeafMap){navLeafMap.panTo([lat,lng]);}
+                if(navMap) navMap.easeTo({center:[lng,lat]});
             },null,{enableHighAccuracy:true,maximumAge:3000});
         }
         navTimer=setInterval(navUpdateLive,1000);
@@ -1881,11 +1805,7 @@ function navGPS() {
     navigator.geolocation.getCurrentPosition(function(pos) {
         var lat=pos.coords.latitude, lng=pos.coords.longitude;
         document.getElementById('nav-gps-btn').classList.add('on');
-        if (navMap && navMap.flyTo) {
-            navMap.flyTo({center:[lng,lat], zoom:16});
-        } else if (navLeafMap) {
-            navLeafMap.setView([lat,lng],16);
-        }
+        if (navMap) navMap.flyTo({center:[lng,lat], zoom:16});
     }, function(err){
         var m={1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
         toast(m[err.code]||'⚠️ Error GPS');
@@ -1917,8 +1837,7 @@ async function navFetchSugs(q, goFirst) {
 
 function navGoTo(r) {
     var lat=parseFloat(r.lat),lng=parseFloat(r.lon);if(isNaN(lat)||isNaN(lng))return;
-    if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat],zoom:15});}
-    else if(navLeafMap){navLeafMap.setView([lat,lng],15);}
+    if(navMap) navMap.flyTo({center:[lng,lat],zoom:15});
 }
 
 function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
@@ -1936,8 +1855,7 @@ function navToggleRuta() {
                 var pt=[lat,lng];
                 if(navPoints.length>0){var p=navPoints[navPoints.length-1];navDist+=haversine(p[0],p[1],lat,lng);}
                 navPoints.push(pt);navUpdateLive();
-                if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat]});}
-                else if(navLeafMap){navLeafMap.panTo([lat,lng]);}
+                if(navMap) navMap.easeTo({center:[lng,lat]});
             },null,{enableHighAccuracy:true,maximumAge:3000});
         }
         navTimer=setInterval(navUpdateLive,1000);
@@ -2554,11 +2472,7 @@ function navGPS() {
     navigator.geolocation.getCurrentPosition(function(pos) {
         var lat=pos.coords.latitude, lng=pos.coords.longitude;
         document.getElementById('nav-gps-btn').classList.add('on');
-        if (navMap && navMap.flyTo) {
-            navMap.flyTo({center:[lng,lat], zoom:16});
-        } else if (navLeafMap) {
-            navLeafMap.setView([lat,lng],16);
-        }
+        if (navMap) navMap.flyTo({center:[lng,lat], zoom:16});
     }, function(err){
         var m={1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
         toast(m[err.code]||'⚠️ Error GPS');
@@ -2590,8 +2504,7 @@ async function navFetchSugs(q, goFirst) {
 
 function navGoTo(r) {
     var lat=parseFloat(r.lat),lng=parseFloat(r.lon);if(isNaN(lat)||isNaN(lng))return;
-    if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat],zoom:15});}
-    else if(navLeafMap){navLeafMap.setView([lat,lng],15);}
+    if(navMap) navMap.flyTo({center:[lng,lat],zoom:15});
 }
 
 function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
@@ -2609,8 +2522,7 @@ function navToggleRuta() {
                 var pt=[lat,lng];
                 if(navPoints.length>0){var p=navPoints[navPoints.length-1];navDist+=haversine(p[0],p[1],lat,lng);}
                 navPoints.push(pt);navUpdateLive();
-                if(navMap&&navMap.flyTo){navMap.flyTo({center:[lng,lat]});}
-                else if(navLeafMap){navLeafMap.panTo([lat,lng]);}
+                if(navMap) navMap.easeTo({center:[lng,lat]});
             },null,{enableHighAccuracy:true,maximumAge:3000});
         }
         navTimer=setInterval(navUpdateLive,1000);
