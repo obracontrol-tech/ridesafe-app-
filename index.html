@@ -1290,6 +1290,101 @@
         #ai-send-btn:hover { box-shadow: 0 0 12px var(--neon-glow); }
         #ai-send-btn:disabled { opacity: .4; cursor: not-allowed; }
 
+
+        /* ══════════════════════════════════════
+           BARRA NAVEGACIÓN INFERIOR
+        ══════════════════════════════════════ */
+        #bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            z-index: 1001;
+            background: rgba(10,14,22,0.97);
+            border-top: 1px solid #1a2a3a;
+            display: flex; align-items: stretch;
+            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(62px + env(safe-area-inset-bottom));
+        }
+        .nav-btn {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 3px; background: none; border: none;
+            cursor: pointer; padding: 6px 2px;
+            transition: all 0.2s; position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-btn svg { width: 22px; height: 22px; transition: all 0.2s; }
+        .nav-btn .nav-label {
+            font-size: 9px; font-weight: 600; letter-spacing: 0.3px;
+            text-transform: uppercase; color: #3a5a6a;
+            transition: color 0.2s;
+        }
+        .nav-btn:hover .nav-label,
+        .nav-btn.active .nav-label { color: var(--neon); }
+        .nav-btn:hover svg, .nav-btn.active svg { stroke: var(--neon); }
+        .nav-btn svg { stroke: #3a5a6a; fill: none; stroke-width: 1.8;
+                       stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Botón central SOS — destacado */
+        #nav-sos {
+            background: rgba(255,40,40,0.08);
+            border-left: 1px solid #1a2a3a;
+            border-right: 1px solid #1a2a3a;
+        }
+        #nav-sos svg { stroke: #ff4444; width: 24px; height: 24px; }
+        #nav-sos .nav-label { color: #ff4444; }
+        #nav-sos:active { background: rgba(255,40,40,0.2); }
+
+        /* Botón ruta — activo = verde sólido */
+        #nav-ruta.recording svg { stroke: var(--neon); }
+        #nav-ruta.recording .nav-label { color: var(--neon); }
+        #nav-ruta.recording .nav-rec-dot { display: block; }
+        .nav-rec-dot {
+            display: none; position: absolute; top: 6px; right: calc(50% - 14px);
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--red); animation: blink 1s infinite;
+        }
+
+        /* Badge numérico en botones */
+        .nav-badge {
+            position: absolute; top: 5px; right: calc(50% - 16px);
+            background: var(--neon); color: black;
+            font-size: 8px; font-weight: 900; min-width: 14px; height: 14px;
+            border-radius: 7px; padding: 0 3px;
+            display: none; align-items: center; justify-content: center;
+        }
+        .nav-badge.show { display: flex; }
+
+        /* Punto de estado (escudo, grupo, IA) */
+        .nav-dot {
+            position: absolute; top: 5px; right: calc(50% - 14px);
+            width: 7px; height: 7px; border-radius: 50%;
+            display: none;
+        }
+        .nav-dot.show { display: block; }
+        .nav-dot.green { background: var(--neon); box-shadow: 0 0 4px var(--neon); }
+        .nav-dot.red   { background: var(--red);  animation: blink 0.8s infinite; }
+        .nav-dot.cyan  { background: #00e5ff; box-shadow: 0 0 4px #00e5ff; }
+
+        /* FAB GPS — flota sobre el mapa arriba derecha, pequeño */
+        #fab-gps {
+            position: absolute; top: 70px; right: 14px; z-index: 1000;
+            width: 40px; height: 40px; border-radius: 12px;
+            background: rgba(10,14,22,0.92); border: 1px solid #1e3a4a;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        #fab-gps svg { width: 18px; height: 18px; stroke: #4a9ab4; fill: none;
+                       stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        #fab-gps:hover { border-color: var(--neon); }
+        #fab-gps:hover svg { stroke: var(--neon); }
+        #fab-gps.located svg { stroke: var(--neon); }
+
+        /* Ajustar el mapa para que no quede tapado por la barra */
+        #map { height: calc(100vh - 62px) !important; padding-bottom: 0; }
+
+        /* Todos los paneles y overlays que antes empezaban en 0
+           ahora tienen en cuenta la barra inferior */
+        #status { top: 70px; }
+
         /* ── LEAFLET OVERRIDES ── */
         .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid #333 !important; }
         .leaflet-bar a:hover { border-color: var(--neon) !important; }
@@ -1461,21 +1556,101 @@
     </div>
 </div>
 
-<!-- FABS -->
-<div id="fab-group">
-    <button class="fab" id="btn-locate" title="Mi ubicación">📍</button>
-    <button class="fab" id="btn-route" title="Iniciar ruta">🚴</button>
-    <button class="fab" id="btn-history" title="Historial de rutas">📋</button>
-    <button class="fab" id="btn-shield" title="Sensor anticaída">
-        🛡️
-        <div class="shield-fab-dot"></div>
+<!-- GPS FAB flotante -->
+<button id="fab-gps" title="Mi ubicación">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+</button>
+
+<!-- BARRA NAVEGACIÓN INFERIOR -->
+<div id="bottom-nav">
+
+    <button class="nav-btn" id="nav-mapa" title="Mapa">
+        <svg viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span class="nav-label">Mapa</span>
     </button>
-    <button class="fab" id="btn-grupo" title="Modo Grupo Pelotón" style="border-color:rgba(57,255,20,0.3);">👥</button>
-    <button class="fab" id="btn-offline-panel" title="Mapas offline">
-        🗺
-        <div class="fab-badge" id="offline-badge">0</div>
+
+    <button class="nav-btn" id="nav-ruta" title="Iniciar ruta">
+        <div class="nav-rec-dot"></div>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+        <span class="nav-label">Ruta</span>
     </button>
+
+    <button class="nav-btn" id="nav-sos" title="SOS emergencia">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="nav-label">SOS</span>
+    </button>
+
+    <button class="nav-btn" id="nav-grupo" title="Modo Pelotón">
+        <div class="nav-dot" id="nav-grupo-dot"></div>
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Grupo</span>
+    </button>
+
+    <button class="nav-btn" id="nav-mas" title="Más opciones">
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        <span class="nav-label">Más</span>
+    </button>
+
 </div>
+
+<!-- MENÚ "MÁS" — drawer desde abajo -->
+<div id="mas-drawer" style="
+    position:absolute;bottom:-300px;left:0;right:0;z-index:2000;
+    background:#0a0e18;border-top:1px solid #1a2a3a;
+    border-radius:16px 16px 0 0;
+    transition:bottom 0.3s cubic-bezier(0.4,0,0.2,1);
+    padding:12px 0 calc(16px + env(safe-area-inset-bottom));
+">
+    <div style="width:32px;height:4px;background:#1e2d3a;border-radius:2px;margin:0 auto 14px;"></div>
+
+    <div id="mas-item-historial" style="display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;transition:background 0.15s;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#0d1521;border:1px solid #1e3a4a;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24"><polyline points="12,8 12,12 14,14"/><path d="M3.05 11a9 9 0 1 1 .5 4"/><polyline points="3,21 3,15 9,15"/></svg>
+        </div>
+        <div>
+            <div style="color:white;font-size:13px;font-weight:700;">Historial de rutas</div>
+            <div style="color:#4a7a9b;font-size:11px;margin-top:1px;">Ver y gestionar recorridos</div>
+        </div>
+        <span style="color:#2a4a5a;margin-left:auto;font-size:16px;">›</span>
+    </div>
+
+    <div id="mas-item-offline" style="display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;transition:background 0.15s;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#0d1521;border:1px solid #1e3a4a;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        </div>
+        <div>
+            <div style="color:white;font-size:13px;font-weight:700;">Mapas offline</div>
+            <div style="color:#4a7a9b;font-size:11px;margin-top:1px;">Descargar zonas sin internet</div>
+        </div>
+        <div class="nav-badge" id="offline-badge" style="position:static;margin-left:auto;">0</div>
+        <span style="color:#2a4a5a;font-size:16px;">›</span>
+    </div>
+
+    <div id="mas-item-shield" style="display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;transition:background 0.15s;">
+        <div id="mas-shield-icon" style="width:38px;height:38px;border-radius:10px;background:#0d1521;border:1px solid #1e3a4a;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+            <div style="color:white;font-size:13px;font-weight:700;">Sensor anticaída</div>
+            <div id="mas-shield-label" style="color:#4a7a9b;font-size:11px;margin-top:1px;">Toca para activar</div>
+        </div>
+        <div id="mas-shield-toggle" style="width:38px;height:22px;border-radius:11px;background:#1e2d3a;position:relative;margin-left:auto;transition:background 0.2s;cursor:pointer;">
+            <div style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:white;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.3);" id="mas-shield-knob"></div>
+        </div>
+    </div>
+
+    <div id="mas-item-ai" style="display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;transition:background 0.15s;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#0d1521;border:1px solid rgba(57,255,20,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="9" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/></svg>
+        </div>
+        <div>
+            <div style="color:white;font-size:13px;font-weight:700;">Asistente IA ciclista</div>
+            <div style="color:#4a7a9b;font-size:11px;margin-top:1px;">Mecánica · Rutas · Nutrición</div>
+        </div>
+        <span style="color:#2a4a5a;margin-left:auto;font-size:16px;">›</span>
+    </div>
+</div>
+
 
 
 <!-- SOS FLOTANTE (activo solo en grupo) -->
@@ -3137,6 +3312,167 @@ loadGrupoConfig();
 initWalkie();
 
 // ════════════════════════════════════════════════════════════════
+//  NAVEGACIÓN INFERIOR — rewire completo
+// ════════════════════════════════════════════════════════════════
+
+// ── GPS FAB ──
+document.getElementById('fab-gps').addEventListener('click', async () => {
+    const btn = document.getElementById('fab-gps');
+    if (navigator.permissions) {
+        try {
+            const p = await navigator.permissions.query({ name: 'geolocation' });
+            if (p.state === 'denied') {
+                showToast('🔒 GPS bloqueado — actívalo en Ajustes del navegador');
+                return;
+            }
+        } catch(e) {}
+    }
+    locateUser(true);
+    btn.classList.add('located');
+});
+
+// ── Mapa (volver al mapa desde cualquier panel) ──
+document.getElementById('nav-mapa').addEventListener('click', () => {
+    closeMasDrawer();
+    // Cerrar todos los paneles abiertos
+    ['history-panel','offline-panel','grupo-panel','driving-screen','ai-panel'].forEach(id => {
+        document.getElementById(id)?.classList.remove('open');
+    });
+    document.getElementById('layer-menu')?.classList.remove('open');
+    document.getElementById('layer-overlay')?.classList.remove('open');
+    setNavActive('nav-mapa');
+});
+
+// ── Ruta ──
+document.getElementById('nav-ruta').addEventListener('click', () => {
+    closeMasDrawer();
+    routeActive = !routeActive;
+    const btn = document.getElementById('nav-ruta');
+    if (routeActive) {
+        btn.classList.add('recording');
+        startRoute();
+        showToast('🔴 Grabando ruta...');
+    } else {
+        btn.classList.remove('recording');
+        stopRoute();
+    }
+});
+
+// ── SOS central ──
+document.getElementById('nav-sos').addEventListener('click', async () => {
+    closeMasDrawer();
+    const confirm = window.confirm('🆘 ¿Enviar ALERTA SOS?\nTodos tus contactos y el grupo recibirán tu posición.');
+    if (!confirm) return;
+    if (grupoState.active && grupoState.codigo) {
+        await fbUpdate('/grupos/' + grupoState.codigo + '/members/' + grupoState.myId, {
+            sos: true, lat: currentLat, lng: currentLng, ts: Date.now()
+        });
+    }
+    if (navigator.vibrate) navigator.vibrate([300,100,300,100,600]);
+    playAlarm();
+    if (grupoState.vozActiva) speak('SOS enviado. Ayuda en camino.');
+    showToast('🆘 SOS enviado');
+});
+
+// ── Grupo ──
+document.getElementById('nav-grupo').addEventListener('click', () => {
+    closeMasDrawer();
+    if (grupoState.active) {
+        openDrivingScreen();
+    } else {
+        openGrupoPanel();
+    }
+    setNavActive('nav-grupo');
+});
+
+// ── Más ──
+document.getElementById('nav-mas').addEventListener('click', () => {
+    toggleMasDrawer();
+});
+
+// ── Drawer Más ──
+let masOpen = false;
+function toggleMasDrawer() {
+    masOpen = !masOpen;
+    const d = document.getElementById('mas-drawer');
+    d.style.bottom = masOpen ? '62px' : '-300px';
+    document.getElementById('nav-mas').classList.toggle('active', masOpen);
+}
+function closeMasDrawer() {
+    masOpen = false;
+    document.getElementById('mas-drawer').style.bottom = '-300px';
+    document.getElementById('nav-mas').classList.remove('active');
+}
+
+// Items del drawer Más
+document.getElementById('mas-item-historial').addEventListener('click', () => {
+    closeMasDrawer();
+    openHistoryPanel();
+    setNavActive('nav-mas');
+});
+document.getElementById('mas-item-offline').addEventListener('click', () => {
+    closeMasDrawer();
+    openOfflinePanel();
+    setNavActive('nav-mas');
+});
+document.getElementById('mas-item-shield').addEventListener('click', () => {
+    try { initAudioCtx().resume(); } catch(e) {}
+    toggleShield();
+});
+document.getElementById('mas-item-ai').addEventListener('click', () => {
+    closeMasDrawer();
+    openAIPanel();
+    setNavActive('nav-mas');
+});
+
+// Cerrar drawer al tocar fuera
+document.addEventListener('click', e => {
+    if (masOpen &&
+        !document.getElementById('mas-drawer').contains(e.target) &&
+        !document.getElementById('nav-mas').contains(e.target)) {
+        closeMasDrawer();
+    }
+});
+
+// ── Actualizar estado visual del toggle escudo ──
+function updateShieldToggleUI() {
+    const on = shieldState.active;
+    const tog = document.getElementById('mas-shield-toggle');
+    const knob = document.getElementById('mas-shield-knob');
+    const label = document.getElementById('mas-shield-label');
+    const dot = document.getElementById('nav-grupo-dot');
+    if (tog) tog.style.background = on ? 'var(--neon)' : '#1e2d3a';
+    if (knob) knob.style.transform = on ? 'translateX(16px)' : 'translateX(0)';
+    if (label) label.textContent = on ? 'Activo — detectando caídas' : 'Toca para activar';
+}
+
+// Parchear toggleShield para actualizar la UI nueva
+const _origToggleShield = toggleShield;
+window.toggleShield = function() {
+    _origToggleShield();
+    setTimeout(updateShieldToggleUI, 200);
+};
+
+// ── Helper: marcar tab activo ──
+function setNavActive(id) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+// ── Redirigir btn-grupo y btn-shield legacy ──
+// (por si algún otro código los llama)
+['btn-grupo','btn-shield','btn-history','btn-route',
+ 'btn-locate','btn-offline-panel','btn-ai'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none'; // ocultar los viejos
+});
+
+// Activar mapa por defecto al arrancar
+setNavActive('nav-mapa');
+
+
+// ════════════════════════════════════════════════════════════════
 //  ASISTENTE IA CICLISTA — Claude API
 // ════════════════════════════════════════════════════════════════
 
@@ -4142,12 +4478,6 @@ document.getElementById('btn-grupo').addEventListener('click', () => {
 
 
 
-
-<!-- ══ FAB ASISTENTE IA ══ -->
-<button id="btn-ai" title="Asistente ciclista IA">
-    🤖
-    <div class="ai-badge" id="ai-fab-badge"></div>
-</button>
 
 <!-- ══ PANEL ASISTENTE IA ══ -->
 <div id="ai-panel">
