@@ -533,8 +533,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     color:#888;cursor:pointer;font-size:14px;
     display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-#nav-map-wrap { flex:1;position:relative;overflow:hidden; }
-#nav-mapa { position:absolute;inset:0; }
+#nav-map-wrap { flex:1;position:relative;overflow:hidden;min-height:100px; }
+#nav-mapa { position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%; }
 #nav-bottombar {
     height:60px;flex-shrink:0;
     background:#111;border-top:1px solid #222;
@@ -1421,7 +1421,11 @@ function navUpdateLive(){
 function abrirNav() {
     var p = document.getElementById('panel-nav');
     p.style.display = 'flex';
+    // Múltiples intentos para asegurar que Leaflet ve el tamaño correcto
     setTimeout(function(){ navInit(); }, 50);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 200);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 500);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 1000);
 }
 function cerrarNav() {
     document.getElementById('panel-nav').style.display = 'none';
@@ -1862,7 +1866,11 @@ function navUpdateLive(){
 function abrirNav() {
     var p = document.getElementById('panel-nav');
     p.style.display = 'flex';
+    // Múltiples intentos para asegurar que Leaflet ve el tamaño correcto
     setTimeout(function(){ navInit(); }, 50);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 200);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 500);
+    setTimeout(function(){ if(navMap) navMap.invalidateSize(); }, 1000);
 }
 function cerrarNav() {
     document.getElementById('panel-nav').style.display = 'none';
