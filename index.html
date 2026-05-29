@@ -145,162 +145,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 .caida-ok{width:100%;padding:14px;border-radius:12px;background:#a8e63d;border:none;color:#0a0a0a;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:10px;}
 .caida-sos-btn{width:100%;padding:11px;border-radius:12px;background:none;border:1px solid rgba(255,51,85,.4);color:#ff6688;font-size:14px;font-weight:700;cursor:pointer;}
 
-/* ══ PANEL NAVEGACIÓN ══ */
-#panel-nav {
-    position:fixed;
-    top:0;left:0;right:0;
-    height:100dvh;
-    background:#0a0a0a;
-    display:none;
-    z-index:200;
-    transform:translateX(100%);
-    transition:transform .3s cubic-bezier(.4,0,.2,1);
-    display:grid;
-    grid-template-rows:52px 1fr 60px;
-    overflow:hidden;
-    -webkit-overflow-scrolling:touch;
-}
-#panel-nav {  }
-#panel-nav.open { transform:translateX(0); pointer-events:all; }
 
-/* Barra superior fija */
-#nav-topbar {
-    background:#111;
-    border-bottom:1px solid #222;
-    display:flex;align-items:center;gap:8px;
-    padding:0 10px;
-    z-index:10;
-}
-#nav-back {
-    width:36px;height:36px;border-radius:50%;
-    background:#1a1a1a;border:none;color:#fff;
-    font-size:18px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-#nav-search-wrap { flex:1;position:relative; }
-#nav-search {
-    width:100%;padding:8px 34px 8px 12px;
-    background:#1a1a1a;color:#fff;
-    border:1px solid #2a2a2a;border-radius:22px;
-    font-size:13px;outline:none;font-family:'Barlow',sans-serif;
-}
-#nav-search:focus { border-color:#a8e63d; }
-#nav-search::placeholder { color:#555; }
-#nav-search-btn {
-    position:absolute;right:10px;top:50%;transform:translateY(-50%);
-    background:none;border:none;color:#a8e63d;cursor:pointer;font-size:14px;
-}
-#nav-sugs {
-    position:absolute;top:40px;left:0;right:0;
-    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
-    overflow:hidden;z-index:100;max-height:180px;overflow-y:auto;
-}
-.nav-sug {
-    padding:10px 14px;color:#ccc;font-size:12px;cursor:pointer;
-    border-bottom:1px solid #222;
-}
-.nav-sug:last-child { border-bottom:none; }
-.nav-sug:active { background:#222;color:#a8e63d; }
-#nav-layer-btn {
-    width:36px;height:36px;border-radius:10px;
-    background:#1a1a1a;border:1px solid #2a2a2a;
-    color:#888;cursor:pointer;font-size:15px;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-
-/* Mapa — zona central */
-#nav-mapa { width:100%;height:100%;z-index:1; }
-
-/* Barra inferior fija */
-#nav-bottombar {
-    background:#111;border-top:1px solid #222;
-    display:flex;align-items:center;gap:8px;
-    padding:0 12px;z-index:10;
-}
-#nav-status {
-    flex:1;font-size:10px;font-weight:700;letter-spacing:1px;
-    color:#a8e63d;font-family:'Barlow Condensed',sans-serif;
-}
-#nav-status.rec { animation:recpulse 1.2s infinite; }
-@keyframes recpulse{0%,100%{color:#a8e63d}50%{color:#ff3355}}
-#nav-gps-btn {
-    width:40px;height:40px;border-radius:10px;
-    background:#1a1a1a;border:1px solid #2a2a2a;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-#nav-gps-btn svg { width:18px;height:18px;stroke:#888;fill:none;stroke-width:2;stroke-linecap:round; }
-#nav-gps-btn.on svg { stroke:#a8e63d; }
-#nav-sos-btn {
-    width:44px;height:44px;border-radius:10px;
-    background:rgba(255,51,85,.1);border:1px solid rgba(255,51,85,.3);
-    color:#ff6688;cursor:pointer;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:1px;
-    font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;
-}
-#nav-rec-btn {
-    width:44px;height:44px;border-radius:50%;
-    background:#a8e63d;border:none;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-    box-shadow:0 2px 10px rgba(168,230,61,.3);transition:all .2s;
-}
-#nav-rec-btn.rec { background:#ff3355;box-shadow:0 2px 10px rgba(255,51,85,.3); }
-#nav-rec-btn svg { width:18px;height:18px;stroke:#0a0a0a;fill:none;stroke-width:2.5;stroke-linecap:round; }
-#nav-rec-btn.rec svg { stroke:#fff; }
-#nav-rec-btn span { font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:900;color:#0a0a0a;letter-spacing:.5px; }
-#nav-rec-btn.rec span { color:#fff; }
-
-/* Live stats flotante sobre mapa */
-#nav-live {
-    position:absolute;top:60px;left:10px;z-index:10;
-    background:rgba(26,26,26,.97);border:1px solid #a8e63d;
-    border-radius:12px;padding:10px 12px;min-width:160px;
-    display:none;
-}
-#nav-live.show { display:block; }
-.live-title {
-    font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;
-    color:#a8e63d;text-transform:uppercase;letter-spacing:1px;
-    margin-bottom:6px;display:flex;align-items:center;gap:5px;
-}
-.live-dot { width:6px;height:6px;border-radius:50%;background:#ff3355;animation:blink 1s infinite; }
-.live-grid { display:grid;grid-template-columns:1fr 1fr;gap:5px; }
-.live-item label { display:block;font-size:9px;color:#555;text-transform:uppercase; }
-.live-item value { display:block;font-size:16px;font-weight:800;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1.1; }
-.live-item value span { font-size:9px;color:#666;font-weight:400; }
-
-/* Selector capas */
-#layer-picker {
-    position:absolute;bottom:68px;right:10px;z-index:10;
-    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;
-    padding:10px;display:none;min-width:160px;
-}
-#layer-picker.show { display:block; }
-.layer-opt {
-    display:flex;align-items:center;gap:8px;padding:7px;
-    border-radius:8px;cursor:pointer;margin-bottom:3px;
-}
-.layer-opt:last-child { margin-bottom:0; }
-.layer-opt:active { background:#222; }
-.layer-thumb { width:36px;height:26px;border-radius:5px;flex-shrink:0;border:1px solid #333; }
-.lt-voyager { background:linear-gradient(135deg,#e8e0d0,#c8d0a8); }
-.lt-dark    { background:linear-gradient(135deg,#0a0e18,#1a2a3a); }
-.lt-topo    { background:linear-gradient(135deg,#a8c878,#789050); }
-.lt-mapbox  { background:linear-gradient(135deg,#1a2030,#2a3848); }
-.layer-name { font-size:12px;font-weight:700;color:#fff;font-family:'Barlow Condensed',sans-serif; }
-.layer-sub  { font-size:9px;color:#666; }
-.layer-opt.on .layer-name { color:#a8e63d; }
-.layer-check { margin-left:auto;color:#a8e63d;font-size:12px;display:none; }
-.layer-opt.on .layer-check { display:block; }
-
-/* Leaflet overrides *//* Leaflet overrides */
-.leaflet-bar a { background:#1a1a1a!important;color:#a8e63d!important;border:1px solid #2a2a2a!important; }
-.leaflet-popup-content-wrapper { background:#1a1a1a;color:#fff;border:1px solid #2a2a2a;border-radius:12px; }
-.leaflet-popup-tip { background:#1a1a1a; }
-.leaflet-popup-content { color:#ccc;font-size:12px; }
-.leaflet-popup-content b { color:#a8e63d; }
-
-
-/* ══ PANEL ASISTENTE IA ══ */
+/* ══ PANEL ASISTENTE IA ══ *//* ══ PANEL ASISTENTE IA ══ */
 #panel-ai {
     position:fixed;top:0;left:0;right:0;height:100dvh;
     background:#0a0a0a;z-index:200;
@@ -640,6 +486,115 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 .panel-grid { display:none;flex-direction:column;overflow:hidden; }
 .panel-grid.visible { display:grid; }
 
+
+/* ══ PANEL NAVEGACIÓN ══ */
+#panel-nav {
+    position:fixed;inset:0;z-index:500;
+    background:#0a0a0a;display:none;
+    flex-direction:column;overflow:hidden;
+}
+#nav-topbar {
+    height:52px;flex-shrink:0;
+    background:#111;border-bottom:1px solid #222;
+    display:flex;align-items:center;gap:8px;padding:0 10px;
+}
+#nav-back {
+    width:36px;height:36px;border-radius:50%;
+    background:#1a1a1a;border:none;color:#fff;
+    font-size:18px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;flex-shrink:0;
+}
+#nav-search-wrap { flex:1;position:relative; }
+#nav-search {
+    width:100%;padding:8px 34px 8px 12px;
+    background:#1a1a1a;color:#fff;border:1px solid #2a2a2a;
+    border-radius:22px;font-size:13px;outline:none;
+}
+#nav-search:focus { border-color:#a8e63d; }
+#nav-search::placeholder { color:#555; }
+#nav-search-btn {
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    background:none;border:none;color:#a8e63d;cursor:pointer;
+}
+#nav-sugs {
+    position:absolute;top:40px;left:0;right:0;
+    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;
+    overflow:hidden;z-index:10;max-height:160px;overflow-y:auto;display:none;
+}
+#nav-sugs.show { display:block; }
+.nav-sug {
+    padding:9px 12px;color:#ccc;font-size:12px;
+    cursor:pointer;border-bottom:1px solid #222;
+}
+.nav-sug:active { background:#222;color:#a8e63d; }
+#nav-layer-btn {
+    width:36px;height:36px;border-radius:8px;
+    background:#1a1a1a;border:1px solid #2a2a2a;
+    color:#888;cursor:pointer;font-size:14px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+#nav-map-wrap { flex:1;position:relative;overflow:hidden; }
+#nav-mapa { position:absolute;inset:0; }
+#nav-bottombar {
+    height:60px;flex-shrink:0;
+    background:#111;border-top:1px solid #222;
+    display:flex;align-items:center;gap:10px;padding:0 14px;
+}
+#nav-status { flex:1;font-size:11px;font-weight:700;color:#a8e63d;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px; }
+#nav-gps-btn {
+    width:46px;height:46px;border-radius:10px;
+    background:#1a1a1a;border:1px solid #2a2a2a;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+#nav-gps-btn svg { width:20px;height:20px;stroke:#888;fill:none;stroke-width:2;stroke-linecap:round; }
+#nav-gps-btn.on svg { stroke:#a8e63d; }
+#nav-sos-btn {
+    width:46px;height:46px;border-radius:10px;
+    background:rgba(255,51,85,.1);border:1px solid rgba(255,51,85,.3);
+    color:#ff6688;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;
+    font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;
+}
+#nav-rec-btn {
+    width:50px;height:50px;border-radius:50%;
+    background:#a8e63d;border:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    box-shadow:0 2px 12px rgba(168,230,61,.3);transition:background .2s;
+}
+#nav-rec-btn.rec { background:#ff3355;box-shadow:0 2px 12px rgba(255,51,85,.3); }
+#nav-rec-btn svg { width:20px;height:20px;stroke:#0a0a0a;fill:none;stroke-width:2.5;stroke-linecap:round; }
+#nav-rec-btn.rec svg { stroke:#fff; }
+#nav-rec-lbl { font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:900;color:#0a0a0a;letter-spacing:.5px; }
+#nav-rec-btn.rec #nav-rec-lbl { color:#fff; }
+#nav-live {
+    position:absolute;top:60px;left:10px;z-index:5;
+    background:rgba(26,26,26,.97);border:1px solid #a8e63d;
+    border-radius:12px;padding:10px 12px;min-width:160px;display:none;
+}
+#nav-live.show { display:block; }
+.nlive-title { font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#a8e63d;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:4px; }
+.nlive-dot { width:6px;height:6px;border-radius:50%;background:#ff3355;animation:blink 1s infinite; }
+.nlive-grid { display:grid;grid-template-columns:1fr 1fr;gap:5px; }
+.nlive-item label { display:block;font-size:9px;color:#555;text-transform:uppercase; }
+.nlive-item value { display:block;font-size:16px;font-weight:800;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1.1; }
+.nlive-item value span { font-size:9px;color:#666;font-weight:400; }
+#layer-picker {
+    position:absolute;bottom:68px;right:10px;z-index:10;
+    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
+    padding:8px;display:none;min-width:150px;
+}
+#layer-picker.show { display:block; }
+.layer-opt { display:flex;align-items:center;gap:8px;padding:7px;border-radius:8px;cursor:pointer; }
+.layer-opt:active { background:#222; }
+.layer-thumb { width:34px;height:24px;border-radius:5px;flex-shrink:0;border:1px solid #333; }
+.lt-voyager { background:linear-gradient(135deg,#e8e0d0,#c8d0a8); }
+.lt-dark    { background:linear-gradient(135deg,#0a0e18,#1a2a3a); }
+.lt-topo    { background:linear-gradient(135deg,#a8c878,#789050); }
+.lt-mapbox  { background:linear-gradient(135deg,#1a2030,#2a3848); }
+.layer-name { font-size:12px;font-weight:700;color:#fff;font-family:'Barlow Condensed',sans-serif; }
+.layer-sub  { font-size:9px;color:#666; }
+.layer-opt.on .layer-name { color:#a8e63d; }
+
 </style>
 </head>
 <body>
@@ -764,71 +719,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 </div>
 
 
-<!-- ══ PANEL NAVEGACIÓN ══ -->
-<div id="panel-nav" class="panel" style="display:none;grid-template-rows:52px 1fr 60px;">
 
-    <!-- Barra superior -->
-    <div id="nav-topbar">
-        <button id="nav-back" onclick="cerrarNav()">←</button>
-        <div id="nav-search-wrap">
-            <input id="nav-search" type="text" placeholder="Buscar lugar..." autocomplete="off"/>
-            <button id="nav-search-btn" onclick="buscarNav()">🔍</button>
-            <div id="nav-sugs"></div>
-        </div>
-        <button id="nav-layer-btn" onclick="toggleLayerPicker()">⊞</button>
-    </div>
-
-    <!-- Mapa -->
-    <div id="nav-mapa"></div>
-    <div id="nav-live">
-        <div class="live-title"><div class="live-dot"></div> Grabando</div>
-        <div class="live-grid">
-            <div class="live-item"><label>Km</label><value id="nl-km">0.0 <span>km</span></value></div>
-            <div class="live-item"><label>Tiempo</label><value id="nl-time">0:00</value></div>
-            <div class="live-item"><label>Puntos</label><value id="nl-pts">0 <span>GPS</span></value></div>
-            <div class="live-item"><label>Vel</label><value id="nl-spd">– <span>km/h</span></value></div>
-        </div>
-    </div>
-    <div id="layer-picker">
-        <div class="layer-opt on" onclick="setLayer('voyager',this)" data-layer="voyager">
-            <div class="layer-thumb lt-voyager"></div>
-            <div><div class="layer-name">Estándar</div><div class="layer-sub">CartoDB · offline</div></div>
-            <div class="layer-check">✓</div>
-        </div>
-        <div class="layer-opt" onclick="setLayer('dark',this)" data-layer="dark">
-            <div class="layer-thumb lt-dark"></div>
-            <div><div class="layer-name">Noche</div><div class="layer-sub">CartoDB oscuro</div></div>
-            <div class="layer-check">✓</div>
-        </div>
-        <div class="layer-opt" onclick="setLayer('topo',this)" data-layer="topo">
-            <div class="layer-thumb lt-topo"></div>
-            <div><div class="layer-name">Terreno</div><div class="layer-sub">OpenTopoMap</div></div>
-            <div class="layer-check">✓</div>
-        </div>
-        <div class="layer-opt" onclick="setLayer('mapbox',this)" data-layer="mapbox">
-            <div class="layer-thumb lt-mapbox"></div>
-            <div><div class="layer-name">Mapbox Pro</div><div class="layer-sub">Token opcional</div></div>
-            <div class="layer-check">✓</div>
-        </div>
-    </div>
-
-    <!-- Barra inferior -->
-    <div id="nav-bottombar">
-        <div id="nav-status">● Online</div>
-        
-        <button id="nav-gps-btn" onclick="centrarGPS()">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
-        </button>
-        <button id="nav-sos-btn" onclick="enviarSOS()">🆘<span>SOS</span></button>
-        <button id="nav-rec-btn" onclick="toggleRuta()">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
-            <span id="rec-lbl">REC</span>
-        </button>
-    </div>
-
-</div>
-
-<!-- ══ PANEL SEGURIDAD
+<!-- ══ PANEL SEGURIDAD<!-- ══ PANEL SEGURIDAD
 
 
 <!-- ══ PANEL PLANIFICAR RUTA ══ -->
@@ -945,6 +837,48 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
         <button id="ai-send-btn" onclick="enviarAI()">➤</button>
     </div>
 
+</div>
+
+<!-- ══ PANEL NAVEGACIÓN ══ -->
+<div id="panel-nav">
+    <div id="nav-topbar">
+        <button id="nav-back" onclick="cerrarNav()">←</button>
+        <div id="nav-search-wrap">
+            <input id="nav-search" type="text" placeholder="Buscar lugar..." autocomplete="off"/>
+            <button id="nav-search-btn" onclick="navBuscar()">🔍</button>
+            <div id="nav-sugs"></div>
+        </div>
+        <button id="nav-layer-btn" onclick="document.getElementById('layer-picker').classList.toggle('show')">⊞</button>
+    </div>
+    <div id="nav-map-wrap">
+        <div id="nav-mapa"></div>
+        <div id="nav-live">
+            <div class="nlive-title"><div class="nlive-dot"></div>Grabando</div>
+            <div class="nlive-grid">
+                <div class="nlive-item"><label>km</label><value id="nl-km">0.0<span>km</span></value></div>
+                <div class="nlive-item"><label>Tiempo</label><value id="nl-time">0:00</value></div>
+                <div class="nlive-item"><label>Pts</label><value id="nl-pts">0</value></div>
+                <div class="nlive-item"><label>Vel</label><value id="nl-spd">–<span>km/h</span></value></div>
+            </div>
+        </div>
+        <div id="layer-picker">
+            <div class="layer-opt on" onclick="navSetLayer('voyager',this)" data-layer="voyager"><div class="layer-thumb lt-voyager"></div><div><div class="layer-name">Estándar</div><div class="layer-sub">CartoDB</div></div></div>
+            <div class="layer-opt" onclick="navSetLayer('dark',this)" data-layer="dark"><div class="layer-thumb lt-dark"></div><div><div class="layer-name">Noche</div><div class="layer-sub">CartoDB</div></div></div>
+            <div class="layer-opt" onclick="navSetLayer('topo',this)" data-layer="topo"><div class="layer-thumb lt-topo"></div><div><div class="layer-name">Terreno</div><div class="layer-sub">OpenTopo</div></div></div>
+            <div class="layer-opt" onclick="navSetLayer('mapbox',this)" data-layer="mapbox"><div class="layer-thumb lt-mapbox"></div><div><div class="layer-name">Mapbox</div><div class="layer-sub">Token requerido</div></div></div>
+        </div>
+    </div>
+    <div id="nav-bottombar">
+        <div id="nav-status">● Online</div>
+        <button id="nav-gps-btn" onclick="navGPS()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        </button>
+        <button id="nav-sos-btn" onclick="enviarSOS()">🆘<span>SOS</span></button>
+        <button id="nav-rec-btn" onclick="navToggleRuta()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+            <span id="nav-rec-lbl">REC</span>
+        </button>
+    </div>
 </div>
 
 <!-- ══ PANEL SEGURIDAD ══ -->
@@ -1322,385 +1256,184 @@ function pararFlash() {
   toast('⚡ Flash desactivado');
 }
 
-// ══ PANEL NAVEGACIÓN ══
-var navMap = null;
-var navTile = null;
-var navLayerKey = 'voyager';
-var userMarker = null;
-var searchMarker = null;
-var rutaActiva = false;
-var rutaPoints = [];
-var rutaStartTime = null;
-var rutaTimer = null;
-var watchId = null;
-var rutaDist = 0;
-var rutaPoly = null;
-var searchTO = null;
-var MAPBOX_TOKEN = ''; // pegar token aquí
 
-var LAYERS = {
-    voyager: {
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        sub: 'abcd', max: 20, name: 'Estándar'
-    },
-    dark: {
-        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        sub: 'abcd', max: 20, name: 'Noche'
-    },
-    topo: {
-        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-        sub: 'abc', max: 17, name: 'Terreno'
-    },
-    mapbox: {
-        url: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token=' + MAPBOX_TOKEN,
-        sub: null, max: 20, name: 'Mapbox'
-    }
+
+// ══ NAVEGACIÓN ══
+var navMap = null, navTile = null, navLayerKey = 'voyager';
+var navUserMark = null, navSearchMark = null, navPoly = null, navPlanLayer = null;
+var navRutaOn = false, navPoints = [], navStartTime = null;
+var navTimer = null, navWatch = null, navDist = 0;
+var navSearchTO = null;
+var MAPBOX_TOKEN = '';
+
+var NAV_LAYERS = {
+    voyager: { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub:'abcd', max:20 },
+    dark:    { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub:'abcd', max:20 },
+    topo:    { url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', sub:'abc', max:17 },
+    mapbox:  { url:'', sub:null, max:20 }
 };
 
-var bikeIcon = null;
+var navBikeIcon = null;
 
-function initNavMap() {
-    if (navMap) { setTimeout(function(){ navMap.invalidateSize(); }, 50); return; }
-    navMap = L.map('nav-mapa', { zoomControl: true }).setView([41.6176, 0.6200], 13);
-    bikeIcon = L.divIcon({
-        className: '',
-        html: '<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:3px solid white;box-shadow:0 0 0 4px rgba(168,230,61,.25),0 0 14px #a8e63d;"></div>',
-        iconSize: [16,16], iconAnchor: [8,8]
-    });
-    setLayer('voyager', null);
-    centrarGPS();
+function navInit() {
+    if (navMap) { navMap.invalidateSize(); return; }
+    navMap = L.map('nav-mapa', { zoomControl:true }).setView([41.6176, 0.6200], 13);
+    navBikeIcon = L.divIcon({ className:'', html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:3px solid white;box-shadow:0 0 0 4px rgba(168,230,61,.25);"></div>', iconSize:[16,16], iconAnchor:[8,8] });
+    navSetLayer('voyager', null);
+    try {
+        var t = localStorage.getItem('rs_mapbox');
+        if (t) { MAPBOX_TOKEN = t; NAV_LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t; }
+        var l = localStorage.getItem('rs_layer');
+        if (l && NAV_LAYERS[l]) navSetLayer(l, null);
+    } catch(e) {}
+    navGPS();
 }
 
-function setLayer(key, btn) {
-    var cfg = LAYERS[key];
-    if (!cfg) return;
-    if (key === 'mapbox' && !MAPBOX_TOKEN) {
-        var t = prompt('Introduce tu Mapbox token (pk.eyJ1...):');
-        if (!t) return;
-        MAPBOX_TOKEN = t;
-        try { localStorage.setItem('rs_mapbox', t); } catch(e) {}
-        LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token=' + t;
-        cfg = LAYERS.mapbox;
+function navSetLayer(key, btn) {
+    if (key === 'mapbox') {
+        if (!MAPBOX_TOKEN) {
+            var t = prompt('Introduce tu Mapbox token (pk.eyJ1...):');
+            if (!t) return;
+            MAPBOX_TOKEN = t;
+            try { localStorage.setItem('rs_mapbox', t); } catch(e) {}
+            NAV_LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;
+        }
     }
+    var cfg = NAV_LAYERS[key];
+    if (!cfg || !cfg.url) return;
     if (navTile) navMap.removeLayer(navTile);
-    var opts = { attribution: '© OSM', maxZoom: cfg.max };
+    var opts = { attribution:'© OSM', maxZoom:cfg.max };
     if (cfg.sub) opts.subdomains = cfg.sub;
     navTile = L.tileLayer(cfg.url, opts).addTo(navMap);
     navLayerKey = key;
     try { localStorage.setItem('rs_layer', key); } catch(e) {}
-    document.querySelectorAll('.layer-opt').forEach(function(o) {
-        o.classList.toggle('on', o.dataset.layer === key);
-    });
+    document.querySelectorAll('.layer-opt').forEach(function(o){ o.classList.toggle('on', o.dataset.layer===key); });
     document.getElementById('layer-picker').classList.remove('show');
-    toast('🗺 ' + cfg.name);
+    toast('🗺 Capa: ' + key);
 }
 
-function toggleLayerPicker() {
-    document.getElementById('layer-picker').classList.toggle('show');
-}
-
-// [eliminado — ver sistema universal]
-
-// [eliminado — ver sistema universal]
-
-// GPS
-function centrarGPS() {
+function navGPS() {
     if (!navigator.geolocation) { toast('⚠️ GPS no disponible'); return; }
     navigator.geolocation.getCurrentPosition(function(pos) {
-        var lat = pos.coords.latitude, lng = pos.coords.longitude;
+        var lat=pos.coords.latitude, lng=pos.coords.longitude;
         if (!navMap) return;
-        navMap.setView([lat, lng], 16);
-        if (userMarker) userMarker.remove();
-        userMarker = L.marker([lat, lng], { icon: bikeIcon }).addTo(navMap)
-            .bindPopup('<b>Estás aquí</b>').openPopup();
+        navMap.setView([lat,lng],16);
+        if (navUserMark) navUserMark.remove();
+        navUserMark = L.marker([lat,lng],{icon:navBikeIcon}).addTo(navMap).bindPopup('<b>Estás aquí</b>').openPopup();
         document.getElementById('nav-gps-btn').classList.add('on');
-    }, function(err) {
-        var m = {1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
-        toast(m[err.code] || '⚠️ Error GPS');
-    }, { enableHighAccuracy: true, timeout: 10000 });
+    }, function(err){
+        var m={1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
+        toast(m[err.code]||'⚠️ Error GPS');
+    }, {enableHighAccuracy:true,timeout:10000});
 }
 
-// Buscador
 document.getElementById('nav-search').addEventListener('input', function() {
-    clearTimeout(searchTO);
+    clearTimeout(navSearchTO);
     var q = this.value.trim();
-    if (q.length < 3) { document.getElementById('nav-sugs').innerHTML = ''; return; }
-    searchTO = setTimeout(function(){ buscarSugs(q); }, 400);
+    if (q.length < 3) { document.getElementById('nav-sugs').classList.remove('show'); return; }
+    navSearchTO = setTimeout(function(){ navFetchSugs(q); }, 400);
 });
 document.getElementById('nav-search').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { clearTimeout(searchTO); buscarNav(); }
+    if (e.key === 'Enter') navBuscar();
 });
 
-function buscarNav() {
-    buscarSugs(document.getElementById('nav-search').value.trim(), true);
-}
+function navBuscar() { navFetchSugs(document.getElementById('nav-search').value.trim(), true); }
 
-async function buscarSugs(q, goFirst) {
+async function navFetchSugs(q, goFirst) {
     if (!q) return;
     try {
-        var r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=5', { headers: {'Accept-Language':'es'} });
+        var r = await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=4', {headers:{'Accept-Language':'es'}});
         var d = await r.json();
-        if (goFirst && d.length) { irA(d[0]); document.getElementById('nav-sugs').innerHTML = ''; return; }
+        if (goFirst && d.length) { navGoTo(d[0]); document.getElementById('nav-sugs').classList.remove('show'); return; }
         var box = document.getElementById('nav-sugs');
         box.innerHTML = '';
         d.forEach(function(x) {
-            var div = document.createElement('div');
-            div.className = 'nav-sug';
+            var div = document.createElement('div'); div.className='nav-sug';
             div.textContent = x.display_name;
-            div.addEventListener('click', function() { irA(x); box.innerHTML = ''; document.getElementById('nav-search').value = x.display_name; });
+            div.addEventListener('click', function(){ navGoTo(x); box.classList.remove('show'); document.getElementById('nav-search').value=x.display_name; });
             box.appendChild(div);
         });
+        box.classList.toggle('show', d.length > 0);
     } catch(e) {}
 }
 
-function irA(r) {
-    var lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-    if (isNaN(lat) || isNaN(lng)) return;
-    navMap.setView([lat, lng], 16);
-    if (searchMarker) searchMarker.remove();
-    var pin = L.divIcon({ className:'', html:'<div style="width:14px;height:14px;border-radius:50%;background:#a8e63d;border:2px solid white;box-shadow:0 0 10px #a8e63d;"></div>', iconSize:[14,14], iconAnchor:[7,7] });
-    searchMarker = L.marker([lat, lng], { icon: pin }).addTo(navMap)
-        .bindPopup('<b>' + r.display_name.split(',')[0] + '</b>').openPopup();
+function navGoTo(r) {
+    var lat=parseFloat(r.lat), lng=parseFloat(r.lon);
+    if (isNaN(lat)||isNaN(lng)) return;
+    navMap.setView([lat,lng],16);
+    if (navSearchMark) navSearchMark.remove();
+    var pin = L.divIcon({className:'',html:'<div style="width:12px;height:12px;border-radius:50%;background:#a8e63d;border:2px solid white;"></div>',iconSize:[12,12],iconAnchor:[6,6]});
+    navSearchMark = L.marker([lat,lng],{icon:pin}).addTo(navMap).bindPopup('<b>'+r.display_name.split(',')[0]+'</b>').openPopup();
 }
 
-document.addEventListener('click', function(e) {
-    if (!document.getElementById('nav-search').contains(e.target))
-        document.getElementById('nav-sugs').innerHTML = '';
-    if (!document.getElementById('nav-layer-btn').contains(e.target) &&
-        !document.getElementById('layer-picker').contains(e.target))
-        document.getElementById('layer-picker').classList.remove('show');
-});
+function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 
-// Grabación de ruta
-function haversine(a,b,c,d) {
-    var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180;
-    var x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);
-    return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-
-function toggleRuta() {
-    rutaActiva = !rutaActiva;
+function navToggleRuta() {
+    navRutaOn = !navRutaOn;
     var btn = document.getElementById('nav-rec-btn');
-    var lbl = document.getElementById('rec-lbl');
-    if (rutaActiva) {
-        btn.classList.add('rec'); lbl.textContent = 'STOP';
-        rutaPoints = []; rutaDist = 0; rutaStartTime = Date.now();
-        rutaPoly = L.polyline([], { color:'#a8e63d', weight:4, opacity:.85 }).addTo(navMap);
+    var lbl = document.getElementById('nav-rec-lbl');
+    if (navRutaOn) {
+        btn.classList.add('rec'); lbl.textContent='STOP';
+        navPoints=[]; navDist=0; navStartTime=Date.now();
+        navPoly = L.polyline([],{color:'#a8e63d',weight:4,opacity:.85}).addTo(navMap);
         if (navigator.geolocation) {
-            watchId = navigator.geolocation.watchPosition(function(pos) {
-                var lat = pos.coords.latitude, lng = pos.coords.longitude;
-                if (isNaN(lat) || isNaN(lng)) return;
-                var pt = [lat, lng];
-                if (rutaPoints.length > 0) {
-                    var p = rutaPoints[rutaPoints.length-1];
-                    rutaDist += haversine(p[0], p[1], lat, lng);
-                }
-                rutaPoints.push(pt);
-                rutaPoly.addLatLng(pt);
-                if (userMarker) userMarker.remove();
-                userMarker = L.marker(pt, { icon: bikeIcon }).addTo(navMap);
-                navMap.panTo(pt);
-                actualizarLive();
-            }, null, { enableHighAccuracy: true, maximumAge: 3000 });
+            navWatch = navigator.geolocation.watchPosition(function(pos){
+                var lat=pos.coords.latitude, lng=pos.coords.longitude;
+                if(isNaN(lat)||isNaN(lng)) return;
+                var pt=[lat,lng];
+                if(navPoints.length>0){var p=navPoints[navPoints.length-1];navDist+=haversine(p[0],p[1],lat,lng);}
+                navPoints.push(pt); navPoly.addLatLng(pt);
+                if(navUserMark) navUserMark.remove();
+                navUserMark=L.marker(pt,{icon:navBikeIcon}).addTo(navMap);
+                navMap.panTo(pt); navUpdateLive();
+            }, null, {enableHighAccuracy:true,maximumAge:3000});
         }
-        rutaTimer = setInterval(actualizarLive, 1000);
+        navTimer = setInterval(navUpdateLive, 1000);
         document.getElementById('nav-live').classList.add('show');
-        document.getElementById('nav-status').textContent = '● Grabando';
-        document.getElementById('nav-status').classList.add('rec');
+        document.getElementById('nav-status').textContent='● Grabando';
         toast('🔴 Grabando ruta...');
     } else {
-        btn.classList.remove('rec'); lbl.textContent = 'REC';
-        clearInterval(rutaTimer);
-        if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-        var elapsed = Math.round((Date.now()-rutaStartTime)/1000);
-        if (rutaPoints.length >= 2) {
-            guardarRuta({ id:Date.now(), points:rutaPoints, distance:rutaDist, duration:elapsed, timestamp:rutaStartTime });
+        btn.classList.remove('rec'); lbl.textContent='REC';
+        clearInterval(navTimer);
+        if(navWatch!==null){navigator.geolocation.clearWatch(navWatch);navWatch=null;}
+        var elapsed=Math.round((Date.now()-navStartTime)/1000);
+        if(navPoints.length>=2){
+            try{var rs=JSON.parse(localStorage.getItem('rs_routes')||'[]');rs.unshift({id:Date.now(),points:navPoints,distance:navDist,duration:elapsed,timestamp:navStartTime});localStorage.setItem('rs_routes',JSON.stringify(rs));}catch(e){}
             toast('✅ Ruta guardada');
         } else { toast('⚠️ Ruta muy corta'); }
         document.getElementById('nav-live').classList.remove('show');
-        document.getElementById('nav-status').textContent = '● Online';
-        document.getElementById('nav-status').classList.remove('rec');
+        document.getElementById('nav-status').textContent='● Online';
     }
 }
 
-function actualizarLive() {
-    var el = Math.round((Date.now()-rutaStartTime)/1000);
-    var km = (rutaDist/1000).toFixed(2);
-    var mins = Math.floor(el/60), secs = String(el%60).padStart(2,'0');
-    var spd = el>0 ? ((rutaDist/1000)/(el/3600)).toFixed(1) : '–';
-    document.getElementById('nl-km').innerHTML = km + ' <span>km</span>';
-    document.getElementById('nl-time').textContent = mins + ':' + secs;
-    document.getElementById('nl-pts').innerHTML = rutaPoints.length + ' <span>GPS</span>';
-    document.getElementById('nl-spd').innerHTML = spd + ' <span>km/h</span>';
+function navUpdateLive(){
+    var el=Math.round((Date.now()-navStartTime)/1000);
+    var km=(navDist/1000).toFixed(2);
+    var mins=Math.floor(el/60),secs=String(el%60).padStart(2,'0');
+    var spd=el>0?((navDist/1000)/(el/3600)).toFixed(1):'–';
+    document.getElementById('nl-km').innerHTML=km+'<span>km</span>';
+    document.getElementById('nl-time').textContent=mins+':'+secs;
+    document.getElementById('nl-pts').textContent=navPoints.length;
+    document.getElementById('nl-spd').innerHTML=spd+'<span>km/h</span>';
 }
 
-// Guardar ruta en localStorage
-function guardarRuta(r) {
-    try {
-        var rs = JSON.parse(localStorage.getItem('rs_routes') || '[]');
-        rs.unshift(r);
-        localStorage.setItem('rs_routes', JSON.stringify(rs));
-    } catch(e) {}
+// Funciones abrir/cerrar nav
+function abrirNav() {
+    var p = document.getElementById('panel-nav');
+    p.style.display = 'flex';
+    setTimeout(function(){ navInit(); }, 50);
+}
+function cerrarNav() {
+    document.getElementById('panel-nav').style.display = 'none';
+    document.getElementById('layer-picker').classList.remove('show');
+    document.getElementById('nav-sugs').classList.remove('show');
 }
 
-// Online/offline
-window.addEventListener('offline', function(){ document.getElementById('nav-status').textContent = '● Offline'; });
-window.addEventListener('online',  function(){ if(!rutaActiva) document.getElementById('nav-status').textContent = '● Online'; });
+window.addEventListener('offline', function(){ document.getElementById('nav-status').textContent='● Offline'; });
+window.addEventListener('online',  function(){ if(!navRutaOn) document.getElementById('nav-status').textContent='● Online'; });
 
+var rutaPlanLayer = null;
 
-// ══ ASISTENTE IA ══
-var aiKey = '';
-var aiHistory = [];
-var aiThinking = false;
-var aiRec = null;
-var aiVoz = false;
-var aiTkN = 0;
-
-// [limpiado]
-
-function guardarAPIKey() {
-    var k = document.getElementById('ai-key-input').value.trim();
-    if (!k.startsWith('sk-ant-')) { toast('⚠️ La key debe empezar por sk-ant-'); return; }
-    aiKey = k;
-    try { localStorage.setItem('rs_ai_key', k); } catch(e) {}
-    document.getElementById('ai-key-setup').classList.remove('show');
-    toast('✅ Asistente IA activado');
-    preguntarAI('Hola, acabo de activar el asistente. ¿Qué puedes hacer por mí como ciclista?');
-}
-
-function buildSystem() {
-    var s = 'Eres un asistente experto en ciclismo de RideSafe AI. Respondes en español, de forma concisa (máximo 3-4 frases). Fecha: ' + new Date().toLocaleString('es-ES') + '.';
-    s += ' Áreas: mecánica bicicletas, nutrición ciclista, rutas, meteorología, emergencias, entrenamiento. Si hay emergencia médica indica llamar al 112.';
-    return s;
-}
-
-async function preguntarAI(msg) {
-    if (!aiKey) { document.getElementById('ai-key-setup').classList.add('show'); return; }
-    if (aiThinking) return;
-    aiThinking = true;
-    document.getElementById('ai-send-btn').disabled = true;
-    document.getElementById('ai-input').value = '';
-    aiHistory.push({ role: 'user', content: msg });
-    addMsg('user', msg);
-    var tid = addThinking();
-    try {
-        var res = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': aiKey,
-                'anthropic-version': '2023-06-01',
-                'anthropic-dangerous-direct-browser-access': 'true'
-            },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 400,
-                system: buildSystem(),
-                messages: aiHistory.slice(-10)
-            })
-        });
-        removeThinking(tid);
-        if (!res.ok) {
-            var er = await res.json().catch(function(){return{};});
-            if (res.status === 401) {
-                addMsg('bot', '❌ API key incorrecta. Pulsa el botón de editar arriba.');
-                document.getElementById('ai-key-setup').classList.add('show');
-            } else {
-                addMsg('bot', '⚠️ Error ' + res.status + '. Comprueba tu conexión.');
-            }
-            aiThinking = false;
-            document.getElementById('ai-send-btn').disabled = false;
-            return;
-        }
-        var d = await res.json();
-        var reply = d.content && d.content[0] ? d.content[0].text : '(Sin respuesta)';
-        aiHistory.push({ role: 'assistant', content: reply });
-        addMsg('bot', reply);
-        if (aiVoz && window.speechSynthesis) {
-            var u = new SpeechSynthesisUtterance(reply);
-            u.lang = 'es-ES'; u.rate = 1.05;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(u);
-        }
-    } catch(e) {
-        removeThinking(tid);
-        addMsg('bot', '⚠️ Sin conexión. El asistente necesita internet.');
-    }
-    aiThinking = false;
-    document.getElementById('ai-send-btn').disabled = false;
-}
-
-function enviarAI() {
-    var t = document.getElementById('ai-input').value.trim();
-    if (!t || aiThinking) return;
-    aiVoz = false;
-    preguntarAI(t);
-}
-
-document.getElementById('ai-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); enviarAI(); }
-});
-
-function addMsg(role, text) {
-    var box = document.getElementById('ai-msgs');
-    var d = document.createElement('div');
-    d.className = 'ai-msg ' + role;
-    if (role === 'bot') d.innerHTML = '<div class="ai-msg-name">RideSafe IA ✦</div>' + text.replace(/\n/g,'<br>');
-    else d.textContent = text;
-    box.appendChild(d);
-    box.scrollTop = box.scrollHeight;
-}
-
-function addThinking() {
-    var id = 'tk' + (++aiTkN);
-    var box = document.getElementById('ai-msgs');
-    var d = document.createElement('div');
-    d.className = 'ai-msg bot'; d.id = id;
-    d.innerHTML = '<div class="ai-thinking"><span></span><span></span><span></span></div>';
-    box.appendChild(d); box.scrollTop = box.scrollHeight;
-    return id;
-}
-function removeThinking(id) { var e = document.getElementById(id); if(e) e.remove(); }
-
-// Voz
-function initVoz() {
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    aiRec = new SR();
-    aiRec.lang = 'es-ES'; aiRec.continuous = false; aiRec.interimResults = false;
-    aiRec.onresult = function(e) {
-        var t = e.results[0][0].transcript;
-        document.getElementById('ai-input').value = t;
-        aiVoz = true;
-        enviarAI();
-        pararVoz();
-    };
-    aiRec.onerror = pararVoz;
-    aiRec.onend = pararVoz;
-}
-function pararVoz() {
-    try { if(aiRec) aiRec.stop(); } catch(e) {}
-    document.getElementById('ai-voice-btn').classList.remove('on');
-    document.getElementById('ai-voice-btn').textContent = '🎤';
-}
-function toggleVoz() {
-    if (!aiRec) initVoz();
-    if (!aiRec) { toast('⚠️ Voz no disponible'); return; }
-    if (document.getElementById('ai-voice-btn').classList.contains('on')) {
-        aiVoz = false; pararVoz();
-    } else {
-        document.getElementById('ai-voice-btn').classList.add('on');
-        document.getElementById('ai-voice-btn').textContent = '🛑';
-        try { aiRec.start(); } catch(e) { pararVoz(); }
-    }
-}
-
-// Cargar key guardada
-try { var k = localStorage.getItem('rs_ai_key'); if(k) aiKey = k; } catch(e) {}
-initVoz();
-
-
-// ══ PANEL RUTAS ══
 var miniMapas = {};
 
 // [eliminado — ver sistema universal]
@@ -1965,6 +1698,181 @@ async function calcularRuta() {
 }
 
 // Variable para la ruta planificada en el mapa nav
+
+// ══ NAVEGACIÓN ══
+var navMap = null, navTile = null, navLayerKey = 'voyager';
+var navUserMark = null, navSearchMark = null, navPoly = null, navPlanLayer = null;
+var navRutaOn = false, navPoints = [], navStartTime = null;
+var navTimer = null, navWatch = null, navDist = 0;
+var navSearchTO = null;
+var MAPBOX_TOKEN = '';
+
+var NAV_LAYERS = {
+    voyager: { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub:'abcd', max:20 },
+    dark:    { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub:'abcd', max:20 },
+    topo:    { url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', sub:'abc', max:17 },
+    mapbox:  { url:'', sub:null, max:20 }
+};
+
+var navBikeIcon = null;
+
+function navInit() {
+    if (navMap) { navMap.invalidateSize(); return; }
+    navMap = L.map('nav-mapa', { zoomControl:true }).setView([41.6176, 0.6200], 13);
+    navBikeIcon = L.divIcon({ className:'', html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:3px solid white;box-shadow:0 0 0 4px rgba(168,230,61,.25);"></div>', iconSize:[16,16], iconAnchor:[8,8] });
+    navSetLayer('voyager', null);
+    try {
+        var t = localStorage.getItem('rs_mapbox');
+        if (t) { MAPBOX_TOKEN = t; NAV_LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t; }
+        var l = localStorage.getItem('rs_layer');
+        if (l && NAV_LAYERS[l]) navSetLayer(l, null);
+    } catch(e) {}
+    navGPS();
+}
+
+function navSetLayer(key, btn) {
+    if (key === 'mapbox') {
+        if (!MAPBOX_TOKEN) {
+            var t = prompt('Introduce tu Mapbox token (pk.eyJ1...):');
+            if (!t) return;
+            MAPBOX_TOKEN = t;
+            try { localStorage.setItem('rs_mapbox', t); } catch(e) {}
+            NAV_LAYERS.mapbox.url = 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;
+        }
+    }
+    var cfg = NAV_LAYERS[key];
+    if (!cfg || !cfg.url) return;
+    if (navTile) navMap.removeLayer(navTile);
+    var opts = { attribution:'© OSM', maxZoom:cfg.max };
+    if (cfg.sub) opts.subdomains = cfg.sub;
+    navTile = L.tileLayer(cfg.url, opts).addTo(navMap);
+    navLayerKey = key;
+    try { localStorage.setItem('rs_layer', key); } catch(e) {}
+    document.querySelectorAll('.layer-opt').forEach(function(o){ o.classList.toggle('on', o.dataset.layer===key); });
+    document.getElementById('layer-picker').classList.remove('show');
+    toast('🗺 Capa: ' + key);
+}
+
+function navGPS() {
+    if (!navigator.geolocation) { toast('⚠️ GPS no disponible'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat=pos.coords.latitude, lng=pos.coords.longitude;
+        if (!navMap) return;
+        navMap.setView([lat,lng],16);
+        if (navUserMark) navUserMark.remove();
+        navUserMark = L.marker([lat,lng],{icon:navBikeIcon}).addTo(navMap).bindPopup('<b>Estás aquí</b>').openPopup();
+        document.getElementById('nav-gps-btn').classList.add('on');
+    }, function(err){
+        var m={1:'🔒 GPS bloqueado',2:'📡 Sin señal GPS',3:'⏱️ Tiempo agotado'};
+        toast(m[err.code]||'⚠️ Error GPS');
+    }, {enableHighAccuracy:true,timeout:10000});
+}
+
+document.getElementById('nav-search').addEventListener('input', function() {
+    clearTimeout(navSearchTO);
+    var q = this.value.trim();
+    if (q.length < 3) { document.getElementById('nav-sugs').classList.remove('show'); return; }
+    navSearchTO = setTimeout(function(){ navFetchSugs(q); }, 400);
+});
+document.getElementById('nav-search').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') navBuscar();
+});
+
+function navBuscar() { navFetchSugs(document.getElementById('nav-search').value.trim(), true); }
+
+async function navFetchSugs(q, goFirst) {
+    if (!q) return;
+    try {
+        var r = await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=4', {headers:{'Accept-Language':'es'}});
+        var d = await r.json();
+        if (goFirst && d.length) { navGoTo(d[0]); document.getElementById('nav-sugs').classList.remove('show'); return; }
+        var box = document.getElementById('nav-sugs');
+        box.innerHTML = '';
+        d.forEach(function(x) {
+            var div = document.createElement('div'); div.className='nav-sug';
+            div.textContent = x.display_name;
+            div.addEventListener('click', function(){ navGoTo(x); box.classList.remove('show'); document.getElementById('nav-search').value=x.display_name; });
+            box.appendChild(div);
+        });
+        box.classList.toggle('show', d.length > 0);
+    } catch(e) {}
+}
+
+function navGoTo(r) {
+    var lat=parseFloat(r.lat), lng=parseFloat(r.lon);
+    if (isNaN(lat)||isNaN(lng)) return;
+    navMap.setView([lat,lng],16);
+    if (navSearchMark) navSearchMark.remove();
+    var pin = L.divIcon({className:'',html:'<div style="width:12px;height:12px;border-radius:50%;background:#a8e63d;border:2px solid white;"></div>',iconSize:[12,12],iconAnchor:[6,6]});
+    navSearchMark = L.marker([lat,lng],{icon:pin}).addTo(navMap).bindPopup('<b>'+r.display_name.split(',')[0]+'</b>').openPopup();
+}
+
+function haversine(a,b,c,d){var R=6371000,f1=a*Math.PI/180,f2=c*Math.PI/180,df=(c-a)*Math.PI/180,dl=(d-b)*Math.PI/180,x=Math.sin(df/2)*Math.sin(df/2)+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)*Math.sin(dl/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+function navToggleRuta() {
+    navRutaOn = !navRutaOn;
+    var btn = document.getElementById('nav-rec-btn');
+    var lbl = document.getElementById('nav-rec-lbl');
+    if (navRutaOn) {
+        btn.classList.add('rec'); lbl.textContent='STOP';
+        navPoints=[]; navDist=0; navStartTime=Date.now();
+        navPoly = L.polyline([],{color:'#a8e63d',weight:4,opacity:.85}).addTo(navMap);
+        if (navigator.geolocation) {
+            navWatch = navigator.geolocation.watchPosition(function(pos){
+                var lat=pos.coords.latitude, lng=pos.coords.longitude;
+                if(isNaN(lat)||isNaN(lng)) return;
+                var pt=[lat,lng];
+                if(navPoints.length>0){var p=navPoints[navPoints.length-1];navDist+=haversine(p[0],p[1],lat,lng);}
+                navPoints.push(pt); navPoly.addLatLng(pt);
+                if(navUserMark) navUserMark.remove();
+                navUserMark=L.marker(pt,{icon:navBikeIcon}).addTo(navMap);
+                navMap.panTo(pt); navUpdateLive();
+            }, null, {enableHighAccuracy:true,maximumAge:3000});
+        }
+        navTimer = setInterval(navUpdateLive, 1000);
+        document.getElementById('nav-live').classList.add('show');
+        document.getElementById('nav-status').textContent='● Grabando';
+        toast('🔴 Grabando ruta...');
+    } else {
+        btn.classList.remove('rec'); lbl.textContent='REC';
+        clearInterval(navTimer);
+        if(navWatch!==null){navigator.geolocation.clearWatch(navWatch);navWatch=null;}
+        var elapsed=Math.round((Date.now()-navStartTime)/1000);
+        if(navPoints.length>=2){
+            try{var rs=JSON.parse(localStorage.getItem('rs_routes')||'[]');rs.unshift({id:Date.now(),points:navPoints,distance:navDist,duration:elapsed,timestamp:navStartTime});localStorage.setItem('rs_routes',JSON.stringify(rs));}catch(e){}
+            toast('✅ Ruta guardada');
+        } else { toast('⚠️ Ruta muy corta'); }
+        document.getElementById('nav-live').classList.remove('show');
+        document.getElementById('nav-status').textContent='● Online';
+    }
+}
+
+function navUpdateLive(){
+    var el=Math.round((Date.now()-navStartTime)/1000);
+    var km=(navDist/1000).toFixed(2);
+    var mins=Math.floor(el/60),secs=String(el%60).padStart(2,'0');
+    var spd=el>0?((navDist/1000)/(el/3600)).toFixed(1):'–';
+    document.getElementById('nl-km').innerHTML=km+'<span>km</span>';
+    document.getElementById('nl-time').textContent=mins+':'+secs;
+    document.getElementById('nl-pts').textContent=navPoints.length;
+    document.getElementById('nl-spd').innerHTML=spd+'<span>km/h</span>';
+}
+
+// Funciones abrir/cerrar nav
+function abrirNav() {
+    var p = document.getElementById('panel-nav');
+    p.style.display = 'flex';
+    setTimeout(function(){ navInit(); }, 50);
+}
+function cerrarNav() {
+    document.getElementById('panel-nav').style.display = 'none';
+    document.getElementById('layer-picker').classList.remove('show');
+    document.getElementById('nav-sugs').classList.remove('show');
+}
+
+window.addEventListener('offline', function(){ document.getElementById('nav-status').textContent='● Offline'; });
+window.addEventListener('online',  function(){ if(!navRutaOn) document.getElementById('nav-status').textContent='● Online'; });
+
 var rutaPlanLayer = null;
 
 // [eliminado — ver sistema universal]
@@ -2028,7 +1936,7 @@ function iniciarNavRuta() {
         setTimeout(function() {
             if (!navMap) initNavMap();
             navMap.invalidateSize();
-            if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
+            if (rutaPlanLayer) { try{ navMap.removeLayer(rutaPlanLayer); }catch(e){} }
             rutaPlanLayer = L.polyline(
                 coords.map(function(c){ return [c[1],c[0]]; }),
                 { color:'#a8e63d', weight:5, opacity:.9, dashArray:'10 5' }
