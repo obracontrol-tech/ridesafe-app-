@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI v5</title>
+<title>RideSafe AI v6</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -794,52 +794,52 @@ body {
       </div>
     </div>
 
-    <button class="btn-iniciar" id="btn-iniciar-actividad">
+    <button class="btn-iniciar" id="btn-iniciar-actividad" onclick="goTo('actividad')">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
         INICIAR ACTIVIDAD
     </button>
 
     <div class="modulos-grid">
-        <div class="modulo-card" id="mod-seguridad">
+        <div class="modulo-card" id="mod-seguridad" onclick="openSeguridad()">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#a8e63d"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
             <div class="modulo-title">Seguridad</div>
             <div class="modulo-sub">SOS, Detección de caídas</div>
             <div class="mod-device">💡 Varia RTL515 <span class="mod-dot"></span></div>
         </div>
-        <div class="modulo-card" id="mod-navegacion">
+        <div class="modulo-card" id="mod-navegacion" onclick="goTo('actividad')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#4488ff"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
             <div class="modulo-title">Navegación</div>
             <div class="modulo-sub">Rutas, Mapas, GPX</div>
             <div class="mod-device">📱 Garmin Edge 840 <span class="mod-dot"></span></div>
         </div>
-        <div class="modulo-card" id="mod-rendimiento">
+        <div class="modulo-card" id="mod-rendimiento" onclick="goTo('analisis')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ffaa00"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <div class="modulo-title">Rendimiento</div>
             <div class="modulo-sub">Estadísticas, Análisis</div>
             <div class="mod-device">📱 Garmin Edge 840 <span class="mod-dot"></span></div>
         </div>
-        <div class="modulo-card" id="mod-asistente">
+        <div class="modulo-card" id="mod-asistente" onclick="openAI()">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#9966ff"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <div class="modulo-title">Asistente IA</div>
             <div class="modulo-sub">Consejos, Mecánica</div>
         </div>
-        <div class="modulo-card" id="mod-salud">
+        <div class="modulo-card" id="mod-salud" onclick="showToast('💓 Salud — próximamente')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ff4466"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <div class="modulo-title">Salud</div>
             <div class="modulo-sub">Frecuencia cardíaca, Zonas</div>
             <div class="mod-device">💓 Polar H10 <span class="mod-dot"></span></div>
         </div>
-        <div class="modulo-card" id="mod-grupo">
+        <div class="modulo-card" id="mod-grupo" onclick="showToast('🚴 Grupo — próximamente')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#ff8833"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <div class="modulo-title">Grupo</div>
             <div class="modulo-sub">Pelotón, Seguimiento</div>
         </div>
-        <div class="modulo-card" id="mod-logros">
+        <div class="modulo-card" id="mod-logros" onclick="goTo('analisis')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#33ddff"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
             <div class="modulo-title">Logros</div>
             <div class="modulo-sub">Medallas, Historial</div>
         </div>
-        <div class="modulo-card" id="mod-ajustes">
+        <div class="modulo-card" id="mod-ajustes" onclick="goTo('perfil')">
             <svg class="modulo-icon" viewBox="0 0 24 24" style="stroke:#888888"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <div class="modulo-title">Ajustes</div>
             <div class="modulo-sub">Perfil, Preferencias</div>
@@ -1603,7 +1603,7 @@ window.addEventListener('online',function(){document.getElementById('act-status'
 
 
 // ══ PANEL SEGURIDAD ══
-function openSeguridad() {
+window.openSeguridad = function() {
     document.getElementById('panel-seguridad').classList.add('show');
     updateSegUI();
 }
@@ -1742,6 +1742,33 @@ function stopFlash() {
 loadAIKey();
 initVoice();
 setTimeout(function(){if(!currentLat)showToast('📍 Ve a Actividad y pulsa el GPS');},3000);
+
+
+// ── Funciones globales (onclick en HTML) ──
+window.openSeguridad = window.openSeguridad || function() {
+    document.getElementById('panel-seguridad').classList.add('show');
+    updateSegUI();
+};
+window.goTo = function(name) {
+    var sc = {inicio:'screen-inicio',rutas:'screen-rutas',actividad:'screen-actividad',analisis:'screen-analisis',perfil:'screen-perfil'};
+    var tb = {inicio:'tab-inicio',rutas:'tab-rutas',actividad:'tab-actividad',analisis:'tab-analisis',perfil:'tab-perfil'};
+    Object.keys(sc).forEach(function(k){ document.getElementById(sc[k]).classList.toggle('active',k===name); });
+    Object.keys(tb).forEach(function(k){ document.getElementById(tb[k]).classList.toggle('active',k===name); });
+    currentScreen = name;
+    if(name==='actividad'){ setTimeout(function(){ if(mapInstance) mapInstance.invalidateSize(); else initMap(); }, 100); }
+    if(name==='rutas') renderRouteList();
+    if(name==='analisis') renderAnalisis();
+    if(name==='perfil') renderPerfil();
+};
+window.openAI = function() {
+    document.getElementById('ai-panel').classList.add('show');
+    if(!aiKey) document.getElementById('ai-key-wrap').classList.add('show');
+};
+window.showToast = window.showToast || function(msg) {
+    var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2800);
+};
+window.tryShield = window.tryShield || tryShield;
 
 </script>
 </body>
