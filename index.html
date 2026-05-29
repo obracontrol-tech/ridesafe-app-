@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI v8</title>
+<title>RideSafe AI v9</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1385,7 +1385,7 @@ document.getElementById('act-rec-btn').addEventListener('click',function(){
     if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;}
     var elapsed=Math.round((Date.now()-routeStartTime)/1000);
     if(routePoints.length>=2){
-      saveRoute(p:routeStartTime});
+      saveRoute({id:Date.now(),points:routePoints,distance:totalDistance,duration:elapsed,timestamp:routeStartTime});
       showToast('✅ Ruta guardada');
     }else{showToast('⚠️ Ruta muy corta');}
     document.getElementById('act-live').classList.remove('show');
