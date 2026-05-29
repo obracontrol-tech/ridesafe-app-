@@ -629,6 +629,17 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 }
 .ors-key-link { display:block;text-align:center;font-size:11px;color:#666;margin-top:10px;cursor:pointer;text-decoration:underline; }
 
+
+/* ══ SISTEMA PANELES UNIVERSAL ══ */
+.panel {
+    position:fixed;top:0;left:0;right:0;height:100dvh;
+    background:#0a0a0a;z-index:500;
+    display:none;flex-direction:column;overflow:hidden;
+}
+.panel.visible { display:flex; }
+.panel-grid { display:none;flex-direction:column;overflow:hidden; }
+.panel-grid.visible { display:grid; }
+
 </style>
 </head>
 <body>
@@ -754,7 +765,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 
 <!-- ══ PANEL NAVEGACIÓN ══ -->
-<div id="panel-nav">
+<div id="panel-nav" class="panel" style="display:none;grid-template-rows:52px 1fr 60px;">
 
     <!-- Barra superior -->
     <div id="nav-topbar">
@@ -821,7 +832,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 
 <!-- ══ PANEL PLANIFICAR RUTA ══ -->
-<div id="panel-planificar">
+<div id="panel-planificar" class="panel" style="z-index:600;">
 
     <div id="plan-topbar">
         <button id="plan-back" onclick="cerrarPlanificar()">←</button>
@@ -878,7 +889,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 </div>
 
 <!-- ══ PANEL RUTAS ══ -->
-<div id="panel-rutas">
+<div id="panel-rutas" class="panel" style="display:none;grid-template-rows:52px 1fr;">
 
     <div id="rutas-topbar">
         <button id="rutas-back" onclick="cerrarRutas()">←</button>
@@ -898,7 +909,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 </div>
 
 <!-- ══ PANEL ASISTENTE IA ══ -->
-<div id="panel-ai">
+<div id="panel-ai" class="panel">
 
     <div id="ai-topbar">
         <button id="ai-back" onclick="cerrarAI()">←</button>
@@ -937,7 +948,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 </div>
 
 <!-- ══ PANEL SEGURIDAD ══ -->
-<div id="panel-seg">
+<div id="panel-seg" class="panel">
   <div class="panel-hdr">
     <button class="panel-back" onclick="cerrarSeguridad()">←</button>
     <div class="panel-titulo">🛡️ <span>Seguridad</span></div>
@@ -2047,6 +2058,71 @@ function cerrarNavYPlanificar() {
     setTimeout(function() {
         abrirPlanificar();
     }, 350);
+}
+
+
+// ══ SISTEMA NAVEGACIÓN UNIVERSAL ══
+function openPanel(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    // Determinar display correcto
+    if (id === 'panel-nav') {
+        el.style.display = 'grid';
+    } else if (id === 'panel-rutas') {
+        el.style.display = 'grid';
+    } else {
+        el.style.display = 'flex';
+    }
+    el.classList.add('visible');
+}
+
+function closePanel(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'none';
+    el.classList.remove('visible');
+    el.classList.remove('open');
+    el.classList.remove('show');
+}
+
+// Sobreescribir todas las funciones abrir/cerrar
+function abrirSeguridad()   { openPanel('panel-seg'); updateSegUI(); }
+function cerrarSeguridad()  { closePanel('panel-seg'); }
+function abrirNav()         { 
+    openPanel('panel-nav'); 
+    setTimeout(function(){ if(!navMap) initNavMap(); else navMap.invalidateSize(); }, 100);
+    try { var t=localStorage.getItem('rs_mapbox'); if(t){MAPBOX_TOKEN=t;LAYERS.mapbox.url='https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;} var l=localStorage.getItem('rs_layer'); if(l) navLayerKey=l; } catch(e){}
+}
+function cerrarNav()        { closePanel('panel-nav'); document.getElementById('layer-picker').classList.remove('show'); }
+function abrirAI()          { openPanel('panel-ai'); if(!aiKey) document.getElementById('ai-key-setup').classList.add('show'); }
+function cerrarAI()         { closePanel('panel-ai'); }
+function abrirRutas()       { openPanel('panel-rutas'); renderRutas(); }
+function cerrarRutas()      { closePanel('panel-rutas'); }
+function abrirPlanificar()  { 
+    openPanel('panel-planificar'); 
+    setTimeout(function(){ if(!planMapa) initPlanMapa(); else planMapa.invalidateSize(); if(!orsKey) document.getElementById('ors-key-setup').classList.add('show'); }, 100);
+}
+function cerrarPlanificar() { closePanel('panel-planificar'); }
+
+// iniciarNavRuta simplificado
+function iniciarNavRuta() {
+    if (!planGeoJSON) return;
+    var coords = planGeoJSON.features[0].geometry.coordinates;
+    closePanel('panel-planificar');
+    setTimeout(function() {
+        openPanel('panel-nav');
+        setTimeout(function() {
+            if (!navMap) initNavMap();
+            navMap.invalidateSize();
+            if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
+            rutaPlanLayer = L.polyline(
+                coords.map(function(c){ return [c[1],c[0]]; }),
+                { color:'#a8e63d', weight:5, opacity:.9, dashArray:'10 5' }
+            ).addTo(navMap);
+            navMap.fitBounds(rutaPlanLayer.getBounds(), { padding:[30,30] });
+            toast('✅ Ruta lista — pulsa REC para grabar');
+        }, 300);
+    }, 100);
 }
 
 </script>
