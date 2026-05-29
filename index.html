@@ -1997,8 +1997,19 @@ function closePanel(id) {
 // Sobreescribir todas las funciones abrir/cerrar
 function abrirSeguridad()   { openPanel('panel-seg'); updateSegUI(); }
 function cerrarSeguridad()  { closePanel('panel-seg'); }
-function abrirNav()         { 
-    openPanel('panel-nav'); 
+function abrirNav() {
+    console.log('abrirNav llamado');
+    var el = document.getElementById('panel-nav');
+    console.log('panel-nav display antes:', el.style.display);
+    el.style.display = 'grid';
+    el.style.gridTemplateRows = '52px 1fr 60px';
+    el.style.position = 'fixed';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.right = '0';
+    el.style.height = '100dvh';
+    el.style.zIndex = '500';
+    console.log('panel-nav display después:', el.style.display);
     setTimeout(function(){ if(!navMap) initNavMap(); else navMap.invalidateSize(); }, 100);
     try { var t=localStorage.getItem('rs_mapbox'); if(t){MAPBOX_TOKEN=t;LAYERS.mapbox.url='https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token='+t;} var l=localStorage.getItem('rs_layer'); if(l) navLayerKey=l; } catch(e){}
 }
