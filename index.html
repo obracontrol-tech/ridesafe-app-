@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI</title>
+<title>RideSafe AI v5</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1237,7 +1240,10 @@ document.getElementById('mod-navegacion').addEventListener('click',function(){go
 document.getElementById('mod-rutas') && document.getElementById('mod-rutas').addEventListener('click',function(){goTo('rutas');});
 document.getElementById('mod-rendimiento').addEventListener('click',function(){goTo('analisis');});
 document.getElementById('mod-asistente').addEventListener('click',function(){openAI();});
-document.getElementById('mod-seguridad').addEventListener('click',function(){openSeguridad();});
+document.getElementById('mod-seguridad').addEventListener('click',function(){
+    console.log('Seguridad clicked');
+    openSeguridad();
+});
 document.getElementById('mod-grupo').addEventListener('click',function(){showToast('🚴 Modo Grupo — próximamente');});
 document.getElementById('mod-logros').addEventListener('click',function(){goTo('analisis');});
 document.getElementById('mod-ajustes').addEventListener('click',function(){goTo('perfil');});
@@ -1559,6 +1565,18 @@ function renderZones(){var zs=loadZones();var list=document.getElementById('zone
 function refreshStorage(){if(swReady&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_SIZE'});}
 
 // SW
+// FORZAR ACTUALIZACIÓN DE CACHÉ
+if('serviceWorker' in navigator){
+    // Desregistrar SW viejo y limpiar caché
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+        regs.forEach(function(r){ r.unregister(); });
+    });
+    if(window.caches){
+        caches.keys().then(function(ks){
+            ks.forEach(function(k){ caches.delete(k); });
+        });
+    }
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister();});});
   if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});
