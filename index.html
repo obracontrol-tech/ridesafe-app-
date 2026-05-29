@@ -1997,21 +1997,28 @@ async function calcularRuta() {
 
 function iniciarNavRuta() {
     if (!planGeoJSON) return;
-    // Extraer coordenadas y pasar al panel de navegación
     var coords = planGeoJSON.features[0].geometry.coordinates;
-    toast('🚴 Abriendo en Navegación...');
+    toast('🚴 Cargando en el mapa...');
+
+    // 1. Cerrar planificador
     cerrarPlanificar();
-    abrirNav();
+
+    // 2. Abrir nav con delay para que se complete el cierre
     setTimeout(function() {
-        if (!navMap) return;
-        // Dibujar la ruta planificada en el mapa de navegación
-        if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
-        rutaPlanLayer = L.polyline(coords.map(function(c){ return [c[1],c[0]]; }), {
-            color: '#a8e63d', weight: 4, opacity: .8,
-            dashArray: '8 4'
-        }).addTo(navMap);
-        navMap.fitBounds(rutaPlanLayer.getBounds(), { padding: [20, 20] });
-        toast('🗺 Ruta cargada — pulsa REC para grabar');
+        abrirNav();
+
+        // 3. Dibujar ruta cuando el mapa esté listo
+        setTimeout(function() {
+            if (!navMap) { initNavMap(); }
+            navMap.invalidateSize();
+            if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
+            rutaPlanLayer = L.polyline(
+                coords.map(function(c){ return [c[1], c[0]]; }),
+                { color:'#a8e63d', weight:5, opacity:.9, dashArray:'10 5' }
+            ).addTo(navMap);
+            navMap.fitBounds(rutaPlanLayer.getBounds(), { padding:[30,30] });
+            toast('✅ Ruta lista — pulsa REC para grabar');
+        }, 500);
     }, 400);
 }
 
