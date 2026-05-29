@@ -1103,6 +1103,193 @@
         #btn-shield.shield-on .shield-fab-dot { background: var(--neon); box-shadow: 0 0 6px var(--neon); }
         #btn-shield.shield-alert .shield-fab-dot { background: var(--red); animation: blink 0.4s infinite; }
 
+
+        /* ══════════════════════════════════════
+           ASISTENTE IA CICLISTA
+        ══════════════════════════════════════ */
+
+        /* FAB asistente — esquina inferior izquierda */
+        #btn-ai {
+            position: absolute; bottom: 30px; left: 16px;
+            z-index: 1000; width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, #0d1a2e 0%, #0a1220 100%);
+            border: 1.5px solid rgba(57,255,20,0.5);
+            color: var(--neon); font-size: 22px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 12px rgba(57,255,20,0.15);
+            transition: all 0.2s;
+        }
+        #btn-ai:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(57,255,20,0.35); border-color: var(--neon); }
+        #btn-ai.open  { background: var(--neon); color: black; border-color: var(--neon); box-shadow: 0 0 20px var(--neon-glow); }
+        #btn-ai .ai-badge {
+            position: absolute; top: -3px; right: -3px;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #00e5ff; border: 2px solid var(--black);
+            display: none;
+        }
+        #btn-ai .ai-badge.show { display: block; animation: pulse-dot 1.5s infinite; }
+
+        /* Panel asistente — sube desde abajo */
+        #ai-panel {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            z-index: 3400;
+            background: #080e18;
+            border-top: 1px solid #1a2a3a;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+            display: flex; flex-direction: column;
+            max-height: 85vh;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+        }
+        #ai-panel.open { transform: translateY(0); }
+
+        /* Handle de arrastre */
+        #ai-handle {
+            width: 36px; height: 4px; border-radius: 2px;
+            background: #2a3a4a; margin: 10px auto 0; flex-shrink: 0;
+        }
+
+        /* Header */
+        #ai-header {
+            padding: 12px 16px 10px;
+            display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+            border-bottom: 1px solid #0f1e2a;
+        }
+        #ai-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+        #ai-header-text { flex: 1; }
+        #ai-header-name { color: white; font-size: 13px; font-weight: 700; }
+        #ai-header-sub  { color: #4a7a9b; font-size: 10px; margin-top: 1px; }
+        #ai-header-status {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #39ff14; animation: pulse-dot 2s infinite; flex-shrink: 0;
+        }
+        #ai-close {
+            background: none; border: none; color: #4a7a9b;
+            font-size: 18px; cursor: pointer; padding: 4px; transition: color .2s;
+        }
+        #ai-close:hover { color: white; }
+
+        /* Config API key (se muestra solo si no hay key) */
+        #ai-key-setup {
+            padding: 16px; display: none; flex-shrink: 0;
+            border-bottom: 1px solid #0f1e2a;
+        }
+        #ai-key-setup.show { display: block; }
+        #ai-key-setup p { color: #4a7a9b; font-size: 11px; margin-bottom: 8px; line-height: 1.5; }
+        #ai-key-input {
+            width: 100%; padding: 9px 12px; background: #0d1521;
+            color: white; border: 1px solid #1e3a4a; border-radius: 10px;
+            font-size: 12px; outline: none; font-family: monospace; margin-bottom: 8px;
+        }
+        #ai-key-input:focus { border-color: var(--neon); }
+        #ai-key-save {
+            width: 100%; padding: 9px; background: var(--neon); border: none;
+            border-radius: 10px; color: black; font-size: 12px; font-weight: 800;
+            cursor: pointer;
+        }
+
+        /* Contexto de ruta activa */
+        #ai-context-bar {
+            display: none; padding: 7px 14px;
+            background: rgba(57,255,20,0.05); border-bottom: 1px solid #0f1e2a;
+            font-size: 10px; color: #4a7a9b; flex-shrink: 0;
+        }
+        #ai-context-bar.show { display: flex; align-items: center; gap: 8px; }
+        #ai-context-bar span { color: var(--neon); font-weight: 700; }
+
+        /* Chips de sugerencias rápidas */
+        #ai-chips {
+            display: flex; gap: 6px; padding: 8px 14px 4px;
+            overflow-x: auto; flex-shrink: 0;
+        }
+        #ai-chips::-webkit-scrollbar { display: none; }
+        .ai-chip {
+            white-space: nowrap; padding: 5px 11px;
+            background: #0d1521; border: 1px solid #1e3a4a;
+            border-radius: 20px; font-size: 11px; color: #7ab8d4;
+            cursor: pointer; transition: all .2s; flex-shrink: 0;
+        }
+        .ai-chip:hover { border-color: var(--neon); color: var(--neon); background: rgba(57,255,20,0.06); }
+
+        /* Historial de mensajes */
+        #ai-messages {
+            flex: 1; overflow-y: auto; padding: 10px 14px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        #ai-messages::-webkit-scrollbar { width: 3px; }
+        #ai-messages::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 2px; }
+
+        .ai-msg {
+            max-width: 88%; font-size: 13px; line-height: 1.55;
+            padding: 9px 13px; border-radius: 14px; word-break: break-word;
+        }
+        .ai-msg.user {
+            align-self: flex-end;
+            background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.2);
+            color: #d0ecd0; border-radius: 14px 14px 4px 14px;
+        }
+        .ai-msg.assistant {
+            align-self: flex-start;
+            background: #0d1521; border: 1px solid #1e2d3d;
+            color: #c8d8e8; border-radius: 14px 14px 14px 4px;
+        }
+        .ai-msg.assistant .ai-msg-name {
+            font-size: 10px; color: var(--neon); font-weight: 700;
+            margin-bottom: 4px; letter-spacing: .3px;
+        }
+        .ai-msg.thinking {
+            align-self: flex-start;
+            background: #0d1521; border: 1px solid #1e2d3d;
+            color: #4a7a9b; font-style: italic; font-size: 12px;
+        }
+        .ai-typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+        .ai-typing span {
+            width: 6px; height: 6px; border-radius: 50%; background: #4a7a9b;
+            animation: ai-bounce .9s infinite;
+        }
+        .ai-typing span:nth-child(2) { animation-delay: .15s; }
+        .ai-typing span:nth-child(3) { animation-delay: .30s; }
+        @keyframes ai-bounce { 0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);} }
+
+        /* Barra de entrada */
+        #ai-input-bar {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 12px; border-top: 1px solid #0f1e2a;
+            background: #080e18; flex-shrink: 0;
+        }
+        #ai-input {
+            flex: 1; padding: 9px 13px; background: #0d1521;
+            color: white; border: 1px solid #1e3a4a; border-radius: 22px;
+            font-size: 13px; outline: none; transition: border .2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        #ai-input:focus { border-color: rgba(57,255,20,0.5); }
+        #ai-input::placeholder { color: #2a4a5a; }
+        #ai-voice-btn {
+            width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+            background: #0d1521; border: 1px solid #1e3a4a;
+            color: #4a7a9b; font-size: 16px; cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #ai-voice-btn.listening {
+            background: rgba(57,255,20,0.1); border-color: var(--neon); color: var(--neon);
+            animation: pulse-badge 1s infinite;
+        }
+        #ai-send-btn {
+            width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+            background: var(--neon); border: none; color: black;
+            font-size: 16px; cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center; font-weight: 900;
+        }
+        #ai-send-btn:hover { box-shadow: 0 0 12px var(--neon-glow); }
+        #ai-send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
         /* ── LEAFLET OVERRIDES ── */
         .leaflet-bar a { background: var(--dark) !important; color: var(--neon) !important; border: 1px solid #333 !important; }
         .leaflet-bar a:hover { border-color: var(--neon) !important; }
@@ -2827,6 +3014,313 @@ loadGrupoConfig();
 initWalkie();
 
 // ════════════════════════════════════════════════════════════════
+//  ASISTENTE IA CICLISTA — Claude API
+// ════════════════════════════════════════════════════════════════
+
+const AI = {
+    key:        '',          // API key Anthropic
+    history:    [],          // historial de conversación
+    thinking:   false,       // esperando respuesta
+    voiceMode:  false,       // reconocimiento de voz activo
+    recognition: null,       // SpeechRecognition instance
+    synth:       window.speechSynthesis,
+};
+
+// ── Cargar API key guardada ──
+function loadAIKey() {
+    try {
+        const k = localStorage.getItem('ridesafe_ai_key');
+        if (k) { AI.key = k; return true; }
+    } catch(e) {}
+    return false;
+}
+
+function saveAIKey(key) {
+    AI.key = key;
+    try { localStorage.setItem('ridesafe_ai_key', key); } catch(e) {}
+}
+
+// ── Construir contexto de sesión para el sistema ──
+function buildSystemPrompt() {
+    const now = new Date().toLocaleString('es-ES');
+    let ctx = `Eres un asistente experto en ciclismo integrado en RideSafe AI, una app de seguridad para ciclistas.
+Respondes siempre en español, de forma concisa y práctica (máximo 3-4 frases salvo que pidan más detalle).
+Tienes acceso al contexto en tiempo real del ciclista:
+
+- Fecha y hora: ${now}`;
+
+    if (currentLat) ctx += `
+- Posición GPS: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)} (Lleida, Catalunya)`;
+    if (routeActive) {
+        const km = (totalDistance/1000).toFixed(1);
+        const el = Math.round((Date.now()-routeStartTime)/1000);
+        const spd = el>0 ? ((totalDistance/1000)/(el/3600)).toFixed(1) : '0';
+        ctx += `
+- Ruta activa: ${km} km recorridos, velocidad media ${spd} km/h, tiempo ${Math.floor(el/60)} min`;
+    }
+    if (grupoState.active) {
+        const n = Object.keys(grupoState.members).length;
+        ctx += `
+- Grupo activo: ${n} ciclistas en grupo ${grupoState.codigo}`;
+    }
+    if (shieldState.active) ctx += '
+- Sensor anticaída: activado';
+
+    ctx += `
+
+Áreas de especialidad: mecánica de bicicletas, nutrición deportiva ciclista, meteorología para ciclismo, rutas y planificación, primeros auxilios en ruta, entrenamiento y mejora de rendimiento.
+Si detectas una emergencia médica o accidente grave, siempre indica llamar al 112.
+Usa emojis moderadamente para hacer las respuestas más claras y amigables.`;
+    return ctx;
+}
+
+// ── Llamada a la API de Claude ──
+async function askClaude(userMessage) {
+    if (!AI.key) { showAIKeySetup(); return; }
+    if (AI.thinking) return;
+
+    AI.thinking = true;
+    document.getElementById('ai-send-btn').disabled = true;
+
+    // Añadir mensaje usuario al historial
+    AI.history.push({ role: 'user', content: userMessage });
+
+    // Mostrar mensaje usuario
+    appendAIMessage('user', userMessage);
+
+    // Mostrar indicador "pensando"
+    const thinkId = appendAIThinking();
+
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': AI.key,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 400,
+                system: buildSystemPrompt(),
+                messages: AI.history.slice(-10) // últimos 10 turnos
+            })
+        });
+
+        removeAIThinking(thinkId);
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            if (response.status === 401) {
+                appendAIMessage('assistant', '❌ API key incorrecta. Pulsa ⚙️ para actualizarla.');
+                showAIKeySetup();
+            } else {
+                appendAIMessage('assistant', '⚠️ Error de conexión (' + response.status + '). Comprueba tu internet.');
+            }
+            AI.thinking = false;
+            document.getElementById('ai-send-btn').disabled = false;
+            return;
+        }
+
+        const data = await response.json();
+        const reply = data.content?.[0]?.text || '(Sin respuesta)';
+
+        // Añadir respuesta al historial
+        AI.history.push({ role: 'assistant', content: reply });
+
+        // Mostrar respuesta
+        appendAIMessage('assistant', reply);
+
+        // Leer en voz alta si venía de voz
+        if (AI.voiceMode && AI.synth) {
+            const u = new SpeechSynthesisUtterance(reply.replace(/[🚴🔧🍌🌤️🗺️🦵⚙️❌⚠️✅]/g, ''));
+            u.lang = 'es-ES'; u.rate = 1.05;
+            AI.synth.cancel();
+            AI.synth.speak(u);
+        }
+
+        // Badge si el panel está cerrado
+        if (!document.getElementById('ai-panel').classList.contains('open')) {
+            document.getElementById('ai-fab-badge').classList.add('show');
+        }
+
+    } catch(e) {
+        removeAIThinking(thinkId);
+        appendAIMessage('assistant', '⚠️ Sin conexión. El asistente necesita internet para responder.');
+    }
+
+    AI.thinking = false;
+    document.getElementById('ai-send-btn').disabled = false;
+}
+
+// ── UI helpers ──
+function appendAIMessage(role, text) {
+    const box = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    if (role === 'assistant') {
+        div.innerHTML = '<div class="ai-msg-name">🚴 Asistente RideSafe</div>' +
+            text.replace(/\n/g, '<br>');
+    } else {
+        div.textContent = text;
+    }
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+let thinkCounter = 0;
+function appendAIThinking() {
+    const id = 'think-' + (++thinkCounter);
+    const box = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-msg thinking'; div.id = id;
+    div.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>';
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return id;
+}
+function removeAIThinking(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function showAIKeySetup() {
+    document.getElementById('ai-key-setup').classList.add('show');
+}
+
+// ── Actualizar barra de contexto ──
+function updateAIContext() {
+    const bar = document.getElementById('ai-context-bar');
+    if (routeActive || grupoState.active) {
+        bar.classList.add('show');
+        if (routeActive) {
+            const km = (totalDistance/1000).toFixed(1);
+            const el = Math.round((Date.now()-routeStartTime)/1000);
+            const spd = el>0?((totalDistance/1000)/(el/3600)).toFixed(1):'–';
+            document.getElementById('ai-ctx-dist').textContent = km;
+            document.getElementById('ai-ctx-spd').textContent = spd;
+        }
+        document.getElementById('ai-ctx-grupo').textContent =
+            grupoState.active ? grupoState.codigo : 'sin grupo';
+    } else {
+        bar.classList.remove('show');
+    }
+}
+
+// ── Abrir / cerrar panel ──
+function openAIPanel() {
+    document.getElementById('ai-panel').classList.add('open');
+    document.getElementById('btn-ai').classList.add('open');
+    document.getElementById('ai-fab-badge').classList.remove('show');
+    if (!AI.key) showAIKeySetup();
+    updateAIContext();
+    // Scroll al último mensaje
+    const box = document.getElementById('ai-messages');
+    setTimeout(() => box.scrollTop = box.scrollHeight, 100);
+}
+function closeAIPanel() {
+    document.getElementById('ai-panel').classList.remove('open');
+    document.getElementById('btn-ai').classList.remove('open');
+}
+
+// ── Reconocimiento de voz ──
+function initAIVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    AI.recognition = new SR();
+    AI.recognition.lang = 'es-ES';
+    AI.recognition.continuous = false;
+    AI.recognition.interimResults = false;
+
+    AI.recognition.onresult = e => {
+        const text = e.results[0][0].transcript;
+        document.getElementById('ai-input').value = text;
+        AI.voiceMode = true;
+        sendAIMessage();
+        stopAIVoice();
+    };
+    AI.recognition.onerror = stopAIVoice;
+    AI.recognition.onend   = stopAIVoice;
+}
+
+function startAIVoice() {
+    if (!AI.recognition) { initAIVoice(); if (!AI.recognition) { showToast('⚠️ Voz no disponible'); return; } }
+    AI.recognition.start();
+    document.getElementById('ai-voice-btn').classList.add('listening');
+    document.getElementById('ai-voice-btn').textContent = '🛑';
+}
+function stopAIVoice() {
+    try { AI.recognition && AI.recognition.stop(); } catch(e) {}
+    document.getElementById('ai-voice-btn').classList.remove('listening');
+    document.getElementById('ai-voice-btn').textContent = '🎤';
+}
+
+// ── Enviar mensaje ──
+function sendAIMessage() {
+    const input = document.getElementById('ai-input');
+    const text = input.value.trim();
+    if (!text || AI.thinking) return;
+    input.value = '';
+    AI.voiceMode = false;
+    askClaude(text);
+}
+
+// ── Event listeners ──
+document.getElementById('btn-ai').addEventListener('click', () => {
+    const panel = document.getElementById('ai-panel');
+    panel.classList.contains('open') ? closeAIPanel() : openAIPanel();
+});
+document.getElementById('ai-close').addEventListener('click', closeAIPanel);
+
+document.getElementById('ai-send-btn').addEventListener('click', sendAIMessage);
+document.getElementById('ai-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAIMessage(); }
+});
+
+document.getElementById('ai-voice-btn').addEventListener('click', () => {
+    if (document.getElementById('ai-voice-btn').classList.contains('listening')) {
+        AI.voiceMode = false; stopAIVoice();
+    } else {
+        startAIVoice();
+    }
+});
+
+// Chips de sugerencias
+document.querySelectorAll('.ai-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.getElementById('ai-input').value = chip.dataset.msg;
+        sendAIMessage();
+    });
+});
+
+// Guardar API key
+document.getElementById('ai-key-save').addEventListener('click', () => {
+    const k = document.getElementById('ai-key-input').value.trim();
+    if (!k.startsWith('sk-ant-')) { showToast('⚠️ La key debe empezar por sk-ant-'); return; }
+    saveAIKey(k);
+    document.getElementById('ai-key-setup').classList.remove('show');
+    showToast('✅ API key guardada');
+    // Mensaje de bienvenida con contexto
+    askClaude('Hola, acabo de configurar el asistente. ¿Qué puedes hacer por mí?');
+});
+
+// Swipe down para cerrar
+let aiTouchStartY = 0;
+document.getElementById('ai-panel').addEventListener('touchstart', e => {
+    aiTouchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.getElementById('ai-panel').addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - aiTouchStartY;
+    if (dy > 60) closeAIPanel();
+}, { passive: true });
+
+// Inicializar
+loadAIKey();
+initAIVoice();
+
+
+// ════════════════════════════════════════════════════════════════
 //  SENSOR ANTICAÍDA — DeviceMotion + Web Audio + Firebase
 // ════════════════════════════════════════════════════════════════
 
@@ -3488,6 +3982,67 @@ document.getElementById('btn-grupo').addEventListener('click', () => {
 </div>
 
 
+
+
+<!-- ══ FAB ASISTENTE IA ══ -->
+<button id="btn-ai" title="Asistente ciclista IA">
+    🤖
+    <div class="ai-badge" id="ai-fab-badge"></div>
+</button>
+
+<!-- ══ PANEL ASISTENTE IA ══ -->
+<div id="ai-panel">
+    <div id="ai-handle"></div>
+
+    <div id="ai-header">
+        <div id="ai-avatar">🚴</div>
+        <div id="ai-header-text">
+            <div id="ai-header-name">Asistente RideSafe AI</div>
+            <div id="ai-header-sub">Mecánica · Rutas · Nutrición · Emergencias</div>
+        </div>
+        <div id="ai-header-status"></div>
+        <button id="ai-close">✕</button>
+    </div>
+
+    <!-- Setup API key (visible solo si no hay key guardada) -->
+    <div id="ai-key-setup">
+        <p>Introduce tu API key de Anthropic para activar el asistente IA.<br>
+        La clave se guarda solo en tu dispositivo.</p>
+        <input id="ai-key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off"/>
+        <button id="ai-key-save">✅ Guardar y activar</button>
+    </div>
+
+    <!-- Contexto ruta activa -->
+    <div id="ai-context-bar">
+        🛰️ Contexto: ruta activa · <span id="ai-ctx-dist">–</span> km · <span id="ai-ctx-spd">–</span> km/h
+        · grupo <span id="ai-ctx-grupo">sin grupo</span>
+    </div>
+
+    <!-- Chips sugerencias -->
+    <div id="ai-chips">
+        <div class="ai-chip" data-msg="Tengo un ruido metálico al pedalear, ¿qué puede ser?">🔧 Ruido al pedalear</div>
+        <div class="ai-chip" data-msg="¿Qué debería comer después de 2 horas pedaleando?">🍌 Nutrición ahora</div>
+        <div class="ai-chip" data-msg="¿Qué tiempo hace hoy en mi zona para salir en bici?">🌤️ ¿Salgo hoy?</div>
+        <div class="ai-chip" data-msg="Dame una ruta fácil de 30km desde mi posición actual">🗺️ Ruta fácil 30km</div>
+        <div class="ai-chip" data-msg="Me duele la rodilla al subir puertos, ¿qué hago?">🦵 Me duele la rodilla</div>
+        <div class="ai-chip" data-msg="¿Cómo regulo correctamente el sillín de mi bicicleta?">⚙️ Regular sillín</div>
+    </div>
+
+    <!-- Mensajes -->
+    <div id="ai-messages">
+        <div class="ai-msg assistant">
+            <div class="ai-msg-name">🚴 Asistente RideSafe</div>
+            ¡Hola! Soy tu asistente ciclista. Puedo ayudarte con mecánica, rutas, nutrición, meteorología y emergencias. ¿En qué te ayudo?
+        </div>
+    </div>
+
+    <!-- Barra de entrada -->
+    <div id="ai-input-bar">
+        <button id="ai-voice-btn" title="Hablar">🎤</button>
+        <input id="ai-input" type="text" placeholder="Pregunta lo que quieras..." autocomplete="off"/>
+        <button id="ai-send-btn" title="Enviar">➤</button>
+    </div>
+</div>
 
 <!-- ══ INDICADOR ESCUDO ══ -->
 <div id="shield-indicator">
