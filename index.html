@@ -159,7 +159,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     overflow:hidden;
     -webkit-overflow-scrolling:touch;
 }
-#panel-nav.open { transform:translateX(0); }
+#panel-nav { pointer-events:none; }
+#panel-nav.open { transform:translateX(0); pointer-events:all; }
 
 /* Barra superior fija */
 #nav-topbar {
@@ -305,7 +306,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
     display:grid;grid-template-rows:auto auto auto 1fr auto;overflow:hidden;
 }
-#panel-ai.open { transform:translateX(0); }
+#panel-ai { pointer-events:none; }
+#panel-ai.open { transform:translateX(0); pointer-events:all; }
 
 #ai-topbar {
     background:#111;border-bottom:1px solid #222;
@@ -427,7 +429,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
     display:grid;grid-template-rows:52px 1fr;overflow:hidden;
 }
-#panel-rutas.open { transform:translateX(0); }
+#panel-rutas { pointer-events:none; }
+#panel-rutas.open { transform:translateX(0); pointer-events:all; }
 
 #rutas-topbar {
     background:#111;border-bottom:1px solid #222;
@@ -504,7 +507,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
     display:flex;flex-direction:column;overflow:hidden;
 }
-#panel-planificar.open { transform:translateX(0); }
+#panel-planificar { pointer-events:none; }
+#panel-planificar.open { transform:translateX(0); pointer-events:all; }
 
 #plan-topbar {
     background:#111;border-bottom:1px solid #222;
