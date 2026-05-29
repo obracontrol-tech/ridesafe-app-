@@ -1414,6 +1414,14 @@
             <span style="color:#4a7a9b;font-size:14px;">›</span>
         </div>
     </div>
+        <div class="lm-option" id="lm-diagnostico" style="cursor:pointer;">
+            <div class="lm-option-icon">🔧</div>
+            <div class="lm-option-text">
+                <div class="lm-option-label">Diagnóstico del dispositivo</div>
+                <div class="lm-option-sub">Comprobar GPS, sensores y permisos</div>
+            </div>
+            <span style="color:#4a7a9b;font-size:14px;">›</span>
+        </div>
     <div id="lm-footer">
         <span>RideSafe AI · <strong>v2.0</strong> · © 2025 JM Prestige</span>
     </div>
@@ -1792,7 +1800,7 @@ function renderStorageBar(bytes) {
 // ════════════════════════════════════════════════════════════════
 //  MAPA PRINCIPAL
 // ════════════════════════════════════════════════════════════════
-const map = L.map('map', { zoomControl: true }).setView([41.3851, 2.1734], 14);
+const map = L.map('map', { zoomControl: true }).setView([41.6176, 0.6200], 13); // Lleida
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution: '© OSM © CARTO', subdomains: 'abcd', maxZoom: 20
 }).addTo(map);
@@ -1869,12 +1877,19 @@ function startRoute() {
             const { latitude:lat, longitude:lng } = pos.coords;
             currentLat = lat; currentLng = lng;
             const pt = [lat,lng];
-            if (routePoints.length > 0) totalDistance += haversine(...routePoints[routePoints.length-1], lat, lng);
+            if (routePoints.length > 0) {
+                const prev = routePoints[routePoints.length - 1];
+                totalDistance += haversine(prev[0], prev[1], lat, lng);
+            }
             routePoints.push(pt);
             routePolyline.addLatLng(pt);
             if (userMarker) userMarker.remove();
             userMarker = L.marker(pt, { icon:bikeIcon }).addTo(map);
-            map.panTo(pt);
+            // Solo mover mapa si coordenadas son válidas
+            if (pt[0] && pt[1] && !isNaN(pt[0]) && !isNaN(pt[1]) &&
+                pt[0] > -90 && pt[0] < 90 && pt[1] > -180 && pt[1] < 180) {
+                map.panTo(pt);
+            }
             updateLiveStats();
         }, null, { enableHighAccuracy:true, maximumAge:3000 });
     }
@@ -2289,22 +2304,53 @@ document.getElementById('hp-organic-btn').addEventListener('click', () => {
 //  GEOLOCALIZACIÓN
 // ════════════════════════════════════════════════════════════════
 function locateUser(showCard = true) {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+        showToast('⚠️ Este navegador no soporta GPS');
+        return;
+    }
     showSpinner(true);
-    navigator.geolocation.getCurrentPosition(pos => {
+
+    const onSuccess = pos => {
         showSpinner(false);
         const { latitude:lat, longitude:lng, accuracy } = pos.coords;
         currentLat = lat; currentLng = lng;
-        map.setView([lat,lng], 16);
+        if (lat && lng && !isNaN(lat) && !isNaN(lng) &&
+            lat > -90 && lat < 90 && lng > -180 && lng < 180) {
+            map.setView([lat, lng], 16);
+        } else {
+            showToast('⚠️ Coordenadas GPS inválidas, reintentando...');
+            return;
+        }
         if (userMarker) userMarker.remove();
-        userMarker = L.marker([lat,lng], { icon:bikeIcon }).addTo(map)
+        userMarker = L.marker([lat, lng], { icon: bikeIcon }).addTo(map)
             .bindPopup('<b>Estás aquí</b><br>Protección activa 🛡️').openPopup();
         if (showCard) {
             showInfoCard(`<strong>Lat:</strong> ${lat.toFixed(5)}<br><strong>Lng:</strong> ${lng.toFixed(5)}<br><strong>Precisión:</strong> ±${Math.round(accuracy)}m`);
             document.getElementById('info-organic-btn').classList.add('show');
             document.getElementById('info-organic-btn').onclick = () => openOrganicLocation(lat, lng, 'Mi ubicación');
         }
-    }, () => { showSpinner(false); alert('No se pudo obtener tu ubicación.'); });
+    };
+
+    const onError = err => {
+        showSpinner(false);
+        const msgs = {
+            1: '🔒 Permiso GPS denegado. Ve a Ajustes del navegador y permite la ubicación para este sitio.',
+            2: '📡 No se pudo obtener el GPS. Comprueba que el GPS del móvil está activado.',
+            3: '⏱️ Tiempo de espera GPS agotado. Inténtalo de nuevo en campo abierto.',
+        };
+        const msg = msgs[err.code] || '⚠️ Error GPS desconocido.';
+        showToast(msg);
+        // Mostrar instrucciones en info card
+        showInfoCard('<strong style="color:#ff9900">GPS no disponible</strong><br>' +
+            '<small>' + msg + '</small>');
+        document.getElementById('info-card').classList.add('show');
+    };
+
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 5000
+    });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2357,6 +2403,7 @@ function renderSuggestions(results) {
 
 function goToResult(r) {
     const lat=parseFloat(r.lat), lng=parseFloat(r.lon);
+    if (isNaN(lat) || isNaN(lng)) { showToast('⚠️ Resultado sin coordenadas'); return; }
     map.setView([lat,lng], 16);
     if (searchMarker) searchMarker.remove();
     const pin = L.divIcon({className:'',html:`<div style="width:14px;height:14px;border-radius:50%;background:#39FF14;border:2px solid white;box-shadow:0 0 12px #39FF14;"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
@@ -2372,7 +2419,22 @@ function goToResult(r) {
 // ════════════════════════════════════════════════════════════════
 //  BOTONES PRINCIPALES
 // ════════════════════════════════════════════════════════════════
-document.getElementById('btn-locate').addEventListener('click', () => locateUser());
+document.getElementById('btn-locate').addEventListener('click', async () => {
+    // Comprobar estado del permiso antes de intentar
+    if (navigator.permissions) {
+        try {
+            const perm = await navigator.permissions.query({ name: 'geolocation' });
+            if (perm.state === 'denied') {
+                showToast('🔒 GPS bloqueado. Actívalo en Ajustes del navegador');
+                showInfoCard('<strong style="color:#ff9900">GPS bloqueado</strong><br>' +
+                    '<small>Toca los 3 puntos del navegador → Configuración → Permisos del sitio → Ubicación → Permitir</small>');
+                document.getElementById('info-card').classList.add('show');
+                return;
+            }
+        } catch(e) {}
+    }
+    locateUser();
+});
 document.getElementById('btn-route').addEventListener('click', () => {
     routeActive = !routeActive;
     const btn = document.getElementById('btn-route');
@@ -2412,6 +2474,10 @@ window.addEventListener('online',  () => { const s=document.getElementById('stat
 updateOfflineBadge();
 initLayer();
 locateUser(false);
+// Aviso GPS si no llega posición en 3 segundos
+setTimeout(() => {
+    if (!currentLat) showToast('📍 Pulsa el botón 📍 para activar tu ubicación GPS');
+}, 3000);
 
 // ════════════════════════════════════════════════════════════════
 //  SELECTOR DE CAPAS — MENÚ LATERAL
@@ -2504,6 +2570,7 @@ document.getElementById('layer-overlay').addEventListener('click', closeLayerMen
 // Accesos rápidos del menú
 document.getElementById('lm-goto-history').addEventListener('click', () => { closeLayerMenu(); openHistoryPanel(); });
 document.getElementById('lm-goto-offline').addEventListener('click', () => { closeLayerMenu(); openOfflinePanel(); });
+document.getElementById('lm-diagnostico').addEventListener('click', () => { closeLayerMenu(); runDiagnostics(); });
 document.getElementById('lm-goto-organic').addEventListener('click', () => {
     closeLayerMenu();
     if (currentLat !== null) openOrganicLocation(currentLat, currentLng, 'Mi ubicación');
@@ -3009,6 +3076,62 @@ function speak(texto) {
 document.getElementById('btn-grupo').addEventListener('click', openGrupoPanel);
 document.getElementById('gp-back').addEventListener('click', closeGrupoPanel);
 
+
+// ════════════════════════════════════════════════════════════════
+//  DIAGNÓSTICO GPS + SENSORES
+// ════════════════════════════════════════════════════════════════
+async function runDiagnostics() {
+    const results = [];
+
+    // GPS
+    if (!navigator.geolocation) {
+        results.push({ icon:'❌', label:'GPS', msg:'No soportado por este navegador' });
+    } else {
+        try {
+            const perm = navigator.permissions
+                ? (await navigator.permissions.query({ name:'geolocation' })).state
+                : 'unknown';
+            if (perm === 'denied') results.push({ icon:'🔒', label:'GPS', msg:'Bloqueado — actívalo en ajustes del navegador' });
+            else if (perm === 'granted') results.push({ icon:'✅', label:'GPS', msg:'Permiso concedido' });
+            else results.push({ icon:'⚠️', label:'GPS', msg:'Permiso pendiente — pulsa 📍 para solicitar' });
+        } catch(e) {
+            results.push({ icon:'⚠️', label:'GPS', msg:'Estado desconocido — pulsa 📍 para activar' });
+        }
+    }
+
+    // Acelerómetro
+    if (!window.DeviceMotionEvent) {
+        results.push({ icon:'❌', label:'Acelerómetro', msg:'No soportado' });
+    } else if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        results.push({ icon:'📱', label:'Acelerómetro (iOS)', msg:'Requiere permiso — pulsa 🛡️ para solicitar' });
+    } else {
+        results.push({ icon:'✅', label:'Acelerómetro', msg:'Disponible (Android/Chrome)' });
+    }
+
+    // Service Worker
+    results.push({
+        icon: 'serviceWorker' in navigator ? '✅' : '❌',
+        label: 'Service Worker',
+        msg: 'serviceWorker' in navigator ? 'Activo — modo offline disponible' : 'No soportado'
+    });
+
+    // HTTPS
+    results.push({
+        icon: location.protocol === 'https:' ? '✅' : '⚠️',
+        label: 'HTTPS',
+        msg: location.protocol === 'https:' ? 'Seguro — todas las funciones disponibles' : 'Sin HTTPS — GPS y sensores pueden fallar'
+    });
+
+    // Mostrar resultado
+    const msg = results.map(r => r.icon + ' ' + r.label + ': ' + r.msg).join('\n');
+    const infoHtml = results.map(r =>
+        '<div style="margin-bottom:4px;">' + r.icon + ' <strong>' + r.label + '</strong><br>' +
+        '<small style="color:#888;">' + r.msg + '</small></div>'
+    ).join('');
+    showInfoCard('<strong style="color:#00e5ff;">Diagnóstico del dispositivo</strong><br><br>' + infoHtml);
+    document.getElementById('info-card').classList.add('show');
+}
+
 // Inicializar
 loadGrupoConfig();
 initWalkie();
@@ -3399,18 +3522,47 @@ function toggleShield() {
 }
 
 async function activateShield() {
-    // Pedir permiso en iOS 13+
-    if (typeof DeviceMotionEvent !== 'undefined' &&
-        typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-            const perm = await DeviceMotionEvent.requestPermission();
-            if (perm !== 'granted') { showToast('⚠️ Permiso de movimiento denegado'); return; }
-        } catch(e) { showToast('⚠️ No se pudo activar el sensor'); return; }
-    }
-
+    // ── Comprobar soporte del acelerómetro ──
     if (!window.DeviceMotionEvent) {
         showToast('⚠️ Este dispositivo no tiene acelerómetro');
         return;
+    }
+
+    // ── iOS 13+: requestPermission obligatorio ──
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const perm = await DeviceMotionEvent.requestPermission();
+            if (perm !== 'granted') {
+                showToast('🔒 Permiso de movimiento denegado en iOS');
+                showInfoCard('<strong style="color:#ff9900">Permiso requerido</strong><br>' +
+                    '<small>En iOS: Ajustes → Safari → Movimiento y orientación → Activar</small>');
+                document.getElementById('info-card').classList.add('show');
+                return;
+            }
+        } catch(e) {
+            // En iOS el requestPermission DEBE llamarse desde un tap directo
+            // Si llegamos aquí es que el contexto no era un gesto de usuario
+            showToast('⚠️ Pulsa el botón 🛡️ directamente para activar');
+            return;
+        }
+    }
+
+    // ── Android Chrome: probar que el sensor responde ──
+    // En Android no hace falta permiso pero comprobamos que llegan datos
+    let sensorWorking = false;
+    const testHandler = e => {
+        if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x !== null) {
+            sensorWorking = true;
+        }
+    };
+    window.addEventListener('devicemotion', testHandler, { once: true });
+    await new Promise(r => setTimeout(r, 500));
+    window.removeEventListener('devicemotion', testHandler);
+
+    if (!sensorWorking) {
+        // En algunos Android el sensor está desactivado o requiere HTTPS
+        // Activamos igualmente y mostramos aviso si no llegan datos
+        console.warn('DeviceMotion: sin datos en 500ms — puede que el sensor esté inactivo');
     }
 
     shieldState.active = true;
@@ -3419,7 +3571,7 @@ async function activateShield() {
 
     window.addEventListener('devicemotion', onDeviceMotion);
 
-    // UI
+    // ── UI ──
     const btn = document.getElementById('btn-shield');
     const ind = document.getElementById('shield-indicator');
     btn.classList.add('shield-on');
@@ -3428,6 +3580,13 @@ async function activateShield() {
     playBeep(880, 0.08);
     setTimeout(() => playBeep(1100, 0.08), 120);
     showToast('🛡️ Sensor anticaída activado');
+
+    // ── Verificar que siguen llegando datos tras 3 segundos ──
+    setTimeout(() => {
+        if (shieldState.active && shieldState.lastG === 0) {
+            showToast('⚠️ Sin datos del acelerómetro. Comprueba los permisos del navegador.');
+        }
+    }, 3000);
 }
 
 function deactivateShield() {
