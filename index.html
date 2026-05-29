@@ -756,7 +756,9 @@ async function calcularRuta(){
     if(!planDestino){toast('⚠️ Indica el destino');return;}
     var btn=document.getElementById('plan-calcular');btn.disabled=true;btn.textContent='⏳ Calculando...';toast('🗺 Calculando ruta ciclista...');
     try{
-        var res=await fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{method:'POST',headers:{'Content-Type':'application/json','Authorization':orsKey},body:JSON.stringify({coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],instructions:false,elevation:true})});
+        // Usar endpoint GET con api_key como parámetro — evita CORS
+        var url='https://api.openrouteservice.org/v2/directions/'+planPerfil+'?api_key='+encodeURIComponent(orsKey)+'&start='+planOrigen.lng+','+planOrigen.lat+'&end='+planDestino.lng+','+planDestino.lat;
+        var res=await fetch(url,{headers:{'Accept':'application/geo+json, application/json'}});
         if(!res.ok){var er=await res.json().catch(function(){return{};});if(res.status===403||res.status===401){toast('❌ API key ORS incorrecta');document.getElementById('ors-key-setup').classList.add('show');}else{toast('⚠️ Error: '+(er.error&&er.error.message||res.status));}btn.disabled=false;btn.innerHTML='🗺 CALCULAR RUTA';return;}
         var data=await res.json();planGeoJSON=data;
         if(planRutaLayer)planMapa.removeLayer(planRutaLayer);
