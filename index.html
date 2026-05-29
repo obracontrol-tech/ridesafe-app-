@@ -32,8 +32,9 @@
         body, html { height: 100%; background: var(--black); font-family: 'Segoe UI', sans-serif; overflow: hidden; color: white; }
 
         /* ── MAPA ── */
-        /* Layout fijo — nada se mueve */
-        html, body { position: fixed; width: 100%; height: 100%; overflow: hidden; }
+        /* Layout estable en móvil */
+        html { height: 100%; overflow: hidden; }
+        body { height: 100%; overflow: hidden; touch-action: pan-x pan-y; }
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 62px; }
 
         /* ── HEADER ── */
