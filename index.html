@@ -155,12 +155,13 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 #nav-mapa { position:absolute;top:0;left:0;right:0;bottom:0; }
 
-/* HUD sobre el mapa */
+/* HUD sobre el mapa — ARRIBA fijo */
 #nav-hud {
     position:absolute;top:0;left:0;right:0;z-index:10;
-    background:linear-gradient(180deg,rgba(10,10,10,.97) 55%,transparent 100%);
-    padding:12px 14px 28px;
-    display:flex;align-items:center;gap:10px;
+    background:rgba(10,10,10,.96);
+    padding:10px 12px;
+    display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid #1e1e1e;
 }
 #nav-back {
     width:36px;height:36px;border-radius:50%;background:rgba(26,26,26,.95);
@@ -188,7 +189,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 /* Sugerencias búsqueda */
 #nav-sugs {
-    position:absolute;top:52px;left:14px;right:60px;
+    position:absolute;top:48px;left:0;right:0;
     background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
     overflow:hidden;z-index:20;max-height:180px;overflow-y:auto;
 }
@@ -201,7 +202,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 /* Status badge */
 #nav-status {
-    position:absolute;top:68px;right:14px;z-index:10;
+    position:absolute;top:62px;right:14px;z-index:10;
     background:rgba(26,26,26,.95);color:#a8e63d;
     padding:5px 12px;border-radius:20px;border:1px solid #a8e63d;
     font-size:10px;font-weight:700;letter-spacing:1px;
@@ -212,7 +213,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 /* GPS btn */
 #nav-gps-btn {
-    position:absolute;top:68px;left:14px;z-index:10;
+    position:absolute;top:62px;left:14px;z-index:10;
     width:38px;height:38px;border-radius:10px;
     background:rgba(26,26,26,.95);border:1px solid #2a2a2a;
     cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -222,7 +223,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 
 /* Live stats */
 #nav-live {
-    position:absolute;top:116px;left:14px;z-index:10;
+    position:absolute;top:108px;left:14px;z-index:10;
     background:rgba(26,26,26,.97);border:1px solid #a8e63d;
     border-radius:14px;padding:12px 14px;min-width:170px;
     display:none;box-shadow:0 0 14px rgba(168,230,61,.15);
