@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RideSafe AI v9</title>
+<title>RideSafe AI v10</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8e63d">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1565,9 +1565,8 @@ function renderZones(){var zs=loadZones();var list=document.getElementById('zone
 function refreshStorage(){if(swReady&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'GET_CACHE_SIZE'});}
 
 // SW
-// FORZAR ACTUALIZACIÓN DE CACHÉ
 if('serviceWorker' in navigator){
-    // Desregistrar SW viejo y limpiar caché
+    // Limpiar caché vieja al arrancar
     navigator.serviceWorker.getRegistrations().then(function(regs){
         regs.forEach(function(r){ r.unregister(); });
     });
@@ -1576,8 +1575,6 @@ if('serviceWorker' in navigator){
             ks.forEach(function(k){ caches.delete(k); });
         });
     }
-
-if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister();});});
   if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});
   navigator.serviceWorker.register('./sw.js').then(function(reg){
