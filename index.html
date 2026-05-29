@@ -495,6 +495,134 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 .empty-txt { font-size:13px;line-height:1.6; }
 .empty-txt strong { color:#888; }
 
+
+/* ══ PANEL PLANIFICAR RUTA ══ */
+#panel-planificar {
+    position:fixed;top:0;left:0;right:0;height:100dvh;
+    background:#0a0a0a;z-index:200;
+    transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+    display:grid;grid-template-rows:52px auto 1fr auto;overflow:hidden;
+}
+#panel-planificar.open { transform:translateX(0); }
+
+#plan-topbar {
+    background:#111;border-bottom:1px solid #222;
+    display:flex;align-items:center;gap:12px;padding:0 14px;flex-shrink:0;
+}
+#plan-back {
+    width:36px;height:36px;border-radius:50%;background:#1a1a1a;
+    border:none;color:#fff;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+#plan-titulo {
+    flex:1;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+}
+#plan-titulo span { color:#a8e63d; }
+
+/* Formulario */
+#plan-form {
+    background:#111;border-bottom:1px solid #222;padding:12px 14px;
+}
+.plan-field { margin-bottom:10px;position:relative; }
+.plan-field:last-of-type { margin-bottom:0; }
+.plan-label {
+    font-size:9px;font-weight:700;color:#666;text-transform:uppercase;
+    letter-spacing:.5px;margin-bottom:4px;display:block;
+    font-family:'Barlow Condensed',sans-serif;
+}
+.plan-input {
+    width:100%;padding:9px 34px 9px 12px;background:#1a1a1a;color:#fff;
+    border:1px solid #2a2a2a;border-radius:10px;font-size:13px;outline:none;
+    font-family:'Barlow',sans-serif;
+}
+.plan-input:focus { border-color:#a8e63d; }
+.plan-input::placeholder { color:#555; }
+.plan-locate {
+    position:absolute;right:8px;bottom:8px;background:none;border:none;
+    color:#a8e63d;cursor:pointer;font-size:16px;
+}
+.plan-sugs {
+    position:absolute;top:100%;left:0;right:0;
+    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;
+    overflow:hidden;z-index:50;max-height:150px;overflow-y:auto;
+}
+.plan-sug {
+    padding:9px 12px;color:#ccc;font-size:12px;cursor:pointer;
+    border-bottom:1px solid #222;
+}
+.plan-sug:last-child { border-bottom:none; }
+.plan-sug:active { background:#222;color:#a8e63d; }
+
+/* Selector perfil */
+.plan-perfiles {
+    display:flex;gap:6px;margin-top:10px;
+}
+.plan-perfil {
+    flex:1;padding:8px 4px;text-align:center;border-radius:10px;
+    font-size:11px;font-weight:700;cursor:pointer;
+    background:#1a1a1a;border:1px solid #2a2a2a;color:#666;
+    font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px;
+    transition:all .2s;
+}
+.plan-perfil.on { background:rgba(168,230,61,.1);border-color:#a8e63d;color:#a8e63d; }
+
+/* Botón calcular */
+#plan-calcular {
+    width:100%;padding:11px;margin-top:10px;
+    background:#a8e63d;border:none;border-radius:10px;
+    font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+    color:#0a0a0a;letter-spacing:.5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+}
+#plan-calcular:disabled { opacity:.5;cursor:not-allowed; }
+
+/* Mapa planificador */
+#plan-mapa { width:100%;height:100%; }
+
+/* Info ruta calculada */
+#plan-info {
+    background:#111;border-top:1px solid #222;
+    padding:12px 14px;display:none;
+}
+#plan-info.show { display:block; }
+#plan-info-stats {
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;
+}
+.pi-stat label { display:block;font-size:9px;color:#666;text-transform:uppercase; }
+.pi-stat value { display:block;font-size:18px;font-weight:800;color:#a8e63d;font-family:'Barlow Condensed',sans-serif; }
+.pi-stat value span { font-size:9px;color:#666;font-weight:400; }
+#plan-iniciar {
+    width:100%;padding:11px;background:#a8e63d;border:none;border-radius:10px;
+    font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+    color:#0a0a0a;letter-spacing:.5px;cursor:pointer;
+}
+
+/* Setup ORS key */
+#ors-key-setup {
+    position:absolute;inset:0;background:rgba(10,10,10,.96);
+    z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+}
+#ors-key-setup.show { display:flex; }
+.ors-key-box {
+    background:#1a1a1a;border:1px solid #2a2a2a;border-radius:18px;
+    padding:24px;width:100%;max-width:340px;
+}
+.ors-key-title { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px; }
+.ors-key-title span { color:#a8e63d; }
+.ors-key-sub { font-size:12px;color:#888;margin-bottom:16px;line-height:1.5; }
+.ors-key-input {
+    width:100%;padding:10px 12px;background:#111;color:#fff;
+    border:1px solid #2a2a2a;border-radius:8px;font-size:12px;
+    outline:none;font-family:monospace;margin-bottom:10px;
+}
+.ors-key-input:focus { border-color:#a8e63d; }
+.ors-key-save {
+    width:100%;padding:11px;background:#a8e63d;border:none;border-radius:8px;
+    color:#0a0a0a;font-size:14px;font-weight:900;cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;
+}
+.ors-key-link { display:block;text-align:center;font-size:11px;color:#666;margin-top:10px;cursor:pointer;text-decoration:underline; }
+
 </style>
 </head>
 <body>
@@ -664,6 +792,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     <!-- Barra inferior -->
     <div id="nav-bottombar">
         <div id="nav-status">● Online</div>
+        <button style="width:40px;height:40px;border-radius:10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#a8e63d;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;" onclick="cerrarNav();abrirPlanificar()" title="Planificar ruta">🗺</button>
         <button id="nav-gps-btn" onclick="centrarGPS()">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
         </button>
@@ -677,6 +806,64 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 </div>
 
 <!-- ══ PANEL SEGURIDAD
+
+
+<!-- ══ PANEL PLANIFICAR RUTA ══ -->
+<div id="panel-planificar">
+
+    <div id="plan-topbar">
+        <button id="plan-back" onclick="cerrarPlanificar()">←</button>
+        <div id="plan-titulo">Planificar <span>Ruta</span></div>
+    </div>
+
+    <div id="plan-form">
+        <div class="plan-field">
+            <label class="plan-label">📍 Origen</label>
+            <input class="plan-input" id="plan-origen" placeholder="Tu ubicación o escribe un lugar..." autocomplete="off"/>
+            <button class="plan-locate" onclick="usarUbicacion()" title="Usar mi ubicación">📍</button>
+            <div class="plan-sugs" id="plan-sugs-origen"></div>
+        </div>
+        <div class="plan-field">
+            <label class="plan-label">🏁 Destino</label>
+            <input class="plan-input" id="plan-destino" placeholder="Ej: Barbastro, Huesca..." autocomplete="off"/>
+            <div class="plan-sugs" id="plan-sugs-destino"></div>
+        </div>
+        <div class="plan-perfiles">
+            <div class="plan-perfil on" data-perfil="cycling-road" onclick="setPerfil(this)">🚴 Carretera</div>
+            <div class="plan-perfil" data-perfil="cycling-mountain" onclick="setPerfil(this)">🚵 MTB</div>
+            <div class="plan-perfil" data-perfil="cycling-regular" onclick="setPerfil(this)">🚲 Regular</div>
+            <div class="plan-perfil" data-perfil="foot-hiking" onclick="setPerfil(this)">🥾 Senderismo</div>
+        </div>
+        <button id="plan-calcular" onclick="calcularRuta()">
+            🗺 CALCULAR RUTA
+        </button>
+    </div>
+
+    <div id="plan-mapa"></div>
+
+    <div id="plan-info">
+        <div id="plan-info-stats">
+            <div class="pi-stat"><label>Distancia</label><value id="pi-km">– <span>km</span></value></div>
+            <div class="pi-stat"><label>Tiempo est.</label><value id="pi-time">– <span>h</span></value></div>
+            <div class="pi-stat"><label>Desnivel</label><value id="pi-elev">– <span>m</span></value></div>
+        </div>
+        <button id="plan-iniciar" onclick="iniciarNavRuta()">🚴 INICIAR NAVEGACIÓN</button>
+    </div>
+
+    <!-- Setup API key ORS -->
+    <div id="ors-key-setup">
+        <div class="ors-key-box">
+            <div class="ors-key-title">🗺 <span>OpenRouteService</span></div>
+            <div class="ors-key-sub">
+                Introduce tu API key gratuita de OpenRouteService para calcular rutas ciclistas evitando autovías y carreteras peligrosas.
+            </div>
+            <input class="ors-key-input" id="ors-key-input" type="password" placeholder="eyJvcm..."/>
+            <button class="ors-key-save" onclick="guardarORSKey()">✅ GUARDAR Y ACTIVAR</button>
+            <a class="ors-key-link" href="https://openrouteservice.org" target="_blank">Crear cuenta gratuita en openrouteservice.org →</a>
+        </div>
+    </div>
+
+</div>
 
 <!-- ══ PANEL RUTAS ══ -->
 <div id="panel-rutas">
@@ -1619,6 +1806,210 @@ function borrarTodasRutas() {
     renderRutas();
     toast('🗑 Historial borrado');
 }
+
+
+// ══ PLANIFICAR RUTA CON OPENROUTESERVICE ══
+var orsKey = '';
+var planMapa = null;
+var planTile = null;
+var planOrigen = null;   // {lat, lng, nombre}
+var planDestino = null;  // {lat, lng, nombre}
+var planPerfil = 'cycling-road';
+var planRutaLayer = null;
+var planMarkers = [];
+var planSugTO = {};
+var planGeoJSON = null;
+
+// Cargar key guardada
+try { var ok = localStorage.getItem('rs_ors_key'); if(ok) orsKey = ok; } catch(e) {}
+
+function abrirPlanificar() {
+    document.getElementById('panel-planificar').classList.add('open');
+    setTimeout(function() {
+        if (!planMapa) initPlanMapa();
+        else planMapa.invalidateSize();
+        if (!orsKey) document.getElementById('ors-key-setup').classList.add('show');
+    }, 100);
+}
+function cerrarPlanificar() {
+    document.getElementById('panel-planificar').classList.remove('open');
+}
+
+function guardarORSKey() {
+    var k = document.getElementById('ors-key-input').value.trim();
+    if (!k) { toast('⚠️ Introduce tu API key'); return; }
+    orsKey = k;
+    try { localStorage.setItem('rs_ors_key', k); } catch(e) {}
+    document.getElementById('ors-key-setup').classList.remove('show');
+    toast('✅ OpenRouteService activado');
+}
+
+function initPlanMapa() {
+    planMapa = L.map('plan-mapa', { zoomControl: true }).setView([41.6176, 0.6200], 10);
+    planTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© OSM © CARTO', subdomains: 'abcd', maxZoom: 20
+    }).addTo(planMapa);
+}
+
+function setPerfil(btn) {
+    planPerfil = btn.dataset.perfil;
+    document.querySelectorAll('.plan-perfil').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+}
+
+function usarUbicacion() {
+    if (!navigator.geolocation) { toast('⚠️ GPS no disponible'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        planOrigen = { lat: pos.coords.latitude, lng: pos.coords.longitude, nombre: 'Mi ubicación' };
+        document.getElementById('plan-origen').value = 'Mi ubicación';
+        toast('📍 Origen: tu ubicación');
+        if (planMapa) planMapa.setView([planOrigen.lat, planOrigen.lng], 12);
+    }, function() { toast('⚠️ No se pudo obtener GPS'); });
+}
+
+// Buscador origen
+var planOrigenTO = null;
+document.getElementById('plan-origen').addEventListener('input', function() {
+    clearTimeout(planOrigenTO);
+    var q = this.value.trim();
+    if (q.length < 3 || q === 'Mi ubicación') { document.getElementById('plan-sugs-origen').innerHTML=''; return; }
+    planOrigenTO = setTimeout(function(){ buscarPlanSug(q, 'origen'); }, 400);
+});
+
+// Buscador destino
+var planDestinoTO = null;
+document.getElementById('plan-destino').addEventListener('input', function() {
+    clearTimeout(planDestinoTO);
+    var q = this.value.trim();
+    if (q.length < 3) { document.getElementById('plan-sugs-destino').innerHTML=''; return; }
+    planDestinoTO = setTimeout(function(){ buscarPlanSug(q, 'destino'); }, 400);
+});
+
+async function buscarPlanSug(q, tipo) {
+    try {
+        var r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=4', { headers: {'Accept-Language':'es'} });
+        var d = await r.json();
+        var box = document.getElementById('plan-sugs-' + tipo);
+        box.innerHTML = '';
+        d.forEach(function(x) {
+            var div = document.createElement('div');
+            div.className = 'plan-sug';
+            div.textContent = x.display_name;
+            div.addEventListener('click', function() {
+                var obj = { lat: parseFloat(x.lat), lng: parseFloat(x.lon), nombre: x.display_name.split(',')[0] };
+                if (tipo === 'origen') {
+                    planOrigen = obj;
+                    document.getElementById('plan-origen').value = obj.nombre;
+                } else {
+                    planDestino = obj;
+                    document.getElementById('plan-destino').value = obj.nombre;
+                }
+                box.innerHTML = '';
+                if (planMapa) planMapa.setView([obj.lat, obj.lng], 12);
+            });
+            box.appendChild(div);
+        });
+    } catch(e) {}
+}
+
+async function calcularRuta() {
+    if (!orsKey) { document.getElementById('ors-key-setup').classList.add('show'); return; }
+    if (!planOrigen) { toast('⚠️ Indica el origen'); return; }
+    if (!planDestino) { toast('⚠️ Indica el destino'); return; }
+
+    var btn = document.getElementById('plan-calcular');
+    btn.disabled = true;
+    btn.textContent = '⏳ Calculando...';
+    toast('🗺 Calculando ruta ciclista...');
+
+    try {
+        var url = 'https://api.openrouteservice.org/v2/directions/' + planPerfil + '/geojson';
+        var res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': orsKey
+            },
+            body: JSON.stringify({
+                coordinates: [[planOrigen.lng, planOrigen.lat], [planDestino.lng, planDestino.lat]],
+                instructions: false,
+                elevation: true
+            })
+        });
+
+        if (!res.ok) {
+            var er = await res.json().catch(function(){return{};});
+            if (res.status === 403 || res.status === 401) {
+                toast('❌ API key incorrecta');
+                document.getElementById('ors-key-setup').classList.add('show');
+            } else {
+                toast('⚠️ Error calculando ruta: ' + (er.error && er.error.message || res.status));
+            }
+            btn.disabled = false; btn.textContent = '🗺 CALCULAR RUTA';
+            return;
+        }
+
+        var data = await res.json();
+        planGeoJSON = data;
+
+        // Mostrar en mapa
+        if (planRutaLayer) planMapa.removeLayer(planRutaLayer);
+        planMarkers.forEach(function(m){ planMapa.removeLayer(m); });
+        planMarkers = [];
+
+        planRutaLayer = L.geoJSON(data, {
+            style: { color: '#a8e63d', weight: 5, opacity: .9 }
+        }).addTo(planMapa);
+        planMapa.fitBounds(planRutaLayer.getBounds(), { padding: [20, 20] });
+
+        // Marcadores inicio/fin
+        var siIcon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:#a8e63d;border:2px solid white;box-shadow:0 0 8px #a8e63d;"></div>', iconSize:[12,12], iconAnchor:[6,6] });
+        var eiIcon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:#ff3355;border:2px solid white;box-shadow:0 0 8px #ff3355;"></div>', iconSize:[12,12], iconAnchor:[6,6] });
+        planMarkers.push(L.marker([planOrigen.lat, planOrigen.lng], {icon:siIcon}).addTo(planMapa).bindPopup('🟢 ' + planOrigen.nombre));
+        planMarkers.push(L.marker([planDestino.lat, planDestino.lng], {icon:eiIcon}).addTo(planMapa).bindPopup('🏁 ' + planDestino.nombre));
+
+        // Stats
+        var props = data.features[0].properties.summary;
+        var km = (props.distance / 1000).toFixed(1);
+        var horas = Math.floor(props.duration / 3600);
+        var mins = Math.floor((props.duration % 3600) / 60);
+        var elev = data.features[0].properties.ascent ? Math.round(data.features[0].properties.ascent) : '–';
+        document.getElementById('pi-km').innerHTML = km + ' <span>km</span>';
+        document.getElementById('pi-time').innerHTML = (horas > 0 ? horas + 'h ' : '') + mins + ' <span>min</span>';
+        document.getElementById('pi-elev').innerHTML = elev + ' <span>m</span>';
+        document.getElementById('plan-info').classList.add('show');
+
+        toast('✅ Ruta calculada: ' + km + ' km');
+
+    } catch(e) {
+        toast('⚠️ Error de conexión');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '🗺 CALCULAR RUTA';
+}
+
+function iniciarNavRuta() {
+    if (!planGeoJSON) return;
+    // Extraer coordenadas y pasar al panel de navegación
+    var coords = planGeoJSON.features[0].geometry.coordinates;
+    toast('🚴 Abriendo en Navegación...');
+    cerrarPlanificar();
+    abrirNav();
+    setTimeout(function() {
+        if (!navMap) return;
+        // Dibujar la ruta planificada en el mapa de navegación
+        if (rutaPlanLayer) navMap.removeLayer(rutaPlanLayer);
+        rutaPlanLayer = L.polyline(coords.map(function(c){ return [c[1],c[0]]; }), {
+            color: '#a8e63d', weight: 4, opacity: .8,
+            dashArray: '8 4'
+        }).addTo(navMap);
+        navMap.fitBounds(rutaPlanLayer.getBounds(), { padding: [20, 20] });
+        toast('🗺 Ruta cargada — pulsa REC para grabar');
+    }, 400);
+}
+
+// Variable para la ruta planificada en el mapa nav
+var rutaPlanLayer = null;
 
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
