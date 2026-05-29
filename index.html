@@ -500,7 +500,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
 /* ══ PANEL PLANIFICAR RUTA ══ */
 #panel-planificar {
     position:fixed;top:0;left:0;right:0;height:100dvh;
-    background:#0a0a0a;z-index:300;
+    background:#0a0a0a;z-index:9000;
     transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
     display:flex;flex-direction:column;overflow:hidden;
 }
@@ -670,8 +670,14 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     <div class="modulo" onclick="abrirNav()">
       <svg viewBox="0 0 24 24" stroke="#4488ff"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
       <div class="modulo-title">Navegación</div>
-      <div class="modulo-sub">Rutas, Mapas, GPX</div>
+      <div class="modulo-sub">GPS, Mapas, Grabar</div>
       <div class="mod-device"><span class="dev-dot"></span>Garmin Edge 840</div>
+    </div>
+
+    <div class="modulo" onclick="abrirPlanificar()">
+      <svg viewBox="0 0 24 24" stroke="#00e5ff"><path d="M3 12h18M3 6h18M3 18h18"/><circle cx="9" cy="6" r="2" fill="#00e5ff"/><circle cx="15" cy="12" r="2" fill="#00e5ff"/><circle cx="9" cy="18" r="2" fill="#00e5ff"/></svg>
+      <div class="modulo-title">Planificar</div>
+      <div class="modulo-sub">Calcular ruta ciclista</div>
     </div>
 
     <div class="modulo" onclick="toast('📊 Rendimiento — próximamente')">
@@ -793,7 +799,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0a0a;color:#fff;height:100dvh
     <!-- Barra inferior -->
     <div id="nav-bottombar">
         <div id="nav-status">● Online</div>
-        <button style="width:48px;height:48px;border-radius:12px;background:#1a1a1a;border:1px solid rgba(168,230,61,.3);color:#a8e63d;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;" onclick="cerrarNavYPlanificar()" title="Planificar ruta">🗺</button>
+        
         <button id="nav-gps-btn" onclick="centrarGPS()">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
         </button>
