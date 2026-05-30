@@ -794,19 +794,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;color:#fff;f
 
             <div id="grupo-miembros-lista"></div>
 
-            <!-- WALKIE-TALKIE -->
-            <div id="walkie-wrap">
-                <div class="walkie-title">🎙️ Walkie-<span>Talkie</span></div>
-                <button id="walkie-btn"
-                    ontouchstart="walkieStart(event)"
-                    ontouchend="walkieStop(event)"
-                    onmousedown="walkieStart(event)"
-                    onmouseup="walkieStop(event)"
-                    onmouseleave="walkieStop(event)">
-                    🎤 PULSA PARA HABLAR
-                </button>
-                <div class="walkie-status" id="walkie-status">Mantén pulsado para hablar</div>
-                <div class="walkie-quien" id="walkie-quien">🔊 Hablando...</div>
+            <!-- ALERTAS GRUPO -->
+            <div id="grupo-alertas-wrap" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:16px;margin-bottom:12px;">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;margin-bottom:10px;">⚠️ Alertas <span style="color:#a8e63d;">Grupo</span></div>
+                <div id="grupo-alertas-lista" style="font-size:12px;color:#555;">Todos juntos — sin rezagados 🚴</div>
             </div>
 
             <button class="grupo-btn red" onclick="salirGrupo()">🚪 SALIR DEL GRUPO</button>
@@ -1442,7 +1433,19 @@ function entrarAlGrupo() {
 function renderMiembros(data) {
     var lista = document.getElementById('grupo-miembros-lista');
     lista.innerHTML = '';
-    var total = 0, online = 0, activos = 0;
+    var total = 0, online = 0, rezagados = [];
+
+    // Encontrar el ciclista más adelantado (líder)
+    var posiciones = [];
+    Object.keys(data).forEach(function(id) {
+        var m = data[id];
+        if (m.online && m.lat && m.lng) posiciones.push({ id:id, lat:m.lat, lng:m.lng, nombre:m.nombre });
+    });
+
+    // Calcular distancia máxima entre miembros
+    function distEntrePuntos(a, b) {
+        return haversine(a.lat, a.lng, b.lat, b.lng);
+    }
 
     Object.keys(data).forEach(function(id, idx) {
         var m = data[id];
@@ -1452,24 +1455,78 @@ function renderMiembros(data) {
         var color = m.color || COLORES[idx % COLORES.length];
         var inicial = (m.nombre || '?')[0].toUpperCase();
         var tiempoUlt = Math.round((Date.now() - (m.ts || 0)) / 1000);
-        var statusTxt = m.sos ? 'SOS' : (m.online ? 'Online' : tiempoUlt + 's');
-        var statusCls = m.sos ? 'sos' : (m.online ? 'online' : 'offline');
+
+        // Detectar rezagado: más de 500m del resto
+        var rezagado = false;
+        if (m.online && m.lat && posiciones.length > 1) {
+            posiciones.forEach(function(p) {
+                if (p.id !== id) {
+                    var dist = distEntrePuntos({lat:m.lat,lng:m.lng}, p);
+                    if (dist > 500) rezagado = true;
+                }
+            });
+        }
+
+        if (rezagado) rezagados.push(m.nombre || 'Ciclista');
+
+        var statusTxt = m.sos ? '🆘 SOS' : rezagado ? '⚠️ Rezagado' : m.online ? '🟢 Online' : '⚫ ' + tiempoUlt + 's';
+        var statusColor = m.sos ? '#ff3355' : rezagado ? '#ff8833' : m.online ? '#a8e63d' : '#555';
 
         var row = document.createElement('div');
         row.className = 'miembro-row' + (esYo ? ' yo' : '');
+        if (rezagado) row.style.borderColor = '#ff8833';
         row.innerHTML =
             '<div class="miembro-av" style="background:' + color + ';color:#0a0a0a;">' + inicial + '</div>' +
             '<div class="miembro-info">' +
                 '<div class="miembro-nombre">' + (m.nombre || 'Ciclista') + (esYo ? ' (tú)' : '') + '</div>' +
-                '<div class="miembro-dist">Últ. posición: ' + tiempoUlt + 's</div>' +
+                '<div class="miembro-dist">Últ. pos: ' + tiempoUlt + 's · ' + (m.lat ? m.lat.toFixed(4) : '–') + '</div>' +
             '</div>' +
-            '<div class="miembro-status ' + statusCls + '">' + statusTxt + '</div>';
+            '<div class="miembro-status" style="background:rgba(0,0,0,.2);color:' + statusColor + ';font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;">' + statusTxt + '</div>';
         lista.appendChild(row);
     });
 
     document.getElementById('gs-miembros').textContent = total;
     document.getElementById('gs-online').textContent = online;
     document.getElementById('gs-activos').textContent = online;
+
+    // Actualizar alertas
+    var alertasEl = document.getElementById('grupo-alertas-lista');
+    if (alertasEl) {
+        if (rezagados.length > 0) {
+            alertasEl.style.color = '#ff8833';
+            alertasEl.textContent = '⚠️ ' + rezagados.join(', ') + ' se está quedando atrás';
+            pitidoAlerta();
+        } else if (total > 1) {
+            alertasEl.style.color = '#a8e63d';
+            alertasEl.textContent = '✅ Todos juntos — sin rezagados 🚴';
+        } else {
+            alertasEl.style.color = '#555';
+            alertasEl.textContent = 'Esperando compañeros...';
+        }
+    }
+}
+
+// Pitido de alerta cuando alguien se rezaga
+var ultimoPitido = 0;
+function pitidoAlerta() {
+    var ahora = Date.now();
+    if (ahora - ultimoPitido < 10000) return; // máx 1 pitido cada 10s
+    ultimoPitido = ahora;
+    try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [0, 0.3].forEach(function(delay) {
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = 880;
+            o.type = 'sine';
+            g.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
+            o.start(ctx.currentTime + delay);
+            o.stop(ctx.currentTime + delay + 0.35);
+        });
+    } catch(e) {}
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 }
 
 function actualizarMapaGrupo(data) {
