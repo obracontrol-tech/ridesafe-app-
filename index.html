@@ -710,6 +710,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;color:#fff;f
     <div class="ai-chip" onclick="preguntarAI('¿Qué como después de 2 horas pedaleando?')">🍌 Nutrición</div>
     <div class="ai-chip" onclick="preguntarAI('¿Lloverá hoy en Lleida para salir en bici?')">🌤️ Tiempo</div>
     <div class="ai-chip" onclick="preguntarAI('Dame una ruta fácil de 30km desde Lleida')">🗺️ Ruta 30km</div>
+    <div class="ai-chip" onclick="generarRutaCircular()">🔄 Ruta circular</div>
+    <div class="ai-chip" onclick="preguntarAI('Dame una ruta ciclista de montaña MTB de 40km desde Lleida con buenas vistas')">🏔️ MTB 40km</div>
     <div class="ai-chip" onclick="preguntarAI('Me duele la rodilla al subir puertos, ¿qué hago?')">🦵 Rodilla</div>
     <div class="ai-chip" onclick="preguntarAI('¿Cómo ajusto el sillín correctamente?')">⚙️ Sillín</div>
   </div>
@@ -2153,6 +2155,144 @@ function renderObjetivos(rutas) {
         '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:5px;"><span>📋 Rutas esta semana</span><span style="color:#a8e63d;">'+rutasSemana+' / '+objRutas+' rutas</span></div>' +
         '<div style="height:8px;background:#2a2a2a;border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pctRutas+'%;background:#00e5ff;border-radius:4px;transition:width .5s;"></div></div>' +
         '</div>';
+}
+
+
+// ══ GENERADOR DE RUTAS CON IA ══
+async function generarRutaCircular() {
+    if (!aiKey) { document.getElementById('ai-key-setup').classList.add('show'); return; }
+
+    // Pedir distancia
+    var dist = prompt('¿Cuántos km quieres hacer? (ej: 50)', '50');
+    if (!dist) return;
+    var tipo = prompt('¿Qué tipo de ruta? (carretera / mtb / senderismo)', 'carretera');
+    if (!tipo) tipo = 'carretera';
+
+    // Obtener posición actual
+    var lat = 41.6176, lng = 0.6200, lugar = 'Lleida';
+    try {
+        if (navigator.geolocation) {
+            await new Promise(function(resolve) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    lat = pos.coords.latitude;
+                    lng = pos.coords.longitude;
+                    resolve();
+                }, resolve, { timeout: 5000 });
+            });
+        }
+        // Geocodificar posición
+        var geo = await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lng+'&format=json');
+        var geoData = await geo.json();
+        lugar = geoData.address && (geoData.address.city || geoData.address.town || geoData.address.village) || 'tu ubicación';
+    } catch(e) {}
+
+    // Abrir panel IA
+    abrirAI();
+
+    var prompt_ia = 'Genera una ruta circular de ' + dist + ' km de ' + tipo + ' saliendo desde ' + lugar + ' (coordenadas aprox: ' + lat.toFixed(3) + ',' + lng.toFixed(3) + '). Dame: 1) Los 3-5 puntos clave del recorrido con sus nombres exactos, 2) Las carreteras secundarias a usar, 3) El desnivel aproximado, 4) Dificultad. Al final pon los puntos intermedios en formato PUNTOS:[nombre1|nombre2|nombre3] para poder trazarlos en el mapa.';
+
+    await preguntarAI(prompt_ia);
+}
+
+// Detectar puntos en respuesta IA y ofrecer trazar en mapa
+var lastAIResponse = '';
+var origAddMsg = addMsg;
+addMsg = function(role, text) {
+    origAddMsg(role, text);
+    if (role === 'bot' && text.includes('PUNTOS:')) {
+        // Extraer puntos
+        var match = text.match(/PUNTOS:\[([^\]]+)\]/);
+        if (match) {
+            var puntos = match[1].split('|');
+            // Añadir botón para trazar en mapa
+            setTimeout(function() {
+                var msgs = document.getElementById('ai-msgs');
+                var btn = document.createElement('button');
+                btn.style.cssText = 'margin:6px 0;padding:10px 16px;background:#a8e63d;border:none;border-radius:10px;color:#0a0a0a;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;cursor:pointer;width:100%;';
+                btn.textContent = '🗺️ TRAZAR RUTA EN EL MAPA';
+                btn.onclick = function() { trazarRutaIA(puntos); };
+                msgs.appendChild(btn);
+                msgs.scrollTop = msgs.scrollHeight;
+            }, 100);
+        }
+    }
+};
+
+async function trazarRutaIA(puntos) {
+    if (!orsKey) { 
+        toast('⚠️ Configura OpenRouteService en Planificar primero');
+        return; 
+    }
+    if (puntos.length < 2) { toast('⚠️ Necesito al menos 2 puntos'); return; }
+
+    toast('🗺️ Buscando puntos en el mapa...');
+
+    // Geocodificar cada punto
+    var coords = [];
+    for (var i = 0; i < puntos.length; i++) {
+        try {
+            var r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(puntos[i].trim()) + '&format=json&limit=1', { headers: {'Accept-Language':'es'} });
+            var d = await r.json();
+            if (d && d[0]) {
+                coords.push([parseFloat(d[0].lon), parseFloat(d[0].lat)]);
+            }
+        } catch(e) {}
+        await new Promise(function(r){ setTimeout(r, 300); }); // respetar rate limit Nominatim
+    }
+
+    if (coords.length < 2) { toast('⚠️ No pude ubicar los puntos en el mapa'); return; }
+
+    toast('🗺️ Calculando ruta con ' + coords.length + ' puntos...');
+
+    // Llamar a ORS con múltiples waypoints
+    try {
+        var res = await fetch('https://api.openrouteservice.org/v2/directions/cycling-road/geojson', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': orsKey },
+            body: JSON.stringify({ coordinates: coords, instructions: false })
+        });
+
+        if (!res.ok) { toast('⚠️ Error calculando ruta'); return; }
+
+        var data = await res.json();
+        planGeoJSON = data;
+
+        // Ir al planificador y mostrar la ruta
+        cerrarAI();
+        abrirPlanificar();
+
+        setTimeout(function() {
+            if (!planMapa) { planInit(); }
+            setTimeout(function() {
+                if (planRutaLayer) planMapa.removeLayer(planRutaLayer);
+                planMarkers.forEach(function(m){ planMapa.removeLayer(m); });
+                planMarkers = [];
+
+                planRutaLayer = L.geoJSON(data, {
+                    style: { color:'#a8e63d', weight:5, opacity:.9 }
+                }).addTo(planMapa);
+                planMapa.fitBounds(planRutaLayer.getBounds(), { padding:[20,20] });
+
+                // Marcadores en cada punto
+                coords.forEach(function(c, i) {
+                    var icon = L.divIcon({ className:'', html:'<div style="width:10px;height:10px;border-radius:50%;background:'+(i===0?'#a8e63d':i===coords.length-1?'#ff3355':'#ffaa00')+';border:2px solid white;"></div>', iconSize:[10,10], iconAnchor:[5,5] });
+                    planMarkers.push(L.marker([c[1],c[0]], {icon:icon}).addTo(planMapa));
+                });
+
+                var props = data.features[0].properties.summary;
+                var km = (props.distance/1000).toFixed(1);
+                var mins = Math.floor(props.duration/60);
+                document.getElementById('pi-km').innerHTML = km + ' <span>km</span>';
+                document.getElementById('pi-time').innerHTML = Math.floor(mins/60) + 'h ' + (mins%60) + ' <span>min</span>';
+                document.getElementById('plan-info').classList.add('show');
+
+                toast('✅ Ruta IA trazada: ' + km + ' km');
+            }, 400);
+        }, 300);
+
+    } catch(e) {
+        toast('⚠️ Error: ' + e.message);
+    }
 }
 
 // ── INIT ──
