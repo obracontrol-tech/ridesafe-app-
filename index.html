@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.0/dist/livekit-client.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;color:#fff;font-family:'Barlow',sans-serif;}
@@ -1434,6 +1435,143 @@ function walkieEscucharSignal() {
         }
     });
 }
+
+// ══ WALKIE-TALKIE con LiveKit ══
+var livekitRoom = null;
+var walkieHablando = false;
+var walkieMicTrack = null;
+var WORKER_URL = 'https://orange-boat-6d42.pedrosaborrego.workers.dev';
+
+async function walkieGetToken(roomName, identity) {
+    var res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ livekit: true, room: roomName, identity: identity })
+    });
+    var data = await res.json();
+    return data;
+}
+
+async function walkieConectarSala() {
+    if (livekitRoom) return;
+    if (!grupoActivo || !grupoCodigo) return;
+    try {
+        var tokenData = await walkieGetToken('ridesafe-' + grupoCodigo, grupoNombre + '-' + grupoMiId);
+        livekitRoom = new LivekitClient.Room({
+            audioCaptureDefaults: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+            },
+            publishDefaults: {
+                audioPreset: LivekitClient.AudioPresets.music,
+                dtx: true,
+            }
+        });
+
+        // Eventos del room
+        livekitRoom.on(LivekitClient.RoomEvent.ParticipantConnected, function(p) {
+            console.log('Ciclista conectado:', p.identity);
+        });
+        livekitRoom.on(LivekitClient.RoomEvent.TrackSubscribed, function(track, pub, participant) {
+            if (track.kind === LivekitClient.Track.Kind.Audio) {
+                var el = track.attach();
+                el.autoplay = true;
+                document.body.appendChild(el);
+            }
+        });
+        livekitRoom.on(LivekitClient.RoomEvent.Disconnected, function() {
+            livekitRoom = null;
+            walkieHablando = false;
+            actualizarBtnWalkie();
+        });
+
+        await livekitRoom.connect(tokenData.url, tokenData.token);
+        // Micrófono desactivado por defecto — solo habla cuando pulsas
+        await livekitRoom.localParticipant.setMicrophoneEnabled(false);
+        console.log('✅ LiveKit conectado sala:', 'ridesafe-' + grupoCodigo);
+        toast('🎙️ Walkie-talkie listo');
+    } catch(e) {
+        console.error('LiveKit error:', e);
+        toast('⚠️ Error walkie: ' + e.message);
+    }
+}
+
+async function walkieStart(e) {
+    e.preventDefault();
+    if (walkieHablando) return;
+    if (!livekitRoom) {
+        toast('⏳ Conectando...');
+        await walkieConectarSala();
+        if (!livekitRoom) return;
+    }
+    try {
+        walkieHablando = true;
+        await livekitRoom.localParticipant.setMicrophoneEnabled(true);
+        // Anunciar en Firebase quién habla
+        if (fbDb && grupoCodigo) {
+            fbDb.ref('grupos/' + grupoCodigo + '/walkie').set({
+                quienHabla: grupoMiId, nombre: grupoNombre, ts: Date.now()
+            });
+        }
+        actualizarBtnWalkie();
+        if (navigator.vibrate) navigator.vibrate(50);
+    } catch(e) {
+        walkieHablando = false;
+        toast('⚠️ Error micrófono: ' + e.message);
+    }
+}
+
+async function walkieStop(e) {
+    e.preventDefault();
+    if (!walkieHablando) return;
+    walkieHablando = false;
+    if (livekitRoom) {
+        await livekitRoom.localParticipant.setMicrophoneEnabled(false);
+    }
+    if (fbDb && grupoCodigo) {
+        fbDb.ref('grupos/' + grupoCodigo + '/walkie').remove();
+    }
+    actualizarBtnWalkie();
+    if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function actualizarBtnWalkie() {
+    var btn = document.getElementById('walkie-btn');
+    if (!btn) return;
+    if (walkieHablando) {
+        btn.classList.add('hablando');
+        btn.classList.remove('escuchando');
+        btn.innerHTML = '🔴 HABLANDO...';
+        document.getElementById('walkie-status').textContent = 'Transmitiendo al grupo...';
+    } else {
+        btn.classList.remove('hablando');
+        btn.innerHTML = '🎤 PULSA PARA HABLAR';
+        document.getElementById('walkie-status').textContent = 'Mantén pulsado para hablar';
+    }
+}
+
+function walkieEscucharSignal() {
+    if (!fbDb || !grupoCodigo) return;
+    fbDb.ref('grupos/' + grupoCodigo + '/walkie').on('value', function(snap) {
+        var data = snap.val();
+        var btn = document.getElementById('walkie-btn');
+        var quien = document.getElementById('walkie-quien');
+        if (!btn) return;
+        if (data && data.quienHabla && data.quienHabla !== grupoMiId) {
+            btn.classList.add('escuchando');
+            btn.innerHTML = '🔊 ' + (data.nombre || 'Alguien') + ' HABLA...';
+            if (quien) { quien.textContent = '🔊 ' + (data.nombre || 'Alguien') + ' está hablando'; quien.classList.add('show'); }
+        } else if (!walkieHablando) {
+            btn.classList.remove('escuchando');
+            btn.innerHTML = '🎤 PULSA PARA HABLAR';
+            if (quien) quien.classList.remove('show');
+        }
+    });
+    // Conectar sala LiveKit al entrar al grupo
+    setTimeout(walkieConectarSala, 1000);
+}
+
 
 // ── INIT ──
 initVoz();
