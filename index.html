@@ -998,11 +998,22 @@ var COLORES = ['#a8e63d','#00e5ff','#ff8833','#ff3355','#9966ff','#ffcc00','#ff6
 function fbInit() {
     if (fbApp) return;
     try {
-        fbApp = firebase.initializeApp(FB_CONFIG, 'ridesafe');
+        if (typeof firebase === 'undefined') {
+            console.error('Firebase SDK no cargado');
+            toast('⚠️ Error: Firebase no cargado');
+            return;
+        }
+        // Evitar inicializar dos veces
+        try {
+            fbApp = firebase.app('ridesafe');
+        } catch(e) {
+            fbApp = firebase.initializeApp(FB_CONFIG, 'ridesafe');
+        }
         fbDb = firebase.database(fbApp);
         console.log('✅ Firebase RideSafe conectado');
     } catch(e) {
         console.error('Firebase error:', e);
+        toast('⚠️ Firebase: ' + e.message);
     }
 }
 
