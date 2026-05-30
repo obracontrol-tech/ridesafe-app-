@@ -1464,10 +1464,13 @@ async function walkieGetToken(roomName, identity) {
 }
 
 async function walkieConectarSala() {
-    if (livekitRoom) return;
+    if (livekitRoom && livekitRoom.state === 'connected') return;
     if (!grupoActivo || !grupoCodigo) return;
+    livekitRoom = null; // reset
     try {
+        toast('⏳ Conectando sala de audio...');
         var tokenData = await walkieGetToken('ridesafe-' + grupoCodigo, grupoNombre + '-' + grupoMiId);
+        if (tokenData.error) { toast('⚠️ Token error: ' + tokenData.error); return; }
         livekitRoom = new LivekitClient.Room({
             audioCaptureDefaults: {
                 echoCancellation: true,
@@ -1497,11 +1500,9 @@ async function walkieConectarSala() {
             actualizarBtnWalkie();
         });
 
-        await livekitRoom.connect(tokenData.url, tokenData.token);
-        // Micrófono desactivado por defecto — solo habla cuando pulsas
-        await livekitRoom.localParticipant.setMicrophoneEnabled(false);
-        console.log('✅ LiveKit conectado sala:', 'ridesafe-' + grupoCodigo);
-        toast('🎙️ Walkie-talkie listo');
+        await livekitRoom.connect(tokenData.url, tokenData.token, { autoSubscribe: true });
+        console.log('✅ LiveKit estado:', livekitRoom.state);
+        toast('🎙️ Walkie-talkie listo — ' + livekitRoom.state);
     } catch(e) {
         console.error('LiveKit error:', e);
         toast('⚠️ Error walkie: ' + e.message);
@@ -1516,15 +1517,22 @@ async function walkieStart(e) {
         await walkieConectarSala();
         if (!livekitRoom) return;
     }
-    // Esperar a que el room esté conectado
-    var maxWait = 30;
+    // Esperar conexión hasta 5 segundos
+    toast('⏳ Estado: ' + livekitRoom.state);
+    var maxWait = 50;
     while (livekitRoom.state !== 'connected' && maxWait > 0) {
         await new Promise(function(r){ setTimeout(r, 100); });
         maxWait--;
     }
+    toast('Estado final: ' + livekitRoom.state);
     if (livekitRoom.state !== 'connected') {
-        toast('⚠️ Sin conexión al servidor de audio');
-        return;
+        // Intentar reconectar
+        livekitRoom = null;
+        await walkieConectarSala();
+        if (!livekitRoom || livekitRoom.state !== 'connected') {
+            toast('⚠️ Sin conexión al servidor de audio');
+            return;
+        }
     }
     try {
         walkieHablando = true;
