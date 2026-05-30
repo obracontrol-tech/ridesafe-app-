@@ -1156,7 +1156,16 @@ document.getElementById('ai-input').addEventListener('keydown',function(e){if(e.
 function addMsg(role,text){var box=document.getElementById('ai-msgs');var d=document.createElement('div');d.className='ai-msg '+role;if(role==='bot')d.innerHTML='<div class="ai-msg-name">RideSafe IA ✦</div>'+text.replace(/\n/g,'<br>');else d.textContent=text;box.appendChild(d);box.scrollTop=box.scrollHeight;}
 function addThinking(){var id='tk'+(++aiTkN);var box=document.getElementById('ai-msgs');var d=document.createElement('div');d.className='ai-msg bot';d.id=id;d.innerHTML='<div class="ai-thinking"><span></span><span></span><span></span></div>';box.appendChild(d);box.scrollTop=box.scrollHeight;return id;}
 function removeThinking(id){var e=document.getElementById(id);if(e)e.remove();}
-function initVoz(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;aiRec=new SR();aiRec.lang='es-ES';aiRec.continuous=false;aiRec.interimResults=false;aiRec.onresult=function(e){var t=e.results[0][0].transcript;document.getElementById('ai-input').value=t;aiVoz=true;enviarAI();pararVoz();};aiRec.onerror=pararVoz;aiRec.onend=pararVoz;}
+function initVoz(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;aiRec=new SR();aiRec.lang='es-ES';aiRec.continuous=false;aiRec.interimResults=false;aiRec.onresult=function(e){
+        var t=e.results[0][0].transcript;
+        if(!t||!t.trim()) return;
+        pararVoz();
+        // Resetear si estaba bloqueado
+        aiThinking=false;
+        document.getElementById('ai-send-btn').disabled=false;
+        // Enviar directamente
+        preguntarAI(t.trim());
+    };aiRec.onerror=pararVoz;aiRec.onend=pararVoz;}
 function pararVoz(){try{if(aiRec)aiRec.stop();}catch(e){}document.getElementById('ai-voice-btn').classList.remove('on');document.getElementById('ai-voice-btn').textContent='🎤';}
 function toggleVoz(){if(!aiRec)initVoz();if(!aiRec){toast('⚠️ Voz no disponible');return;}if(document.getElementById('ai-voice-btn').classList.contains('on')){aiVoz=false;pararVoz();}else{document.getElementById('ai-voice-btn').classList.add('on');document.getElementById('ai-voice-btn').textContent='🛑';try{aiRec.start();}catch(e){pararVoz();}}}
 try{var k=localStorage.getItem('rs_ai_key');if(k)aiKey=k;}catch(e){}
