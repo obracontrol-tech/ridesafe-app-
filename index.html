@@ -2194,29 +2194,22 @@ async function generarRutaCircular() {
     await preguntarAI(prompt_ia);
 }
 
-// Detectar puntos en respuesta IA y ofrecer trazar en mapa
-var lastAIResponse = '';
-var origAddMsg = addMsg;
-addMsg = function(role, text) {
-    origAddMsg(role, text);
-    if (role === 'bot' && text.includes('PUNTOS:')) {
-        // Extraer puntos
-        var match = text.match(/PUNTOS:\[([^\]]+)\]/);
-        if (match) {
-            var puntos = match[1].split('|');
-            // Añadir botón para trazar en mapa
-            setTimeout(function() {
-                var msgs = document.getElementById('ai-msgs');
-                var btn = document.createElement('button');
-                btn.style.cssText = 'margin:6px 0;padding:10px 16px;background:#a8e63d;border:none;border-radius:10px;color:#0a0a0a;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;cursor:pointer;width:100%;';
-                btn.textContent = '🗺️ TRAZAR RUTA EN EL MAPA';
-                btn.onclick = function() { trazarRutaIA(puntos); };
-                msgs.appendChild(btn);
-                msgs.scrollTop = msgs.scrollHeight;
-            }, 100);
-        }
-    }
-};
+// Detectar puntos en respuesta IA — integrado en addMsg sin sobreescribir
+function checkRutaIA(text) {
+    if (!text || !text.includes('PUNTOS:')) return;
+    var match = text.match(/PUNTOS:\[([^\]]+)\]/);
+    if (!match) return;
+    var puntos = match[1].split('|');
+    setTimeout(function() {
+        var msgs = document.getElementById('ai-msgs');
+        var btn = document.createElement('button');
+        btn.style.cssText = 'margin:6px 0;padding:10px 16px;background:#a8e63d;border:none;border-radius:10px;color:#0a0a0a;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;cursor:pointer;width:100%;';
+        btn.textContent = '🗺️ TRAZAR RUTA EN EL MAPA';
+        btn.onclick = function() { trazarRutaIA(puntos); };
+        msgs.appendChild(btn);
+        msgs.scrollTop = msgs.scrollHeight;
+    }, 200);
+}
 
 async function trazarRutaIA(puntos) {
     if (!orsKey) { 
