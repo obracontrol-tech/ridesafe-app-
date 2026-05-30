@@ -207,6 +207,47 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;color:#fff;f
 .empty-txt strong{color:#888;}
 
 
+
+/* ══ WALKIE-TALKIE ══ */
+#walkie-wrap {
+    background:#111;border:1px solid #2a2a2a;border-radius:16px;
+    padding:16px;margin-bottom:12px;
+}
+.walkie-title {
+    font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+    margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.walkie-title span { color:#a8e63d; }
+#walkie-btn {
+    width:100%;height:70px;border-radius:14px;border:none;cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+    letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:10px;
+    background:#1a1a1a;border:2px solid #2a2a2a;color:#888;
+    transition:all .2s;user-select:none;-webkit-user-select:none;
+    touch-action:none;
+}
+#walkie-btn.hablando {
+    background:rgba(168,230,61,.15);border-color:#a8e63d;color:#a8e63d;
+    box-shadow:0 0 20px rgba(168,230,61,.3);
+    animation:walkie-pulse 1s infinite;
+}
+#walkie-btn.escuchando {
+    background:rgba(0,229,255,.1);border-color:#00e5ff;color:#00e5ff;
+}
+@keyframes walkie-pulse {
+    0%,100%{box-shadow:0 0 10px rgba(168,230,61,.3);}
+    50%{box-shadow:0 0 25px rgba(168,230,61,.6);}
+}
+.walkie-status {
+    text-align:center;font-size:11px;color:#555;margin-top:8px;
+    font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;
+}
+.walkie-quien {
+    text-align:center;font-size:13px;color:#00e5ff;font-weight:700;
+    margin-top:4px;display:none;
+}
+.walkie-quien.show { display:block; }
+
 /* ══ PANEL GRUPO ══ */
 #panel-grupo { flex-direction:column; }
 
@@ -624,6 +665,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;color:#fff;f
 
             <div id="grupo-miembros-lista"></div>
 
+            <!-- WALKIE-TALKIE -->
+            <div id="walkie-wrap">
+                <div class="walkie-title">🎙️ Walkie-<span>Talkie</span></div>
+                <button id="walkie-btn"
+                    ontouchstart="walkieStart(event)"
+                    ontouchend="walkieStop(event)"
+                    onmousedown="walkieStart(event)"
+                    onmouseup="walkieStop(event)"
+                    onmouseleave="walkieStop(event)">
+                    🎤 PULSA PARA HABLAR
+                </button>
+                <div class="walkie-status" id="walkie-status">Mantén pulsado para hablar</div>
+                <div class="walkie-quien" id="walkie-quien">🔊 Hablando...</div>
+            </div>
+
             <button class="grupo-btn red" onclick="salirGrupo()">🚪 SALIR DEL GRUPO</button>
         </div>
 
@@ -1028,6 +1084,8 @@ function entrarAlGrupo() {
         }).then(function(){
             console.log('✅ Registrado en Firebase');
             toast('🚴 En grupo ' + grupoCodigo);
+            // Iniciar listener walkie-talkie
+            setTimeout(walkieEscucharSignal, 500);
         }).catch(function(err){
             console.error('Firebase error:', err);
             toast('⚠️ Error Firebase: ' + err.message);
@@ -1173,6 +1231,208 @@ function grupoSOS() {
     setTimeout(function(){
         fbDb.ref('grupos/' + grupoCodigo + '/miembros/' + grupoMiId).update({ sos:false });
     }, 30000);
+}
+
+
+// ══ WALKIE-TALKIE WebRTC + Firebase ══
+var walkieStream = null;
+var walkie_peers = {};        // { miembroId: RTCPeerConnection }
+var walkieHablando = false;
+var walkieEscuchando = false;
+
+var RTC_CONFIG = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+var AUDIO_CONSTRAINTS = {
+    audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        sampleRate: 48000,
+        channelCount: 1
+    }
+};
+
+// Inicializar micrófono
+async function walkieInitMic() {
+    if (walkieStream) return walkieStream;
+    try {
+        walkieStream = await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
+        return walkieStream;
+    } catch(e) {
+        toast('⚠️ Permiso de micrófono denegado');
+        return null;
+    }
+}
+
+// Empezar a hablar
+async function walkieStart(e) {
+    e.preventDefault();
+    if (walkieHablando || !grupoActivo) return;
+    var stream = await walkieInitMic();
+    if (!stream) return;
+
+    walkieHablando = true;
+    document.getElementById('walkie-btn').classList.add('hablando');
+    document.getElementById('walkie-btn').innerHTML = '🔴 HABLANDO...';
+    document.getElementById('walkie-status').textContent = 'Transmitiendo...';
+
+    // Anunciar en Firebase que estoy hablando
+    fbDb.ref('grupos/' + grupoCodigo + '/walkie').set({
+        quienHabla: grupoMiId,
+        nombre: grupoNombre,
+        ts: Date.now()
+    });
+
+    // Crear conexión con cada miembro del grupo
+    var snap = await fbDb.ref('grupos/' + grupoCodigo + '/miembros').once('value');
+    var miembros = snap.val() || {};
+    Object.keys(miembros).forEach(function(id) {
+        if (id !== grupoMiId) {
+            walkieConectar(id, stream, true);
+        }
+    });
+
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+// Dejar de hablar
+function walkieStop(e) {
+    e.preventDefault();
+    if (!walkieHablando) return;
+    walkieHablando = false;
+
+    document.getElementById('walkie-btn').classList.remove('hablando');
+    document.getElementById('walkie-btn').innerHTML = '🎤 PULSA PARA HABLAR';
+    document.getElementById('walkie-status').textContent = 'Mantén pulsado para hablar';
+
+    // Cerrar conexiones
+    Object.keys(walkie_peers).forEach(function(id) {
+        if (walkie_peers[id]) walkie_peers[id].close();
+    });
+    walkie_peers = {};
+
+    // Limpiar señal en Firebase
+    fbDb.ref('grupos/' + grupoCodigo + '/walkie').remove();
+    fbDb.ref('grupos/' + grupoCodigo + '/signal/' + grupoMiId).remove();
+
+    if (navigator.vibrate) navigator.vibrate(30);
+}
+
+// Crear conexión WebRTC con otro miembro
+async function walkieConectar(targetId, stream, soyLlamador) {
+    var pc = new RTCPeerConnection(RTC_CONFIG);
+    walkie_peers[targetId] = pc;
+
+    // Añadir tracks de audio
+    if (stream) {
+        stream.getTracks().forEach(function(track) {
+            pc.addTrack(track, stream);
+        });
+    }
+
+    // Recibir audio remoto
+    pc.ontrack = function(event) {
+        var audio = document.getElementById('walkie-audio-' + targetId);
+        if (!audio) {
+            audio = document.createElement('audio');
+            audio.id = 'walkie-audio-' + targetId;
+            audio.autoplay = true;
+            audio.playsinline = true;
+            document.body.appendChild(audio);
+        }
+        audio.srcObject = event.streams[0];
+    };
+
+    // ICE candidates → Firebase
+    pc.onicecandidate = function(event) {
+        if (event.candidate) {
+            fbDb.ref('grupos/' + grupoCodigo + '/signal/' + grupoMiId + '/ice/' + targetId).push(
+                JSON.stringify(event.candidate)
+            );
+        }
+    };
+
+    if (soyLlamador) {
+        // Crear oferta
+        var offer = await pc.createOffer({ offerToReceiveAudio: true });
+        await pc.setLocalDescription(offer);
+        fbDb.ref('grupos/' + grupoCodigo + '/signal/' + grupoMiId + '/offer/' + targetId).set(
+            JSON.stringify(offer)
+        );
+    }
+
+    return pc;
+}
+
+// Escuchar señales WebRTC en Firebase
+function walkieEscucharSignal() {
+    if (!fbDb || !grupoCodigo || !grupoMiId) return;
+
+    // Escuchar ofertas dirigidas a mí
+    fbDb.ref('grupos/' + grupoCodigo + '/signal').on('child_added', async function(snap) {
+        var fromId = snap.key;
+        if (fromId === grupoMiId) return;
+        var data = snap.val();
+
+        // Recibir oferta
+        if (data && data.offer && data.offer[grupoMiId]) {
+            var offer = JSON.parse(data.offer[grupoMiId]);
+            var pc = await walkieConectar(fromId, null, false);
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            var answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            fbDb.ref('grupos/' + grupoCodigo + '/signal/' + grupoMiId + '/answer/' + fromId).set(
+                JSON.stringify(answer)
+            );
+        }
+
+        // Recibir answer
+        if (data && data.answer && data.answer[grupoMiId] && walkie_peers[fromId]) {
+            var answer = JSON.parse(data.answer[grupoMiId]);
+            if (walkie_peers[fromId].signalingState !== 'stable') {
+                await walkie_peers[fromId].setRemoteDescription(new RTCSessionDescription(answer));
+            }
+        }
+
+        // Recibir ICE candidates
+        if (data && data.ice && data.ice[grupoMiId] && walkie_peers[fromId]) {
+            var iceRef = fbDb.ref('grupos/' + grupoCodigo + '/signal/' + fromId + '/ice/' + grupoMiId);
+            iceRef.on('child_added', async function(iceSnap) {
+                try {
+                    var candidate = JSON.parse(iceSnap.val());
+                    await walkie_peers[fromId].addIceCandidate(new RTCIceCandidate(candidate));
+                } catch(e) {}
+            });
+        }
+    });
+
+    // Escuchar quién está hablando
+    fbDb.ref('grupos/' + grupoCodigo + '/walkie').on('value', function(snap) {
+        var data = snap.val();
+        var btn = document.getElementById('walkie-btn');
+        var quien = document.getElementById('walkie-quien');
+        if (data && data.quienHabla && data.quienHabla !== grupoMiId) {
+            // Otro está hablando
+            btn.classList.add('escuchando');
+            btn.innerHTML = '🔊 ' + (data.nombre || 'Alguien') + ' HABLA...';
+            quien.textContent = '🔊 ' + (data.nombre || 'Alguien') + ' está hablando';
+            quien.classList.add('show');
+            walkieEscuchando = true;
+        } else if (!data || !data.quienHabla) {
+            // Nadie habla
+            btn.classList.remove('escuchando');
+            if (!walkieHablando) {
+                btn.innerHTML = '🎤 PULSA PARA HABLAR';
+                quien.classList.remove('show');
+                walkieEscuchando = false;
+            }
+        }
+    });
 }
 
 // ── INIT ──
