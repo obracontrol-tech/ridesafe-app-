@@ -1516,6 +1516,16 @@ async function walkieStart(e) {
         await walkieConectarSala();
         if (!livekitRoom) return;
     }
+    // Esperar a que el room esté conectado
+    var maxWait = 30;
+    while (livekitRoom.state !== 'connected' && maxWait > 0) {
+        await new Promise(function(r){ setTimeout(r, 100); });
+        maxWait--;
+    }
+    if (livekitRoom.state !== 'connected') {
+        toast('⚠️ Sin conexión al servidor de audio');
+        return;
+    }
     try {
         walkieHablando = true;
         await livekitRoom.localParticipant.setMicrophoneEnabled(true);
