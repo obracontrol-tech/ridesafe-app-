@@ -995,6 +995,7 @@ function unirseGrupo() {
 
 function entrarAlGrupo() {
     grupoActivo = true;
+    var miColor = COLORES[Math.floor(Math.random() * COLORES.length)];
 
     // Mostrar panel activo
     document.getElementById('grupo-setup').classList.add('hide');
@@ -1007,50 +1008,71 @@ function entrarAlGrupo() {
     if (!grupoMapa) {
         grupoMapa = L.map('grupo-mapa', { zoomControl:false, attributionControl:false })
             .setView([41.6176, 0.6200], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             subdomains:'abcd', maxZoom:19
         }).addTo(grupoMapa);
-        setTimeout(function(){ grupoMapa.invalidateSize(); }, 100);
+        setTimeout(function(){ grupoMapa.invalidateSize(); }, 200);
     }
 
-    // Registrar en Firebase
-    var ref = fbDb.ref('grupos/' + grupoCodigo + '/miembros/' + grupoMiId);
-    ref.set({
-        nombre: grupoNombre,
-        lat: currentLat || 41.6176,
-        lng: currentLng || 0.6200,
-        ts: Date.now(),
-        online: true,
-        sos: false,
-        color: COLORES[Math.floor(Math.random() * COLORES.length)]
-    });
+    // Función para registrar/actualizar en Firebase
+    function registrarEnFirebase(lat, lng) {
+        var ref = fbDb.ref('grupos/' + grupoCodigo + '/miembros/' + grupoMiId);
+        ref.set({
+            nombre: grupoNombre,
+            lat: lat,
+            lng: lng,
+            ts: Date.now(),
+            online: true,
+            sos: false,
+            color: miColor
+        }).then(function(){
+            console.log('✅ Registrado en Firebase');
+            toast('🚴 En grupo ' + grupoCodigo);
+        }).catch(function(err){
+            console.error('Firebase error:', err);
+            toast('⚠️ Error Firebase: ' + err.message);
+        });
+        ref.onDisconnect().update({ online: false, ts: Date.now() });
+    }
 
-    // Limpiar al cerrar
-    ref.onDisconnect().update({ online: false, ts: Date.now() });
+    // Obtener GPS primero
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                currentLat = pos.coords.latitude;
+                currentLng = pos.coords.longitude;
+                registrarEnFirebase(currentLat, currentLng);
+            },
+            function() {
+                // Sin GPS — usar posición por defecto
+                registrarEnFirebase(41.6176, 0.6200);
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+        );
+    } else {
+        registrarEnFirebase(41.6176, 0.6200);
+    }
 
-    // Escuchar cambios del grupo
+    // Escuchar cambios del grupo en tiempo real
     grupoListener = fbDb.ref('grupos/' + grupoCodigo + '/miembros').on('value', function(snap) {
         var data = snap.val() || {};
+        console.log('Grupo data:', data);
         renderMiembros(data);
         actualizarMapaGrupo(data);
     });
 
-    // Enviar posición cada 5 segundos
+    // Actualizar posición cada 5 segundos
     grupoInterval = setInterval(function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                var lat = pos.coords.latitude, lng = pos.coords.longitude;
-                if (isNaN(lat) || isNaN(lng)) return;
-                // Actualizar posición global
-                currentLat = lat; currentLng = lng;
-                fbDb.ref('grupos/' + grupoCodigo + '/miembros/' + grupoMiId).update({
-                    lat: lat, lng: lng, ts: Date.now(), online: true
-                });
-            }, null, { enableHighAccuracy: true, timeout: 5000 });
-        }
+        if (!navigator.geolocation || !fbDb) return;
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            currentLat = pos.coords.latitude;
+            currentLng = pos.coords.longitude;
+            fbDb.ref('grupos/' + grupoCodigo + '/miembros/' + grupoMiId).update({
+                lat: currentLat, lng: currentLng,
+                ts: Date.now(), online: true
+            });
+        }, null, { enableHighAccuracy: true, timeout: 5000 });
     }, 5000);
-
-    toast('🚴 Grupo ' + grupoCodigo + ' — ¡A rodar!');
 }
 
 function renderMiembros(data) {
