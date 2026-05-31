@@ -1985,11 +1985,32 @@ function initWalkie() {
   walkiePeerId = 'ridesafe-' + grupoCodigo + '-' + grupoMiNombre.replace(/\s/g,'') + rand;
 
   walkiePeer = new Peer(walkiePeerId, {
+    host: '0.peerjs.com',
+    port: 443,
+    secure: true,
+    path: '/',
+    debug: 0,
     config: {
+      iceTransportPolicy: 'all',
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
+        { urls: 'stun:global.stun.twilio.com:3478' },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
       ]
     }
   });
@@ -2022,19 +2043,26 @@ function initWalkie() {
   });
 
   walkiePeer.on('error', function(err) {
+    console.log('Walkie error:', err.type, err.message);
     if (err.type === 'unavailable-id') {
-      // ID ocupado — reintentar con otro número
-      setTimeout(initWalkie, 500);
+      setTimeout(initWalkie, 800);
+    } else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error') {
+      setWalkieStatus('&#9888; Sin servidor señalización — audio directo activo', 'var(--orange)');
+      // Aunque falle el servidor PeerJS, si los peers ya se conocen el audio puede funcionar
+      walkieConnected = true;
     } else {
-      setWalkieStatus('&#128308; Error walkie — reintentando...', 'var(--red)');
-      setTimeout(initWalkie, 3000);
+      setWalkieStatus('&#128308; Error: ' + err.type, 'var(--red)');
     }
   });
 
   walkiePeer.on('disconnected', function() {
     walkieConnected = false;
-    setWalkieStatus('&#128308; Desconectado — reconectando...', 'var(--orange)');
-    try { walkiePeer.reconnect(); } catch(e) {}
+    setWalkieStatus('&#9711; Reconectando...', 'var(--orange)');
+    setTimeout(function() {
+      if (walkiePeer && !walkiePeer.destroyed) {
+        try { walkiePeer.reconnect(); } catch(e) { initWalkie(); }
+      }
+    }, 2000);
   });
 }
 
