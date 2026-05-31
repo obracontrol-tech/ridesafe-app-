@@ -724,15 +724,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 .m-status-online{background:var(--lime-dim);color:var(--lime)}
 .m-status-offline{background:var(--card);color:var(--dim)}
 .walkie-card{padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;margin-bottom:12px}
-#walkie-btn2{
-  width:100%;height:70px;border-radius:14px;border:none;cursor:pointer;
-  font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;letter-spacing:1px;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  background:var(--card);border:2px solid var(--border);color:var(--muted);
-  transition:all .2s;user-select:none;-webkit-user-select:none;
-}
-#walkie-btn2.hablando{background:var(--lime-dim);border-color:var(--lime);color:var(--lime);box-shadow:0 0 20px var(--lime-glow);animation:walkie-pulse 1s infinite}
-#walkie-btn2.escuchando{background:rgba(0,229,255,.1);border-color:var(--cyan);color:var(--cyan)}
 @keyframes walkie-pulse{0%,100%{box-shadow:0 0 10px var(--lime-glow)}50%{box-shadow:0 0 25px rgba(168,230,61,.6)}}
 
 /* ═══════════════════════════════════════
@@ -1975,20 +1966,9 @@ function setWalkieStatus(msg, color) {
   if (el) { el.innerHTML = msg; el.style.color = color || 'var(--muted)'; }
 }
 
-function walkieStart() {
-  var btn = document.getElementById('walkie-btn2');
-  btn.classList.add('hablando');
-  btn.innerHTML = '&#127908; PRÓXIMAMENTE';
-  setWalkieStatus('Walkie en desarrollo — LiveKit pendiente', 'var(--orange)');
-  toast('Walkie próximamente disponible');
-}
+function walkieStart(){}
 
-function walkieStop() {
-  var btn = document.getElementById('walkie-btn2');
-  btn.classList.remove('hablando');
-  btn.innerHTML = '&#127908; PULSA PARA HABLAR';
-  setWalkieStatus('Walkie próximamente — requiere LiveKit', 'var(--muted)');
-}
+function walkieStop(){}
 
 function stopWalkie() { walkieConnected = false; }
 
