@@ -1335,9 +1335,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         <div class="stat-box"><span class="sl">Activos</span><span class="sv" id="gs-activos">0</span></div>
       </div>
       <div class="walkie-card">
-        <div class="card-title" style="margin-bottom:10px">&#127908; Walkie-Talkie</div>
-        <button id="walkie-btn2" onmousedown="walkieStart()" onmouseup="walkieStop()" ontouchstart="walkieStart()" ontouchend="walkieStop()">&#127908; PULSA PARA HABLAR</button>
-        <div style="text-align:center;font-size:11px;color:var(--dim);margin-top:8px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px" id="walkie-status">Mantén pulsado para hablar</div>
+        <div class="card-title" style="margin-bottom:6px">&#127908; Walkie-Talkie</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:10px">Comunicación de voz en tiempo real entre ciclistas del grupo.</div>
+        <div style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;text-align:center">
+          <div style="font-size:22px;margin-bottom:6px">&#127959;</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--muted);letter-spacing:.5px">PRÓXIMAMENTE</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:4px">Integración LiveKit en desarrollo</div>
+        </div>
       </div>
       <div id="grupo-miembros-lista"></div>
       <button style="width:100%;padding:14px;border-radius:14px;background:var(--red);border:none;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px" onclick="salirGrupo()">&#128682; SALIR DEL GRUPO</button>
