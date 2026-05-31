@@ -102,7 +102,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 }
 
 .hdr-notif{
-  width:38px;height:38px;border-radius:10px;
+  width:42px;height:42px;border-radius:10px;
   background:var(--card);border:1px solid var(--border2);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;position:relative;
@@ -1073,6 +1073,72 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 .radar-btn-unir:active{transform:scale(.97)}
 .radar-btn-ignorar{padding:11px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif}
 
+
+/* PANEL TELEGRAM CONFIG */
+#panel-telegram{position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;padding:0 0 70px}
+#panel-telegram.show{display:flex}
+.tg-box{
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:24px 24px 20px 20px;
+  padding:24px 20px 28px;width:100%;max-width:420px;
+}
+.tg-title{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:6px;
+}
+.tg-title-icon{
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(41,182,246,.15);border:1px solid rgba(41,182,246,.3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tg-title-txt{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;font-weight:900;color:var(--text);
+}
+.tg-subtitle{font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.tg-chatid-wrap{
+  background:var(--bg);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 14px;margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.tg-chatid-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.tg-chatid-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#29B6F6}
+.tg-chatid-ok{font-size:16px}
+.tg-alertas{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.tg-alerta-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;background:var(--bg);
+  border:1px solid var(--border);border-radius:12px;
+}
+.tg-alerta-icon{font-size:18px;flex-shrink:0}
+.tg-alerta-info{flex:1}
+.tg-alerta-name{font-size:13px;font-weight:600;color:var(--text)}
+.tg-alerta-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.tg-pasos{
+  background:rgba(41,182,246,.06);border:1px solid rgba(41,182,246,.15);
+  border-radius:12px;padding:12px 14px;margin-bottom:16px;
+}
+.tg-pasos-title{font-size:11px;font-weight:700;color:#29B6F6;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.tg-paso{display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:var(--muted);line-height:1.4}
+.tg-paso-num{
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(41,182,246,.2);color:#29B6F6;
+  font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tg-btn-guardar{
+  width:100%;padding:13px;
+  background:#29B6F6;border:none;border-radius:12px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:17px;font-weight:900;letter-spacing:.5px;
+  color:#080c0a;cursor:pointer;margin-bottom:8px;
+}
+.tg-btn-cerrar{
+  width:100%;padding:10px;background:none;
+  border:1px solid var(--border);border-radius:12px;
+  font-size:13px;color:var(--muted);cursor:pointer;
+}
+
 </style>
 </head>
 <body>
@@ -1191,9 +1257,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="logo">
       <span class="logo-ride">Ride</span><span class="logo-safe">Safe</span><span class="logo-ai">AI</span>
     </div>
-    <button class="hdr-notif" onclick="toast('Notificaciones')">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="hdr-notif-dot"></div>
+    <button class="hdr-notif" onclick="openTelegram()" title="Configurar Telegram" style="width:42px;height:42px">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21.8 2.1L1.4 9.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L8.6 16l-.4 5.2c.6 0 .9-.3 1.2-.6l2.9-2.8 5.1 3.7c.9.5 1.6.2 1.8-.9l3.3-15.6c.3-1.4-.5-2-1.7-1.9z" fill="#29B6F6"/>
+      </svg>
+      <div class="hdr-notif-dot" id="tg-dot" style="display:none"></div>
     </button>
   </div>
 
@@ -1331,6 +1399,83 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 
 <!-- BARRA INFERIOR -->
 <!-- RADAR CICLISTAS CERCANOS -->
+<!-- PANEL TELEGRAM CONFIG -->
+<div id="panel-telegram">
+  <div class="tg-box">
+    <div class="tg-title">
+      <div class="tg-title-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+          <path d="M21.8 2.1L1.4 9.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L8.6 16l-.4 5.2c.6 0 .9-.3 1.2-.6l2.9-2.8 5.1 3.7c.9.5 1.6.2 1.8-.9l3.3-15.6c.3-1.4-.5-2-1.7-1.9z" fill="#29B6F6"/>
+        </svg>
+      </div>
+      <div class="tg-title-txt">Alertas Telegram</div>
+    </div>
+    <div class="tg-subtitle">Recibe notificaciones en tu Telegram cuando salgas a pedalear, detectes ciclistas cercanos o necesites ayuda.</div>
+
+    <!-- Chat ID actual -->
+    <div class="tg-chatid-wrap" id="tg-config-wrap">
+      <div style="flex:1">
+        <span class="tg-chatid-label">Tu Chat ID</span>
+        <div class="tg-chatid-val" id="tg-chatid-display">No configurado</div>
+      </div>
+      <span class="tg-chatid-ok" id="tg-chatid-ok"></span>
+    </div>
+
+    <!-- Input Chat ID -->
+    <input class="ob-input" id="tg-chatid-input" placeholder="Ej: 8601457137" type="number" style="margin-bottom:14px;font-size:16px"/>
+
+    <!-- Alertas activas -->
+    <div class="tg-alertas">
+      <div class="tg-alerta-row">
+        <span class="tg-alerta-icon">🚴</span>
+        <div class="tg-alerta-info">
+          <div class="tg-alerta-name">Actividad iniciada / finalizada</div>
+          <div class="tg-alerta-desc">Al pulsar REC y al terminar la ruta</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
+      </div>
+      <div class="tg-alerta-row">
+        <span class="tg-alerta-icon">🆘</span>
+        <div class="tg-alerta-info">
+          <div class="tg-alerta-name">Alerta SOS</div>
+          <div class="tg-alerta-desc">Con ubicación GPS exacta</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
+      </div>
+      <div class="tg-alerta-row">
+        <span class="tg-alerta-icon">💥</span>
+        <div class="tg-alerta-info">
+          <div class="tg-alerta-name">Caída detectada</div>
+          <div class="tg-alerta-desc">Alerta automática del sensor</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
+      </div>
+      <div class="tg-alerta-row">
+        <span class="tg-alerta-icon">📡</span>
+        <div class="tg-alerta-info">
+          <div class="tg-alerta-name">Ciclistas cercanos</div>
+          <div class="tg-alerta-desc">Radar detecta alguien a menos de 2 km</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
+      </div>
+    </div>
+
+    <!-- Pasos para obtener Chat ID -->
+    <div class="tg-pasos">
+      <div class="tg-pasos-title">¿Cómo obtener tu Chat ID?</div>
+      <div class="tg-paso"><span class="tg-paso-num">1</span><span>Abre Telegram y busca <b>@rindesafeai_bot</b></span></div>
+      <div class="tg-paso"><span class="tg-paso-num">2</span><span>Escribe <b>/start</b></span></div>
+      <div class="tg-paso"><span class="tg-paso-num">3</span><span>Abre en el navegador: <b>t.me/rindesafeai_bot</b> → /start → getUpdates</span></div>
+      <div class="tg-paso"><span class="tg-paso-num">4</span><span>Busca el número después de <b>"id":</b> en el JSON</span></div>
+    </div>
+
+    <button class="tg-btn-guardar" onclick="tgGuardarConfig()">
+      ✅ GUARDAR Y ACTIVAR
+    </button>
+    <button class="tg-btn-cerrar" onclick="closeTelegram()">Cerrar</button>
+  </div>
+</div>
+
 <div id="radar-card">
   <div class="radar-header">
     <div class="radar-pulse">
@@ -3089,6 +3234,96 @@ function tgAlertaRadar(lista) {
 function tgNivelIcon(n) {
   return n === 'pro' ? '🔴' : n === 'medio' ? '🟡' : '🟢';
 }
+
+
+/* =========================================
+   PANEL TELEGRAM — configuración usuario
+   ========================================= */
+
+// Cargar chat_id guardado del usuario
+var tgUserChatId = localStorage.getItem('rs_tg_chatid') || '';
+
+// Si hay chat_id guardado, usarlo en lugar del hardcoded
+function tgGetChatId() {
+  return tgUserChatId || TG_CHAT;  // fallback al de JM si no hay
+}
+
+// Sobreescribir tgSend para usar el chat_id del usuario
+var _tgSendOriginal = tgSend;
+tgSend = function(msg) {
+  fetch(TG_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      chat_id: tgGetChatId(),
+      text: msg,
+      parse_mode: 'HTML'
+    })
+  }).catch(function(){});
+};
+
+function openTelegram() {
+  // Mostrar valor actual
+  var display = document.getElementById('tg-chatid-display');
+  var input = document.getElementById('tg-chatid-input');
+  var dot = document.getElementById('tg-chatid-ok');
+
+  if (tgUserChatId) {
+    display.textContent = tgUserChatId;
+    dot.textContent = '✅';
+    input.value = tgUserChatId;
+  } else {
+    display.textContent = 'No configurado';
+    dot.textContent = '⚠️';
+    input.value = '';
+  }
+
+  document.getElementById('panel-telegram').classList.add('show');
+}
+
+function closeTelegram() {
+  document.getElementById('panel-telegram').classList.remove('show');
+}
+
+function tgGuardarConfig() {
+  var val = document.getElementById('tg-chatid-input').value.trim();
+  if (!val || val.length < 5) {
+    toast('Introduce un Chat ID válido');
+    return;
+  }
+  tgUserChatId = val;
+  localStorage.setItem('rs_tg_chatid', val);
+
+  // Actualizar display
+  document.getElementById('tg-chatid-display').textContent = val;
+  document.getElementById('tg-chatid-ok').textContent = '✅';
+
+  // Mostrar punto verde en el icono del header
+  document.getElementById('tg-dot').style.display = 'block';
+
+  closeTelegram();
+  toast('Telegram activado ✅');
+
+  // Enviar mensaje de prueba
+  setTimeout(function() {
+    tgSend('✅ <b>RideSafe AI conectado</b>\n'
+      + '👤 ' + (perfilUsuario.nombre || 'Ciclista') + '\n'
+      + '\nYa recibirás alertas de:\n'
+      + '🚴 Actividad · 🆘 SOS · 💥 Caídas · 📡 Radar\n'
+      + '\n<i>¡Buenas rutas!</i>');
+  }, 500);
+}
+
+// Al arrancar mostrar punto verde si ya tiene chat_id
+if (tgUserChatId) {
+  var _dotEl = document.getElementById('tg-dot');
+  if (_dotEl) _dotEl.style.display = 'block';
+}
+
+// Cerrar panel al tocar fuera
+document.getElementById('panel-telegram').addEventListener('click', function(e) {
+  if (e.target === this) closeTelegram();
+});
 
 </script>
 
