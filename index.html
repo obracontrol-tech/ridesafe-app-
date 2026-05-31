@@ -1021,6 +1021,58 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 #panel-ajustes{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column}
 #panel-ajustes.show{display:flex}
 
+
+/* RADAR DE CICLISTAS CERCANOS */
+#radar-card{
+  position:fixed;bottom:78px;left:12px;right:12px;z-index:8000;
+  background:linear-gradient(135deg,#0f1f12 0%,#0a1a0d 100%);
+  border:1.5px solid var(--lime);border-radius:20px;padding:16px;
+  box-shadow:0 8px 40px rgba(168,230,61,.25);
+  display:none;
+  animation:radarSlideUp .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+#radar-card.show{display:block}
+@keyframes radarSlideUp{
+  from{opacity:0;transform:translateY(20px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.radar-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.radar-pulse{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--lime-dim);border:1.5px solid var(--lime);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;
+}
+.radar-pulse::before{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid rgba(168,230,61,.3);animation:radarRing 1.5s infinite;
+}
+.radar-pulse::after{
+  content:'';position:absolute;inset:-10px;border-radius:50%;
+  border:1.5px solid rgba(168,230,61,.15);animation:radarRing 1.5s .4s infinite;
+}
+@keyframes radarRing{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.radar-pulse svg{width:18px;height:18px;stroke:var(--lime);fill:none;stroke-width:2;stroke-linecap:round;position:relative;z-index:1}
+.radar-title{flex:1}
+.radar-title-txt{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--lime);text-transform:uppercase;letter-spacing:.5px;line-height:1}
+.radar-title-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.radar-close{width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px;flex-shrink:0}
+.radar-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.radar-ciclista{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(0,0,0,.3);border:1px solid var(--border2);border-radius:14px}
+.radar-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:#080c0a;flex-shrink:0}
+.radar-info{flex:1;min-width:0}
+.radar-nombre{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.radar-detalles{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.radar-nivel-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;font-family:'Barlow Condensed',sans-serif}
+.nivel-novato{background:rgba(0,229,100,.12);color:#00e564;border:1px solid rgba(0,229,100,.2)}
+.nivel-medio{background:rgba(255,200,0,.12);color:#ffc800;border:1px solid rgba(255,200,0,.2)}
+.nivel-pro{background:rgba(255,51,85,.12);color:#ff3355;border:1px solid rgba(255,51,85,.2)}
+.radar-dist{font-size:11px;color:var(--lime);font-weight:700;font-family:'Barlow Condensed',sans-serif;flex-shrink:0}
+.radar-acciones{display:flex;gap:8px}
+.radar-btn-unir{flex:1;padding:11px;background:var(--lime);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;letter-spacing:.5px;color:#080c0a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s}
+.radar-btn-unir:active{transform:scale(.97)}
+.radar-btn-ignorar{padding:11px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif}
+
 </style>
 </head>
 <body>
@@ -1278,6 +1330,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 </div><!-- /inicio -->
 
 <!-- BARRA INFERIOR -->
+<!-- RADAR CICLISTAS CERCANOS -->
+<div id="radar-card">
+  <div class="radar-header">
+    <div class="radar-pulse">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
+    </div>
+    <div class="radar-title">
+      <div class="radar-title-txt">&#128250; Ciclistas cercanos</div>
+      <div class="radar-title-sub" id="radar-subtitle">Detectando en un radio de 2 km...</div>
+    </div>
+    <div class="radar-close" onclick="radarCerrar()">&#10005;</div>
+  </div>
+  <div class="radar-lista" id="radar-lista"></div>
+  <div class="radar-acciones">
+    <button class="radar-btn-unir" onclick="radarUnirse()" id="radar-btn-unir">
+      &#128690; UNIRSE AL GRUPO
+    </button>
+    <button class="radar-btn-ignorar" onclick="radarCerrar()">Ignorar</button>
+  </div>
+</div>
+
 <div id="tabbar">
   <button class="tab active" onclick="toast('Inicio')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
@@ -2521,6 +2594,7 @@ function obGuardarPerfil(){
 
   document.getElementById('onboarding').classList.remove('show');
   renderPerfilEnInicio();
+  setTimeout(radarInit, 1500);
   toast('¡Bienvenido, ' + nombre + '! 🚴');
 }
 
@@ -2676,6 +2750,225 @@ function ajGuardar(){
 
 /* Iniciar comprobación al cargar */
 checkOnboarding();
+
+
+/* =========================================
+   RADAR DE CICLISTAS CERCANOS
+   =========================================
+   - Publica posicion en Firebase cada 30s
+   - Escanea ciclistas en radio 2km cada 45s
+   - Muestra tarjeta emergente si detecta
+   - Limpia presencia al cerrar app
+   ========================================= */
+
+var RADAR_RADIO_KM = 2;
+var RADAR_INTERVALO_POS = 30000;   // publicar posicion cada 30s
+var RADAR_INTERVALO_SCAN = 45000;  // escanear cada 45s
+var RADAR_INACTIVO_MS = 5 * 60 * 1000; // ignorar posiciones >5min
+
+var radarActivo = false;
+var radarUserId = null;
+var radarRef = null;
+var radarIntervalPos = null;
+var radarIntervalScan = null;
+var radarCiclistasCercanos = [];
+var radarIgnorados = {};   // IDs ignorados temporalmente
+
+/* Colores para avatares */
+var RADAR_COLORES = ['#a8e63d','#00e5ff','#ff8833','#9966ff','#ffcc00','#00e564'];
+
+/* Iconos de bici */
+var BICI_ICONOS = {carretera:'&#128692;', mtb:'&#128693;', gravel:'&#128739;', ebike:'&#9889;'};
+var NIVEL_LABELS = {novato:'Novato', medio:'Medio', pro:'Pro'};
+var NIVEL_EMOJIS = {novato:'&#128994;', medio:'&#128993;', pro:'&#128308;'};
+
+/* Iniciar radar al arrancar si hay perfil */
+function radarInit() {
+  if (!perfilUsuario.nombre) return;
+  if (radarActivo) return;
+  radarActivo = true;
+
+  // ID unico para este dispositivo/sesion
+  radarUserId = (perfilUsuario.nombre.replace(/\s/g,'') + '_' + Math.random().toString(36).substr(2,8)).toLowerCase();
+  radarRef = db.ref('radar/' + radarUserId);
+
+  // Limpiar al cerrar
+  radarRef.onDisconnect().remove();
+
+  // Publicar posicion inicial
+  radarPublicarPos();
+
+  // Intervalos
+  radarIntervalPos = setInterval(radarPublicarPos, RADAR_INTERVALO_POS);
+  radarIntervalScan = setInterval(radarEscanear, RADAR_INTERVALO_SCAN);
+
+  // Primer escaneo a los 5s (esperar que otros publiquen)
+  setTimeout(radarEscanear, 5000);
+}
+
+/* Publicar mi posicion en Firebase */
+function radarPublicarPos() {
+  if (!perfilUsuario.nombre) return;
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    if (!radarRef) return;
+    radarRef.set({
+      nombre: perfilUsuario.nombre,
+      nivel: perfilUsuario.nivel || 'novato',
+      bici: perfilUsuario.bici || 'carretera',
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      grupo: grupoCodigo || null,
+      ts: Date.now()
+    });
+  }, null, {enableHighAccuracy:false, timeout:8000, maximumAge:30000});
+}
+
+/* Escanear ciclistas cercanos */
+function radarEscanear() {
+  if (!userPos) return;  // necesitamos posicion propia
+
+  db.ref('radar').once('value', function(snap) {
+    var datos = snap.val() || {};
+    var ahora = Date.now();
+    var cercanos = [];
+
+    Object.keys(datos).forEach(function(uid) {
+      var c = datos[uid];
+      if (!c || !c.nombre || !c.lat) return;
+      if (uid === radarUserId) return;          // soy yo
+      if (ahora - c.ts > RADAR_INACTIVO_MS) return;  // inactivo
+      if (radarIgnorados[uid]) return;           // ignorado
+
+      var dist = haversine(userPos[0], userPos[1], c.lat, c.lng);
+      var distKm = dist / 1000;
+
+      if (distKm <= RADAR_RADIO_KM) {
+        cercanos.push({
+          uid: uid,
+          nombre: c.nombre,
+          nivel: c.nivel || 'novato',
+          bici: c.bici || 'carretera',
+          grupo: c.grupo,
+          distKm: distKm
+        });
+      }
+    });
+
+    // Ordenar por distancia
+    cercanos.sort(function(a, b) { return a.distKm - b.distKm; });
+    radarCiclistasCercanos = cercanos;
+
+    if (cercanos.length > 0) {
+      radarMostrarTarjeta(cercanos);
+    }
+  });
+}
+
+/* Mostrar tarjeta emergente */
+function radarMostrarTarjeta(lista) {
+  var card = document.getElementById('radar-card');
+  var listaEl = document.getElementById('radar-lista');
+  var subtitle = document.getElementById('radar-subtitle');
+  var btnUnir = document.getElementById('radar-btn-unir');
+
+  var n = lista.length;
+  subtitle.textContent = n === 1
+    ? '1 ciclista a ' + lista[0].distKm.toFixed(1) + ' km de ti'
+    : n + ' ciclistas en un radio de 2 km';
+
+  listaEl.innerHTML = '';
+
+  // Mostrar max 3
+  lista.slice(0, 3).forEach(function(c, i) {
+    var color = RADAR_COLORES[i % RADAR_COLORES.length];
+    var ini = c.nombre.charAt(0).toUpperCase();
+    var nivelClass = 'nivel-' + c.nivel;
+    var nivelLabel = NIVEL_LABELS[c.nivel] || c.nivel;
+    var nivelEmoji = NIVEL_EMOJIS[c.nivel] || '';
+    var biciIcon = BICI_ICONOS[c.bici] || '&#128690;';
+    var grupoTxt = c.grupo ? ' &middot; Grupo ' + c.grupo : ' &middot; Solo';
+
+    var div = document.createElement('div');
+    div.className = 'radar-ciclista';
+    div.innerHTML =
+      '<div class="radar-av" style="background:' + color + '">' + ini + '</div>'
+      + '<div class="radar-info">'
+      + '<div class="radar-nombre">' + c.nombre + '</div>'
+      + '<div class="radar-detalles">'
+      + '<span class="radar-nivel-badge ' + nivelClass + '">' + nivelEmoji + ' ' + nivelLabel + '</span>'
+      + '<span style="font-size:12px">' + biciIcon + '</span>'
+      + '<span style="font-size:10px;color:var(--dim)">' + grupoTxt + '</span>'
+      + '</div></div>'
+      + '<div class="radar-dist">' + c.distKm.toFixed(1) + ' km</div>';
+    listaEl.appendChild(div);
+  });
+
+  if (lista.length > 3) {
+    var mas = document.createElement('div');
+    mas.style.cssText = 'text-align:center;font-size:11px;color:var(--muted);padding:4px 0';
+    mas.textContent = '+ ' + (lista.length - 3) + ' ciclistas mas cerca';
+    listaEl.appendChild(mas);
+  }
+
+  // Texto del boton segun si tienen grupo
+  var conGrupo = lista.find(function(c) { return c.grupo; });
+  btnUnir.innerHTML = conGrupo
+    ? '&#128690; UNIRSE AL GRUPO ' + conGrupo.grupo
+    : '&#128690; CREAR GRUPO JUNTOS';
+
+  card.classList.add('show');
+}
+
+/* Cerrar tarjeta e ignorar por 10 min */
+function radarCerrar() {
+  document.getElementById('radar-card').classList.remove('show');
+  // Ignorar los actuales por 10 min
+  radarCiclistasCercanos.forEach(function(c) {
+    radarIgnorados[c.uid] = true;
+    setTimeout(function() { delete radarIgnorados[c.uid]; }, 10 * 60 * 1000);
+  });
+}
+
+/* Unirse al grupo del ciclista mas cercano */
+function radarUnirse() {
+  var conGrupo = radarCiclistasCercanos.find(function(c) { return c.grupo; });
+  document.getElementById('radar-card').classList.remove('show');
+
+  if (conGrupo) {
+    // Rellenar datos de grupo y unirse directamente
+    if (!perfilUsuario.nombre) { toast('Configura tu perfil primero'); return; }
+    openGrupo();
+    setTimeout(function() {
+      document.getElementById('grupo-nombre').value = perfilUsuario.nombre;
+      document.getElementById('grupo-codigo-input').value = conGrupo.grupo;
+      unirseGrupo();
+    }, 300);
+  } else {
+    // Crear grupo nuevo y avisar
+    if (!perfilUsuario.nombre) { toast('Configura tu perfil primero'); return; }
+    openGrupo();
+    setTimeout(function() {
+      document.getElementById('grupo-nombre').value = perfilUsuario.nombre;
+      crearGrupo();
+      toast('Grupo creado. Comparte el codigo con los ciclistas cercanos.');
+    }, 300);
+  }
+}
+
+/* Parar radar */
+function radarStop() {
+  radarActivo = false;
+  clearInterval(radarIntervalPos);
+  clearInterval(radarIntervalScan);
+  if (radarRef) { radarRef.remove(); radarRef = null; }
+}
+
+/* Arrancar radar despues de onboarding o si ya hay perfil */
+var _radarInitTO = setTimeout(function() {
+  if (perfilUsuario.nombre) radarInit();
+}, 2000);
 
 </script>
 
