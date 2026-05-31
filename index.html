@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
    RESET & BASE
@@ -1952,12 +1953,228 @@ function openGrupo(){openPanel('panel-grupo');}
 function closeGrupo(){closePanel('panel-grupo');}
 function crearGrupo(){var n=document.getElementById('grupo-nombre').value.trim();if(!n){toast('Introduce tu nombre');return;}var cod=Math.random().toString(36).substr(2,6).toUpperCase();grupoCodigo=cod;grupoMiNombre=n;grupoActivo=true;activateGrupo();}
 function unirseGrupo(){var n=document.getElementById('grupo-nombre').value.trim();var c=document.getElementById('grupo-codigo-input').value.trim();if(!n){toast('Introduce tu nombre');return;}if(!c){toast('Introduce el código');return;}grupoCodigo=c.toUpperCase();grupoMiNombre=n;grupoActivo=true;activateGrupo();}
-function activateGrupo(){document.getElementById('grupo-setup').style.display='none';document.getElementById('grupo-activo').style.display='block';document.getElementById('grupo-codigo-display').textContent=grupoCodigo;document.getElementById('grupo-badge').textContent='Activo';document.getElementById('grupo-badge').classList.add('on');document.getElementById('gs-miembros').textContent='2';document.getElementById('gs-online').textContent='2';document.getElementById('gs-activos').textContent='2';renderMiembros();toast('En grupo '+grupoCodigo);}
-function renderMiembros(){var list=document.getElementById('grupo-miembros-lista');list.innerHTML='<div class="miembro-row yo"><div class="miembro-av" style="background:var(--lime)">'+grupoMiNombre[0].toUpperCase()+'</div><div class="miembro-info"><div class="miembro-nombre">'+grupoMiNombre+' (tú)</div><div class="miembro-pos">Online</div></div><div class="miembro-status m-status-online">Online</div></div><div class="miembro-row"><div class="miembro-av" style="background:var(--cyan);color:#080c0a">L</div><div class="miembro-info"><div class="miembro-nombre">Lider</div><div class="miembro-pos">Online</div></div><div class="miembro-status m-status-online">Online</div></div>';}
-function salirGrupo(){if(!confirm('¿Salir del grupo?'))return;grupoActivo=false;grupoCodigo='';document.getElementById('grupo-activo').style.display='none';document.getElementById('grupo-setup').style.display='block';document.getElementById('grupo-badge').textContent='Inactivo';document.getElementById('grupo-badge').classList.remove('on');toast('Has salido del grupo');}
+function activateGrupo(){document.getElementById('grupo-setup').style.display='none';document.getElementById('grupo-activo').style.display='block';document.getElementById('grupo-codigo-display').textContent=grupoCodigo;document.getElementById('grupo-badge').textContent='Activo';document.getElementById('grupo-badge').classList.add('on');document.getElementById('gs-miembros').textContent='1';document.getElementById('gs-online').textContent='1';document.getElementById('gs-activos').textContent='1';renderMiembros();toast('En grupo '+grupoCodigo);setWalkieStatus('&#9711; Conectando walkie...','var(--muted)');setTimeout(initWalkie,300);}
+function renderMiembros(){var list=document.getElementById('grupo-miembros-lista');list.innerHTML='<div class="miembro-row yo"><div class="miembro-av" style="background:var(--lime)">'+grupoMiNombre[0].toUpperCase()+'</div><div class="miembro-info"><div class="miembro-nombre">'+grupoMiNombre+' (tú)</div><div class="miembro-pos">Online</div></div><div class="miembro-status m-status-online">Online</div></div>';}
+function salirGrupo(){if(!confirm('¿Salir del grupo?'))return;stopWalkie();grupoActivo=false;grupoCodigo='';document.getElementById('grupo-activo').style.display='none';document.getElementById('grupo-setup').style.display='block';document.getElementById('grupo-badge').textContent='Inactivo';document.getElementById('grupo-badge').classList.remove('on');toast('Has salido del grupo');}
 function copyCodigo(){try{navigator.clipboard.writeText(grupoCodigo);toast('Código copiado');}catch(e){toast('Código: '+grupoCodigo);}}
-function walkieStart(){var btn=document.getElementById('walkie-btn2');btn.classList.add('hablando');btn.classList.remove('escuchando');btn.innerHTML='&#128308; HABLANDO...';document.getElementById('walkie-status').textContent='Transmitiendo al grupo...';}
-function walkieStop(){var btn=document.getElementById('walkie-btn2');btn.classList.remove('hablando');btn.innerHTML='&#127908; PULSA PARA HABLAR';document.getElementById('walkie-status').textContent='Mantén pulsado para hablar';}
+/* ═══════════════════════════════════════
+   WALKIE-TALKIE REAL — WebRTC + PeerJS
+   ═══════════════════════════════════════
+   Cómo funciona:
+   - Cada usuario se registra en PeerJS con ID = "ridesafe-GRUPO-NOMBRE"
+   - Al pulsar: captura micrófono y llama a todos los peers del grupo
+   - Al soltar: cierra streams de audio
+   - Usa servidores STUN gratuitos de Google (peer-to-peer directo)
+   ═══════════════════════════════════════ */
+
+var walkiePeer = null;        // instancia PeerJS
+var walkieCalls = [];         // llamadas activas salientes
+var walkieStream = null;      // stream del micrófono
+var walkieIncoming = [];      // llamadas entrantes
+var walkieConnected = false;
+var walkiePeerId = '';
+var WALKIE_MAX_PEERS = 6;     // máximo compañeros en grupo
+
+/* Inicializar PeerJS cuando se activa el grupo */
+function initWalkie() {
+  if (!grupoCodigo || !grupoMiNombre) return;
+  if (walkiePeer && !walkiePeer.destroyed) { walkiePeer.destroy(); }
+
+  // ID único: ridesafe + grupo + nombre + número aleatorio para evitar colisiones
+  var rand = Math.floor(Math.random() * 900) + 100;
+  walkiePeerId = 'ridesafe-' + grupoCodigo + '-' + grupoMiNombre.replace(/\s/g,'') + rand;
+
+  walkiePeer = new Peer(walkiePeerId, {
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    }
+  });
+
+  walkiePeer.on('open', function(id) {
+    walkieConnected = true;
+    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
+    toast('Walkie conectado');
+  });
+
+  /* Recibir llamada entrante (alguien habla) */
+  walkiePeer.on('call', function(call) {
+    call.answer(); // contestar sin enviar audio propio
+    walkieIncoming.push(call);
+    call.on('stream', function(remoteStream) {
+      playRemoteAudio(remoteStream, call.peer);
+    });
+    call.on('close', function() {
+      removeRemoteAudio(call.peer);
+    });
+    call.on('error', function() {
+      removeRemoteAudio(call.peer);
+    });
+    // Mostrar quién habla
+    var nombre = call.peer.split('-').slice(2).join(' ').replace(/\d+$/, '') || 'Compañero';
+    setWalkieStatus('&#128266; ' + nombre + ' está hablando...', 'var(--cyan)');
+    var btn = document.getElementById('walkie-btn2');
+    btn.classList.add('escuchando');
+    btn.innerHTML = '&#128266; ESCUCHANDO...';
+  });
+
+  walkiePeer.on('error', function(err) {
+    if (err.type === 'unavailable-id') {
+      // ID ocupado — reintentar con otro número
+      setTimeout(initWalkie, 500);
+    } else {
+      setWalkieStatus('&#128308; Error walkie — reintentando...', 'var(--red)');
+      setTimeout(initWalkie, 3000);
+    }
+  });
+
+  walkiePeer.on('disconnected', function() {
+    walkieConnected = false;
+    setWalkieStatus('&#128308; Desconectado — reconectando...', 'var(--orange)');
+    try { walkiePeer.reconnect(); } catch(e) {}
+  });
+}
+
+/* Reproducir audio remoto */
+function playRemoteAudio(stream, peerId) {
+  var existing = document.getElementById('audio-' + peerId.replace(/[^a-z0-9]/gi,''));
+  if (existing) { existing.srcObject = stream; return; }
+  var audio = document.createElement('audio');
+  audio.id = 'audio-' + peerId.replace(/[^a-z0-9]/gi,'');
+  audio.autoplay = true;
+  audio.srcObject = stream;
+  audio.style.display = 'none';
+  document.body.appendChild(audio);
+}
+
+function removeRemoteAudio(peerId) {
+  var el = document.getElementById('audio-' + peerId.replace(/[^a-z0-9]/gi,''));
+  if (el) { try { el.srcObject.getTracks().forEach(function(t){t.stop();}); } catch(e){} el.remove(); }
+  // Volver a estado normal si no hay más llamadas entrantes
+  walkieIncoming = walkieIncoming.filter(function(c){ return c.peer !== peerId; });
+  if (walkieIncoming.length === 0) {
+    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
+    var btn = document.getElementById('walkie-btn2');
+    btn.classList.remove('escuchando');
+    btn.innerHTML = '&#127908; PULSA PARA HABLAR';
+  }
+}
+
+function setWalkieStatus(msg, color) {
+  var el = document.getElementById('walkie-status');
+  if (el) { el.innerHTML = msg; el.style.color = color || 'var(--muted)'; }
+}
+
+/* Obtener lista de peers del grupo (por convención de nombre) */
+function getGroupPeerIds() {
+  // Llamamos a los IDs conocidos del grupo
+  // En un grupo real los peers se intercambian al unirse
+  // Aquí usamos la lista de miembros visible + intentamos peers conocidos
+  var peers = [];
+  var lista = document.getElementById('grupo-miembros-lista');
+  if (!lista) return peers;
+  // Leer nombres de miembros del panel
+  var nombres = lista.querySelectorAll('.miembro-nombre');
+  nombres.forEach(function(el) {
+    var nombre = el.textContent.replace('(tú)','').trim();
+    if (nombre && nombre !== groMiNombre) {
+      // Intentar con sufijos 100-999
+      for (var i = 100; i <= 999; i++) {
+        peers.push('ridesafe-' + grupoCodigo + '-' + nombre.replace(/\s/g,'') + i);
+      }
+    }
+  });
+  return peers.slice(0, 10); // limitar intentos
+}
+
+/* PULSAR — empezar a hablar */
+function walkieStart() {
+  if (!walkieConnected || !walkiePeer) {
+    toast('Walkie no conectado — espera un momento');
+    return;
+  }
+
+  var btn = document.getElementById('walkie-btn2');
+  btn.classList.add('hablando');
+  btn.classList.remove('escuchando');
+  btn.innerHTML = '&#128308; HABLANDO...';
+  setWalkieStatus('&#127908; Transmitiendo...', 'var(--lime)');
+
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    .then(function(stream) {
+      walkieStream = stream;
+      // Llamar a todos los peers del grupo que encontremos
+      // Usamos el servidor de descubrimiento de PeerJS para listar peers activos
+      walkiePeer.listAllPeers(function(ids) {
+        var grupoIds = ids.filter(function(id) {
+          return id.startsWith('ridesafe-' + grupoCodigo + '-') && id !== walkiePeerId;
+        });
+
+        if (grupoIds.length === 0) {
+          setWalkieStatus('&#128308; Nadie en el grupo ahora', 'var(--muted)');
+          toast('No hay otros ciclistas en el grupo');
+          return;
+        }
+
+        grupoIds.slice(0, WALKIE_MAX_PEERS).forEach(function(peerId) {
+          try {
+            var call = walkiePeer.call(peerId, stream);
+            walkieCalls.push(call);
+            call.on('error', function(){});
+          } catch(e) {}
+        });
+
+        toast('Transmitiendo a ' + grupoIds.length + ' ciclista' + (grupoIds.length>1?'s':''));
+      });
+    })
+    .catch(function(err) {
+      btn.classList.remove('hablando');
+      btn.innerHTML = '&#127908; PULSA PARA HABLAR';
+      setWalkieStatus('&#128308; Sin permiso de micrófono', 'var(--red)');
+      toast('Permite el acceso al micrófono');
+    });
+}
+
+/* SOLTAR — dejar de hablar */
+function walkieStop() {
+  var btn = document.getElementById('walkie-btn2');
+  btn.classList.remove('hablando');
+  btn.innerHTML = '&#127908; PULSA PARA HABLAR';
+
+  // Cerrar todas las llamadas salientes
+  walkieCalls.forEach(function(call) { try { call.close(); } catch(e){} });
+  walkieCalls = [];
+
+  // Parar micrófono
+  if (walkieStream) {
+    walkieStream.getTracks().forEach(function(t) { t.stop(); });
+    walkieStream = null;
+  }
+
+  if (walkieIncoming.length === 0) {
+    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
+  }
+}
+
+/* Parar walkie al salir del grupo */
+function stopWalkie() {
+  walkieStop();
+  walkieIncoming.forEach(function(call) { try { call.close(); } catch(e){} });
+  walkieIncoming = [];
+  // Limpiar audios remotos
+  document.querySelectorAll('audio[id^="audio-"]').forEach(function(el) {
+    try { el.srcObject.getTracks().forEach(function(t){t.stop();}); } catch(e){}
+    el.remove();
+  });
+  if (walkiePeer && !walkiePeer.destroyed) {
+    walkiePeer.destroy();
+    walkiePeer = null;
+  }
+  walkieConnected = false;
+}
 
 /* ═══════════════════════════════════════
    E-BIKE PRO
