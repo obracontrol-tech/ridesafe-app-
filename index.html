@@ -831,9 +831,298 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 #inicio > *:nth-child(5){animation-delay:.22s}
 #inicio > *:nth-child(6){animation-delay:.25s}
 #inicio > *:nth-child(7){animation-delay:.28s}
+
+/* ═══════════════════════════════════════
+   ONBOARDING — PANTALLA BIENVENIDA
+   ═══════════════════════════════════════ */
+#onboarding{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  overflow-y:auto;
+  display:none;
+  flex-direction:column;
+  padding-bottom:20px;
+}
+#onboarding.show{display:flex}
+
+.ob-header{
+  padding:48px 24px 24px;
+  text-align:center;
+}
+.ob-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:38px;font-weight:900;
+  margin-bottom:6px;line-height:1;
+}
+.ob-logo-ride{color:#fff}
+.ob-logo-safe{color:var(--lime);text-shadow:0 0 24px var(--lime-glow)}
+.ob-logo-ai{
+  font-size:14px;font-weight:700;
+  background:var(--lime);color:#080c0a;
+  padding:2px 7px;border-radius:5px;
+  margin-left:4px;letter-spacing:.5px;
+  vertical-align:middle;
+}
+.ob-subtitle{
+  font-size:13px;color:var(--muted);
+  letter-spacing:.5px;margin-top:4px;
+}
+
+.ob-step{
+  padding:0 24px;
+  flex:1;
+}
+.ob-step-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--lime);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:6px;
+}
+.ob-label{
+  font-size:11px;font-weight:600;
+  color:var(--muted);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:8px;
+  display:block;
+}
+
+/* Input nombre */
+.ob-input{
+  width:100%;padding:14px 16px;
+  background:var(--card2);color:var(--text);
+  border:1px solid var(--border2);border-radius:14px;
+  font-size:18px;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;outline:none;letter-spacing:.5px;
+  transition:border-color .2s;
+  margin-bottom:20px;
+}
+.ob-input:focus{border-color:var(--lime)}
+.ob-input::placeholder{color:var(--dim);font-weight:400;font-size:15px}
+
+/* Selector de bici */
+.ob-bikes{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;margin-bottom:20px;
+}
+.ob-bike{
+  padding:14px 10px;
+  background:var(--card);border:2px solid var(--border);
+  border-radius:16px;cursor:pointer;
+  text-align:center;transition:all .2s;
+  position:relative;
+}
+.ob-bike.sel{
+  background:var(--lime-dim);
+  border-color:var(--lime);
+}
+.ob-bike-icon{font-size:28px;display:block;margin-bottom:6px}
+.ob-bike-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;
+  color:var(--text);
+}
+.ob-bike.sel .ob-bike-name{color:var(--lime)}
+.ob-bike-check{
+  position:absolute;top:8px;right:8px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--lime);
+  display:none;align-items:center;justify-content:center;
+  font-size:10px;color:#080c0a;font-weight:900;
+}
+.ob-bike.sel .ob-bike-check{display:flex}
+
+/* Selector de nivel */
+.ob-niveles{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.ob-nivel{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:var(--card);border:2px solid var(--border);
+  border-radius:16px;cursor:pointer;transition:all .2s;
+}
+.ob-nivel.sel{background:rgba(168,230,61,.08);border-color:var(--lime)}
+.ob-nivel-dot{
+  width:14px;height:14px;border-radius:50%;flex-shrink:0;
+}
+.ob-nivel-info{flex:1}
+.ob-nivel-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:17px;font-weight:900;
+  text-transform:uppercase;letter-spacing:.5px;
+  color:var(--text);
+}
+.ob-nivel.sel .ob-nivel-name{color:var(--lime)}
+.ob-nivel-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.3}
+.ob-nivel-vel{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--muted);flex-shrink:0;
+}
+.ob-nivel.sel .ob-nivel-vel{color:var(--lime)}
+.ob-nivel-radio{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;
+}
+.ob-nivel.sel .ob-nivel-radio{
+  background:var(--lime);border-color:var(--lime);
+}
+.ob-nivel.sel .ob-nivel-radio::after{
+  content:'';width:8px;height:8px;border-radius:50%;background:#080c0a;
+}
+
+/* Nota nivel automático */
+.ob-nota{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 14px;
+  background:rgba(168,230,61,.06);
+  border:1px solid rgba(168,230,61,.15);
+  border-radius:12px;margin-bottom:24px;
+  font-size:11px;color:var(--muted);line-height:1.5;
+}
+.ob-nota-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* Botón continuar */
+.ob-btn{
+  width:100%;padding:16px;
+  background:var(--lime);border:none;border-radius:16px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;font-weight:900;letter-spacing:1px;
+  color:#080c0a;cursor:pointer;
+  box-shadow:0 4px 24px var(--lime-glow);
+  transition:transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.ob-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 60%);
+}
+.ob-btn:active{transform:scale(.97);box-shadow:0 2px 10px var(--lime-glow)}
+.ob-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* Divisor sección */
+.ob-divider{
+  height:1px;background:var(--border);margin:20px 0;
+}
+
+/* Badge nivel en pantalla principal */
+.perfil-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:20px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.perfil-badge.novato{background:rgba(0,229,100,.1);color:#00e564;border:1px solid rgba(0,229,100,.25)}
+.perfil-badge.medio{background:rgba(255,200,0,.1);color:#ffc800;border:1px solid rgba(255,200,0,.25)}
+.perfil-badge.pro{background:rgba(255,51,85,.1);color:#ff3355;border:1px solid rgba(255,51,85,.25)}
+
+/* Panel Ajustes — perfil editable */
+#panel-ajustes{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column}
+#panel-ajustes.show{display:flex}
+
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════
+     ONBOARDING — PRIMER ARRANQUE
+     ═══════════════════════════════════════════ -->
+<div id="onboarding">
+
+  <!-- HEADER -->
+  <div class="ob-header">
+    <div class="ob-logo">
+      <span class="ob-logo-ride">Ride</span><span class="ob-logo-safe">Safe</span><span class="ob-logo-ai">AI</span>
+    </div>
+    <div class="ob-subtitle">Bienvenido · Configura tu perfil ciclista</div>
+  </div>
+
+  <div class="ob-step">
+
+    <!-- NOMBRE -->
+    <span class="ob-label">👤 Tu nombre</span>
+    <input class="ob-input" id="ob-nombre" placeholder="¿Cómo te llaman los otros ciclistas?" maxlength="20" autocomplete="off"/>
+
+    <div class="ob-divider"></div>
+
+    <!-- TIPO DE BICI -->
+    <span class="ob-label">🚲 Tu bicicleta</span>
+    <div class="ob-bikes">
+      <div class="ob-bike" data-bici="carretera" onclick="obSelBici(this)">
+        <div class="ob-bike-check">✓</div>
+        <span class="ob-bike-icon">🚴</span>
+        <div class="ob-bike-name">Carretera</div>
+      </div>
+      <div class="ob-bike" data-bici="mtb" onclick="obSelBici(this)">
+        <div class="ob-bike-check">✓</div>
+        <span class="ob-bike-icon">🚵</span>
+        <div class="ob-bike-name">MTB</div>
+      </div>
+      <div class="ob-bike" data-bici="gravel" onclick="obSelBici(this)">
+        <div class="ob-bike-check">✓</div>
+        <span class="ob-bike-icon">🛤️</span>
+        <div class="ob-bike-name">Gravel</div>
+      </div>
+      <div class="ob-bike" data-bici="ebike" onclick="obSelBici(this)">
+        <div class="ob-bike-check">✓</div>
+        <span class="ob-bike-icon">⚡</span>
+        <div class="ob-bike-name">E-Bike</div>
+      </div>
+    </div>
+
+    <div class="ob-divider"></div>
+
+    <!-- NIVEL -->
+    <span class="ob-label">📊 Tu nivel de ciclista</span>
+    <div class="ob-niveles">
+
+      <div class="ob-nivel" data-nivel="novato" onclick="obSelNivel(this)">
+        <div class="ob-nivel-dot" style="background:#00e564"></div>
+        <div class="ob-nivel-info">
+          <div class="ob-nivel-name">🟢 Novato</div>
+          <div class="ob-nivel-desc">Salgo a disfrutar, sin prisa · Rutas tranquilas</div>
+        </div>
+        <div class="ob-nivel-vel">&lt; 20 km/h</div>
+        <div class="ob-nivel-radio"></div>
+      </div>
+
+      <div class="ob-nivel" data-nivel="medio" onclick="obSelNivel(this)">
+        <div class="ob-nivel-dot" style="background:#ffc800"></div>
+        <div class="ob-nivel-info">
+          <div class="ob-nivel-name">🟡 Medio</div>
+          <div class="ob-nivel-desc">Rutas regulares, buen ritmo · Me defiendo bien</div>
+        </div>
+        <div class="ob-nivel-vel">20-28 km/h</div>
+        <div class="ob-nivel-radio"></div>
+      </div>
+
+      <div class="ob-nivel" data-nivel="pro" onclick="obSelNivel(this)">
+        <div class="ob-nivel-dot" style="background:#ff3355"></div>
+        <div class="ob-nivel-info">
+          <div class="ob-nivel-name">🔴 Pro</div>
+          <div class="ob-nivel-desc">Entreno fuerte, ritmo alto · Competidor habitual</div>
+        </div>
+        <div class="ob-nivel-vel">&gt; 28 km/h</div>
+        <div class="ob-nivel-radio"></div>
+      </div>
+
+    </div>
+
+    <div class="ob-nota">
+      <span class="ob-nota-icon">💡</span>
+      <span>Tu nivel se ajustará automáticamente con las rutas que grabes. La velocidad media de tus últimas 5 rutas determinará tu nivel real.</span>
+    </div>
+
+    <!-- BOTÓN -->
+    <button class="ob-btn" id="ob-btn-entrar" onclick="obGuardarPerfil()" disabled>
+      ¡EMPEZAR A PEDALEAR! 🚴
+    </button>
+
+    <div style="height:20px"></div>
+
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -972,13 +1261,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <div class="modulo-sub">Pelotón, walkie-talkie</div>
     </div>
 
-    <!-- AJUSTES -->
-    <div class="modulo mod-ajust" onclick="toast('Ajustes — próximamente')">
+    <!-- AJUSTES / PERFIL -->
+    <div class="modulo mod-ajust" onclick="openAjustes()" id="mod-ajust-btn">
       <div class="mod-icon">
-        <svg viewBox="0 0 24 24" stroke="#7a8f7e"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg viewBox="0 0 24 24" stroke="#7a8f7e"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-      <div class="modulo-title">Ajustes</div>
-      <div class="modulo-sub">Perfil, preferencias</div>
+      <div class="modulo-title" id="mod-ajust-title">Mi Perfil</div>
+      <div class="modulo-sub" id="mod-ajust-sub">Configura tu nivel</div>
     </div>
 
   </div><!-- /grid -->
@@ -2167,6 +2456,366 @@ function renderAnalisisRecords(rutas,body){
   var objKm=100,pctKm=Math.min(100,Math.round(kmSemana/objKm*100));
   body.innerHTML='<div class="chart-box"><div class="chart-title">&#127942; Mis Récords</div><div class="record-grid"><div class="record-card"><div class="record-icon">&#128692;</div><div class="record-label">Ruta más larga</div><div class="record-val">'+maxKm.toFixed(1)+' <span>km</span></div><div class="record-date">'+maxKmF+'</div></div><div class="record-card"><div class="record-icon">&#9889;</div><div class="record-label">Vel. máxima media</div><div class="record-val">'+maxSpd.toFixed(1)+' <span>km/h</span></div><div class="record-date">'+maxSpdF+'</div></div><div class="record-card"><div class="record-icon">&#9201;</div><div class="record-label">Ruta más larga</div><div class="record-val">'+(maxH?maxH+'h ':'')+maxM+' <span>min</span></div><div class="record-date">'+maxTimeF+'</div></div><div class="record-card"><div class="record-icon">&#128207;</div><div class="record-label">Media por ruta</div><div class="record-val">'+avgKm+' <span>km</span></div><div class="record-date">'+rutas.length+' rutas totales</div></div></div></div><div class="chart-box"><div class="chart-title">&#127919; Objetivos semana</div><div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>&#128692; Km esta semana</span><span style="color:var(--lime)">'+kmSemana.toFixed(0)+' / '+objKm+' km</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+pctKm+'%;background:var(--lime)"></div></div></div></div>';
 }
+
+
+/* ═══════════════════════════════════════
+   PERFIL DE USUARIO — ONBOARDING
+   ═══════════════════════════════════════ */
+
+var NIVELES_VEL = {novato: 20, medio: 28}; // umbrales km/h
+
+// Cargar perfil guardado
+var perfilUsuario = {nombre:'', bici:'', nivel:'', nivelAuto:false};
+try {
+  var _p = localStorage.getItem('rs_perfil');
+  if(_p) perfilUsuario = JSON.parse(_p);
+} catch(e){}
+
+/* Mostrar onboarding si no hay perfil */
+function checkOnboarding(){
+  if(!perfilUsuario.nombre){
+    document.getElementById('onboarding').classList.add('show');
+  } else {
+    renderPerfilEnInicio();
+  }
+}
+
+/* Selección bici */
+function obSelBici(el){
+  document.querySelectorAll('.ob-bike').forEach(function(b){b.classList.remove('sel');});
+  el.classList.add('sel');
+  obValidarBtn();
+}
+
+/* Selección nivel */
+function obSelNivel(el){
+  document.querySelectorAll('.ob-nivel').forEach(function(n){n.classList.remove('sel');});
+  el.classList.add('sel');
+  obValidarBtn();
+}
+
+/* Habilitar botón cuando todo está relleno */
+function obValidarBtn(){
+  var nombre = document.getElementById('ob-nombre').value.trim();
+  var bici = document.querySelector('.ob-bike.sel');
+  var nivel = document.querySelector('.ob-nivel.sel');
+  document.getElementById('ob-btn-entrar').disabled = !(nombre && bici && nivel);
+}
+document.getElementById('ob-nombre').addEventListener('input', obValidarBtn);
+
+/* Guardar perfil y entrar */
+function obGuardarPerfil(){
+  var nombre = document.getElementById('ob-nombre').value.trim();
+  var bici = document.querySelector('.ob-bike.sel');
+  var nivel = document.querySelector('.ob-nivel.sel');
+  if(!nombre || !bici || !nivel){toast('Rellena todos los campos');return;}
+
+  perfilUsuario = {
+    nombre: nombre,
+    bici: bici.dataset.bici,
+    nivel: nivel.dataset.nivel,
+    nivelAuto: false,
+    ts: Date.now()
+  };
+  localStorage.setItem('rs_perfil', JSON.stringify(perfilUsuario));
+
+  document.getElementById('onboarding').classList.remove('show');
+  renderPerfilEnInicio();
+  toast('¡Bienvenido, ' + nombre + '! 🚴');
+}
+
+/* Renderizar badge de perfil en la pantalla de inicio */
+function renderPerfilEnInicio(){
+  if(!perfilUsuario.nombre) return;
+
+  // Calcular nivel automático con las últimas 5 rutas
+  calcularNivelAuto();
+
+  // Buscar o crear el badge en el header
+  var existing = document.getElementById('perfil-badge-inicio');
+  if(!existing){
+    var hdr = document.querySelector('.hdr');
+    var badge = document.createElement('div');
+    badge.id = 'perfil-badge-inicio';
+    badge.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);top:60px;z-index:5;text-align:center;';
+    hdr.parentNode.insertBefore(badge, hdr.nextSibling);
+    existing = badge;
+  }
+
+  var n = perfilUsuario.nivel;
+  var biciIconos = {carretera:'🚴', mtb:'🚵', gravel:'🛤️', ebike:'⚡'};
+  var nivelLabel = {novato:'Novato', medio:'Medio', pro:'Pro'};
+  var nivelEmoji = {novato:'🟢', medio:'🟡', pro:'🔴'};
+
+  existing.innerHTML = '<span class="perfil-badge ' + n + '">'
+    + nivelEmoji[n] + ' ' + nivelLabel[n]
+    + ' &nbsp;·&nbsp; '
+    + (biciIconos[perfilUsuario.bici] || '🚲') + ' ' + perfilUsuario.bici.charAt(0).toUpperCase() + perfilUsuario.bici.slice(1)
+    + (perfilUsuario.nivelAuto ? ' &nbsp;·&nbsp; ⚡ Auto' : '')
+    + '</span>';
+}
+
+/* Calcular nivel automático con velocidad media de últimas 5 rutas */
+function calcularNivelAuto(){
+  try {
+    var rutas = JSON.parse(localStorage.getItem('rs_routes') || '[]');
+    if(rutas.length < 3) return; // necesitamos al menos 3 rutas
+    var ultimas = rutas.slice(0, 5);
+    var velocidades = ultimas
+      .filter(function(r){ return r.duration > 0 && r.distance > 500; })
+      .map(function(r){ return (r.distance/1000) / (r.duration/3600); });
+    if(velocidades.length < 3) return;
+    var velMedia = velocidades.reduce(function(a,b){return a+b;},0) / velocidades.length;
+
+    var nivelNuevo;
+    if(velMedia < NIVELES_VEL.novato) nivelNuevo = 'novato';
+    else if(velMedia < NIVELES_VEL.medio) nivelNuevo = 'medio';
+    else nivelNuevo = 'pro';
+
+    if(nivelNuevo !== perfilUsuario.nivel){
+      perfilUsuario.nivel = nivelNuevo;
+      perfilUsuario.nivelAuto = true;
+      localStorage.setItem('rs_perfil', JSON.stringify(perfilUsuario));
+      toast('⚡ Nivel actualizado automáticamente: ' + nivelNuevo.toUpperCase());
+    }
+  } catch(e){}
+}
+
+/* ═══════════════════════════════════════
+   PANEL AJUSTES — editar perfil
+   ═══════════════════════════════════════ */
+function openAjustes(){
+  // Construir panel ajustes dinámicamente si no existe aún
+  var panel = document.getElementById('panel-ajustes');
+  if(!panel){
+    panel = document.createElement('div');
+    panel.id = 'panel-ajustes';
+    panel.className = 'panel';
+    panel.innerHTML = '<div class="p-header">'
+      + '<button class="p-back" onclick="closeAjustes()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>'
+      + '<div class="p-title">Mi <span>Perfil</span></div>'
+      + '</div>'
+      + '<div class="p-body" id="ajustes-body" style="padding:20px 16px"></div>';
+    document.body.appendChild(panel);
+  }
+  renderAjustes();
+  openPanel('panel-ajustes');
+}
+function closeAjustes(){closePanel('panel-ajustes');}
+
+function renderAjustes(){
+  var p = perfilUsuario;
+  var bicios = [
+    {id:'carretera',icon:'🚴',label:'Carretera'},
+    {id:'mtb',icon:'🚵',label:'MTB'},
+    {id:'gravel',icon:'🛤️',label:'Gravel'},
+    {id:'ebike',icon:'⚡',label:'E-Bike'}
+  ];
+  var niveles = [
+    {id:'novato',dot:'#00e564',emoji:'🟢',label:'Novato',desc:'Salgo a disfrutar, sin prisa',vel:'< 20 km/h'},
+    {id:'medio',dot:'#ffc800',emoji:'🟡',label:'Medio',desc:'Rutas regulares, buen ritmo',vel:'20-28 km/h'},
+    {id:'pro',dot:'#ff3355',emoji:'🔴',label:'Pro',desc:'Entreno fuerte, ritmo alto',vel:'> 28 km/h'}
+  ];
+
+  var bikesHtml = bicios.map(function(b){
+    return '<div class="ob-bike'+(p.bici===b.id?' sel':'')+'" data-bici="'+b.id+'" onclick="ajSelBici(this)">'
+      +'<div class="ob-bike-check">✓</div>'
+      +'<span class="ob-bike-icon">'+b.icon+'</span>'
+      +'<div class="ob-bike-name">'+b.label+'</div></div>';
+  }).join('');
+
+  var nivelesHtml = niveles.map(function(n){
+    return '<div class="ob-nivel'+(p.nivel===n.id?' sel':'')+'" data-nivel="'+n.id+'" onclick="ajSelNivel(this)">'
+      +'<div class="ob-nivel-dot" style="background:'+n.dot+'"></div>'
+      +'<div class="ob-nivel-info">'
+      +'<div class="ob-nivel-name">'+n.emoji+' '+n.label+'</div>'
+      +'<div class="ob-nivel-desc">'+n.desc+'</div></div>'
+      +'<div class="ob-nivel-vel">'+n.vel+'</div>'
+      +'<div class="ob-nivel-radio"></div></div>';
+  }).join('');
+
+  var autoInfo = p.nivelAuto
+    ? '<div class="ob-nota" style="margin-top:8px"><span class="ob-nota-icon">⚡</span><span>Nivel calculado automáticamente con tus rutas. Puedes cambiarlo manualmente.</span></div>'
+    : '<div class="ob-nota" style="margin-top:8px"><span class="ob-nota-icon">💡</span><span>Con 3+ rutas grabadas, tu nivel se ajustará automáticamente.</span></div>';
+
+  document.getElementById('ajustes-body').innerHTML =
+    '<span class="ob-label">👤 Tu nombre</span>'
+    +'<input class="ob-input" id="aj-nombre" value="'+escHtml(p.nombre)+'" maxlength="20" autocomplete="off" style="margin-bottom:20px"/>'
+    +'<div class="ob-divider"></div>'
+    +'<span class="ob-label">🚲 Tu bicicleta</span>'
+    +'<div class="ob-bikes" style="margin-bottom:20px">'+bikesHtml+'</div>'
+    +'<div class="ob-divider"></div>'
+    +'<span class="ob-label">📊 Tu nivel</span>'
+    +'<div class="ob-niveles">'+nivelesHtml+'</div>'
+    +autoInfo
+    +'<button class="ob-btn" onclick="ajGuardar()" style="margin-top:20px">💾 GUARDAR CAMBIOS</button>';
+}
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('sel'); }
+function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('sel'); }
+
+function ajGuardar(){
+  var nombre = document.getElementById('aj-nombre').value.trim();
+  var bici = document.querySelector('#ajustes-body .ob-bike.sel');
+  var nivel = document.querySelector('#ajustes-body .ob-nivel.sel');
+  if(!nombre){toast('Introduce tu nombre');return;}
+  if(!bici){toast('Selecciona tu bici');return;}
+  if(!nivel){toast('Selecciona tu nivel');return;}
+
+  perfilUsuario.nombre = nombre;
+  perfilUsuario.bici = bici.dataset.bici;
+  perfilUsuario.nivel = nivel.dataset.nivel;
+  perfilUsuario.nivelAuto = false;
+  localStorage.setItem('rs_perfil', JSON.stringify(perfilUsuario));
+  renderPerfilEnInicio();
+  closeAjustes();
+  toast('Perfil actualizado ✅');
+}
+
+/* Iniciar comprobación al cargar */
+checkOnboarding();
+
 </script>
+
+<!-- ═══════════════════════════════════════════
+     PANEL PERFIL DE CICLISTA
+     ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-perfil">
+  <div class="p-header">
+    <button class="p-back" onclick="closePerfil()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="p-title">Mi <span>Perfil</span></div>
+    <button onclick="guardarPerfil()" style="padding:7px 16px;background:var(--lime);border:none;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#080c0a;cursor:pointer;letter-spacing:.5px">GUARDAR</button>
+  </div>
+  <div class="p-body">
+
+    <!-- Avatar + nombre -->
+    <div style="text-align:center;padding:20px 0 24px">
+      <div id="perfil-avatar-display" style="width:80px;height:80px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#080c0a">?</div>
+      <div id="perfil-nombre-display" style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--text)">Tu nombre aquí</div>
+      <div id="perfil-nivel-display" style="font-size:12px;color:var(--muted);margin-top:4px">Sin configurar</div>
+    </div>
+
+    <!-- Nombre -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:10px">&#128100; Tu nombre</div>
+      <input class="input" id="perfil-nombre" placeholder="Ej: JM, Pedro, Sara..." maxlength="20"/>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">Como te verán otros ciclistas cercanos</div>
+    </div>
+
+    <!-- Nivel ciclista -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">&#127942; Nivel de ciclista</div>
+      <div class="card-sub" style="margin-bottom:16px">Ayuda a otros a saber si pueden seguir tu ritmo</div>
+
+      <div id="perfil-niveles" style="display:flex;flex-direction:column;gap:10px">
+
+        <div class="nivel-card" data-nivel="novato" onclick="seleccionarNivel('novato',this)">
+          <div class="nivel-icon">🟢</div>
+          <div class="nivel-info">
+            <div class="nivel-nombre">Novato</div>
+            <div class="nivel-desc">Salgo a disfrutar, sin prisa · &lt;20 km/h</div>
+          </div>
+          <div class="nivel-check">&#10003;</div>
+        </div>
+
+        <div class="nivel-card" data-nivel="medio" onclick="seleccionarNivel('medio',this)">
+          <div class="nivel-icon">🟡</div>
+          <div class="nivel-info">
+            <div class="nivel-nombre">Medio</div>
+            <div class="nivel-desc">Rutas regulares, buen ritmo · 20-28 km/h</div>
+          </div>
+          <div class="nivel-check">&#10003;</div>
+        </div>
+
+        <div class="nivel-card" data-nivel="pro" onclick="seleccionarNivel('pro',this)">
+          <div class="nivel-icon">🔴</div>
+          <div class="nivel-info">
+            <div class="nivel-nombre">Pro</div>
+            <div class="nivel-desc">Entreno fuerte, ritmo alto · &gt;28 km/h</div>
+          </div>
+          <div class="nivel-check">&#10003;</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tipo de bicicleta -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">&#128692; Tipo de bicicleta</div>
+      <div class="card-sub" style="margin-bottom:14px">¿Qué tipo de rutas haces habitualmente?</div>
+      <div style="display:flex;gap:8px">
+        <div class="tipo-card" data-tipo="carretera" onclick="seleccionarTipo('carretera',this)">
+          <div style="font-size:22px;margin-bottom:4px">&#128692;</div>
+          <div style="font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif">Carretera</div>
+        </div>
+        <div class="tipo-card" data-tipo="mtb" onclick="seleccionarTipo('mtb',this)">
+          <div style="font-size:22px;margin-bottom:4px">&#128693;</div>
+          <div style="font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif">MTB</div>
+        </div>
+        <div class="tipo-card" data-tipo="ambos" onclick="seleccionarTipo('ambos',this)">
+          <div style="font-size:22px;margin-bottom:4px">&#127774;</div>
+          <div style="font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif">Ambos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ciudad / zona -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:10px">&#128205; Tu zona habitual</div>
+      <input class="input" id="perfil-zona" placeholder="Ej: Lleida, Pirineos, Costa..." maxlength="30"/>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">Opcional — para encontrar ciclistas de tu zona</div>
+    </div>
+
+    <!-- Botón guardar grande -->
+    <button class="btn-primary" onclick="guardarPerfil()" style="margin-bottom:8px">
+      &#9989; GUARDAR PERFIL
+    </button>
+
+  </div>
+</div>
+
+<style>
+/* Tarjeta de nivel */
+.nivel-card{
+  display:flex;align-items:center;gap:14px;
+  padding:14px;border-radius:14px;
+  background:var(--card2);border:2px solid var(--border);
+  cursor:pointer;transition:all .2s;
+}
+.nivel-card.seleccionado{
+  background:rgba(168,230,61,.08);
+  border-color:var(--lime);
+}
+.nivel-card:active{transform:scale(.98)}
+.nivel-icon{font-size:22px;flex-shrink:0}
+.nivel-info{flex:1}
+.nivel-nombre{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:17px;font-weight:800;color:var(--text);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.nivel-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.nivel-check{
+  font-size:16px;color:var(--lime);font-weight:900;
+  opacity:0;transition:opacity .2s;
+}
+.nivel-card.seleccionado .nivel-check{opacity:1}
+
+/* Tarjeta tipo bici */
+.tipo-card{
+  flex:1;padding:12px 8px;border-radius:12px;
+  background:var(--card2);border:2px solid var(--border);
+  text-align:center;cursor:pointer;transition:all .2s;
+  color:var(--muted);
+}
+.tipo-card.seleccionado{
+  background:rgba(168,230,61,.08);
+  border-color:var(--lime);color:var(--lime);
+}
+.tipo-card:active{transform:scale(.97)}
+</style>
+
 </body>
 </html>
