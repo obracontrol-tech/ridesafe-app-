@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
    RESET & BASE
@@ -1958,137 +1957,13 @@ function renderMiembros(){var list=document.getElementById('grupo-miembros-lista
 function salirGrupo(){if(!confirm('¿Salir del grupo?'))return;stopWalkie();grupoActivo=false;grupoCodigo='';document.getElementById('grupo-activo').style.display='none';document.getElementById('grupo-setup').style.display='block';document.getElementById('grupo-badge').textContent='Inactivo';document.getElementById('grupo-badge').classList.remove('on');toast('Has salido del grupo');}
 function copyCodigo(){try{navigator.clipboard.writeText(grupoCodigo);toast('Código copiado');}catch(e){toast('Código: '+grupoCodigo);}}
 /* ═══════════════════════════════════════
-   WALKIE-TALKIE REAL — WebRTC + PeerJS
-   ═══════════════════════════════════════
-   Cómo funciona:
-   - Cada usuario se registra en PeerJS con ID = "ridesafe-GRUPO-NOMBRE"
-   - Al pulsar: captura micrófono y llama a todos los peers del grupo
-   - Al soltar: cierra streams de audio
-   - Usa servidores STUN gratuitos de Google (peer-to-peer directo)
+   WALKIE-TALKIE — pendiente LiveKit
    ═══════════════════════════════════════ */
-
-var walkiePeer = null;        // instancia PeerJS
-var walkieCalls = [];         // llamadas activas salientes
-var walkieStream = null;      // stream del micrófono
-var walkieIncoming = [];      // llamadas entrantes
 var walkieConnected = false;
-var walkiePeerId = '';
-var WALKIE_MAX_PEERS = 6;     // máximo compañeros en grupo
 
-/* Inicializar PeerJS cuando se activa el grupo */
 function initWalkie() {
-  if (!grupoCodigo || !grupoMiNombre) return;
-  if (walkiePeer && !walkiePeer.destroyed) { walkiePeer.destroy(); }
-
-  // ID único: ridesafe + grupo + nombre + número aleatorio para evitar colisiones
-  var rand = Math.floor(Math.random() * 900) + 100;
-  walkiePeerId = 'ridesafe-' + grupoCodigo + '-' + grupoMiNombre.replace(/\s/g,'') + rand;
-
-  walkiePeer = new Peer(walkiePeerId, {
-    host: '0.peerjs.com',
-    port: 443,
-    secure: true,
-    path: '/',
-    debug: 0,
-    config: {
-      iceTransportPolicy: 'all',
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478' },
-        {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        }
-      ]
-    }
-  });
-
-  walkiePeer.on('open', function(id) {
-    walkieConnected = true;
-    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
-    toast('Walkie conectado');
-  });
-
-  /* Recibir llamada entrante (alguien habla) */
-  walkiePeer.on('call', function(call) {
-    call.answer(); // contestar sin enviar audio propio
-    walkieIncoming.push(call);
-    call.on('stream', function(remoteStream) {
-      playRemoteAudio(remoteStream, call.peer);
-    });
-    call.on('close', function() {
-      removeRemoteAudio(call.peer);
-    });
-    call.on('error', function() {
-      removeRemoteAudio(call.peer);
-    });
-    // Mostrar quién habla
-    var nombre = call.peer.split('-').slice(2).join(' ').replace(/\d+$/, '') || 'Compañero';
-    setWalkieStatus('&#128266; ' + nombre + ' está hablando...', 'var(--cyan)');
-    var btn = document.getElementById('walkie-btn2');
-    btn.classList.add('escuchando');
-    btn.innerHTML = '&#128266; ESCUCHANDO...';
-  });
-
-  walkiePeer.on('error', function(err) {
-    console.log('Walkie error:', err.type, err.message);
-    if (err.type === 'unavailable-id') {
-      setTimeout(initWalkie, 800);
-    } else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error') {
-      setWalkieStatus('&#9888; Sin servidor señalización — audio directo activo', 'var(--orange)');
-      // Aunque falle el servidor PeerJS, si los peers ya se conocen el audio puede funcionar
-      walkieConnected = true;
-    } else {
-      setWalkieStatus('&#128308; Error: ' + err.type, 'var(--red)');
-    }
-  });
-
-  walkiePeer.on('disconnected', function() {
-    walkieConnected = false;
-    setWalkieStatus('&#9711; Reconectando...', 'var(--orange)');
-    setTimeout(function() {
-      if (walkiePeer && !walkiePeer.destroyed) {
-        try { walkiePeer.reconnect(); } catch(e) { initWalkie(); }
-      }
-    }, 2000);
-  });
-}
-
-/* Reproducir audio remoto */
-function playRemoteAudio(stream, peerId) {
-  var existing = document.getElementById('audio-' + peerId.replace(/[^a-z0-9]/gi,''));
-  if (existing) { existing.srcObject = stream; return; }
-  var audio = document.createElement('audio');
-  audio.id = 'audio-' + peerId.replace(/[^a-z0-9]/gi,'');
-  audio.autoplay = true;
-  audio.srcObject = stream;
-  audio.style.display = 'none';
-  document.body.appendChild(audio);
-}
-
-function removeRemoteAudio(peerId) {
-  var el = document.getElementById('audio-' + peerId.replace(/[^a-z0-9]/gi,''));
-  if (el) { try { el.srcObject.getTracks().forEach(function(t){t.stop();}); } catch(e){} el.remove(); }
-  // Volver a estado normal si no hay más llamadas entrantes
-  walkieIncoming = walkieIncoming.filter(function(c){ return c.peer !== peerId; });
-  if (walkieIncoming.length === 0) {
-    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
-    var btn = document.getElementById('walkie-btn2');
-    btn.classList.remove('escuchando');
-    btn.innerHTML = '&#127908; PULSA PARA HABLAR';
-  }
+  walkieConnected = false;
+  setWalkieStatus('&#128308; Walkie próximamente — requiere LiveKit', 'var(--muted)');
 }
 
 function setWalkieStatus(msg, color) {
@@ -2096,151 +1971,22 @@ function setWalkieStatus(msg, color) {
   if (el) { el.innerHTML = msg; el.style.color = color || 'var(--muted)'; }
 }
 
-/* Obtener lista de peers del grupo (por convención de nombre) */
-function getGroupPeerIds() {
-  // Llamamos a los IDs conocidos del grupo
-  // En un grupo real los peers se intercambian al unirse
-  // Aquí usamos la lista de miembros visible + intentamos peers conocidos
-  var peers = [];
-  var lista = document.getElementById('grupo-miembros-lista');
-  if (!lista) return peers;
-  // Leer nombres de miembros del panel
-  var nombres = lista.querySelectorAll('.miembro-nombre');
-  nombres.forEach(function(el) {
-    var nombre = el.textContent.replace('(tú)','').trim();
-    if (nombre && nombre !== groMiNombre) {
-      // Intentar con sufijos 100-999
-      for (var i = 100; i <= 999; i++) {
-        peers.push('ridesafe-' + grupoCodigo + '-' + nombre.replace(/\s/g,'') + i);
-      }
-    }
-  });
-  return peers.slice(0, 10); // limitar intentos
-}
-
-/* PULSAR — empezar a hablar */
 function walkieStart() {
-  if (!walkieConnected || !walkiePeer) {
-    toast('Walkie no conectado — espera un momento');
-    return;
-  }
-
   var btn = document.getElementById('walkie-btn2');
   btn.classList.add('hablando');
-  btn.classList.remove('escuchando');
-  btn.innerHTML = '&#128308; HABLANDO...';
-  setWalkieStatus('&#127908; Transmitiendo...', 'var(--lime)');
-
-  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-    .then(function(stream) {
-      walkieStream = stream;
-      // Llamar a todos los peers del grupo que encontremos
-      // Usamos el servidor de descubrimiento de PeerJS para listar peers activos
-      walkiePeer.listAllPeers(function(ids) {
-        var grupoIds = ids.filter(function(id) {
-          return id.startsWith('ridesafe-' + grupoCodigo + '-') && id !== walkiePeerId;
-        });
-
-        if (grupoIds.length === 0) {
-          setWalkieStatus('&#128308; Nadie en el grupo ahora', 'var(--muted)');
-          toast('No hay otros ciclistas en el grupo');
-          return;
-        }
-
-        grupoIds.slice(0, WALKIE_MAX_PEERS).forEach(function(peerId) {
-          try {
-            var call = walkiePeer.call(peerId, stream);
-            walkieCalls.push(call);
-            call.on('error', function(){});
-          } catch(e) {}
-        });
-
-        toast('Transmitiendo a ' + grupoIds.length + ' ciclista' + (grupoIds.length>1?'s':''));
-      });
-    })
-    .catch(function(err) {
-      btn.classList.remove('hablando');
-      btn.innerHTML = '&#127908; PULSA PARA HABLAR';
-      setWalkieStatus('&#128308; Sin permiso de micrófono', 'var(--red)');
-      toast('Permite el acceso al micrófono');
-    });
+  btn.innerHTML = '&#127908; PRÓXIMAMENTE';
+  setWalkieStatus('Walkie en desarrollo — LiveKit pendiente', 'var(--orange)');
+  toast('Walkie próximamente disponible');
 }
 
-/* SOLTAR — dejar de hablar */
 function walkieStop() {
   var btn = document.getElementById('walkie-btn2');
   btn.classList.remove('hablando');
   btn.innerHTML = '&#127908; PULSA PARA HABLAR';
-
-  // Cerrar todas las llamadas salientes
-  walkieCalls.forEach(function(call) { try { call.close(); } catch(e){} });
-  walkieCalls = [];
-
-  // Parar micrófono
-  if (walkieStream) {
-    walkieStream.getTracks().forEach(function(t) { t.stop(); });
-    walkieStream = null;
-  }
-
-  if (walkieIncoming.length === 0) {
-    setWalkieStatus('&#128994; Walkie listo — pulsa para hablar', 'var(--lime)');
-  }
+  setWalkieStatus('Walkie próximamente — requiere LiveKit', 'var(--muted)');
 }
 
-/* Parar walkie al salir del grupo */
-function stopWalkie() {
-  walkieStop();
-  walkieIncoming.forEach(function(call) { try { call.close(); } catch(e){} });
-  walkieIncoming = [];
-  // Limpiar audios remotos
-  document.querySelectorAll('audio[id^="audio-"]').forEach(function(el) {
-    try { el.srcObject.getTracks().forEach(function(t){t.stop();}); } catch(e){}
-    el.remove();
-  });
-  if (walkiePeer && !walkiePeer.destroyed) {
-    walkiePeer.destroy();
-    walkiePeer = null;
-  }
-  walkieConnected = false;
-}
-
-/* ═══════════════════════════════════════
-   E-BIKE PRO
-   ═══════════════════════════════════════ */
-var ebBatPct=75,ebBatCap=500,ebCiclos=0;
-try{var _eb=localStorage.getItem('rs_ebike_bat');if(_eb)ebBatPct=parseInt(_eb);}catch(e){}
-
-function openEbike(){openPanel('panel-ebike');updateEBikeUI();}
-function closeEbike(){closePanel('panel-ebike');}
-
-function updateEBikeUI(){
-  var wh=Math.round(ebBatCap*ebBatPct/100),kmAuto=Math.round(wh/8);
-  var color=ebBatPct>50?'#00e5ff':ebBatPct>20?'#ff8833':'#ff3355';
-  var salud=Math.max(20,Math.round(100-(ebCiclos/500)*20));
-  document.getElementById('eb-pct').textContent=ebBatPct+'%';document.getElementById('eb-pct').style.color=color;
-  document.getElementById('eb-bar').style.width=ebBatPct+'%';document.getElementById('eb-bar').style.background=color;
-  document.getElementById('eb-bar-txt').textContent=ebBatPct+'% - '+(ebBatPct>50?'Carga buena':ebBatPct>20?'Carga baja':'Carga crítica');
-  document.getElementById('eb-pct-lbl').textContent=ebBatPct+'%';
-  document.getElementById('eb-wh').innerHTML=wh+' <span>Wh</span>';
-  document.getElementById('eb-km').innerHTML=kmAuto+' <span>km</span>';
-  document.getElementById('eb-salud').innerHTML=salud+' <span>%</span>';
-  var statSalud=document.getElementById('eb-stat-salud');statSalud.className='eb-stat'+(salud<60?' danger':salud<80?' warn':'');
-}
-function updateBattery(pct){ebBatPct=parseInt(pct);updateEBikeUI();try{localStorage.setItem('rs_ebike_bat',ebBatPct);}catch(e){}}
-function updateCapacity(cap){ebBatCap=parseInt(cap);document.getElementById('eb-cap-lbl').textContent=cap+' Wh';updateEBikeUI();}
-function updateCycles(c){ebCiclos=parseInt(c);document.getElementById('eb-ciclos-lbl').textContent=c;document.getElementById('eb-ciclos').innerHTML=c+' <span>ciclos</span>';updateEBikeUI();}
-function diagnosticoMotor(problema){
-  if(!problema.trim()){toast('Describe el problema');return;}if(!aiKey){toast('Activa el Asistente IA primero');return;}
-  var result=document.getElementById('diag-result');result.classList.add('show');
-  result.innerHTML='<div class="diag-title">&#129302; Analizando...</div><div style="display:flex;gap:5px;align-items:center;padding:8px 0"><span style="width:7px;height:7px;border-radius:50%;background:#00e5ff;animation:aib .9s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:#00e5ff;animation:aib .9s .15s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:#00e5ff;animation:aib .9s .3s infinite"></span></div>';
-  var sistema='Eres un técnico experto en bicicletas eléctricas. Diagnosticas problemas de motores mid-drive y hub, baterías de litio, sensores PAS. Respondes en español, conciso (max 4-5 frases). Indica: 1) Causa más probable, 2) Como verificarlo, 3) Taller o casa.';
-  var batInfo='Batería: '+ebBatPct+'% ('+Math.round(ebBatCap*ebBatPct/100)+' Wh de '+ebBatCap+' Wh, '+ebCiclos+' ciclos).';
-  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:sistema,messages:[{role:'user',content:batInfo+' Problema: '+problema}]})})
-  .then(function(r){return r.json();})
-  .then(function(d){var reply=d.content&&d.content[0]?d.content[0].text:'Sin respuesta';result.innerHTML='<div class="diag-title">&#129302; DIAGNÓSTICO IA</div>'+reply.replace(/\n/g,'<br>');})
-  .catch(function(){result.innerHTML='Error de conexión. Comprueba tu API key.';});
-  document.getElementById('diag-input').value='';
-}
+function stopWalkie() { walkieConnected = false; }
 
 /* ═══════════════════════════════════════
    ANÁLISIS
