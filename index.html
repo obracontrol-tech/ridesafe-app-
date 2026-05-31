@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 /* ═══════════════════════════════════════
    RESET & BASE
@@ -1941,29 +1943,139 @@ function deleteAllRoutes(){if(!confirm('¿Borrar todo el historial?'))return;loc
 /* ═══════════════════════════════════════
    GRUPO
    ═══════════════════════════════════════ */
-var grupoActivo=false,grupoCodigo='',grupoMiNombre='';
+/* ═══════════════════════════════════════
+   FIREBASE CONFIG — ridesafe-app-25ecb
+   ═══════════════════════════════════════ */
+var firebaseConfig = {
+  apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
+  authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
+  databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'ridesafe-app-25ecb',
+  storageBucket: 'ridesafe-app-25ecb.firebasestorage.app',
+  messagingSenderId: '322135466974',
+  appId: '1:322135466974:web:28b4586375bfd6211bf34f'
+};
+
+if (!firebase.apps || !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+var db = firebase.database();
+
+/* ═══════════════════════════════════════
+   MODO GRUPO — sincronización Firebase
+   ═══════════════════════════════════════ */
+var grupoActivo = false, grupoCodigo = '', grupoMiNombre = '';
+var grupoRef = null, grupoMiId = null;
 
 function openGrupo(){openPanel('panel-grupo');}
 function closeGrupo(){closePanel('panel-grupo');}
-function crearGrupo(){var n=document.getElementById('grupo-nombre').value.trim();if(!n){toast('Introduce tu nombre');return;}var cod=Math.random().toString(36).substr(2,6).toUpperCase();grupoCodigo=cod;grupoMiNombre=n;grupoActivo=true;activateGrupo();}
-function unirseGrupo(){var n=document.getElementById('grupo-nombre').value.trim();var c=document.getElementById('grupo-codigo-input').value.trim();if(!n){toast('Introduce tu nombre');return;}if(!c){toast('Introduce el código');return;}grupoCodigo=c.toUpperCase();grupoMiNombre=n;grupoActivo=true;activateGrupo();}
-function activateGrupo(){document.getElementById('grupo-setup').style.display='none';document.getElementById('grupo-activo').style.display='block';document.getElementById('grupo-codigo-display').textContent=grupoCodigo;document.getElementById('grupo-badge').textContent='Activo';document.getElementById('grupo-badge').classList.add('on');document.getElementById('gs-miembros').textContent='1';document.getElementById('gs-online').textContent='1';document.getElementById('gs-activos').textContent='1';renderMiembros();toast('En grupo '+grupoCodigo);setWalkieStatus('&#9711; Conectando walkie...','var(--muted)');setTimeout(initWalkie,300);}
-function renderMiembros(){var list=document.getElementById('grupo-miembros-lista');list.innerHTML='<div class="miembro-row yo"><div class="miembro-av" style="background:var(--lime)">'+grupoMiNombre[0].toUpperCase()+'</div><div class="miembro-info"><div class="miembro-nombre">'+grupoMiNombre+' (tú)</div><div class="miembro-pos">Online</div></div><div class="miembro-status m-status-online">Online</div></div>';}
-function salirGrupo(){if(!confirm('¿Salir del grupo?'))return;stopWalkie();grupoActivo=false;grupoCodigo='';document.getElementById('grupo-activo').style.display='none';document.getElementById('grupo-setup').style.display='block';document.getElementById('grupo-badge').textContent='Inactivo';document.getElementById('grupo-badge').classList.remove('on');toast('Has salido del grupo');}
-function copyCodigo(){try{navigator.clipboard.writeText(grupoCodigo);toast('Código copiado');}catch(e){toast('Código: '+grupoCodigo);}}
-/* ═══════════════════════════════════════
-   WALKIE-TALKIE — pendiente LiveKit
-   ═══════════════════════════════════════ */
-var walkieConnected = false;
 
-function initWalkie() {
-  walkieConnected = false;
-  setWalkieStatus('&#128308; Walkie próximamente — requiere LiveKit', 'var(--muted)');
+function crearGrupo(){
+  var n = document.getElementById('grupo-nombre').value.trim();
+  if(!n){toast('Introduce tu nombre');return;}
+  var cod = Math.random().toString(36).substr(2,6).toUpperCase();
+  grupoCodigo = cod; grupoMiNombre = n; grupoActivo = true;
+  activateGrupo();
 }
 
-function setWalkieStatus(msg, color) {
-  var el = document.getElementById('walkie-status');
-  if (el) { el.innerHTML = msg; el.style.color = color || 'var(--muted)'; }
+function unirseGrupo(){
+  var n = document.getElementById('grupo-nombre').value.trim();
+  var c = document.getElementById('grupo-codigo-input').value.trim();
+  if(!n){toast('Introduce tu nombre');return;}
+  if(!c){toast('Introduce el código');return;}
+  grupoCodigo = c.toUpperCase(); grupoMiNombre = n; grupoActivo = true;
+  activateGrupo();
+}
+
+function activateGrupo(){
+  document.getElementById('grupo-setup').style.display='none';
+  document.getElementById('grupo-activo').style.display='block';
+  document.getElementById('grupo-codigo-display').textContent = grupoCodigo;
+  document.getElementById('grupo-badge').textContent='Activo';
+  document.getElementById('grupo-badge').classList.add('on');
+  toast('En grupo ' + grupoCodigo);
+
+  // Registrar en Firebase
+  grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
+  grupoMiId = grupoMiNombre.replace(/\s/g,'') + '_' + Math.floor(Math.random()*9000+1000);
+
+  // Escribir presencia
+  var miPresencia = grupoRef.child(grupoMiId);
+  miPresencia.set({
+    nombre: grupoMiNombre,
+    activo: true,
+    ts: Date.now()
+  });
+
+  // Limpiar al cerrar pestaña/app
+  miPresencia.onDisconnect().remove();
+
+  // Escuchar cambios en tiempo real
+  grupoRef.on('value', function(snap){
+    var datos = snap.val() || {};
+    var lista = Object.values(datos).filter(function(m){ return m && m.nombre; });
+    var online = lista.length;
+
+    document.getElementById('gs-miembros').textContent = online;
+    document.getElementById('gs-online').textContent = online;
+    document.getElementById('gs-activos').textContent = online;
+
+    renderMiembrosFirebase(lista);
+  });
+
+  setWalkieStatus('&#128308; Walkie próximamente — LiveKit pendiente','var(--muted)');
+}
+
+function renderMiembrosFirebase(lista){
+  var listEl = document.getElementById('grupo-miembros-lista');
+  listEl.innerHTML = '';
+  lista.forEach(function(m){
+    var esYo = m.nombre === grupoMiNombre;
+    var ini = m.nombre.charAt(0).toUpperCase();
+    var color = esYo ? 'var(--lime)' : 'var(--cyan)';
+    var colorText = esYo ? '#080c0a' : '#080c0a';
+    var div = document.createElement('div');
+    div.className = 'miembro-row' + (esYo ? ' yo' : '');
+    div.innerHTML = '<div class="miembro-av" style="background:'+color+';color:'+colorText+'">'
+      + ini + '</div>'
+      + '<div class="miembro-info"><div class="miembro-nombre">'
+      + m.nombre + (esYo ? ' (tú)' : '') + '</div>'
+      + '<div class="miembro-pos">Online</div></div>'
+      + '<div class="miembro-status m-status-online">Online</div>';
+    listEl.appendChild(div);
+  });
+}
+
+function renderMiembros(){
+  // fallback sin Firebase
+  var list = document.getElementById('grupo-miembros-lista');
+  list.innerHTML = '<div class="miembro-row yo"><div class="miembro-av" style="background:var(--lime);color:#080c0a">'
+    + grupoMiNombre.charAt(0).toUpperCase()
+    + '</div><div class="miembro-info"><div class="miembro-nombre">'
+    + grupoMiNombre + ' (tú)</div><div class="miembro-pos">Online</div></div>'
+    + '<div class="miembro-status m-status-online">Online</div></div>';
+}
+
+function salirGrupo(){
+  if(!confirm('¿Salir del grupo?'))return;
+  // Limpiar Firebase
+  if(grupoRef && grupoMiId){
+    grupoRef.child(grupoMiId).remove();
+    grupoRef.off();
+    grupoRef = null;
+  }
+  grupoActivo = false; grupoCodigo = '';
+  document.getElementById('grupo-activo').style.display='none';
+  document.getElementById('grupo-setup').style.display='block';
+  document.getElementById('grupo-badge').textContent='Inactivo';
+  document.getElementById('grupo-badge').classList.remove('on');
+  stopWalkie();
+  toast('Has salido del grupo');
+}
+
+function copyCodigo(){
+  try{navigator.clipboard.writeText(grupoCodigo);toast('Código copiado');}
+  catch(e){toast('Código: '+grupoCodigo);}
 }
 
 function walkieStart(){}
