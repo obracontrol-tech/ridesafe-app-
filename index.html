@@ -2007,6 +2007,9 @@ function toggleRecording(){
     document.getElementById('nav-status').textContent='\u25CF Grabando';
     document.getElementById('nav-status').className='recording';
     toast('Grabando ruta...');
+    // Telegram actividad iniciada
+    if(userPos){ tgAlertaActividad(userPos[0], userPos[1]); }
+    else { tgAlertaActividad(null, null); }
   }else{
     btn.classList.remove('rec');lbl.textContent='REC';
     clearInterval(navTimer);if(navWatch!==null){navigator.geolocation.clearWatch(navWatch);navWatch=null;}
@@ -2015,7 +2018,11 @@ function toggleRecording(){
       var route={id:Date.now(),points:navPoints,distance:navDist,duration:elapsed,timestamp:navStartTime,elevationGain:navElevations.length>1?Math.max.apply(null,navElevations)-Math.min.apply(null,navElevations):0};
       var routes=JSON.parse(localStorage.getItem('rs_routes')||'[]');routes.unshift(route);localStorage.setItem('rs_routes',JSON.stringify(routes));
       updateQuickStats();
-      toast('Ruta guardada: '+(navDist/1000).toFixed(1)+' km');
+      var _km = (navDist/1000).toFixed(1);
+      var _mins = Math.floor(elapsed/60), _secs = String(elapsed%60).padStart(2,'0');
+      var _vel = elapsed>0 ? ((navDist/1000)/(elapsed/3600)).toFixed(1) : '0';
+      toast('Ruta guardada: '+_km+' km');
+      tgAlertaFinActividad(_km, _mins+':'+_secs, _vel);
     }else{toast('Ruta muy corta');}
     document.getElementById('nav-live2').classList.remove('show');
     document.getElementById('nav-status').textContent='\u25CF Listo';
@@ -2104,6 +2111,9 @@ function onMotion(e){
 function triggerCaida(){
   if(shieldAlert)return;shieldAlert=true;
   alarma();if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+  // Telegram caida
+  if(userPos){ tgAlertaCaida(userPos[0], userPos[1]); }
+  else { tgAlertaCaida(null, null); }
   document.getElementById('caida-modal').classList.add('show');
   var s=10;document.getElementById('cd-num').textContent=s;
   countTimer=setInterval(function(){
@@ -2115,7 +2125,15 @@ function triggerCaida(){
 function cancelCaida(){clearInterval(countTimer);document.getElementById('caida-modal').classList.remove('show');shieldAlert=false;shieldHighG=false;beep(1100,.12);toast('Falsa alarma cancelada');}
 function setSens(n,btn){sensActual=sens[n];document.querySelectorAll('#seg-caida-card .btn-chip').forEach(function(b){b.classList.remove('on');b.textContent=b.textContent.replace(' \u2713','');});btn.classList.add('on');btn.textContent=btn.textContent+' \u2713';toast('Sensibilidad: '+n);}
 
-function sendSOS(){if(!confirm('\uD83C\uDD98 Enviar ALERTA SOS?'))return;alarma();if(navigator.vibrate)navigator.vibrate([300,100,300,100,600]);toast('SOS enviado - ayuda en camino');}
+function sendSOS(){
+  if(!confirm('\uD83C\uDD98 Enviar ALERTA SOS?'))return;
+  alarma();
+  if(navigator.vibrate)navigator.vibrate([300,100,300,100,600]);
+  toast('SOS enviado - ayuda en camino');
+  // Telegram SOS con posicion GPS
+  if(userPos){ tgAlertaSOS(userPos[0], userPos[1]); }
+  else { tgAlertaSOS(null, null); }
+}
 
 function toggleFlash(){
   try{getAudio().resume();}catch(e){}
@@ -2862,6 +2880,12 @@ function radarEscanear() {
 
     if (cercanos.length > 0) {
       radarMostrarTarjeta(cercanos);
+      // Telegram solo si es la primera deteccion o pasaron 10 min
+      var ahora2 = Date.now();
+      if (!window._tgRadarUltimoEnvio || ahora2 - window._tgRadarUltimoEnvio > 10*60*1000) {
+        tgAlertaRadar(cercanos);
+        window._tgRadarUltimoEnvio = ahora2;
+      }
     }
   });
 }
@@ -2969,6 +2993,102 @@ function radarStop() {
 var _radarInitTO = setTimeout(function() {
   if (perfilUsuario.nombre) radarInit();
 }, 2000);
+
+
+/* =========================================
+   TELEGRAM ALERTS — RideSafe AI
+   Bot: @rindesafeai_bot
+   =========================================*/
+
+var TG_TOKEN = '8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM';
+var TG_CHAT  = '8601457137';
+var TG_URL   = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
+
+function tgSend(msg) {
+  fetch(TG_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      chat_id: TG_CHAT,
+      text: msg,
+      parse_mode: 'HTML'
+    })
+  }).catch(function(){});  // silencioso si falla
+}
+
+function tgNombre() {
+  return perfilUsuario.nombre || 'Ciclista';
+}
+
+function tgBici() {
+  var iconos = {carretera:'🚴', mtb:'🚵', gravel:'🛤', ebike:'⚡'};
+  return iconos[perfilUsuario.bici] || '🚲';
+}
+
+function tgNivel() {
+  var labels = {novato:'🟢 Novato', medio:'🟡 Medio', pro:'🔴 Pro'};
+  return labels[perfilUsuario.nivel] || '🟢 Novato';
+}
+
+/* Alerta ACTIVIDAD INICIADA */
+function tgAlertaActividad(lat, lng) {
+  var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
+  var msg = '🚴 <b>Actividad iniciada</b>\n'
+    + '👤 ' + tgNombre() + ' · ' + tgBici() + ' · ' + tgNivel() + '\n'
+    + '🕐 ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) + '\n'
+    + (mapsUrl ? '📍 <a href="' + mapsUrl + '">Ver ubicación</a>\n' : '')
+    + '\n<i>RideSafe AI · ¡Buena ruta!</i>';
+  tgSend(msg);
+}
+
+/* Alerta ACTIVIDAD FINALIZADA */
+function tgAlertaFinActividad(km, tiempo, velMedia) {
+  var msg = '🏁 <b>Actividad finalizada</b>\n'
+    + '👤 ' + tgNombre() + '\n'
+    + '📏 ' + km + ' km · ⏱ ' + tiempo + ' · ⚡ ' + velMedia + ' km/h\n'
+    + '\n<i>RideSafe AI · ¡Bien pedaleado!</i>';
+  tgSend(msg);
+}
+
+/* Alerta SOS */
+function tgAlertaSOS(lat, lng) {
+  var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
+  var msg = '🆘 <b>ALERTA SOS</b>\n'
+    + '👤 ' + tgNombre() + ' necesita ayuda\n'
+    + '🕐 ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) + '\n'
+    + (mapsUrl ? '📍 <a href="' + mapsUrl + '">UBICACIÓN EXACTA</a>\n' : '📍 GPS no disponible\n')
+    + '\n⚠️ <b>Llama al 112 si no responde</b>';
+  tgSend(msg);
+}
+
+/* Alerta CAÍDA DETECTADA */
+function tgAlertaCaida(lat, lng) {
+  var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
+  var msg = '💥 <b>CAÍDA DETECTADA</b>\n'
+    + '👤 ' + tgNombre() + '\n'
+    + '🕐 ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) + '\n'
+    + (mapsUrl ? '📍 <a href="' + mapsUrl + '">Ver ubicación</a>\n' : '')
+    + '\n⚠️ <i>Alerta automática — puede ser falsa alarma</i>\n'
+    + '<i>RideSafe AI</i>';
+  tgSend(msg);
+}
+
+/* Alerta CICLISTA CERCANO detectado por radar */
+function tgAlertaRadar(lista) {
+  if (!lista || lista.length === 0) return;
+  var nombres = lista.map(function(c) {
+    return tgNivelIcon(c.nivel) + ' ' + c.nombre + ' (' + c.distKm.toFixed(1) + ' km)';
+  }).join('\n');
+  var msg = '📡 <b>Ciclistas cercanos detectados</b>\n'
+    + '👤 ' + tgNombre() + ' · Radio 2 km\n\n'
+    + nombres + '\n\n'
+    + '<i>Abre RideSafe AI para unirte al grupo</i>';
+  tgSend(msg);
+}
+
+function tgNivelIcon(n) {
+  return n === 'pro' ? '🔴' : n === 'medio' ? '🟡' : '🟢';
+}
 
 </script>
 
