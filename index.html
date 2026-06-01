@@ -1148,6 +1148,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   font-size:13px;color:var(--muted);cursor:pointer;
 }
 
+
+/* SELECTOR IDIOMA */
+.idioma-selector{display:flex;gap:10px;margin-bottom:20px}
+.idioma-btn{
+  flex:1;padding:12px;
+  background:var(--card);border:2px solid var(--border);
+  border-radius:14px;cursor:pointer;
+  text-align:center;transition:all .2s;
+}
+.idioma-btn.activo{background:rgba(168,230,61,.1);border-color:var(--lime)}
+.idioma-btn-flag{font-size:24px;display:block;margin-bottom:4px}
+.idioma-btn-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;
+  color:var(--text);
+}
+.idioma-btn.activo .idioma-btn-name{color:var(--lime)}
+
 </style>
 </head>
 <body>
@@ -1162,19 +1181,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="ob-logo">
       <span class="ob-logo-ride">Ride</span><span class="ob-logo-safe">Safe</span><span class="ob-logo-ai">AI</span>
     </div>
-    <div class="ob-subtitle">Bienvenido · Configura tu perfil ciclista</div>
+    <div class="ob-subtitle" id="ob-subtitulo">Bienvenido · Configura tu perfil ciclista</div>
   </div>
 
   <div class="ob-step">
 
     <!-- NOMBRE -->
-    <span class="ob-label">👤 Tu nombre</span>
+    <span class="ob-label" id="ob-nombre-label">👤 Tu nombre</span>
     <input class="ob-input" id="ob-nombre" placeholder="¿Cómo te llaman los otros ciclistas?" maxlength="20" autocomplete="off"/>
 
     <div class="ob-divider"></div>
 
     <!-- TIPO DE BICI -->
-    <span class="ob-label">🚲 Tu bicicleta</span>
+    <span class="ob-label" id="ob-bici-label">🚲 Tu bicicleta</span>
     <div class="ob-bikes">
       <div class="ob-bike" data-bici="carretera" onclick="obSelBici(this)">
         <div class="ob-bike-check">✓</div>
@@ -1201,14 +1220,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="ob-divider"></div>
 
     <!-- NIVEL -->
-    <span class="ob-label">📊 Tu nivel de ciclista</span>
+    <span class="ob-label" id="ob-nivel-label">📊 Tu nivel de ciclista</span>
     <div class="ob-niveles">
 
       <div class="ob-nivel" data-nivel="novato" onclick="obSelNivel(this)">
         <div class="ob-nivel-dot" style="background:#00e564"></div>
         <div class="ob-nivel-info">
           <div class="ob-nivel-name">🟢 Novato</div>
-          <div class="ob-nivel-desc">Salgo a disfrutar, sin prisa · Rutas tranquilas</div>
+          <div class="ob-nivel-desc" id="ob-novato-desc">Salgo a disfrutar, sin prisa · Rutas tranquilas</div>
         </div>
         <div class="ob-nivel-vel">&lt; 20 km/h</div>
         <div class="ob-nivel-radio"></div>
@@ -1218,7 +1237,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         <div class="ob-nivel-dot" style="background:#ffc800"></div>
         <div class="ob-nivel-info">
           <div class="ob-nivel-name">🟡 Medio</div>
-          <div class="ob-nivel-desc">Rutas regulares, buen ritmo · Me defiendo bien</div>
+          <div class="ob-nivel-desc" id="ob-medio-desc">Rutas regulares, buen ritmo · Me defiendo bien</div>
         </div>
         <div class="ob-nivel-vel">20-28 km/h</div>
         <div class="ob-nivel-radio"></div>
@@ -1228,7 +1247,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         <div class="ob-nivel-dot" style="background:#ff3355"></div>
         <div class="ob-nivel-info">
           <div class="ob-nivel-name">🔴 Pro</div>
-          <div class="ob-nivel-desc">Entreno fuerte, ritmo alto · Competidor habitual</div>
+          <div class="ob-nivel-desc" id="ob-pro-desc">Entreno fuerte, ritmo alto · Competidor habitual</div>
         </div>
         <div class="ob-nivel-vel">&gt; 28 km/h</div>
         <div class="ob-nivel-radio"></div>
@@ -1238,7 +1257,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 
     <div class="ob-nota">
       <span class="ob-nota-icon">💡</span>
-      <span>Tu nivel se ajustará automáticamente con las rutas que grabes. La velocidad media de tus últimas 5 rutas determinará tu nivel real.</span>
+      <span id="ob-nota-txt">Tu nivel se ajustará automáticamente con las rutas que grabes. La velocidad media de tus últimas 5 rutas determinará tu nivel real.</span>
     </div>
 
     <!-- BOTÓN -->
@@ -1294,7 +1313,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   <!-- BOTÓN PRINCIPAL -->
   <button class="btn-iniciar" onclick="openNav()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
-    <span class="btn-iniciar-txt">INICIAR ACTIVIDAD</span>
+    <span class="btn-iniciar-txt" id="btn-iniciar-txt">INICIAR ACTIVIDAD</span>
   </button>
 
   <!-- STATS RÁPIDOS -->
@@ -1416,9 +1435,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
           <path d="M21.8 2.1L1.4 9.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L8.6 16l-.4 5.2c.6 0 .9-.3 1.2-.6l2.9-2.8 5.1 3.7c.9.5 1.6.2 1.8-.9l3.3-15.6c.3-1.4-.5-2-1.7-1.9z" fill="#29B6F6"/>
         </svg>
       </div>
-      <div class="tg-title-txt">Alertas Telegram</div>
+      <div class="tg-title-txt" id="tg-titulo-txt">Alertas Telegram</div>
     </div>
-    <div class="tg-subtitle">Recibe notificaciones en tu Telegram cuando salgas a pedalear, detectes ciclistas cercanos o necesites ayuda.</div>
+    <div class="tg-subtitle" id="tg-subtitle-txt">Recibe notificaciones en tu Telegram cuando salgas a pedalear, detectes ciclistas cercanos o necesites ayuda.</div>
 
     <!-- Chat ID actual -->
     <div class="tg-chatid-wrap" id="tg-config-wrap">
@@ -1495,7 +1514,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
     </div>
     <div class="radar-title">
-      <div class="radar-title-txt">&#128250; Ciclistas cercanos</div>
+      <div class="radar-title-txt" id="radar-title-txt">📡 Ciclistas cercanos</div>
       <div class="radar-title-sub" id="radar-subtitle">Detectando en un radio de 2 km...</div>
     </div>
     <div class="radar-close" onclick="radarCerrar()">&#10005;</div>
@@ -1741,7 +1760,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   <div id="plan-info" style="display:none;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:12px 14px">
     <div class="stat-grid" style="margin-bottom:10px">
       <div class="stat-box"><span class="sl">Distancia</span><span class="sv" id="pi-km">--</span></div>
-      <div class="stat-box"><span class="sl">Tiempo</span><span class="sv" id="pi-time">--</span></div>
+      <div class="stat-box"><span class="sl" id="qs-tiempo-label">Tiempo</span><span class="sv" id="pi-time">--</span></div>
       <div class="stat-box"><span class="sl">Desnivel</span><span class="sv" id="pi-elev">--</span></div>
     </div>
     <button class="btn-primary" onclick="startNavFromPlan()">&#128692; INICIAR NAVEGACIÓN</button>
@@ -1800,9 +1819,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
   <div class="p-body" id="rutas-body">
     <div class="stat-grid">
-      <div class="stat-box"><span class="sl">Rutas</span><span class="sv" id="rs-count">0</span></div>
+      <div class="stat-box"><span class="sl" id="qs-rutas-label">Rutas</span><span class="sv" id="rs-count">0</span></div>
       <div class="stat-box"><span class="sl">Total km</span><span class="sv" id="rs-km">0</span></div>
-      <div class="stat-box"><span class="sl">Tiempo</span><span class="sv" id="rs-time">0</span></div>
+      <div class="stat-box"><span class="sl" id="qs-tiempo-label">Tiempo</span><span class="sv" id="rs-time">0</span></div>
     </div>
     <div id="rutas-lista"></div>
   </div>
@@ -2889,10 +2908,10 @@ function renderAjustes(){
     : '<div class="ob-nota" style="margin-top:8px"><span class="ob-nota-icon">💡</span><span>Con 3+ rutas grabadas, tu nivel se ajustará automáticamente.</span></div>';
 
   document.getElementById('ajustes-body').innerHTML =
-    '<span class="ob-label">👤 Tu nombre</span>'
+    '<span class="ob-label" id="ob-nombre-label">👤 Tu nombre</span>'
     +'<input class="ob-input" id="aj-nombre" value="'+escHtml(p.nombre)+'" maxlength="20" autocomplete="off" style="margin-bottom:20px"/>'
     +'<div class="ob-divider"></div>'
-    +'<span class="ob-label">🚲 Tu bicicleta</span>'
+    +'<span class="ob-label" id="ob-bici-label">🚲 Tu bicicleta</span>'
     +'<div class="ob-bikes" style="margin-bottom:20px">'+bikesHtml+'</div>'
     +'<div class="ob-divider"></div>'
     +'<span class="ob-label">📊 Tu nivel</span>'
@@ -3364,6 +3383,238 @@ function tgMensajeBienvenida(nombre) {
     + '<i>Pedalea seguro. Disfruta más. Llega lejos.</i>'
   );
 }
+
+
+/* =========================================
+   SISTEMA DE IDIOMAS — ES / CA
+   ========================================= */
+
+var IDIOMA = localStorage.getItem('rs_idioma') || 'es';
+
+var I18N = {
+  es: {
+    // Header
+    'subtitulo_hero': 'CICLISMO DE CARRETERA & MTB',
+    'aventura_titulo': 'Tu próxima aventura',
+    'aventura_sub': 'off-road te espera',
+    'aventura_desc': 'Carretera · MTB · Senderos · Pistas forestales',
+    'iniciar_actividad': '📍 INICIAR ACTIVIDAD',
+    'rutas': 'RUTAS',
+    'km_totales': 'KM TOTALES',
+    'tiempo': 'TIEMPO',
+    'modulos': 'MÓDULOS',
+    // Grid módulos
+    'navegacion': 'NAVEGACIÓN',
+    'nav_desc': 'GPS + mapas off-road',
+    'seguridad': 'SEGURIDAD',
+    'seg_desc': 'SOS · Caídas · Alertas',
+    'planificar': 'PLANIFICAR',
+    'plan_desc': 'Rutas + desnivel IA',
+    'ebike': 'E-BIKE',
+    'ebike_desc': 'Panel + diagnóstico IA',
+    'asistente': 'ASISTENTE IA',
+    'asist_desc': 'Voz + rutas por IA',
+    'grupo': 'GRUPO',
+    'grupo_desc': 'Pedalea en equipo',
+    'analisis': 'ANÁLISIS',
+    'anal_desc': 'Stats + récords',
+    'ajustes': 'AJUSTES',
+    'ajust_desc': 'Perfil + idioma',
+    // Onboarding
+    'ob_bienvenido': 'Bienvenido · Configura tu perfil ciclista',
+    'ob_nombre_label': '👤 Tu nombre',
+    'ob_nombre_ph': '¿Cómo te llaman los otros ciclistas?',
+    'ob_bici_label': '🚲 Tu bicicleta',
+    'ob_nivel_label': '📊 Tu nivel de ciclista',
+    'ob_novato_desc': 'Salgo a disfrutar, sin prisa · Rutas tranquilas',
+    'ob_medio_desc': 'Rutas regulares, buen ritmo · Me defiendo bien',
+    'ob_pro_desc': 'Entreno fuerte, ritmo alto · Competidor habitual',
+    'ob_nota': 'Tu nivel se ajustará automáticamente con las rutas que grabes.',
+    'ob_btn': '¡EMPEZAR A PEDALEAR! 🚴',
+    // Grupo
+    'crear_grupo': '🚴 CREAR GRUPO',
+    'unirse_grupo': 'UNIRSE AL GRUPO',
+    'grupo_lleno_titulo': 'Grupo lleno',
+    'grupo_lleno_desc': 'Este grupo ya tiene 10 ciclistas, el máximo permitido.',
+    // Ajustes
+    'guardar_cambios': '💾 GUARDAR CAMBIOS',
+    'perfil_actualizado': 'Perfil actualizado ✅',
+    // Telegram
+    'tg_titulo': 'Alertas Telegram',
+    'tg_subtitle': 'Recibe notificaciones en tu Telegram cuando salgas a pedalear.',
+    'tg_guardar': '✅ GUARDAR Y ACTIVAR',
+    'tg_canal': 'UNIRSE AL CANAL OFICIAL',
+    // Radar
+    'radar_titulo': '📡 Ciclistas cercanos',
+    'radar_sub': 'Detectando en un radio de 2 km...',
+    'radar_unir': '🚴 UNIRSE AL GRUPO',
+    'radar_ignorar': 'Ignorar',
+    'grupo_lleno': '🚫 Grupo lleno',
+    // Tabbar
+    'tab_inicio': 'INICIO',
+    'tab_rutas': 'RUTAS',
+    'tab_actividad': 'ACTIVIDAD',
+    'tab_analisis': 'ANÁLISIS',
+    'tab_perfil': 'PERFIL',
+    // SOS
+    'sos_confirmar': '🆘 Enviar ALERTA SOS?',
+    'sos_enviado': 'SOS enviado - ayuda en camino',
+  },
+  ca: {
+    // Header
+    'subtitulo_hero': 'CICLISME DE CARRETERA & MTB',
+    'aventura_titulo': 'La teva propera aventura',
+    'aventura_sub': 'off-road t'espera',
+    'aventura_desc': 'Carretera · MTB · Senders · Pistes forestals',
+    'iniciar_actividad': '📍 INICIAR ACTIVITAT',
+    'rutas': 'RUTES',
+    'km_totales': 'KM TOTALS',
+    'tiempo': 'TEMPS',
+    'modulos': 'MÒDULS',
+    // Grid módulos
+    'navegacion': 'NAVEGACIÓ',
+    'nav_desc': 'GPS + mapes off-road',
+    'seguridad': 'SEGURETAT',
+    'seg_desc': 'SOS · Caigudes · Alertes',
+    'planificar': 'PLANIFICAR',
+    'plan_desc': 'Rutes + desnivell IA',
+    'ebike': 'E-BIKE',
+    'ebike_desc': 'Panell + diagnòstic IA',
+    'asistente': 'ASSISTENT IA',
+    'asist_desc': 'Veu + rutes per IA',
+    'grupo': 'GRUP',
+    'grupo_desc': 'Pedala en equip',
+    'analisis': 'ANÀLISI',
+    'anal_desc': 'Stats + rècords',
+    'ajustes': 'AJUSTOS',
+    'ajust_desc': 'Perfil + idioma',
+    // Onboarding
+    'ob_bienvenido': 'Benvingut · Configura el teu perfil ciclista',
+    'ob_nombre_label': '👤 El teu nom',
+    'ob_nombre_ph': 'Com et diuen els altres ciclistes?',
+    'ob_bici_label': '🚲 La teva bicicleta',
+    'ob_nivel_label': '📊 El teu nivell de ciclista',
+    'ob_novato_desc': 'Surto a gaudir, sense pressa · Rutes tranquil·les',
+    'ob_medio_desc': 'Rutes regulars, bon ritme · Em defensa bé',
+    'ob_pro_desc': 'Entreno fort, ritme alt · Competidor habitual',
+    'ob_nota': 'El teu nivell s'ajustarà automàticament amb les rutes que graves.',
+    'ob_btn': 'COMENCEM A PEDALAR! 🚴',
+    // Grupo
+    'crear_grupo': '🚴 CREAR GRUP',
+    'unirse_grupo': 'UNIR-SE AL GRUP',
+    'grupo_lleno_titulo': 'Grup ple',
+    'grupo_lleno_desc': 'Aquest grup ja té 10 ciclistes, el màxim permès.',
+    // Ajustes
+    'guardar_cambios': '💾 DESAR CANVIS',
+    'perfil_actualizado': 'Perfil actualitzat ✅',
+    // Telegram
+    'tg_titulo': 'Alertes Telegram',
+    'tg_subtitle': 'Rep notificacions al teu Telegram quan surtis a pedalar.',
+    'tg_guardar': '✅ DESAR I ACTIVAR',
+    'tg_canal': 'UNIR-SE AL CANAL OFICIAL',
+    // Radar
+    'radar_titulo': '📡 Ciclistes a prop',
+    'radar_sub': 'Detectant en un radi de 2 km...',
+    'radar_unir': '🚴 UNIR-SE AL GRUP',
+    'radar_ignorar': 'Ignorar',
+    'grupo_lleno': '🚫 Grup ple',
+    // Tabbar
+    'tab_inicio': 'INICI',
+    'tab_rutas': 'RUTES',
+    'tab_actividad': 'ACTIVITAT',
+    'tab_analisis': 'ANÀLISI',
+    'tab_perfil': 'PERFIL',
+    // SOS
+    'sos_confirmar': '🆘 Enviar ALERTA SOS?',
+    'sos_enviado': 'SOS enviat - ajuda en camí',
+  }
+};
+
+function t(key) {
+  return (I18N[IDIOMA] && I18N[IDIOMA][key]) || (I18N['es'][key]) || key;
+}
+
+function cambiarIdioma(lang) {
+  IDIOMA = lang;
+  localStorage.setItem('rs_idioma', lang);
+  aplicarIdioma();
+  // Actualizar botones del selector
+  var btnEs = document.getElementById('btn-es');
+  var btnCa = document.getElementById('btn-ca');
+  if(btnEs){ btnEs.className = 'idioma-btn' + (lang==='es'?' activo':''); }
+  if(btnCa){ btnCa.className = 'idioma-btn' + (lang==='ca'?' activo':''); }
+  toast(lang === 'ca' ? 'Idioma: Català ✅' : 'Idioma: Castellano ✅');
+}
+
+function aplicarIdioma() {
+  // Hero
+  setTxt('hero-subtitulo', t('subtitulo_hero'));
+  setTxt('hero-aventura-titulo', t('aventura_titulo'));
+  setTxt('hero-aventura-sub', t('aventura_sub'));
+  setTxt('hero-aventura-desc', t('aventura_desc'));
+  setTxt('btn-iniciar-txt', t('iniciar_actividad'));
+  setTxt('qs-rutas-label', t('rutas'));
+  setTxt('qs-km-label', t('km_totales'));
+  setTxt('qs-tiempo-label', t('tiempo'));
+  setTxt('modulos-title', t('modulos'));
+  // Grid módulos
+  setTxt('mod-nav-title', t('navegacion'));
+  setTxt('mod-nav-desc', t('nav_desc'));
+  setTxt('mod-seg-title', t('seguridad'));
+  setTxt('mod-seg-desc', t('seg_desc'));
+  setTxt('mod-plan-title', t('planificar'));
+  setTxt('mod-plan-desc', t('plan_desc'));
+  setTxt('mod-ebike-title', t('ebike'));
+  setTxt('mod-ebike-desc', t('ebike_desc'));
+  setTxt('mod-asist-title', t('asistente'));
+  setTxt('mod-asist-desc', t('asist_desc'));
+  setTxt('mod-grupo-title', t('grupo'));
+  setTxt('mod-grupo-desc', t('grupo_desc'));
+  setTxt('mod-anal-title', t('analisis'));
+  setTxt('mod-anal-desc', t('anal_desc'));
+  setTxt('mod-ajust-title', t('ajustes'));
+  setTxt('mod-ajust-desc', t('ajust_desc'));
+  // Tabbar
+  setTxt('tab-inicio-lbl', t('tab_inicio'));
+  setTxt('tab-rutas-lbl', t('tab_rutas'));
+  setTxt('tab-activ-lbl', t('tab_actividad'));
+  setTxt('tab-anal-lbl', t('tab_analisis'));
+  setTxt('tab-perfil-lbl', t('tab_perfil'));
+  // Onboarding
+  setTxt('ob-subtitulo', t('ob_bienvenido'));
+  setTxt('ob-nombre-label', t('ob_nombre_label'));
+  setAttr('ob-nombre', 'placeholder', t('ob_nombre_ph'));
+  setTxt('ob-bici-label', t('ob_bici_label'));
+  setTxt('ob-nivel-label', t('ob_nivel_label'));
+  setTxt('ob-novato-desc', t('ob_novato_desc'));
+  setTxt('ob-medio-desc', t('ob_medio_desc'));
+  setTxt('ob-pro-desc', t('ob_pro_desc'));
+  setTxt('ob-nota-txt', t('ob_nota'));
+  setTxt('ob-btn-entrar', t('ob_btn'));
+  // Radar
+  setTxt('radar-title-txt', t('radar_titulo'));
+  setTxt('radar-subtitle', t('radar_sub'));
+  setTxt('radar-btn-unir', t('radar_unir'));
+  // Telegram
+  setTxt('tg-titulo-txt', t('tg_titulo'));
+  setTxt('tg-subtitle-txt', t('tg_subtitle'));
+  // Botones dinámicos por clase
+  document.querySelectorAll('.btn-crear-grupo').forEach(function(el){ el.textContent = t('crear_grupo'); });
+  document.querySelectorAll('.btn-unirse-grupo').forEach(function(el){ el.textContent = t('unirse_grupo'); });
+  document.querySelectorAll('.btn-guardar-ajustes').forEach(function(el){ el.textContent = t('guardar_cambios'); });
+}
+
+function setTxt(id, val) {
+  var el = document.getElementById(id);
+  if(el) el.textContent = val;
+}
+function setAttr(id, attr, val) {
+  var el = document.getElementById(id);
+  if(el) el.setAttribute(attr, val);
+}
+
+// Aplicar idioma al arrancar
+setTimeout(aplicarIdioma, 100);
 
 </script>
 
