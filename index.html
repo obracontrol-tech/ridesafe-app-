@@ -3725,12 +3725,19 @@ function lockInit() {
     lockMode = 'setup';
     document.getElementById('lock-subtitle').textContent = 'Crea tu PIN de 4 dígitos';
     document.getElementById('lock-screen').classList.add('show');
-  } else {
-    // Tiene PIN — pedir
-    lockMode = 'check';
-    document.getElementById('lock-subtitle').textContent = 'Introduce tu PIN';
-    document.getElementById('lock-screen').classList.add('show');
+    return;
   }
+  // Comprobar si ya se desbloqueó hoy
+  var hoy = new Date().toDateString();
+  var ultimoDesbloqueo = localStorage.getItem('rs_lock_fecha');
+  if (ultimoDesbloqueo === hoy) {
+    // Ya se desbloqueó hoy — no pedir PIN
+    return;
+  }
+  // Pedir PIN
+  lockMode = 'check';
+  document.getElementById('lock-subtitle').textContent = 'Introduce tu PIN';
+  document.getElementById('lock-screen').classList.add('show');
 }
 
 function lockKey(num) {
@@ -3763,6 +3770,7 @@ function lockVerify() {
       // Correcto
       lockIntentos = 0;
       document.getElementById('lock-screen').classList.remove('show');
+      localStorage.setItem('rs_lock_fecha', new Date().toDateString());
       lockInput = '';
       lockUpdateDots();
     } else {
