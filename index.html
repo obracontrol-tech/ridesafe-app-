@@ -2908,7 +2908,8 @@ function renderAjustes(){
     : '<div class="ob-nota" style="margin-top:8px"><span class="ob-nota-icon">💡</span><span>Con 3+ rutas grabadas, tu nivel se ajustará automáticamente.</span></div>';
 
   document.getElementById('ajustes-body').innerHTML =
-    '<span class="ob-label" id="ob-nombre-label">👤 Tu nombre</span>'
+    renderIdiomaSelector()
+    +'<span class="ob-label" id="ob-nombre-label">👤 Tu nombre</span>'
     +'<input class="ob-input" id="aj-nombre" value="'+escHtml(p.nombre)+'" maxlength="20" autocomplete="off" style="margin-bottom:20px"/>'
     +'<div class="ob-divider"></div>'
     +'<span class="ob-label" id="ob-bici-label">🚲 Tu bicicleta</span>'
@@ -3534,7 +3535,7 @@ function t(key) {
   return (I18N[IDIOMA] && I18N[IDIOMA][key]) || (I18N['es'][key]) || key;
 }
 
-function cambiarIdioma(lang) {
+function cambiarIdioma(el, lang) {
   IDIOMA = lang;
   localStorage.setItem('rs_idioma', lang);
   aplicarIdioma();
@@ -3615,6 +3616,30 @@ function setAttr(id, attr, val) {
 
 // Aplicar idioma al arrancar
 setTimeout(aplicarIdioma, 100);
+
+
+function renderIdiomaSelector() {
+  var esActivo = IDIOMA === 'es' ? ' activo' : '';
+  var caActivo = IDIOMA === 'ca' ? ' activo' : '';
+  return '<span class="ob-label">🌐 Idioma / Llengua</span>'
+    + '<div class="idioma-selector">'
+    + '<div class="idioma-btn' + esActivo + '" id="btn-es" data-lang="es" onclick="idiomaClick(this)"><span class="idioma-btn-flag">🇪🇸</span><div class="idioma-btn-name">Castellano</div></div>'
+    + '<div class="idioma-btn' + caActivo + '" id="btn-ca" data-lang="ca" onclick="idiomaClick(this)"><span class="idioma-btn-flag">🏴</span><div class="idioma-btn-name">Català</div></div>'
+    + '</div>'
+    + '<div class="ob-divider"></div>';
+}
+
+function idiomaClick(el) {
+  var lang = el.getAttribute('data-lang');
+  IDIOMA = lang;
+  localStorage.setItem('rs_idioma', lang);
+  aplicarIdioma();
+  var btnEs = document.getElementById('btn-es');
+  var btnCa = document.getElementById('btn-ca');
+  if(btnEs) btnEs.className = 'idioma-btn' + (lang==='es' ? ' activo' : '');
+  if(btnCa) btnCa.className = 'idioma-btn' + (lang==='ca' ? ' activo' : '');
+  toast(lang === 'ca' ? 'Idioma: Català ✅' : 'Idioma: Castellano ✅');
+}
 
 </script>
 
