@@ -3965,11 +3965,19 @@ function abrirSalaVoz() {
     toast('Únete a un grupo primero');
     return;
   }
-  // Abrir chat de grupo en Telegram con el código
-  var msg = encodeURIComponent('🎙️ Sala de voz — Grupo ' + grupoCodigo + ' · RideSafe AI');
-  // Abrir canal oficial como punto de encuentro
-  window.open('https://t.me/RideSafeAI', '_blank');
-  toast('📱 Comparte el código ' + grupoCodigo + ' en Telegram para hablar');
+  // Intentar abrir Telegram app nativa primero
+  var appUrl = 'tg://resolve?domain=RideSafeAI';
+  var webUrl = 'https://t.me/RideSafeAI';
+
+  // En móvil intenta abrir la app nativa
+  var intentApp = window.open(appUrl, '_blank');
+
+  // Fallback a web si no abre
+  setTimeout(function() {
+    window.open(webUrl, '_blank');
+  }, 1500);
+
+  toast('🎙️ Grupo ' + grupoCodigo + ' · Únete al Voice Chat en Telegram');
 }
 
 </script>
