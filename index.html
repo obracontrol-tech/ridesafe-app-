@@ -2768,17 +2768,70 @@ function toggleFlash(){
   if(flashOn){stopFlash();}else{startFlash();}
 }
 function startFlash(){
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(stream){
-    flashStream=stream;var track=stream.getVideoTracks()[0];
-    flashOn=true;document.getElementById('toggle-flash').classList.add('on');
-    document.getElementById('flash-card').classList.add('on');
-    document.getElementById('flash-desc').textContent='Flash activo - visible a 500m';
-    document.getElementById('flash-icon').innerHTML='&#128161;';
-    var patrones={lento:[200,800],rapido:[100,200],sos:[100,100,100,100,100,300,300,100,300,100,300,300,100,100,100,700]};
-    var pat=patrones[flashPatron]||[200,800],idx=0,estado=false;
-    flashInterval=setInterval(function(){estado=!estado;try{track.applyConstraints({advanced:[{torch:estado}]});}catch(e){}idx=(idx+1)%pat.length;},pat[idx]);
-    toast('Flash activado');
-  }).catch(function(){toast('Permiso de cámara denegado');});
+  // Intentar con torch directamente
+  var constraints = {
+    video: {
+      facingMode: { exact: 'environment' },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    }
+  };
+  navigator.mediaDevices.getUserMedia(constraints)
+    .catch(function() {
+      // Fallback sin exact
+      return navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    })
+    .then(function(stream) {
+      flashStream = stream;
+      var track = stream.getVideoTracks()[0];
+      var caps = track.getCapabilities ? track.getCapabilities() : {};
+
+      // Verificar si soporta torch
+      if (!caps.torch) {
+        // Intentar igualmente — algunos Samsung no reportan torch pero lo tienen
+        try {
+          track.applyConstraints({advanced:[{torch:true}]}).then(function() {
+            flashActivado(track);
+          }).catch(function() {
+            stopFlash();
+            toast('Este dispositivo no soporta flash desde el navegador');
+          });
+        } catch(e) {
+          stopFlash();
+          toast('Flash no disponible en este dispositivo');
+        }
+        return;
+      }
+
+      flashActivado(track);
+    })
+    .catch(function(err) {
+      toast('Permiso de cámara denegado');
+    });
+}
+
+function flashActivado(track) {
+  flashOn = true;
+  document.getElementById('toggle-flash').classList.add('on');
+  document.getElementById('flash-card').classList.add('on');
+  document.getElementById('flash-desc').textContent = 'Flash activo - visible a 500m';
+  document.getElementById('flash-icon').innerHTML = '&#128161;';
+
+  var patrones = {
+    lento: [200,800],
+    rapido: [100,200],
+    sos: [100,100,100,100,100,300,300,100,300,100,300,300,100,100,100,700]
+  };
+  var pat = patrones[flashPatron] || [200,800];
+  var idx = 0, estado = false;
+
+  flashInterval = setInterval(function() {
+    estado = !estado;
+    try { track.applyConstraints({advanced:[{torch:estado}]}); } catch(e) {}
+    idx = (idx + 1) % pat.length;
+  }, pat[idx]);
+
+  toast('Flash activado ✅');
 }
 function stopFlash(){
   flashOn=false;clearInterval(flashInterval);
