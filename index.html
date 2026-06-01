@@ -2834,12 +2834,27 @@ function flashActivado(track) {
   toast('Flash activado ✅');
 }
 function stopFlash(){
-  flashOn=false;clearInterval(flashInterval);
-  if(flashStream){var track=flashStream.getVideoTracks()[0];try{track.applyConstraints({advanced:[{torch:false}]});}catch(e){}flashStream.getTracks().forEach(function(t){t.stop();});flashStream=null;}
+  flashOn = false;
+  clearInterval(flashInterval);
+  flashInterval = null;
+  if(flashStream){
+    var track = flashStream.getVideoTracks()[0];
+    // Apagar torch primero, luego parar stream con delay
+    try { track.applyConstraints({advanced:[{torch:false}]}); } catch(e){}
+    setTimeout(function(){
+      try {
+        if(flashStream) {
+          flashStream.getTracks().forEach(function(t){ t.stop(); });
+          flashStream = null;
+        }
+      } catch(e){}
+    }, 300);
+  }
   document.getElementById('toggle-flash').classList.remove('on');
   document.getElementById('flash-card').classList.remove('on');
-  document.getElementById('flash-desc').textContent='Activa el flash como luz de emergencia';
-  document.getElementById('flash-icon').innerHTML='\u26A1';toast('Flash desactivado');
+  document.getElementById('flash-desc').textContent = 'Activa el flash como luz de emergencia';
+  document.getElementById('flash-icon').innerHTML = '\u26a1';
+  toast('Flash desactivado');
 }
 function setFlashPattern(p,btn){flashPatron=p;document.querySelectorAll('#flash-card .btn-chip').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');if(flashOn){stopFlash();setTimeout(startFlash,300);}}
 
