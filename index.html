@@ -2663,7 +2663,7 @@ function setFlashPattern(p,btn){flashPatron=p;document.querySelectorAll('#flash-
    ═══════════════════════════════════════ */
 var planMap=null,planLayer=null,planMarkers=[];
 var planPerfil='cycling-road',orsKey='',planRoute=null;
-try{orsKey=localStorage.getItem('rs_ors_key')||'';}catch(e){}
+try{orsKey=localStorage.getItem('rs_ors_key')||'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdkOGFjNDY4Yjc1MzQ3Zjg5M2Q0M2RiMTRhODExYzBmIiwiaCI6Im11cm11cjY0In0=';}catch(e){}
 
 function openPlan(){openPanel('panel-plan');if(!planMap)initPlanMap();if(!orsKey)document.getElementById('ors-key-modal').style.display='flex';setTimeout(function(){planMap&&planMap.invalidateSize();},100);}
 function closePlan(){closePanel('panel-plan');document.getElementById('ors-key-modal').style.display='none';}
