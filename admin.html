@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RideSafe AI — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#060a07;
+  --bg2:#0a0f0b;
+  --card:#0f1810;
+  --card2:#141f15;
+  --lime:#a8e63d;
+  --lime-dim:rgba(168,230,61,.1);
+  --lime-glow:rgba(168,230,61,.25);
+  --text:#e8f0e9;
+  --muted:#7a9a7e;
+  --dim:#3a4a3e;
+  --border:rgba(168,230,61,.12);
+  --border2:rgba(168,230,61,.06);
+  --red:#ff3355;
+  --orange:#ff8833;
+  --cyan:#00e5ff;
+}
+
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--bg);color:var(--text);
+  font-family:'Barlow',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* LOGIN */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.login-box{
+  width:100%;max-width:360px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:40px 32px;
+  text-align:center;
+}
+.login-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:42px;font-weight:900;
+  line-height:1;margin-bottom:4px;
+}
+.login-logo span{color:var(--lime)}
+.login-badge{
+  display:inline-block;
+  background:var(--lime);color:#060a07;
+  font-size:10px;font-weight:900;
+  padding:2px 8px;border-radius:6px;
+  letter-spacing:1px;margin-bottom:24px;
+  font-family:'Barlow Condensed',sans-serif;
+}
+.login-title{
+  font-size:13px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:24px;
+}
+.login-input{
+  width:100%;padding:14px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:12px;color:var(--text);
+  font-size:16px;font-family:'Barlow',sans-serif;
+  text-align:center;letter-spacing:4px;
+  outline:none;transition:border-color .2s;
+  margin-bottom:16px;
+}
+.login-input:focus{border-color:var(--lime)}
+.login-btn{
+  width:100%;padding:14px;
+  background:var(--lime);border:none;border-radius:12px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:900;letter-spacing:1px;
+  color:#060a07;cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px var(--lime-glow);
+}
+.login-btn:active{transform:scale(.97)}
+.login-error{
+  font-size:12px;color:var(--red);
+  margin-top:10px;display:none;
+}
+
+/* PANEL PRINCIPAL */
+#admin-panel{display:none}
+
+/* HEADER */
+.adm-header{
+  background:linear-gradient(135deg,var(--bg2) 0%,#0d1a0e 100%);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.adm-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:24px;font-weight:900;
+}
+.adm-logo span{color:var(--lime)}
+.adm-logo-sub{
+  font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-top:1px;
+}
+.adm-status{
+  display:flex;align-items:center;gap:8px;
+}
+.adm-status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--lime);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.adm-status-txt{font-size:12px;color:var(--muted)}
+.adm-logout{
+  padding:6px 14px;
+  background:none;border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);
+  font-size:12px;cursor:pointer;font-family:'Barlow',sans-serif;
+  transition:all .2s;
+}
+.adm-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* CONTENIDO */
+.adm-body{padding:24px;max-width:900px;margin:0 auto}
+
+/* SECCIÓN */
+.adm-section{margin-bottom:32px}
+.adm-section-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;
+  color:var(--lime);text-transform:uppercase;letter-spacing:2px;
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.adm-section-title::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* STATS GRID */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-bottom:24px;
+}
+@media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  padding:18px 16px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.stat-card:hover{border-color:var(--border);transform:translateY(-2px)}
+.stat-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent,var(--lime));
+  opacity:.6;
+}
+.stat-icon{
+  font-size:22px;margin-bottom:10px;display:block;
+}
+.stat-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:40px;font-weight:900;
+  color:var(--accent,var(--lime));
+  line-height:1;margin-bottom:4px;
+}
+.stat-label{
+  font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;font-weight:600;
+}
+.stat-sub{
+  font-size:10px;color:var(--dim);
+  margin-top:4px;
+}
+
+/* TABLA USUARIOS */
+.adm-table{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  overflow:hidden;
+}
+.adm-table-header{
+  display:grid;
+  grid-template-columns:1fr 80px 80px 100px;
+  padding:12px 16px;
+  background:var(--card2);
+  border-bottom:1px solid var(--border2);
+}
+.adm-th{
+  font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+}
+.adm-row{
+  display:grid;
+  grid-template-columns:1fr 80px 80px 100px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border2);
+  align-items:center;
+  transition:background .15s;
+}
+.adm-row:last-child{border-bottom:none}
+.adm-row:hover{background:var(--card2)}
+.adm-user-info{display:flex;align-items:center;gap:10px}
+.adm-avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:900;color:#060a07;
+  flex-shrink:0;
+}
+.adm-user-name{
+  font-size:13px;font-weight:600;color:var(--text);
+}
+.adm-user-bici{font-size:10px;color:var(--muted);margin-top:1px}
+.adm-nivel{
+  font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:8px;
+  text-transform:uppercase;letter-spacing:.3px;
+  font-family:'Barlow Condensed',sans-serif;
+  display:inline-block;
+}
+.nivel-novato{background:rgba(0,229,100,.1);color:#00e564}
+.nivel-medio{background:rgba(255,200,0,.1);color:#ffc800}
+.nivel-pro{background:rgba(255,51,85,.1);color:#ff3355}
+.adm-dist{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;color:var(--text);
+}
+.adm-time{font-size:10px;color:var(--dim)}
+.adm-empty{
+  padding:40px;text-align:center;
+  color:var(--dim);font-size:13px;
+}
+
+/* ACTIVIDAD GRUPOS */
+.grupos-grid{display:flex;flex-direction:column;gap:10px}
+.grupo-card{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:14px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  transition:border-color .2s;
+}
+.grupo-card:hover{border-color:var(--border)}
+.grupo-code{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;font-weight:900;color:var(--lime);
+  letter-spacing:2px;flex-shrink:0;
+}
+.grupo-info{flex:1}
+.grupo-members{
+  font-size:13px;font-weight:600;color:var(--text);
+  margin-bottom:2px;
+}
+.grupo-ts{font-size:10px;color:var(--muted)}
+.grupo-badge{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:8px;
+  background:rgba(168,230,61,.1);
+  color:var(--lime);border:1px solid var(--border);
+}
+
+/* REFRESH BTN */
+.refresh-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;
+  background:var(--lime-dim);
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:12px;font-weight:600;color:var(--lime);
+  cursor:pointer;font-family:'Barlow',sans-serif;
+  transition:all .2s;margin-bottom:20px;
+}
+.refresh-btn:hover{background:rgba(168,230,61,.15)}
+.refresh-btn svg{width:14px;height:14px;stroke:var(--lime);fill:none;stroke-width:2;stroke-linecap:round}
+
+/* LOADING */
+.loading{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--muted);padding:20px;
+}
+.spin{
+  width:16px;height:16px;border:2px solid var(--border);
+  border-top-color:var(--lime);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* FOOTER */
+.adm-footer{
+  text-align:center;padding:24px;
+  font-size:11px;color:var(--dim);
+  border-top:1px solid var(--border2);
+  margin-top:40px;
+}
+
+/* BROADCAST */
+.broadcast-box{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:18px;padding:20px;
+}
+.broadcast-textarea{
+  width:100%;padding:12px 14px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;color:var(--text);
+  font-size:14px;font-family:'Barlow',sans-serif;
+  outline:none;resize:none;min-height:80px;
+  transition:border-color .2s;margin-bottom:12px;
+}
+.broadcast-textarea:focus{border-color:var(--lime)}
+.broadcast-btn{
+  padding:11px 24px;
+  background:var(--lime);border:none;border-radius:10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:900;letter-spacing:.5px;
+  color:#060a07;cursor:pointer;
+  transition:transform .15s;
+}
+.broadcast-btn:active{transform:scale(.97)}
+.broadcast-note{font-size:11px;color:var(--dim);margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Ride<span>Safe</span></div>
+    <div style="margin-bottom:8px"><span class="login-badge">ADMIN</span></div>
+    <div class="login-title">Panel de Control</div>
+    <input class="login-input" id="login-pin" type="password" placeholder="••••••" maxlength="10" autocomplete="off"/>
+    <button class="login-btn" onclick="checkLogin()">ENTRAR</button>
+    <div class="login-error" id="login-error">PIN incorrecto</div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="admin-panel">
+
+  <!-- HEADER -->
+  <div class="adm-header">
+    <div>
+      <div class="adm-logo">Ride<span>Safe</span> <span style="font-size:14px;color:var(--muted)">Admin</span></div>
+      <div class="adm-logo-sub">Panel de Control · JM Prestige AI Solutions</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="adm-status">
+        <div class="adm-status-dot"></div>
+        <span class="adm-status-txt">Firebase conectado</span>
+      </div>
+      <button class="adm-logout" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- CUERPO -->
+  <div class="adm-body">
+
+    <!-- BOTÓN REFRESH -->
+    <button class="refresh-btn" onclick="cargarDatos()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Actualizar datos
+    </button>
+
+    <!-- STATS -->
+    <div class="adm-section">
+      <div class="adm-section-title">Estadísticas generales</div>
+      <div class="stats-grid">
+        <div class="stat-card" style="--accent:var(--lime)">
+          <span class="stat-icon">🚴</span>
+          <div class="stat-val" id="stat-ciclistas">—</div>
+          <div class="stat-label">Ciclistas activos</div>
+          <div class="stat-sub" id="stat-ciclistas-sub">Últimos 5 min</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--cyan)">
+          <span class="stat-icon">👥</span>
+          <div class="stat-val" id="stat-grupos">—</div>
+          <div class="stat-label">Grupos activos</div>
+          <div class="stat-sub" id="stat-grupos-sub">Ahora mismo</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--orange)">
+          <span class="stat-icon">📡</span>
+          <div class="stat-val" id="stat-radar">—</div>
+          <div class="stat-label">En radar</div>
+          <div class="stat-sub">Publicando posición</div>
+        </div>
+        <div class="stat-card" style="--accent:#9966ff">
+          <span class="stat-icon">🕐</span>
+          <div class="stat-val" id="stat-hora">—</div>
+          <div class="stat-label">Última actualización</div>
+          <div class="stat-sub" id="stat-fecha">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CICLISTAS EN RADAR -->
+    <div class="adm-section">
+      <div class="adm-section-title">Ciclistas en radar ahora</div>
+      <div class="adm-table" id="tabla-radar">
+        <div class="loading"><div class="spin"></div> Cargando datos...</div>
+      </div>
+    </div>
+
+    <!-- GRUPOS ACTIVOS -->
+    <div class="adm-section">
+      <div class="adm-section-title">Grupos activos</div>
+      <div id="grupos-container">
+        <div class="loading"><div class="spin"></div> Cargando grupos...</div>
+      </div>
+    </div>
+
+    <!-- BROADCAST TELEGRAM -->
+    <div class="adm-section">
+      <div class="adm-section-title">📣 Mensaje a todos (Telegram)</div>
+      <div class="broadcast-box">
+        <textarea class="broadcast-textarea" id="broadcast-txt" placeholder="Escribe un mensaje para enviar al canal @RideSafeAI..."></textarea>
+        <button class="broadcast-btn" onclick="enviarBroadcast()">📤 PUBLICAR EN CANAL</button>
+        <div class="broadcast-note">Se publicará en el canal oficial @RideSafeAI</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="adm-footer">
+    RideSafe AI Admin · JM Prestige AI Solutions · info@obracontrolgps.net
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+var ADMIN_PIN = 'RS2026ADM';
+var TG_TOKEN = '8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM';
+var TG_CANAL = '@RideSafeAI';
+var TG_URL = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
+
+var firebaseConfig = {
+  apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
+  authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
+  databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'ridesafe-app-25ecb',
+  storageBucket: 'ridesafe-app-25ecb.appspot.com',
+  messagingSenderId: '123456789',
+  appId: '1:123456789:web:abc123'
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+// ══════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════
+document.getElementById('login-pin').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') checkLogin();
+});
+
+function checkLogin(){
+  var pin = document.getElementById('login-pin').value.trim();
+  if(pin === ADMIN_PIN){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    cargarDatos();
+    // Auto-refresh cada 60s
+    setInterval(cargarDatos, 60000);
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pin').value = '';
+    setTimeout(function(){ document.getElementById('login-error').style.display='none'; }, 3000);
+  }
+}
+
+function logout(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('login-pin').value = '';
+}
+
+// ══════════════════════════════════════
+// CARGAR DATOS DE FIREBASE
+// ══════════════════════════════════════
+var COLORES = ['#a8e63d','#00e5ff','#ff8833','#9966ff','#ffcc00','#ff3355','#00e564'];
+
+function cargarDatos(){
+  var ahora = Date.now();
+  var INACTIVO_MS = 5 * 60 * 1000;
+
+  // Actualizar hora
+  var hora = new Date();
+  document.getElementById('stat-hora').textContent = hora.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('stat-fecha').textContent = hora.toLocaleDateString('es-ES', {day:'2-digit',month:'short'});
+
+  // Cargar radar
+  db.ref('radar').once('value', function(snap){
+    var datos = snap.val() || {};
+    var activos = [];
+
+    Object.keys(datos).forEach(function(uid){
+      var c = datos[uid];
+      if(!c || !c.nombre) return;
+      if(ahora - c.ts > INACTIVO_MS) return;
+      activos.push({uid:uid, ...c, tiempoAtras: Math.round((ahora - c.ts)/1000/60)});
+    });
+
+    // Stats
+    document.getElementById('stat-ciclistas').textContent = activos.length;
+    document.getElementById('stat-radar').textContent = activos.length;
+
+    // Tabla
+    renderTablaRadar(activos);
+  });
+
+  // Cargar grupos
+  db.ref('grupos').once('value', function(snap){
+    var datos = snap.val() || {};
+    var gruposActivos = [];
+
+    Object.keys(datos).forEach(function(codigo){
+      var g = datos[codigo];
+      if(!g || !g.miembros) return;
+      var miembros = Object.values(g.miembros);
+      var activos = miembros.filter(function(m){ return ahora - (m.ts||0) < INACTIVO_MS; });
+      if(activos.length > 0){
+        gruposActivos.push({codigo:codigo, miembros:activos, total:activos.length});
+      }
+    });
+
+    document.getElementById('stat-grupos').textContent = gruposActivos.length;
+    renderGrupos(gruposActivos);
+  });
+}
+
+function renderTablaRadar(lista){
+  var el = document.getElementById('tabla-radar');
+
+  if(lista.length === 0){
+    el.innerHTML = '<div class="adm-empty">🚴 No hay ciclistas activos ahora mismo</div>';
+    return;
+  }
+
+  var html = '<div class="adm-table-header">'
+    + '<span class="adm-th">Ciclista</span>'
+    + '<span class="adm-th">Nivel</span>'
+    + '<span class="adm-th">Grupo</span>'
+    + '<span class="adm-th">Última pos.</span>'
+    + '</div>';
+
+  lista.forEach(function(c, i){
+    var color = COLORES[i % COLORES.length];
+    var ini = c.nombre.charAt(0).toUpperCase();
+    var nivelClass = 'nivel-' + (c.nivel||'novato');
+    var nivelLabel = {novato:'Novato', medio:'Medio', pro:'Pro'}[c.nivel] || c.nivel;
+    var biciIcon = {carretera:'🚴', mtb:'🚵', gravel:'🛤️', ebike:'⚡'}[c.bici] || '🚲';
+    var grupo = c.grupo || '—';
+    var tiempo = c.tiempoAtras === 0 ? 'ahora' : 'hace ' + c.tiempoAtras + ' min';
+
+    html += '<div class="adm-row">'
+      + '<div class="adm-user-info">'
+      + '<div class="adm-avatar" style="background:'+color+'">'+ini+'</div>'
+      + '<div><div class="adm-user-name">'+escHtml(c.nombre)+'</div>'
+      + '<div class="adm-user-bici">'+biciIcon+' '+ucFirst(c.bici||'—')+'</div></div>'
+      + '</div>'
+      + '<span class="adm-nivel '+nivelClass+'">'+nivelLabel+'</span>'
+      + '<span class="adm-dist" style="font-size:12px;color:var(--muted)">'+escHtml(grupo)+'</span>'
+      + '<div><div class="adm-dist">'+tiempo+'</div></div>'
+      + '</div>';
+  });
+
+  el.innerHTML = html;
+}
+
+function renderGrupos(lista){
+  var el = document.getElementById('grupos-container');
+
+  if(lista.length === 0){
+    el.innerHTML = '<div class="adm-table"><div class="adm-empty">👥 No hay grupos activos ahora mismo</div></div>';
+    return;
+  }
+
+  var html = '<div class="grupos-grid">';
+  lista.forEach(function(g){
+    var nombres = g.miembros.map(function(m){ return m.nombre || '?'; }).join(', ');
+    html += '<div class="grupo-card">'
+      + '<div class="grupo-code">'+escHtml(g.codigo)+'</div>'
+      + '<div class="grupo-info">'
+      + '<div class="grupo-members">'+escHtml(nombres)+'</div>'
+      + '<div class="grupo-ts">'+g.total+' de 10 ciclistas</div>'
+      + '</div>'
+      + '<span class="grupo-badge">'+g.total+' activos</span>'
+      + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// BROADCAST TELEGRAM
+// ══════════════════════════════════════
+function enviarBroadcast(){
+  var txt = document.getElementById('broadcast-txt').value.trim();
+  if(!txt){ alert('Escribe un mensaje'); return; }
+
+  fetch(TG_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      chat_id: TG_CANAL,
+      text: txt,
+      parse_mode: 'HTML'
+    })
+  }).then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.ok){
+      document.getElementById('broadcast-txt').value = '';
+      alert('✅ Mensaje publicado en ' + TG_CANAL);
+    } else {
+      alert('Error: ' + (d.description || 'desconocido'));
+    }
+  }).catch(function(){ alert('Error de conexión'); });
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ucFirst(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+</script>
+</body>
+</html>
