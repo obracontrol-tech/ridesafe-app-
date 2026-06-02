@@ -2488,7 +2488,7 @@ var endIconHtml='<div style="width:14px;height:14px;border-radius:50%;background
 var wpTypeColors={checkpoint:'#a8e63d',water:'#00e5ff',camping:'#ff8833',viewpoint:'#ffcc00',danger:'#ff3355',custom:'#9966ff'};
 
 function openNav(){openPanel('panel-nav');if(!navMap)initNavMap();setTimeout(function(){navMap&&navMap.invalidateSize();},100);}
-function closeNav(){closePanel('panel-nav');}
+function closeNav(){if(flashOn)stopFlash();closePanel('panel-nav');}
 
 function initNavMap(){
   if(navMap)return;
