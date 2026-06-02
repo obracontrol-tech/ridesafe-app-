@@ -4185,19 +4185,17 @@ function abrirSalaVoz() {
     toast('Únete a un grupo primero');
     return;
   }
-  // Intentar abrir Telegram app nativa primero
-  var appUrl = 'tg://resolve?domain=RideSafeAI';
-  var webUrl = 'https://t.me/RideSafeAI';
+  // Link directo al Voice Chat del canal — abre Telegram app directamente
+  var voiceUrl = 'tg://resolve?domain=RideSafeAI&voicechat';
+  var fallbackUrl = 'https://t.me/RideSafeAI?voicechat';
 
-  // En móvil intenta abrir la app nativa
-  var intentApp = window.open(appUrl, '_blank');
+  // Intentar abrir app nativa
+  window.location.href = voiceUrl;
 
-  // Fallback a web si no abre
+  // Fallback a web tras 1.5s si no abre la app
   setTimeout(function() {
-    window.open(webUrl, '_blank');
+    window.open(fallbackUrl, '_blank');
   }, 1500);
-
-  toast('🎙️ Grupo ' + grupoCodigo + ' · Únete al Voice Chat en Telegram');
 }
 
 
