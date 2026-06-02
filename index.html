@@ -3053,6 +3053,19 @@ var grupoActivo = false, grupoCodigo = '', grupoMiNombre = '';
 var grupoRef = null, grupoMiId = null;
 var GRUPO_MAX = 10;
 
+// Recuperar grupo guardado de localStorage
+(function(){
+  try {
+    var g = JSON.parse(localStorage.getItem('rs_grupo') || 'null');
+    if(g && g.codigo && g.nombre && g.uid) {
+      grupoCodigo = g.codigo;
+      grupoMiNombre = g.nombre;
+      grupoMiId = g.uid;
+      grupoActivo = true;
+    }
+  } catch(e){}
+})();
+
 function openGrupo(){openPanel('panel-grupo');}
 function closeGrupo(){closePanel('panel-grupo');}
 
@@ -3097,7 +3110,17 @@ function activateGrupo(){
 
   // Registrar en Firebase
   grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
-  grupoMiId = grupoMiNombre.replace(/\s/g,'') + '_' + Math.floor(Math.random()*9000+1000);
+  // Usar ID fijo guardado o generar uno nuevo
+  if (!grupoMiId) {
+    grupoMiId = grupoMiNombre.replace(/\s/g,'') + '_' + Math.floor(Math.random()*9000+1000);
+  }
+  // Guardar en localStorage para persistir entre sesiones
+  localStorage.setItem('rs_grupo', JSON.stringify({
+    codigo: grupoCodigo,
+    nombre: grupoMiNombre,
+    uid: grupoMiId,
+    ts: Date.now()
+  }));
 
   // Escribir presencia
   var miPresencia = grupoRef.child(grupoMiId);
@@ -3164,7 +3187,8 @@ function salirGrupo(){
     grupoRef.off();
     grupoRef = null;
   }
-  grupoActivo = false; grupoCodigo = '';
+  grupoActivo = false; grupoCodigo = ''; grupoMiId = null;
+  localStorage.removeItem('rs_grupo');
   document.getElementById('grupo-activo').style.display='none';
   document.getElementById('grupo-setup').style.display='block';
   document.getElementById('grupo-badge').textContent='Inactivo';
@@ -4333,6 +4357,46 @@ sendSOS = function() {
     }
   });
 };
+
+
+/* Restaurar grupo activo al arrancar */
+setTimeout(function() {
+  if (grupoActivo && grupoCodigo && grupoMiNombre && grupoMiId) {
+    // Reconectar a Firebase sin mostrar panel
+    grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
+    var miPresencia = grupoRef.child(grupoMiId);
+    miPresencia.set({ nombre: grupoMiNombre, activo: true, ts: Date.now() });
+    miPresencia.onDisconnect().remove();
+
+    // Escuchar cambios
+    grupoRef.on('value', function(snap){
+      var datos = snap.val() || {};
+      var lista = Object.values(datos).filter(function(m){ return m && m.nombre; });
+      var online = lista.length;
+      var gsM = document.getElementById('gs-miembros');
+      var gsO = document.getElementById('gs-online');
+      var gsA = document.getElementById('gs-activos');
+      if(gsM) gsM.textContent = online;
+      if(gsO) gsO.textContent = online;
+      if(gsA) gsA.textContent = online;
+      renderMiembrosFirebase(lista);
+    });
+
+    // Actualizar badge del módulo grupo
+    var badge = document.getElementById('grupo-badge');
+    if(badge){ badge.textContent = 'Activo'; badge.classList.add('on'); }
+
+    // Mostrar panel activo si se abre el grupo
+    var setup = document.getElementById('grupo-setup');
+    var activo = document.getElementById('grupo-activo');
+    var display = document.getElementById('grupo-codigo-display');
+    if(setup) setup.style.display = 'none';
+    if(activo) activo.style.display = 'block';
+    if(display) display.textContent = grupoCodigo;
+
+    toast('Grupo ' + grupoCodigo + ' restaurado 🚴');
+  }
+}, 2000);
 
 </script>
 
