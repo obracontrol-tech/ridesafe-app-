@@ -4093,8 +4093,7 @@ function cambiarPin() {
   document.getElementById('lock-screen').classList.add('show');
 }
 
-/* Iniciar al cargar */
-lockInit();
+/* lockInit se llama desde appInit() — no directamente */
 
 
 /* ═══════════════════════════════════════
@@ -4181,8 +4180,7 @@ function trialActivar() {
   toast('¡RideSafe AI activado! 🚴 Bienvenido.');
 }
 
-/* Arrancar trial al cargar */
-setTimeout(trialInit, 500);
+/* trial se arranca desde appInit() */
 
 
 function abrirSalaVoz() {
@@ -4400,6 +4398,49 @@ setTimeout(function() {
     toast('Grupo ' + grupoCodigo + ' restaurado 🚴');
   }
 }, 2000);
+
+
+/* =========================================
+   CONTROL DE ARRANQUE — orden correcto
+   1. Trial check
+   2. PIN (solo si trial OK)
+   3. Sponsor (solo si todo OK)
+   ========================================= */
+function appInit() {
+  // ¿Tiene clave activa o trial vigente?
+  var claveActiva = localStorage.getItem('rs_clave_activa') === '1';
+  var inicio = localStorage.getItem('rs_trial_inicio');
+
+  if (!inicio) {
+    // Primera vez — crear trial y continuar
+    localStorage.setItem('rs_trial_inicio', Date.now().toString());
+    lockInit();
+    return;
+  }
+
+  var diasPasados = Math.floor((Date.now() - parseInt(inicio)) / (1000 * 60 * 60 * 24));
+  var diasRestantes = TRIAL_DIAS - diasPasados;
+
+  if (!claveActiva && diasRestantes <= 0) {
+    // Trial caducado — mostrar pantalla de pago, NO pedir PIN
+    document.getElementById('trial-screen').classList.add('show');
+    return;
+  }
+
+  // Trial vigente o clave activa — pedir PIN normalmente
+  if (diasRestantes <= 5 && !claveActiva) {
+    var banner = document.getElementById('trial-banner');
+    if(banner){
+      banner.style.display = 'block';
+      banner.textContent = '🎁 Prueba gratuita: te quedan ' + diasRestantes + ' día' + (diasRestantes === 1 ? '' : 's') + ' · Activa tu suscripción';
+    }
+  }
+
+  lockInit();
+}
+
+// Arrancar la app
+appInit();
 
 </script>
 
