@@ -4060,7 +4060,7 @@ function tgMensajeBienvenida(nombre) {
 }
 
 
-function openEbike(){ openPanel('panel-ebike'); }
+/* openEbike incluido en bloque E-Bike Pro */
 
 
 /* ═══════════════════════════════════════
@@ -4579,6 +4579,114 @@ function accesoWhatsApp() {
 
 // Lanzar al cargar
 appInit();
+
+
+/* =========================================
+   E-BIKE PRO — funciones completas
+   ========================================= */
+
+function openEbike(){ openPanel('panel-ebike'); }
+function closeEbike(){ closePanel('panel-ebike'); }
+
+/* Actualizar batería */
+function updateBattery(val) {
+  val = parseInt(val);
+  document.getElementById('eb-pct').textContent = val + '%';
+  document.getElementById('eb-pct-lbl').textContent = val + '%';
+
+  var bar = document.getElementById('eb-bar');
+  var txt = document.getElementById('eb-bar-txt');
+  var color, estado;
+
+  if (val >= 70) { color = 'var(--cyan)'; estado = 'Carga buena'; }
+  else if (val >= 40) { color = 'var(--lime)'; estado = 'Carga media'; }
+  else if (val >= 20) { color = 'var(--orange)'; estado = 'Carga baja'; }
+  else { color = 'var(--red)'; estado = 'Carga critica — recarga pronto'; }
+
+  bar.style.width = val + '%';
+  bar.style.background = color;
+  txt.textContent = val + '% — ' + estado;
+
+  // Recalcular autonomia
+  var cap = parseInt(document.getElementById('eb-slider-cap').value) || 500;
+  var wh = Math.round(cap * val / 100);
+  var km = Math.round(wh / 6); // consumo medio 6 Wh/km
+  document.getElementById('eb-wh').innerHTML = wh + ' <span>Wh</span>';
+  document.getElementById('eb-km').innerHTML = km + ' <span>km</span>';
+}
+
+/* Actualizar capacidad */
+function updateCapacity(val) {
+  val = parseInt(val);
+  document.getElementById('eb-cap-lbl').textContent = val + ' Wh';
+  var bat = parseInt(document.getElementById('eb-slider-bat').value) || 75;
+  var wh = Math.round(val * bat / 100);
+  var km = Math.round(wh / 6);
+  document.getElementById('eb-wh').innerHTML = wh + ' <span>Wh</span>';
+  document.getElementById('eb-km').innerHTML = km + ' <span>km</span>';
+}
+
+/* Actualizar ciclos */
+function updateCycles(val) {
+  val = parseInt(val);
+  document.getElementById('eb-ciclos-lbl').textContent = val;
+  document.getElementById('eb-ciclos').innerHTML = val + ' <span>ciclos</span>';
+  // Calcular salud bateria segun ciclos (tipico: 500 ciclos = 80% salud)
+  var salud = Math.max(60, Math.round(100 - (val / 500) * 20));
+  document.getElementById('eb-salud').innerHTML = salud + ' <span>%</span>';
+  var statSalud = document.getElementById('eb-stat-salud');
+  if (statSalud) {
+    statSalud.style.borderColor = salud > 80 ? 'rgba(0,229,255,.2)' : salud > 60 ? 'rgba(255,136,51,.2)' : 'rgba(255,51,85,.2)';
+  }
+}
+
+/* Diagnóstico IA motor */
+function diagnosticoMotor(problema) {
+  if (!problema || !problema.trim()) {
+    toast('Describe el problema primero');
+    return;
+  }
+
+  var resultEl = document.getElementById('diag-result');
+  resultEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--cyan);font-size:13px"><div class="spin" style="border-top-color:var(--cyan)"></div> Analizando con IA...</div>';
+  resultEl.style.display = 'block';
+
+  // Usar Cloudflare Worker con Anthropic
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      messages: [{
+        role: 'user',
+        content: 'Eres un experto en bicicletas electricas (e-bikes). Un ciclista tiene este problema: "' + problema + '". Da un diagnostico breve y practico en 3-4 puntos cortos. Usa emojis. Sin titulos ni markdown, solo texto directo.'
+      }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var txt = '';
+    if (d.content && d.content[0] && d.content[0].text) {
+      txt = d.content[0].text;
+    } else if (d.error) {
+      txt = 'Error: ' + d.error.message;
+    }
+    resultEl.innerHTML =
+      '<div style="font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Diagnóstico: ' + problema + '</div>'
+      + '<div style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">' + escHtml(txt) + '</div>';
+  })
+  .catch(function(err) {
+    resultEl.innerHTML = '<div style="color:var(--red);font-size:12px">Error de conexión. Comprueba internet e inténtalo de nuevo.</div>';
+  });
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
 
 </script>
 
