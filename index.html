@@ -5226,7 +5226,17 @@ function calcularCacheSize() {
 
 function descargarMapas() {
   if (offlineDescargando) return;
-  if (!userPos) { toast('Activa el GPS primero'); return; }
+  // Obtener posición si no la tenemos
+  if (!userPos) {
+    toast('Obteniendo GPS...');
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      userPos = [pos.coords.latitude, pos.coords.longitude];
+      descargarMapas();
+    }, function() {
+      toast('No se pudo obtener el GPS. Actívalo en ajustes del móvil.');
+    }, {enableHighAccuracy:false, timeout:10000, maximumAge:30000});
+    return;
+  }
   if (!('caches' in window)) { toast('Tu navegador no soporta mapas offline'); return; }
 
   offlineDescargando = true;
