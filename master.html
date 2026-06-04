@@ -148,11 +148,12 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
       </div>
       <div class="sec-title">Todas las claves</div>
       <div class="tabla">
-        <div class="tabla-hdr">
+        <div class="tabla-hdr" style="grid-template-columns:1fr 80px 100px 110px 80px">
           <span class="tabla-th">Clave</span>
           <span class="tabla-th">Días</span>
           <span class="tabla-th">Estado</span>
           <span class="tabla-th">Activada</span>
+          <span class="tabla-th">Acción</span>
         </div>
         <div id="lista-claves"><div class="empty"><span class="spin"></span> Cargando...</div></div>
       </div>
@@ -308,11 +309,15 @@ function renderClaves(usadasMap){
     var usada = !!datos;
     if(usada) usadas++; else libres++;
     var fecha = datos && datos.fecha ? datos.fecha : '—';
-    html += '<div class="tabla-row">'
+    var btnRevocar = usada
+      ? '<button onclick="revocarClave(\'' + c.clave + '\')" style="padding:4px 10px;background:rgba(255,51,85,.1);border:1px solid rgba(255,51,85,.3);border-radius:8px;color:var(--red);font-size:10px;font-family:Barlow Condensed,sans-serif;font-weight:700;cursor:pointer">🗑️ Revocar</button>'
+      : '';
+    html += '<div class="tabla-row" style="grid-template-columns:1fr 80px 100px 110px 80px">'
       +'<div><div class="clave-code">'+c.clave+'</div><div class="clave-tipo">'+c.tipo+'</div></div>'
-      +'<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+c.dias+' días</div>'
+      +'<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+c.dias+'d</div>'
       +'<div><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'✅ Usada':'🟢 Libre')+'</span></div>'
       +'<div style="font-size:10px;color:var(--muted)">'+fecha+'</div>'
+      +'<div>'+btnRevocar+'</div>'
       +'</div>';
   });
   document.getElementById('lista-claves').innerHTML = html || '<div class="empty">Sin claves</div>';
@@ -441,6 +446,20 @@ function cargarLegal(){
     });
     el.innerHTML=h+'</table>';
   });
+}
+
+
+function revocarClave(clave) {
+  if (!confirm('¿Revocar la clave ' + clave + '?\nEl usuario perderá el acceso.')) return;
+  var claveKey = clave.replace(/-/g,'_');
+  db.ref('claves_activadas/' + claveKey).remove()
+    .then(function() {
+      alert('✅ Clave ' + clave + ' revocada. El usuario perderá acceso al recargar la app.');
+      cargarClaves();
+    })
+    .catch(function(e) {
+      alert('Error al revocar: ' + e.message);
+    });
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
