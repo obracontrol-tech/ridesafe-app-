@@ -4781,6 +4781,20 @@ function accesoVerificar() {
   claves.push(clave);
   localStorage.setItem('rs_claves_usadas', JSON.stringify(claves));
   localStorage.setItem('rs_clave_activa', '1');
+  localStorage.setItem('rs_clave_valor', clave);
+
+  // Registrar en Firebase para que la consola lo vea
+  try {
+    if (typeof db !== 'undefined' && db) {
+      db.ref('claves_activadas/' + clave.replace(/-/g,'_')).set({
+        clave: clave,
+        ts: Date.now(),
+        fecha: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES'),
+        dispositivo: navigator.userAgent.substring(0, 100)
+      });
+    }
+  } catch(e) {}
+
   document.getElementById('acceso-screen').classList.remove('show');
   toast('RideSafe AI activado! Bienvenido. ');
 }
@@ -4961,14 +4975,27 @@ function legalAceptar() {
     fecha: fechaHora,
     fecha_legible: fechaLegible,
     dispositivo: dispositivo,
-    nombre: perfilUsuario.nombre || 'Sin perfil',
+    nombre: perfilUsuario.nombre || 'Sin perfil aun',
     version_legal: '1.0',
     ts: Date.now()
   };
 
-  try {
-    db.ref('aceptaciones_legales/' + Date.now()).set(registro);
-  } catch(e) {}
+  // Guardar en Firebase con reintento
+  function guardarEnFirebase() {
+    try {
+      if (typeof db !== 'undefined' && db) {
+        var key = 'acept_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+        db.ref('aceptaciones_legales/' + key).set(registro)
+          .then(function(){ console.log('Legal guardado OK'); })
+          .catch(function(e){ console.log('Error Firebase legal:', e); });
+      }
+    } catch(e) {
+      console.log('Firebase no disponible:', e);
+    }
+  }
+  // Intentar inmediatamente y con delay por si Firebase no está listo
+  guardarEnFirebase();
+  setTimeout(guardarEnFirebase, 2000);
 
   // Ocultar pantalla con fade
   var screen = document.getElementById('legal-screen');

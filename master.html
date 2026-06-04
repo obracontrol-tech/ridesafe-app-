@@ -397,29 +397,35 @@ function showTab(id, btn){
 // CLAVES
 // ════════════════════════════
 function cargarClaves(){
-  db.ref('rs_claves_usadas').once('value', function(snap){
-    var usadasFirebase = snap.val() || {};
-    // También leer claves usadas guardadas en Firebase
-    renderClaves(usadasFirebase);
+  // Leer claves activadas reales desde Firebase
+  db.ref('claves_activadas').once('value', function(snap){
+    var activadas = snap.val() || {};
+    // Convertir a mapa clave->datos
+    var usadasMap = {};
+    Object.keys(activadas).forEach(function(k){
+      var d = activadas[k];
+      if (d && d.clave) usadasMap[d.clave] = d;
+    });
+    renderClaves(usadasMap);
   });
-  // Leer desde Firebase las claves usadas registradas
-  renderClaves({});
 }
 
 function renderClaves(usadasDB){
   var todas = TODAS_CLAVES.concat(clavesDinamicas);
   // Simulamos estado — en producción vendría de Firebase
   var libres = 0, usadas = 0;
-  var html = '<div class="tabla-hdr"><span class="tabla-th">Clave</span><span class="tabla-th">Tipo</span><span class="tabla-th">Días</span><span class="tabla-th">Estado</span></div>';
+  var html = '<div class="tabla-hdr" style="grid-template-columns:1fr 100px 80px 120px"><span class="tabla-th">Clave</span><span class="tabla-th">Días</span><span class="tabla-th">Estado</span><span class="tabla-th">Activada</span></div>';
 
   todas.forEach(function(c){
-    var usada = usadasDB[c.clave] || false;
+    var datosUso = usadasDB[c.clave] || null;
+    var usada = !!datosUso;
     if(usada) usadas++; else libres++;
-    html += '<div class="tabla-row">'
-      +'<div><div class="clave-code">'+c.clave+'</div></div>'
-      +'<div><span class="badge badge-libre">'+c.tipo+'</span></div>'
-      +'<div style="font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;color:var(--text)">'+c.dias+'d</div>'
-      +'<div><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'Usada':'Libre')+'</span></div>'
+    var fechaUso = datosUso && datosUso.fecha ? datosUso.fecha : '';
+    html += '<div class="tabla-row" style="grid-template-columns:1fr 100px 80px 120px">'
+      +'<div><div class="clave-code">'+c.clave+'</div><div class="clave-tipo">'+c.tipo+'</div></div>'
+      +'<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+c.dias+' días</div>'
+      +'<div><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'✅ Usada':'🟢 Libre')+'</span></div>'
+      +'<div style="font-size:10px;color:var(--muted)">'+fechaUso+'</div>'
       +'</div>';
   });
 
