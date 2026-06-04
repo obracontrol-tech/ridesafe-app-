@@ -6,7 +6,61 @@
 <title>RideSafe AI — Consola Master</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js">
+function cargarLegal() {
+  db.ref('aceptaciones_legales').once('value', function(snap) {
+    var datos = snap.val() || {};
+    var lista = [];
+    var ahora = Date.now();
+    var hoy = new Date().toDateString();
+    var semana = ahora - 7*24*60*60*1000;
+    var contHoy = 0, contSemana = 0;
+
+    Object.keys(datos).forEach(function(k) {
+      var d = datos[k];
+      if (!d) return;
+      lista.push(d);
+      if (new Date(d.ts).toDateString() === hoy) contHoy++;
+      if (d.ts > semana) contSemana++;
+    });
+
+    lista.sort(function(a,b){ return b.ts - a.ts; });
+
+    document.getElementById('st-legal-total').textContent = lista.length;
+    document.getElementById('st-legal-hoy').textContent = contHoy;
+    document.getElementById('st-legal-semana').textContent = contSemana;
+
+    var el = document.getElementById('tabla-legal');
+    if (lista.length === 0) {
+      el.innerHTML = '<div class="empty">⚖️ No hay aceptaciones registradas aun</div>';
+      return;
+    }
+
+    var html2 = '<div style="overflow-x:auto">'
+      + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      + '<tr style="background:var(--card2)"><th style="padding:8px 12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px">Fecha y hora</th>'
+      + '<th style="padding:8px 12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px">Usuario</th>'
+      + '<th style="padding:8px 12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px">Version</th>'
+      + '<th style="padding:8px 12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px">Dispositivo</th>'
+      + '</tr>';
+
+    lista.forEach(function(d, i) {
+      var bg = i%2===0 ? 'transparent' : 'rgba(0,0,0,.2)';
+      var disp = d.dispositivo ? d.dispositivo.substring(0,50)+'...' : '—';
+      html2 += '<tr style="background:'+bg+'">'
+        + '<td style="padding:8px 12px;color:var(--lime);font-family:Barlow Condensed,sans-serif;font-weight:700;white-space:nowrap">' + (d.fecha_legible||'—') + '</td>'
+        + '<td style="padding:8px 12px;color:var(--text);font-weight:600">' + escHtml(d.nombre||'—') + '</td>'
+        + '<td style="padding:8px 12px;color:var(--muted)">' + (d.version_legal||'—') + '</td>'
+        + '<td style="padding:8px 12px;color:var(--dim);font-size:10px">' + escHtml(disp) + '</td>'
+        + '</tr>';
+    });
+
+    html2 += '</table></div>';
+    el.innerHTML = html2;
+  });
+}
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -139,6 +193,8 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
     <button class="tab-btn" onclick="showTab('radar',this)">📡 Radar</button>
     <button class="tab-btn" onclick="showTab('grupos',this)">👥 Grupos</button>
     <button class="tab-btn" onclick="showTab('canal',this)">📣 Canal</button>
+    <button class="tab-btn" onclick="showTab('legal',this)">⚖️ Legal</button>
+    <button class="tab-btn" onclick="showTab('legal',this)">⚖️ Legal</button>
   </div>
 
   <div class="body">
@@ -211,6 +267,21 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
         <button onclick="msgRapido('🎁 Nueva promoción disponible en RideSafe AI. Contacta por WhatsApp para obtener tu clave: +34 643 223 301')" style="padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);text-align:left;cursor:pointer;font-size:13px;font-family:Barlow,sans-serif">🎁 Nueva promoción disponible</button>
         <button onclick="msgRapido('🔔 Nueva actualización disponible en RideSafe AI. Abre la app para ver las mejoras: tinyurl.com/ridesafeIA')" style="padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);text-align:left;cursor:pointer;font-size:13px;font-family:Barlow,sans-serif">🔔 Nueva actualización</button>
       </div>
+    </div>
+
+  </div>
+
+    <!-- LEGAL -->
+    <div class="tab-panel" id="tab-legal">
+      <button class="refresh-btn" onclick="cargarLegal()">🔄 Actualizar</button>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-val" id="st-legal-total">—</div><div class="stat-lbl">Total aceptaciones</div></div>
+        <div class="stat" style="--ac:var(--lime)"><div class="stat-val" id="st-legal-hoy">—</div><div class="stat-lbl">Hoy</div></div>
+        <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="st-legal-semana">—</div><div class="stat-lbl">Esta semana</div></div>
+        <div class="stat" style="--ac:var(--orange)"><div class="stat-val">v1.0</div><div class="stat-lbl">Version legal</div></div>
+      </div>
+      <div class="sec-title">Registro de aceptaciones</div>
+      <div class="tabla" id="tabla-legal"><div class="empty"><span class="spin"></span> Cargando...</div></div>
     </div>
 
   </div>
@@ -319,6 +390,7 @@ function showTab(id, btn){
   btn.classList.add('on');
   if(id==='radar') cargarRadar();
   if(id==='grupos') cargarGrupos();
+  if(id==='legal') cargarLegal();
 }
 
 // ════════════════════════════
