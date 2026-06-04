@@ -1742,6 +1742,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 #panel-legal-info{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column}
 #panel-legal-info.show{display:flex}
 
+
+/* MODULO MAPAS OFFLINE */
+.mod-offline .mod-icon{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2)}
+
 </style>
 </head>
 <body>
@@ -2189,6 +2193,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
 
     <!-- AJUSTES / PERFIL -->
+    <div class="modulo mod-offline" onclick="openOffline()">
+      <div class="mod-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22" stroke="rgba(0,229,255,.3)" stroke-width="1"/></svg>
+      </div>
+      <div class="modulo-title">Mapas Offline</div>
+      <div class="modulo-sub">Sin conexión · OSM</div>
+    </div>
+
     <div class="modulo mod-ajust" onclick="openAjustes()" id="mod-ajust-btn">
       <div class="mod-icon">
         <svg viewBox="0 0 24 24" stroke="#7a8f7e"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -2371,6 +2383,63 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div style="margin-top:20px;padding:14px;background:var(--card2);border:1px solid var(--border2);border-radius:14px;text-align:center">
       <div style="font-size:11px;color:var(--muted)">Versión legal: 1.0 · JM Prestige AI Solutions</div>
       <div style="font-size:11px;color:var(--dim);margin-top:4px">info@obracontrolgps.net · +34 643 223 301</div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- PANEL MAPAS OFFLINE -->
+<div class="panel" id="panel-offline">
+  <div class="p-header">
+    <button class="p-back" onclick="closeOffline()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="p-title">Mapas <span>Offline</span></div>
+  </div>
+  <div class="p-body" style="overflow-y:auto;padding:20px 16px">
+
+    <!-- Estado descarga -->
+    <div id="offline-estado" style="background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:24px">🗺️</span>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text)">Caché de mapas</div>
+          <div style="font-size:11px;color:var(--muted)" id="offline-cache-size">Calculando...</div>
+        </div>
+      </div>
+      <div style="height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div id="offline-progress-bar" style="height:100%;background:var(--cyan);border-radius:3px;width:0%;transition:width .3s"></div>
+      </div>
+      <div style="font-size:11px;color:var(--dim)" id="offline-progress-txt">Pulsa Descargar para guardar los mapas de tu zona</div>
+    </div>
+
+    <!-- Radio de descarga -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:10px">📍 Radio de descarga</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-chip on" id="radio-10" onclick="setRadio(10,this)">10 km</button>
+        <button class="btn-chip" id="radio-20" onclick="setRadio(20,this)">20 km</button>
+        <button class="btn-chip" id="radio-30" onclick="setRadio(30,this)">30 km</button>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:10px" id="radio-info">Radio de 10 km · aprox. 8-15 MB</div>
+    </div>
+
+    <!-- Botones acción -->
+    <button id="btn-descargar" onclick="descargarMapas()" style="width:100%;padding:14px;background:var(--cyan);border:none;border-radius:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#080c0a;cursor:pointer;margin-bottom:10px;transition:all .2s">
+      ⬇️ DESCARGAR MAPAS DE MI ZONA
+    </button>
+    <button onclick="borrarCacheMapas()" style="width:100%;padding:11px;background:none;border:1px solid rgba(255,51,85,.3);border-radius:12px;font-size:13px;color:var(--red);cursor:pointer;font-family:'Barlow',sans-serif">
+      🗑️ Borrar caché de mapas
+    </button>
+
+    <!-- Info -->
+    <div style="margin-top:16px;padding:14px;background:var(--lime-dim);border:1px solid var(--border);border-radius:12px">
+      <div style="font-size:12px;color:var(--lime);font-weight:700;margin-bottom:6px">¿Cómo funciona?</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">
+        Los mapas de OpenStreetMap se guardan en tu dispositivo. Una vez descargados puedes navegar y ver el mapa aunque no tengas cobertura ni WiFi.<br><br>
+        El GPS sigue funcionando offline — no necesita internet.
+      </div>
     </div>
 
     <div style="height:20px"></div>
@@ -5115,6 +5184,118 @@ function openLegalPanel() {
   openPanel('panel-legal-info');
 }
 function closeLegalPanel() { closePanel('panel-legal-info'); }
+
+
+/* =========================================
+   MAPAS OFFLINE — caché OpenStreetMap
+   ========================================= */
+
+var offlineRadio = 10;
+var offlineDescargando = false;
+
+function openOffline(){ openPanel('panel-offline'); calcularCacheSize(); }
+function closeOffline(){ closePanel('panel-offline'); }
+
+function setRadio(km, btn) {
+  offlineRadio = km;
+  document.querySelectorAll('#panel-offline .btn-chip').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  var mb = km === 10 ? '8-15' : km === 20 ? '20-40' : '50-80';
+  document.getElementById('radio-info').textContent = 'Radio de ' + km + ' km · aprox. ' + mb + ' MB';
+}
+
+function calcularCacheSize() {
+  if ('caches' in window) {
+    caches.open('ridesafe-mapas-v1').then(function(cache) {
+      cache.keys().then(function(keys) {
+        var size = keys.length;
+        var el = document.getElementById('offline-cache-size');
+        if (el) el.textContent = size > 0 ? size + ' tiles guardados (~' + Math.round(size*0.015) + ' MB)' : 'Sin mapas descargados';
+        var bar = document.getElementById('offline-progress-bar');
+        if (bar) bar.style.width = Math.min(100, size/50) + '%';
+      });
+    }).catch(function(){
+      var el = document.getElementById('offline-cache-size');
+      if(el) el.textContent = 'Caché no disponible en este navegador';
+    });
+  } else {
+    var el = document.getElementById('offline-cache-size');
+    if(el) el.textContent = 'Tu navegador no soporta caché offline';
+  }
+}
+
+function descargarMapas() {
+  if (offlineDescargando) return;
+  if (!userPos) { toast('Activa el GPS primero'); return; }
+  if (!('caches' in window)) { toast('Tu navegador no soporta mapas offline'); return; }
+
+  offlineDescargando = true;
+  var btn = document.getElementById('btn-descargar');
+  if(btn){ btn.textContent = '⏳ Descargando...'; btn.style.opacity = '.6'; }
+
+  var lat = userPos[0], lng = userPos[1];
+  var zoom = 14;
+  var tilesDescargadas = 0;
+  var urls = [];
+
+  // Calcular tiles en el radio
+  var n = Math.ceil(offlineRadio / 2); // aproximado
+  var tileLat = Math.floor((1 - Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI) / 2 * Math.pow(2, zoom));
+  var tileLng = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
+
+  for(var x = tileLng - n; x <= tileLng + n; x++) {
+    for(var y = tileLat - n; y <= tileLat + n; y++) {
+      urls.push('https://tile.openstreetmap.org/' + zoom + '/' + x + '/' + y + '.png');
+    }
+  }
+
+  var total = urls.length;
+  document.getElementById('offline-progress-txt').textContent = 'Descargando 0 de ' + total + ' tiles...';
+
+  caches.open('ridesafe-mapas-v1').then(function(cache) {
+    var promesas = urls.map(function(url) {
+      return fetch(url, {mode:'no-cors'}).then(function(resp) {
+        return cache.put(url, resp);
+      }).then(function() {
+        tilesDescargadas++;
+        var pct = Math.round(tilesDescargadas/total*100);
+        var bar = document.getElementById('offline-progress-bar');
+        var txt = document.getElementById('offline-progress-txt');
+        if(bar) bar.style.width = pct + '%';
+        if(txt) txt.textContent = 'Descargando ' + tilesDescargadas + ' de ' + total + ' tiles... ' + pct + '%';
+      }).catch(function(){});
+    });
+
+    Promise.allSettled(promesas).then(function() {
+      offlineDescargando = false;
+      if(btn){ btn.textContent = '✅ MAPAS DESCARGADOS'; btn.style.opacity = '1'; btn.style.background = 'var(--lime)'; }
+      toast('Mapas offline guardados ✅ Radio ' + offlineRadio + ' km');
+      calcularCacheSize();
+      setTimeout(function(){
+        if(btn){ btn.textContent = '⬇️ DESCARGAR MAPAS DE MI ZONA'; btn.style.background = 'var(--cyan)'; }
+      }, 3000);
+    });
+  });
+}
+
+function borrarCacheMapas() {
+  if (!confirm('¿Borrar todos los mapas descargados?')) return;
+  if ('caches' in window) {
+    caches.delete('ridesafe-mapas-v1').then(function() {
+      toast('Caché de mapas borrada');
+      calcularCacheSize();
+      var bar = document.getElementById('offline-progress-bar');
+      var txt = document.getElementById('offline-progress-txt');
+      if(bar) bar.style.width = '0%';
+      if(txt) txt.textContent = 'Pulsa Descargar para guardar los mapas de tu zona';
+    });
+  }
+}
+
+// Registrar Service Worker para servir tiles offline
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw-maps.js').catch(function(){});
+}
 
 </script>
 
