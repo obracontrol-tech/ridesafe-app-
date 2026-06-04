@@ -148,12 +148,11 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
       </div>
       <div class="sec-title">Todas las claves</div>
       <div class="tabla">
-        <div class="tabla-hdr" style="grid-template-columns:1fr 80px 100px 110px 80px">
+        <div class="tabla-hdr" style="grid-template-columns:1fr 80px 160px 130px">
           <span class="tabla-th">Clave</span>
           <span class="tabla-th">Días</span>
           <span class="tabla-th">Estado</span>
           <span class="tabla-th">Activada</span>
-          <span class="tabla-th">Acción</span>
         </div>
         <div id="lista-claves"><div class="empty"><span class="spin"></span> Cargando...</div></div>
       </div>
@@ -310,14 +309,13 @@ function renderClaves(usadasMap){
     if(usada) usadas++; else libres++;
     var fecha = datos && datos.fecha ? datos.fecha : '—';
     var btnRevocar = usada
-      ? '<button onclick="revocarClave(\'' + c.clave + '\')" style="padding:4px 10px;background:rgba(255,51,85,.1);border:1px solid rgba(255,51,85,.3);border-radius:8px;color:var(--red);font-size:10px;font-family:Barlow Condensed,sans-serif;font-weight:700;cursor:pointer">🗑️ Revocar</button>'
+      ? ' <button onclick="revocarClave(\'' + c.clave + '\')" style="padding:3px 8px;background:rgba(255,51,85,.12);border:1px solid rgba(255,51,85,.35);border-radius:6px;color:var(--red);font-size:10px;font-family:Barlow Condensed,sans-serif;font-weight:700;cursor:pointer;margin-left:6px">🗑️</button>'
       : '';
-    html += '<div class="tabla-row" style="grid-template-columns:1fr 80px 100px 110px 80px">'
+    html += '<div class="tabla-row" style="grid-template-columns:1fr 80px 160px 130px">'
       +'<div><div class="clave-code">'+c.clave+'</div><div class="clave-tipo">'+c.tipo+'</div></div>'
       +'<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+c.dias+'d</div>'
-      +'<div><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'✅ Usada':'🟢 Libre')+'</span></div>'
+      +'<div style="display:flex;align-items:center"><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'✅ Usada':'🟢 Libre')+'</span>'+btnRevocar+'</div>'
       +'<div style="font-size:10px;color:var(--muted)">'+fecha+'</div>'
-      +'<div>'+btnRevocar+'</div>'
       +'</div>';
   });
   document.getElementById('lista-claves').innerHTML = html || '<div class="empty">Sin claves</div>';
