@@ -1737,6 +1737,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   width:0%;transition:width .1s linear;
 }
 
+
+/* PANEL LEGAL INFO */
+#panel-legal-info{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column}
+#panel-legal-info.show{display:flex}
+
 </style>
 </head>
 <body>
@@ -2303,6 +2308,75 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
 </div>
 
+<!-- PANEL LEGAL INFO -->
+<div class="panel" id="panel-legal-info">
+  <div class="p-header">
+    <button class="p-back" onclick="closeLegalPanel()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="p-title">Aviso <span>Legal</span></div>
+  </div>
+  <div class="p-body" style="overflow-y:auto;padding:20px 16px">
+
+    <!-- Estado aceptación -->
+    <div id="legal-estado-box" style="background:var(--lime-dim);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:28px">✅</span>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--lime)">Condiciones aceptadas</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="legal-fecha-aceptacion">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- Texto legal completo -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">
+      ⚠️ Aviso importante de uso y responsabilidad
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        Antes de acceder a la aplicación, el usuario declara haber <strong style="color:var(--lime)">leído, entendido y aceptado</strong> las presentes condiciones de uso.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        Esta aplicación es una <strong style="color:var(--lime)">herramienta de apoyo, información, asistencia y organización</strong>, pero en ningún caso sustituye la atención, responsabilidad, prudencia, criterio personal, normas de circulación, señales de tráfico, indicaciones de las autoridades o medidas de seguridad obligatorias.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        El usuario reconoce y acepta que el uso de la aplicación debe realizarse siempre de forma <strong style="color:var(--lime)">segura, responsable y conforme a la normativa vigente</strong>. Queda expresamente <strong style="color:var(--lime)">prohibido manipular, consultar, configurar o utilizar la aplicación</strong> de forma que pueda distraer al usuario mientras circula, conduce, monta en bicicleta, se desplaza o realiza cualquier actividad que requiera atención.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        El desarrollador, titular o responsable de la aplicación <strong style="color:var(--lime)">no se hace responsable</strong> de accidentes, caídas, daños personales, daños materiales, sanciones, pérdidas, lesiones, errores de interpretación, decisiones del usuario, uso indebido, distracciones, manipulación durante la circulación, incumplimiento de normas de tráfico o cualquier consecuencia derivada del mal uso de la aplicación.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        La aplicación puede contener <strong style="color:var(--lime)">información generada automáticamente, datos de localización, rutas, alertas, recomendaciones, avisos, cálculos, mensajes o funciones asistidas por inteligencia artificial</strong>. Dicha información puede no ser exacta, completa, actualizada o adecuada en todos los casos.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        El usuario entiende que pueden producirse <strong style="color:var(--lime)">errores técnicos, fallos de conexión, pérdida de señal GPS, retrasos en las alertas, datos incorrectos, interrupciones del servicio</strong>, fallos de funcionamiento, errores de cálculo, problemas del dispositivo, falta de cobertura, limitaciones del sistema o resultados inexactos.
+      </div>
+
+      <div style="background:var(--card);border-left:3px solid rgba(168,230,61,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        El uso de la aplicación se realiza bajo la <strong style="color:var(--lime)">exclusiva responsabilidad del usuario</strong>. Al aceptar estas condiciones, el usuario exonera al desarrollador, titular, colaboradores, proveedores y responsables técnicos de cualquier responsabilidad derivada del uso correcto o incorrecto de la aplicación.
+      </div>
+
+      <div style="background:rgba(255,51,85,.05);border-left:3px solid rgba(255,51,85,.4);border-radius:0 12px 12px 0;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#c8d8ca">
+        <strong style="color:var(--red)">Si no está de acuerdo con estas condiciones, no debe acceder ni utilizar la aplicación.</strong>
+      </div>
+
+    </div>
+
+    <div style="margin-top:20px;padding:14px;background:var(--card2);border:1px solid var(--border2);border-radius:14px;text-align:center">
+      <div style="font-size:11px;color:var(--muted)">Versión legal: 1.0 · JM Prestige AI Solutions</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:4px">info@obracontrolgps.net · +34 643 223 301</div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+</div>
+
 <div id="tabbar">
   <button class="tab active" onclick="toast('Inicio')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
@@ -2322,9 +2396,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span>Análisis</span>
   </button>
-  <button class="tab" onclick="toast('Perfil — próximamente')">
-    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Perfil</span>
+  <button class="tab" onclick="openLegalPanel()">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+    <span>Legal</span>
   </button>
 </div>
 
@@ -4761,42 +4835,58 @@ function accesoEntrar() {
 function accesoVerificar() {
   var clave = document.getElementById('acceso-input').value.trim().toUpperCase();
   var errorEl = document.getElementById('acceso-error');
+  var btn = document.getElementById('trial-btn-activar');
 
   if (!clave) { errorEl.textContent = 'Introduce tu clave'; return; }
 
-  var claves = JSON.parse(localStorage.getItem('rs_claves_usadas') || '[]');
-
+  // Verificar que la clave existe en la lista
   if (TRIAL_CLAVES_VALIDAS.indexOf(clave) === -1) {
     errorEl.textContent = 'Clave no válida. Contacta con el administrador.';
     setTimeout(function(){ errorEl.textContent = ''; }, 3000);
     return;
   }
 
-  if (claves.indexOf(clave) !== -1) {
-    errorEl.textContent = 'Esta clave ya ha sido utilizada.';
-    return;
-  }
+  // Bloquear botón mientras consulta Firebase
+  if(btn){ btn.textContent = 'Verificando...'; btn.disabled = true; }
+  errorEl.textContent = '';
 
-  // Activar
-  claves.push(clave);
-  localStorage.setItem('rs_claves_usadas', JSON.stringify(claves));
-  localStorage.setItem('rs_clave_activa', '1');
-  localStorage.setItem('rs_clave_valor', clave);
+  // Verificar en Firebase si la clave ya fue usada globalmente
+  var claveKey = clave.replace(/-/g,'_');
+  db.ref('claves_activadas/' + claveKey).once('value', function(snap) {
+    var datos = snap.val();
 
-  // Registrar en Firebase para que la consola lo vea
-  try {
-    if (typeof db !== 'undefined' && db) {
-      db.ref('claves_activadas/' + clave.replace(/-/g,'_')).set({
-        clave: clave,
-        ts: Date.now(),
-        fecha: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES'),
-        dispositivo: navigator.userAgent.substring(0, 100)
-      });
+    if (datos && datos.clave) {
+      // Clave ya usada en otro dispositivo
+      errorEl.textContent = 'Esta clave ya fue activada en otro dispositivo.';
+      if(btn){ btn.textContent = '✅ ACTIVAR'; btn.disabled = false; }
+      return;
     }
-  } catch(e) {}
 
-  document.getElementById('acceso-screen').classList.remove('show');
-  toast('RideSafe AI activado! Bienvenido. ');
+    // Clave libre — activar
+    var ahora = new Date();
+    var registro = {
+      clave: clave,
+      ts: Date.now(),
+      fecha: ahora.toLocaleDateString('es-ES') + ' ' + ahora.toLocaleTimeString('es-ES'),
+      dispositivo: navigator.userAgent.substring(0, 100)
+    };
+
+    // Guardar en Firebase — marca como usada globalmente
+    db.ref('claves_activadas/' + claveKey).set(registro)
+      .then(function() {
+        localStorage.setItem('rs_clave_activa', '1');
+        localStorage.setItem('rs_clave_valor', clave);
+        document.getElementById('acceso-screen').classList.remove('show');
+        toast('RideSafe AI activado! Bienvenido. 🚴');
+      })
+      .catch(function(e) {
+        errorEl.textContent = 'Error de conexión. Comprueba internet e inténtalo de nuevo.';
+        if(btn){ btn.textContent = '✅ ACTIVAR'; btn.disabled = false; }
+      });
+  }, function(e) {
+    errorEl.textContent = 'Error de conexión con el servidor.';
+    if(btn){ btn.textContent = '✅ ACTIVAR'; btn.disabled = false; }
+  });
 }
 
 function accesoWhatsApp() {
@@ -5010,6 +5100,21 @@ function legalAceptar() {
 
 // Lanzar al arrancar — después del trial/clave
 setTimeout(legalInit, 300);
+
+
+function openLegalPanel() {
+  // Mostrar fecha de aceptación
+  var fecha = localStorage.getItem('rs_legal_fecha');
+  var el = document.getElementById('legal-fecha-aceptacion');
+  if (fecha && el) {
+    var d = new Date(fecha);
+    el.textContent = 'Aceptado el ' + d.toLocaleDateString('es-ES') + ' a las ' + d.toLocaleTimeString('es-ES');
+  } else if (el) {
+    el.textContent = 'Aceptación registrada en este dispositivo';
+  }
+  openPanel('panel-legal-info');
+}
+function closeLegalPanel() { closePanel('panel-legal-info'); }
 
 </script>
 
