@@ -1746,6 +1746,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 /* MODULO MAPAS OFFLINE */
 .mod-offline .mod-icon{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2)}
 
+
+/* MODULO ANTIRROBO */
+.mod-anti .mod-icon{background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.2)}
+.anti-status{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.anti-conectado{background:rgba(0,229,100,.1);color:#00e564;border:1px solid rgba(0,229,100,.2)}
+.anti-desconectado{background:rgba(255,136,51,.1);color:var(--orange);border:1px solid rgba(255,136,51,.2)}
+.anti-activo{background:rgba(255,51,85,.1);color:var(--red);border:1px solid rgba(255,51,85,.2)}
+.telem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.telem-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:12px}
+.telem-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.telem-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--text)}
+.anti-btn-lock{width:100%;padding:14px;background:var(--red);border:none;border-radius:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;cursor:pointer;margin-bottom:10px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.anti-btn-lock:active{transform:scale(.97)}
+.anti-btn-unlock{width:100%;padding:14px;background:none;border:1.5px solid var(--lime);border-radius:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--lime);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.anti-btn-unlock:active{transform:scale(.97)}
+.anti-alerta{padding:14px;background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.3);border-radius:12px;font-size:12px;color:var(--red);line-height:1.6;display:none}
+.anti-alerta.show{display:block}
+
 </style>
 </head>
 <body>
@@ -2193,6 +2211,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
 
     <!-- AJUSTES / PERFIL -->
+    <div class="modulo mod-anti" onclick="openAntiRobo()">
+      <div class="mod-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="modulo-title">Antirrobo</div>
+      <div class="modulo-sub" id="anti-mod-sub">Desconectado</div>
+    </div>
+
     <div class="modulo mod-offline" onclick="openOffline()">
       <div class="mod-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22" stroke="rgba(0,229,255,.3)" stroke-width="1"/></svg>
@@ -2440,6 +2466,85 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         Los mapas de OpenStreetMap se guardan en tu dispositivo. Una vez descargados puedes navegar y ver el mapa aunque no tengas cobertura ni WiFi.<br><br>
         El GPS sigue funcionando offline — no necesita internet.
       </div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- PANEL ANTIRROBO -->
+<div class="panel" id="panel-antirobo">
+  <div class="p-header">
+    <button class="p-back" onclick="closeAntiRobo()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="p-title">Anti<span>Robo</span></div>
+  </div>
+  <div class="p-body" style="overflow-y:auto;padding:20px 16px">
+
+    <!-- Estado conexión -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--text)">Chip RideSafe</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-device-id">Dispositivo: #1234</div>
+      </div>
+      <span class="anti-status anti-desconectado" id="anti-status-badge">● Desconectado</span>
+    </div>
+
+    <!-- Alerta movimiento -->
+    <div class="anti-alerta" id="anti-alerta">
+      🚨 <strong>ALERTA — Movimiento detectado</strong><br>
+      Tu bicicleta se está moviendo sin autorización.<br>
+      <span id="anti-alerta-pos"></span>
+    </div>
+
+    <!-- Telemetría -->
+    <div class="telem-grid">
+      <div class="telem-card">
+        <div class="telem-label">📍 GPS</div>
+        <div class="telem-val" id="anti-gps" style="font-size:13px;line-height:1.4">—</div>
+      </div>
+      <div class="telem-card">
+        <div class="telem-label">⚡ Velocidad</div>
+        <div class="telem-val"><span id="anti-speed">—</span> <span style="font-size:13px;color:var(--muted)">km/h</span></div>
+      </div>
+      <div class="telem-card">
+        <div class="telem-label">🔋 Batería chip</div>
+        <div class="telem-val"><span id="anti-battery">—</span><span style="font-size:13px;color:var(--muted)">%</span></div>
+      </div>
+      <div class="telem-card">
+        <div class="telem-label">🛡️ Estado</div>
+        <div class="telem-val" id="anti-state" style="font-size:15px">—</div>
+      </div>
+    </div>
+
+    <!-- Modo asistencia -->
+    <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text)">Modo asistencia</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-assist">—</div>
+      </div>
+      <span style="font-size:20px" id="anti-assist-icon">⚙️</span>
+    </div>
+
+    <!-- Botones -->
+    <button class="anti-btn-lock" id="anti-lock-btn" onclick="antiLock()">
+      🔐 ACTIVAR ANTIRROBO
+    </button>
+    <button class="anti-btn-unlock" id="anti-unlock-btn" onclick="antiUnlock()">
+      🔓 DESACTIVAR ANTIRROBO
+    </button>
+
+    <!-- Ver en mapa -->
+    <button onclick="antiVerMapa()" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px">
+      📍 Ver ubicación en Google Maps
+    </button>
+
+    <!-- Info conexión -->
+    <div style="margin-top:16px;padding:14px;background:var(--lime-dim);border:1px solid var(--border);border-radius:12px;font-size:11px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--lime)">Conexión:</strong> WebSocket en tiempo real con el chip GPS.<br>
+      Cuando el chip detecta movimiento sin autorización envía alerta por Telegram y WhatsApp automáticamente.<br>
+      <strong style="color:var(--lime)">API:</strong> api.ridesafeai.es
     </div>
 
     <div style="height:20px"></div>
@@ -5040,7 +5145,7 @@ function diagnosticoMotor(problema) {
   // Usar Cloudflare Worker con Anthropic
   fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 400,
@@ -5305,6 +5410,218 @@ function borrarCacheMapas() {
 // Registrar Service Worker para servir tiles offline
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw-maps.js').catch(function(){});
+}
+
+
+/* =========================================
+   ANTIRROBO — RideSafeAI Frontend Connector
+   ========================================= */
+
+var ANTI_API = 'https://api.ridesafeai.es/device/1234';
+var ANTI_WS_URL = 'wss://api.ridesafeai.es/stream/1234';
+var antiSocket = null;
+var antiLocked = false;
+var antiLastPos = null;
+var antiConectado = false;
+
+function openAntiRobo() {
+  openPanel('panel-antirobo');
+  connectTelemetry();
+}
+
+function closeAntiRobo() {
+  closePanel('panel-antirobo');
+  // No desconectamos el socket al cerrar — seguimos monitorizando en background
+}
+
+/* ===============================
+   1. Suscripción a telemetría
+   =============================== */
+function connectTelemetry() {
+  if (antiSocket && antiSocket.readyState === WebSocket.OPEN) return;
+
+  try {
+    antiSocket = new WebSocket(ANTI_WS_URL);
+
+    antiSocket.onopen = function() {
+      antiConectado = true;
+      setAntiStatus('conectado');
+      document.getElementById('anti-mod-sub').textContent = 'Conectado';
+    };
+
+    antiSocket.onmessage = function(msg) {
+      try {
+        var data = JSON.parse(msg.data);
+
+        // Actualizar telemetría en el panel
+        if (data.gps) {
+          var gpsStr = data.gps.lat.toFixed(5) + ', ' + data.gps.lon.toFixed(5);
+          document.getElementById('anti-gps').textContent = gpsStr;
+          antiLastPos = data.gps;
+        }
+        if (data.speed !== undefined) {
+          document.getElementById('anti-speed').textContent = data.speed;
+        }
+        if (data.battery !== undefined) {
+          document.getElementById('anti-battery').textContent = data.battery;
+          // Color batería
+          var batColor = data.battery > 50 ? 'var(--lime)' : data.battery > 20 ? 'var(--orange)' : 'var(--red)';
+          document.getElementById('anti-battery').style.color = batColor;
+        }
+        if (data.assist !== undefined) {
+          document.getElementById('anti-assist').textContent = data.assist;
+          var icons = {'eco':'🌱','normal':'⚙️','sport':'🏎️','off':'🚫'};
+          document.getElementById('anti-assist-icon').textContent = icons[data.assist] || '⚙️';
+        }
+        if (data.anti_state !== undefined) {
+          document.getElementById('anti-state').textContent = data.anti_state;
+          var stateColor = data.anti_state === 'LOCKED' ? 'var(--red)' : data.anti_state === 'ARMED' ? 'var(--orange)' : 'var(--lime)';
+          document.getElementById('anti-state').style.color = stateColor;
+        }
+
+        // Detectar movimiento no autorizado
+        if (antiLocked && data.speed > 2) {
+          antiAlarma(data.gps);
+        }
+
+      } catch(e) { console.log('Anti parse error:', e); }
+    };
+
+    antiSocket.onclose = function() {
+      antiConectado = false;
+      setAntiStatus('desconectado');
+      document.getElementById('anti-mod-sub').textContent = 'Desconectado';
+      // Reconectar cada 5s
+      setTimeout(function() {
+        if (!antiConectado) connectTelemetry();
+      }, 5000);
+    };
+
+    antiSocket.onerror = function() {
+      setAntiStatus('desconectado');
+      // Modo simulación cuando no hay hardware
+      antiSimular();
+    };
+
+  } catch(e) {
+    setAntiStatus('desconectado');
+    antiSimular();
+  }
+}
+
+/* Simulación cuando no hay hardware real */
+function antiSimular() {
+  var sim = document.getElementById('anti-status-badge');
+  if(sim) {
+    sim.textContent = '● Sin hardware';
+    sim.className = 'anti-status anti-desconectado';
+  }
+  document.getElementById('anti-mod-sub').textContent = 'Sin chip';
+  // Mostrar datos de demo
+  if(document.getElementById('anti-gps')) {
+    document.getElementById('anti-gps').textContent = userPos ? userPos[0].toFixed(5)+', '+userPos[1].toFixed(5) : 'GPS del móvil';
+    document.getElementById('anti-speed').textContent = '0';
+    document.getElementById('anti-battery').textContent = '—';
+    document.getElementById('anti-assist').textContent = 'Sin chip conectado';
+    document.getElementById('anti-state').textContent = 'DEMO';
+    document.getElementById('anti-state').style.color = 'var(--muted)';
+  }
+}
+
+function setAntiStatus(estado) {
+  var badge = document.getElementById('anti-status-badge');
+  if (!badge) return;
+  if (estado === 'conectado') {
+    badge.textContent = '● Conectado';
+    badge.className = 'anti-status anti-conectado';
+  } else if (estado === 'activo') {
+    badge.textContent = '🔐 Armado';
+    badge.className = 'anti-status anti-activo';
+  } else {
+    badge.textContent = '● Desconectado';
+    badge.className = 'anti-status anti-desconectado';
+  }
+}
+
+/* ===============================
+   2. Enviar comandos antirrobo
+   =============================== */
+function sendCommand(cmd) {
+  return fetch(ANTI_API + '/command', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
+    body: JSON.stringify({ command: cmd })
+  }).catch(function() {
+    toast('Sin conexión con el chip');
+  });
+}
+
+function antiLock() {
+  antiLocked = true;
+  setAntiStatus('activo');
+  document.getElementById('anti-lock-btn').style.opacity = '.5';
+  document.getElementById('anti-unlock-btn').style.opacity = '1';
+  document.getElementById('anti-mod-sub').textContent = '🔐 Armado';
+  sendCommand('LOCK');
+  toast('🔐 Antirrobo activado');
+  // Alerta Telegram
+  tgEnviar('🔐 Antirrobo ACTIVADO en tu bicicleta · RideSafe AI');
+}
+
+function antiUnlock() {
+  antiLocked = false;
+  setAntiStatus('conectado');
+  document.getElementById('anti-lock-btn').style.opacity = '1';
+  document.getElementById('anti-unlock-btn').style.opacity = '.5';
+  document.getElementById('anti-mod-sub').textContent = 'Conectado';
+  document.getElementById('anti-alerta').classList.remove('show');
+  sendCommand('UNLOCK');
+  toast('🔓 Antirrobo desactivado');
+  tgEnviar('🔓 Antirrobo DESACTIVADO · RideSafe AI');
+}
+
+function antiAlarma(gps) {
+  var alerta = document.getElementById('anti-alerta');
+  if (!alerta) return;
+  alerta.classList.add('show');
+  var pos = gps ? gps.lat.toFixed(5)+', '+gps.lon.toFixed(5) : '';
+  document.getElementById('anti-alerta-pos').textContent = pos ? 'Posición: ' + pos : '';
+  // Alarma sonora
+  try { alarma(); } catch(e) {}
+  if (navigator.vibrate) navigator.vibrate([300,100,300,100,600]);
+  // Telegram
+  tgEnviar('🚨 ALERTA ANTIRROBO: Tu bicicleta se está moviendo!' + (pos ? ' Posición: https://maps.google.com/?q='+gps.lat+','+gps.lon : '') + ' · RideSafe AI');
+  // WhatsApp a contactos de emergencia
+  var lista = cargarContactosEmergencia();
+  var msg = encodeURIComponent('🚨 ALERTA: Tu bicicleta con RideSafe AI se está moviendo sin autorización!' + (pos ? ' https://maps.google.com/?q='+gps.lat+','+gps.lon : ''));
+  lista.forEach(function(c, i) {
+    if (c.telefono) {
+      setTimeout(function() {
+        window.open('https://wa.me/'+c.telefono.replace(/[^0-9]/g,'')+'?text='+msg, '_blank');
+      }, i * 1500);
+    }
+  });
+}
+
+function antiVerMapa() {
+  var pos = antiLastPos || (userPos ? {lat:userPos[0],lon:userPos[1]} : null);
+  if (pos) {
+    window.open('https://maps.google.com/?q='+pos.lat+','+pos.lon, '_blank');
+  } else {
+    toast('Sin posición disponible');
+  }
+}
+
+function tgEnviar(msg) {
+  try {
+    var chatId = localStorage.getItem('tg_chat_id');
+    if (!chatId) return;
+    fetch('https://api.telegram.org/bot8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM/sendMessage', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({chat_id: chatId, text: msg})
+    });
+  } catch(e) {}
 }
 
 </script>
