@@ -2939,84 +2939,83 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 <div class="panel" id="panel-ebike">
   <div class="p-header">
     <button class="p-back" onclick="closeEbike()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">E-Bike <span style="color:var(--cyan)">Pro</span></div>
-    <div style="font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.3)">&#128267; Activo</div>
+    <div class="p-title">E-Bike <span>Pro</span></div>
   </div>
-  <div class="p-body">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="card-title">&#128267; Estado Batería</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--cyan)" id="eb-pct">75%</div>
-      </div>
-      <div class="eb-battery-bar">
-        <div class="eb-battery-fill" id="eb-bar" style="width:75%;background:var(--cyan)"></div>
-        <div class="eb-battery-text" id="eb-bar-txt">75% — Carga buena</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px"><span>Nivel de batería</span><span style="color:var(--cyan);font-weight:700" id="eb-pct-lbl">75%</span></div>
-        <input type="range" class="eb-slider" id="eb-slider-bat" min="0" max="100" value="75" oninput="updateBattery(this.value)"/>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px"><span>Capacidad total (Wh)</span><span style="color:var(--cyan);font-weight:700" id="eb-cap-lbl">500 Wh</span></div>
-        <input type="range" class="eb-slider" id="eb-slider-cap" min="200" max="1000" step="50" value="500" oninput="updateCapacity(this.value)"/>
-      </div>
-      <div class="eb-stat-grid">
-        <div class="eb-stat"><span class="es-label">Wh restantes</span><span class="es-val" id="eb-wh">375 <span>Wh</span></span></div>
-        <div class="eb-stat"><span class="es-label">Autonomía est.</span><span class="es-val" id="eb-km">62 <span>km</span></span></div>
-        <div class="eb-stat"><span class="es-label">Ciclos carga</span><span class="es-val" id="eb-ciclos">0 <span>ciclos</span></span></div>
-        <div class="eb-stat" id="eb-stat-salud"><span class="es-label">Salud batería</span><span class="es-val" id="eb-salud">100 <span>%</span></span></div>
-      </div>
-      <div style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px"><span>Ciclos de carga</span><span style="color:var(--cyan);font-weight:700" id="eb-ciclos-lbl">0</span></div>
-        <input type="range" class="eb-slider" id="eb-slider-ciclos" min="0" max="1000" value="0" oninput="updateCycles(this.value)"/>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">&#9881; Estado Motor</div>
-      <div class="motor-item" onclick="diagnosticoMotor('Ruido anormal al pedalear')"><span class="motor-icon">&#128266;</span><div class="motor-info"><div class="motor-name">Ruido anormal</div><div class="motor-desc">Clic, crujido, zumbido...</div></div><span style="color:var(--border2);font-size:16px">&#8250;</span></div>
-      <div class="motor-item" onclick="diagnosticoMotor('Pérdida de potencia en subidas')"><span class="motor-icon">&#128201;</span><div class="motor-info"><div class="motor-name">Pérdida de potencia</div><div class="motor-desc">Motor no responde bien</div></div><span style="color:var(--border2);font-size:16px">&#8250;</span></div>
-      <div class="motor-item" onclick="diagnosticoMotor('Asistencia intermitente')"><span class="motor-icon">&#9889;</span><div class="motor-info"><div class="motor-name">Asistencia intermitente</div><div class="motor-desc">Se corta la ayuda eléctrica</div></div><span style="color:var(--border2);font-size:16px">&#8250;</span></div>
-      <div class="motor-item" onclick="diagnosticoMotor('Error en display')"><span class="motor-icon">&#128250;</span><div class="motor-info"><div class="motor-name">Error en display</div><div class="motor-desc">Código de error en pantalla</div></div><span style="color:var(--border2);font-size:16px">&#8250;</span></div>
-      <div class="motor-item" onclick="diagnosticoMotor('La e-bike no enciende')"><span class="motor-icon">&#128308;</span><div class="motor-info"><div class="motor-name">No enciende</div><div class="motor-desc">Sin respuesta al encender</div></div><span style="color:var(--border2);font-size:16px">&#8250;</span></div>
-    </div>
-    <div class="diag-card">
-      <div class="card-title" style="color:var(--cyan);margin-bottom:4px">&#129302; Diagnóstico IA</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">Describe el problema de tu e-bike y la IA lo analizará</div>
-      <div style="margin-bottom:14px">
-        <span class="diag-chip" onclick="diagnosticoMotor('Consumo excesivo de batería')">&#128267; Consumo alto</span>
-        <span class="diag-chip" onclick="diagnosticoMotor('Vibración en el manillar')">&#128423; Vibración</span>
-        <span class="diag-chip" onclick="diagnosticoMotor('Freno regenerativo no funciona')">&#128721; Freno regen.</span>
-        <span class="diag-chip" onclick="diagnosticoMotor('Sensor de cadencia no detecta')">&#128260; Sensor PAS</span>
-        <span class="diag-chip" onclick="diagnosticoMotor('Batería no carga al 100%')">&#9889; No carga 100%</span>
-        <span class="diag-chip" onclick="diagnosticoMotor('Motor se calienta mucho')">&#127777; Sobrecalentamiento</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="diag-input" class="input" placeholder="Describe el problema..." style="flex:1;font-size:12px"/>
-        <button onclick="diagnosticoMotor(document.getElementById('diag-input').value)" style="padding:10px 16px;background:var(--cyan);border:none;border-radius:10px;color:#080c0a;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer">&#8594;</button>
-      </div>
-      <div class="diag-result" id="diag-result"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">&#128202; Consumo por ruta</div>
-      <div class="consumo-chart">
-        <div class="consumo-bar" style="height:60%"></div>
-        <div class="consumo-bar" style="height:80%"></div>
-        <div class="consumo-bar" style="height:40%"></div>
-        <div class="consumo-bar" style="height:70%"></div>
-        <div class="consumo-bar active" style="height:55%"></div>
-      </div>
-      <div style="text-align:center;font-size:10px;color:var(--dim);margin-top:6px">Últimas 5 rutas - Wh/km</div>
-      <div class="eb-stat-grid" style="margin-top:10px;margin-bottom:0">
-        <div class="eb-stat"><span class="es-label">Consumo medio</span><span class="es-val">46 <span>Wh/km</span></span></div>
-        <div class="eb-stat"><span class="es-label">Nivel asistencia</span><span class="es-val">ECO</span></div>
+  <div class="p-body" style="overflow-y:auto;padding:16px">
+
+    <!-- Guía rápida E-Bike -->
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">⚡ Guía práctica E-Bike</div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+
+        <div onclick="ebGuia('bateria')" style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s">
+          <span style="font-size:20px">🔋</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">Cuidado de la batería</div><div style="font-size:11px;color:var(--muted)">Carga, almacenaje y duración</div></div>
+          <span style="margin-left:auto;color:var(--cyan)">›</span>
+        </div>
+
+        <div onclick="ebGuia('autonomia')" style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s">
+          <span style="font-size:20px">🗺️</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">Maximizar autonomía</div><div style="font-size:11px;color:var(--muted)">Consejos para llegar más lejos</div></div>
+          <span style="margin-left:auto;color:var(--cyan)">›</span>
+        </div>
+
+        <div onclick="ebGuia('mantenimiento')" style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s">
+          <span style="font-size:20px">🔧</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">Mantenimiento del motor</div><div style="font-size:11px;color:var(--muted)">Revisiones y prevención</div></div>
+          <span style="margin-left:auto;color:var(--cyan)">›</span>
+        </div>
+
+        <div onclick="ebGuia('normativa')" style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s">
+          <span style="font-size:20px">📋</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">Normativa E-Bike España</div><div style="font-size:11px;color:var(--muted)">Límites, seguros y circulación</div></div>
+          <span style="margin-left:auto;color:var(--cyan)">›</span>
+        </div>
+
+        <div onclick="ebGuia('invierno')" style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s">
+          <span style="font-size:20px">❄️</span>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text)">E-Bike en invierno</div><div style="font-size:11px;color:var(--muted)">Frío, lluvia y conservación</div></div>
+          <span style="margin-left:auto;color:var(--cyan)">›</span>
+        </div>
+
       </div>
     </div>
+
+    <!-- Diagnóstico IA -->
+    <div style="background:var(--card);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--cyan);margin-bottom:4px">🤖 Diagnóstico IA del motor</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Describe el problema y la IA te da un diagnóstico inmediato</div>
+
+      <!-- Síntomas rápidos -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn-chip" onclick="diagnosticoMotor('Ruido anormal al pedalear')">🔊 Ruido</button>
+        <button class="btn-chip" onclick="diagnosticoMotor('Pérdida de potencia del motor')">⬇️ Sin potencia</button>
+        <button class="btn-chip" onclick="diagnosticoMotor('Batería se descarga muy rápido')">🔋 Batería</button>
+        <button class="btn-chip" onclick="diagnosticoMotor('Error en la pantalla del display')">📟 Error display</button>
+        <button class="btn-chip" onclick="diagnosticoMotor('Frenado regenerativo no funciona')">🛑 Frenos</button>
+      </div>
+
+      <!-- Campo libre -->
+      <div style="display:flex;gap:8px">
+        <input id="diag-input-txt" style="flex:1;padding:10px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;outline:none" placeholder="Describe el problema..." maxlength="200"/>
+        <button onclick="diagnosticoMotor(document.getElementById('diag-input-txt').value)" style="padding:10px 14px;background:var(--cyan);border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#080c0a;cursor:pointer">IA</button>
+      </div>
+
+      <!-- Resultado diagnóstico -->
+      <div id="diag-result" style="margin-top:12px;padding:12px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;font-size:13px;line-height:1.7;display:none"></div>
+    </div>
+
+    <!-- Resultado guía IA -->
+    <div id="eb-guia-result" style="display:none;background:var(--card);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:16px;margin-bottom:16px">
+      <div id="eb-guia-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--cyan);margin-bottom:10px"></div>
+      <div id="eb-guia-txt" style="font-size:13px;color:var(--text);line-height:1.8"></div>
+    </div>
+
+    <div style="height:20px"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PANEL ANÁLISIS
-     ═══════════════════════════════════════════ -->
 <div class="panel" id="panel-analisis">
   <div class="p-header">
     <button class="p-back" onclick="closeAnalisis()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -5622,6 +5621,53 @@ function tgEnviar(msg) {
       body: JSON.stringify({chat_id: chatId, text: msg})
     });
   } catch(e) {}
+}
+
+
+/* E-BIKE GUIA IA */
+var ebGuiaTemas = {
+  bateria: 'Dame una guia practica sobre el cuidado de la bateria de una E-Bike: como cargarla, temperatura ideal, almacenaje y consejos para prolongar su vida util. 5 puntos claros con emojis.',
+  autonomia: 'Dame 5 consejos practicos para maximizar la autonomia de una E-Bike en ruta. Modo de asistencia, tecnica de pedaleo, terreno y velocidad. Con emojis.',
+  mantenimiento: 'Dame una guia breve de mantenimiento preventivo del motor de una E-Bike: revisiones periodicas, limpieza, lubricacion y señales de alerta. 5 puntos con emojis.',
+  normativa: 'Explicame la normativa actual de E-Bikes en España: limites de velocidad y potencia, donde se puede circular, si necesita seguro o matricula. Breve y claro con emojis.',
+  invierno: 'Dame consejos practicos para usar y conservar una E-Bike en invierno: frio y bateria, lluvia, almacenaje y neumaticos. 5 puntos con emojis.'
+};
+
+var ebGuiaNombres = {
+  bateria: '🔋 Cuidado de la bateria',
+  autonomia: '🗺️ Maximizar autonomia',
+  mantenimiento: '🔧 Mantenimiento del motor',
+  normativa: '📋 Normativa E-Bike España',
+  invierno: '❄️ E-Bike en invierno'
+};
+
+function ebGuia(tema) {
+  var resultEl = document.getElementById('eb-guia-result');
+  var tituloEl = document.getElementById('eb-guia-titulo');
+  var txtEl = document.getElementById('eb-guia-txt');
+
+  tituloEl.textContent = ebGuiaNombres[tema] || tema;
+  txtEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--cyan);font-size:12px"><div class="spin" style="border-top-color:var(--cyan)"></div> Consultando IA...</div>';
+  resultEl.style.display = 'block';
+  resultEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{ role: 'user', content: ebGuiaTemas[tema] }]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var txt = d.content && d.content[0] ? d.content[0].text : 'Error al obtener respuesta';
+    txtEl.innerHTML = txt.replace(/\n/g, '<br>');
+  })
+  .catch(function(){
+    txtEl.innerHTML = '<span style="color:var(--red)">Error de conexion. Comprueba internet.</span>';
+  });
 }
 
 </script>
