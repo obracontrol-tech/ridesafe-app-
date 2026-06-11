@@ -206,6 +206,34 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 60%);
 }
 .btn-iniciar:active{transform:scale(.97);box-shadow:0 2px 12px rgba(168,230,61,.3)}
+.btn-iniciar::after{
+  content:'';position:absolute;top:0;left:-80%;
+  width:50%;height:100%;
+  background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.45) 50%,transparent 100%);
+  animation:btnShine 4s ease-in-out infinite;
+}
+@keyframes btnShine{
+  0%{left:-80%}
+  18%{left:130%}
+  100%{left:130%}
+}
+/* Entrada en cascada de los módulos */
+@keyframes cardCascade{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.grid>*{opacity:0;animation:cardCascade .45s ease-out forwards}
+.grid>*:nth-child(1){animation-delay:.05s}
+.grid>*:nth-child(2){animation-delay:.12s}
+.grid>*:nth-child(3){animation-delay:.19s}
+.grid>*:nth-child(4){animation-delay:.26s}
+.grid>*:nth-child(5){animation-delay:.33s}
+.grid>*:nth-child(6){animation-delay:.40s}
+.grid>*:nth-child(7){animation-delay:.47s}
+.grid>*:nth-child(8){animation-delay:.54s}
+.grid>*:nth-child(9){animation-delay:.61s}
+.grid>*:nth-child(10){animation-delay:.68s}
+.grid>*:nth-child(n+11){animation-delay:.75s}
 .btn-iniciar svg{width:20px;height:20px;flex-shrink:0;position:relative;z-index:1}
 .btn-iniciar-txt{position:relative;z-index:1}
 
@@ -411,7 +439,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   background:var(--bg);
   display:none;flex-direction:column;
 }
-.panel.show{display:flex}
+.panel.show{display:flex;animation:panelIn .28s ease-out}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* Brillo verde al pulsar un módulo */
+.modulo-big:active,.modulo:active{
+  border-color:var(--lime)!important;
+  box-shadow:0 0 18px rgba(168,230,61,.35)!important;
+}
 
 /* Panel header */
 .p-header{
@@ -2095,7 +2132,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="hero-overlay2"></div>
 
     <div class="hero-bottom">
-      <div class="hero-title">Tu próxima aventura<br><span>off-road</span> te espera</div>
+      <div class="hero-title" id="hero-title">Tu próxima aventura<br><span>off-road</span> te espera</div>
       <div class="hero-sub">Carretera · MTB · Senderos · Pistas forestales</div>
     </div>
   </div>
@@ -3037,6 +3074,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
    ═══════════════════════════════════════ */
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2500);}
 function openPanel(id){document.getElementById(id).classList.add('show');}
+/* Saludo dinámico según hora */
+(function(){var h=new Date().getHours();var t=document.getElementById('hero-title');if(!t)return;
+if(h>=6&&h<13){t.innerHTML='Buenos días ☀️<br>A <span>rodar</span> se ha dicho';}
+else if(h>=13&&h<21){t.innerHTML='Buenas tardes 🚴<br>Tu ruta <span>off-road</span> te espera';}
+else{t.innerHTML='Buenas noches 🌙<br>Planifica tu <span>próxima salida</span>';}})();
 function closePanel(id){document.getElementById(id).classList.remove('show');}
 
 /* Quick stats en inicio */
