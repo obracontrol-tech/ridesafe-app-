@@ -2802,13 +2802,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 <div id="resumen-modal">
   <div class="wp-box" style="max-width:340px;background:transparent;border:none;padding:0;box-shadow:none">
     <div id="resumen-card" style="border-radius:18px;position:relative;overflow:hidden;aspect-ratio:9/14;width:100%">
-      <div id="resumen-track" style="position:absolute;inset:0;background:#1a1a1a"></div>
-      <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0">
+      <div id="resumen-track" style="position:absolute;inset:0;width:100%;height:100%;background:#1a1a1a;z-index:1"></div>
+      <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0;z-index:100">
         <img id="resumen-foto-img" style="width:100%;height:100%;display:block;object-fit:cover"/>
         <div id="resumen-mini-track" style="position:absolute;bottom:104px;right:14px;width:90px;height:90px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.4)"></div>
       </div>
       <!-- Cabecera -->
-      <div style="position:absolute;top:0;left:0;right:0;padding:16px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);display:flex;align-items:center;gap:8px">
+      <div style="position:absolute;top:0;left:0;right:0;padding:16px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);display:flex;align-items:center;gap:8px;z-index:500">
         <span style="font-size:22px">🚴</span>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,.5)">¡Ruta completada!</div>
@@ -2816,14 +2816,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         </div>
       </div>
       <!-- Lugar -->
-      <div id="resumen-lugar" style="position:absolute;top:64px;left:16px;right:16px;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);display:none"></div>
+      <div id="resumen-lugar" style="position:absolute;top:64px;left:16px;right:16px;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);display:none;z-index:500"></div>
       <!-- Botón foto (no se incluye en la captura) -->
-      <button id="resumen-foto-btn" onclick="document.getElementById('resumen-foto-input').click()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px)">
+      <button id="resumen-foto-btn" onclick="document.getElementById('resumen-foto-input').click()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);z-index:600">
         📷 Foto
       </button>
       <input type="file" id="resumen-foto-input" accept="image/*" capture="environment" style="display:none" onchange="onResumenFoto(event)">
       <!-- Stats overlay -->
-      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 35%,rgba(0,0,0,.85))">
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 35%,rgba(0,0,0,.85));z-index:500">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px">
           <div>
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--lime);line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)" id="resumen-km">0</div>
