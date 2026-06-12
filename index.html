@@ -1833,6 +1833,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 .anti-btn-unlock:active{transform:scale(.97)}
 .anti-alerta{padding:14px;background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.3);border-radius:12px;font-size:12px;color:var(--red);line-height:1.6;display:none}
 .anti-alerta.show{display:block}
+@keyframes alarmFlash{
+  0%,100%{background:var(--bg)}
+  50%{background:#3a0a12}
+}
 
 </style>
 </head>
@@ -2282,12 +2286,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
 
     <!-- AJUSTES / PERFIL -->
-    <div class="modulo mod-anti" onclick="openAntiRobo()" style="opacity:.7">
+    <div class="modulo mod-anti" onclick="openAntiRobo()">
       <div class="mod-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <div class="modulo-title">Antirrobo</div>
-      <div class="modulo-sub">Próximamente</div>
+      <div class="modulo-sub">Alarma, aparcamiento, DNI bici</div>
     </div>
 
     <div class="modulo mod-offline" onclick="openOffline()">
@@ -2553,81 +2557,75 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
   <div class="p-body" style="overflow-y:auto;padding:20px 16px">
 
-    <!-- Banner Próximamente -->
-    <div style="background:rgba(255,136,51,.08);border:1.5px solid rgba(255,136,51,.4);border-radius:16px;padding:16px;margin-bottom:20px;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🔐</div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--orange);margin-bottom:6px">PRÓXIMAMENTE</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.7">Esta función requiere un <strong style="color:var(--text)">chip GPS/GSM</strong> instalado en la bicicleta.<br>Estamos trabajando en la integración con hardware compatible.<br><br>Consulta con nosotros para más información.</div>
-      <a href="https://wa.me/34643223301?text=Hola!%20Me%20interesa%20el%20sistema%20antirrobo%20de%20RideSafe%20AI" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 20px;background:#25D366;color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;text-decoration:none">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Más información
-      </a>
-    </div>
-
-    <!-- Estado conexión -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;opacity:.4;pointer-events:none">
-      <div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--text)">Chip RideSafe</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-device-id">Dispositivo: #1234</div>
+<!-- ═══ 1. MODO APARCAMIENTO ═══ -->
+    <div class="card">
+      <div class="card-title">🅿️ Modo Aparcamiento</div>
+      <div class="card-sub" style="margin-bottom:12px">Guarda dónde dejas la bici y vuelve a ella sin perderte</div>
+      <div id="park-empty">
+        <button class="btn-primary" style="width:100%" onclick="parkBike()">📍 APARCAR BICI AQUÍ</button>
       </div>
-      <span class="anti-status anti-desconectado" id="anti-status-badge">● Desconectado</span>
-    </div>
-
-    <!-- Alerta movimiento -->
-    <div class="anti-alerta" id="anti-alerta">
-      🚨 <strong>ALERTA — Movimiento detectado</strong><br>
-      Tu bicicleta se está moviendo sin autorización.<br>
-      <span id="anti-alerta-pos"></span>
-    </div>
-
-    <!-- Telemetría -->
-    <div class="telem-grid">
-      <div class="telem-card">
-        <div class="telem-label">📍 GPS</div>
-        <div class="telem-val" id="anti-gps" style="font-size:13px;line-height:1.4">—</div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">⚡ Velocidad</div>
-        <div class="telem-val"><span id="anti-speed">—</span> <span style="font-size:13px;color:var(--muted)">km/h</span></div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">🔋 Batería chip</div>
-        <div class="telem-val"><span id="anti-battery">—</span><span style="font-size:13px;color:var(--muted)">%</span></div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">🛡️ Estado</div>
-        <div class="telem-val" id="anti-state" style="font-size:15px">—</div>
+      <div id="park-info" style="display:none">
+        <div style="background:var(--lime-dim);border:1px solid rgba(168,230,61,.25);border-radius:12px;padding:12px;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text);font-weight:600">🚲 Bici aparcada</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px" id="park-meta">—</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" style="flex:1" onclick="parkReturn()">🧭 VOLVER A MI BICI</button>
+          <button onclick="parkClear()" style="flex-shrink:0;padding:0 16px;background:none;border:1.5px solid var(--border2);border-radius:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer">✓ YA LA TENGO</button>
+        </div>
       </div>
     </div>
 
-    <!-- Modo asistencia -->
-    <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--text)">Modo asistencia</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-assist">—</div>
+    <!-- ═══ 2. ALARMA DE MOVIMIENTO ═══ -->
+    <div class="card">
+      <div class="card-title">🚨 Alarma de movimiento</div>
+      <div class="card-sub" style="margin-bottom:12px">Deja el móvil en la bolsa del sillín. Si alguien mueve la bici: sirena a todo volumen</div>
+      <div id="alarm-off">
+        <button class="anti-btn-lock" style="margin-bottom:0" onclick="alarmStart()">🔐 ACTIVAR VIGILANCIA</button>
       </div>
-      <span style="font-size:20px" id="anti-assist-icon">⚙️</span>
+      <div id="alarm-arming" style="display:none;text-align:center;padding:10px 0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--orange)" id="alarm-count">10</div>
+        <div style="font-size:11px;color:var(--muted)">Coloca el móvil en la bici y no lo toques...</div>
+      </div>
+      <div id="alarm-on" style="display:none">
+        <div style="background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.3);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--red)">🛡️ VIGILANDO</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Cualquier movimiento disparará la sirena</div>
+        </div>
+        <button class="anti-btn-unlock" onclick="alarmStop()">🔓 DESACTIVAR</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.5">⚠️ La pantalla debe quedar encendida con la app abierta. Sube el volumen al máximo antes de activar.</div>
     </div>
 
-    <!-- Botones -->
-    <button class="anti-btn-lock" id="anti-lock-btn" onclick="antiLock()">
-      🔐 ACTIVAR ANTIRROBO
-    </button>
-    <button class="anti-btn-unlock" id="anti-unlock-btn" onclick="antiUnlock()">
-      🔓 DESACTIVAR ANTIRROBO
-    </button>
+    <!-- ═══ 3. DNI DE LA BICI ═══ -->
+    <div class="card">
+      <div class="card-title">🪪 DNI de tu bici</div>
+      <div class="card-sub" style="margin-bottom:12px">Tenlo todo a mano si algún día tienes que denunciar</div>
+      <input class="input" id="dni-marca" placeholder="Marca (Orbea, Trek, Specialized...)" style="margin-bottom:8px"/>
+      <input class="input" id="dni-modelo" placeholder="Modelo" style="margin-bottom:8px"/>
+      <input class="input" id="dni-color" placeholder="Color" style="margin-bottom:8px"/>
+      <input class="input" id="dni-serie" placeholder="Nº de serie del cuadro (bajo el pedalier)" style="margin-bottom:8px"/>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <label for="dni-foto-input" style="flex:1;display:block;text-align:center;padding:11px;background:var(--card2);border:1.5px dashed var(--border2);border-radius:11px;color:var(--muted);font-size:12px;cursor:pointer">📷 Foto de la bici</label>
+        <input type="file" id="dni-foto-input" accept="image/*" style="display:none" onchange="dniFoto(this)"/>
+        <img id="dni-foto-preview" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"/>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="dniSave()">💾 GUARDAR FICHA</button>
+    </div>
 
-    <!-- Ver en mapa -->
-    </div><!-- /desactivado -->
-    <button onclick="antiVerMapa()" style="opacity:.4;pointer-events:none" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px">
-      📍 Ver ubicación en Google Maps
-    </button>
+    <!-- ═══ 4. KIT DE ROBO ═══ -->
+    <div class="card" style="border-color:rgba(255,51,85,.3)">
+      <div class="card-title" style="color:var(--red)">📄 Kit de robo</div>
+      <div class="card-sub" style="margin-bottom:12px">Si pasa lo peor: difunde la alerta en segundos por WhatsApp y grupos ciclistas</div>
+      <button class="anti-btn-lock" style="margin-bottom:0" onclick="roboKit()">🔴 ME HAN ROBADO LA BICI</button>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.5">Genera un mensaje con todos los datos de tu bici y la última ubicación conocida, listo para compartir y para la denuncia policial.</div>
+    </div>
 
-    <!-- Info conexión -->
-    <div style="margin-top:16px;padding:14px;background:var(--lime-dim);border:1px solid var(--border);border-radius:12px;font-size:11px;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--lime)">Conexión:</strong> WebSocket en tiempo real con el chip GPS.<br>
-      Cuando el chip detecta movimiento sin autorización envía alerta por Telegram y WhatsApp automáticamente.<br>
-      <strong style="color:var(--lime)">API:</strong> api.ridesafeai.es
+    <!-- ═══ PRO: CHIP GPS (próximamente) ═══ -->
+    <div style="background:rgba(255,136,51,.06);border:1px solid rgba(255,136,51,.3);border-radius:14px;padding:14px;text-align:center">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--orange)">🛰️ RASTREO GPS REAL — PRÓXIMAMENTE</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px">Chip GPS/GSM instalado en la bici con localización en tiempo real aunque te la roben.</div>
+      <a href="https://wa.me/34643223301?text=Hola!%20Me%20interesa%20el%20chip%20GPS%20antirrobo%20de%20RideSafe%20IA" target="_blank" style="display:inline-block;margin-top:10px;padding:8px 18px;background:#25D366;color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;text-decoration:none">Quiero ser el primero</a>
     </div>
 
     <div style="height:20px"></div>
@@ -5579,12 +5577,160 @@ var antiConectado = false;
 
 function openAntiRobo() {
   openPanel('panel-antirobo');
-  connectTelemetry();
+  parkRender();dniLoad();
 }
 
 function closeAntiRobo() {
   closePanel('panel-antirobo');
-  // No desconectamos el socket al cerrar — seguimos monitorizando en background
+}
+
+/* ═══ ANTIRROBO 1: Modo Aparcamiento ═══ */
+function parkRender(){
+  var p=null;try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  document.getElementById('park-empty').style.display=p?'none':'block';
+  document.getElementById('park-info').style.display=p?'block':'none';
+  if(p){
+    var d=new Date(p.t);
+    document.getElementById('park-meta').textContent='Desde las '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · '+p.lat.toFixed(5)+', '+p.lon.toFixed(5);
+  }
+}
+function parkBike(){
+  if(!navigator.geolocation){toast('GPS no disponible');return;}
+  toast('📡 Obteniendo posición...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var p={lat:pos.coords.latitude,lon:pos.coords.longitude,t:Date.now()};
+    try{localStorage.setItem('rs_park',JSON.stringify(p));}catch(e){}
+    parkRender();toast('🅿️ Bici aparcada y guardada');
+  },function(){toast('No se pudo obtener el GPS');},{enableHighAccuracy:true,timeout:10000});
+}
+function parkReturn(){
+  var p=null;try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  if(!p){toast('No hay bici aparcada');return;}
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+p.lat+','+p.lon+'&travelmode=walking','_blank');
+}
+function parkClear(){
+  try{localStorage.removeItem('rs_park');}catch(e){}
+  parkRender();toast('✓ ¡Buen reencuentro!');
+}
+
+/* ═══ ANTIRROBO 2: Alarma de movimiento ═══ */
+var alarmActive=false,alarmBase=null,alarmCtx=null,alarmNodes=null,alarmCountT=null,alarmWake=null;
+function alarmShow(state){
+  document.getElementById('alarm-off').style.display=state==='off'?'block':'none';
+  document.getElementById('alarm-arming').style.display=state==='arming'?'block':'none';
+  document.getElementById('alarm-on').style.display=state==='on'?'block':'none';
+}
+function alarmStart(){
+  function arm(){
+    var c=10;alarmShow('arming');document.getElementById('alarm-count').textContent=c;
+    alarmCountT=setInterval(function(){
+      c--;document.getElementById('alarm-count').textContent=c;
+      if(c<=0){clearInterval(alarmCountT);alarmArmed();}
+    },1000);
+  }
+  if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(function(r){
+      if(r==='granted'){arm();}else{toast('Permiso de sensores denegado');}
+    }).catch(function(){toast('Permiso de sensores denegado');});
+  }else{arm();}
+}
+function alarmArmed(){
+  alarmActive=true;alarmBase=null;alarmShow('on');
+  window.addEventListener('devicemotion',alarmMotion);
+  if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){alarmWake=w;}).catch(function(){});}
+  toast('🛡️ Vigilancia activada');
+}
+function alarmMotion(e){
+  if(!alarmActive)return;
+  var a=e.accelerationIncludingGravity;if(!a||a.x===null)return;
+  var m=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+  if(alarmBase===null){alarmBase=m;return;}
+  alarmBase=alarmBase*0.9+m*0.1;
+  if(Math.abs(m-alarmBase)>3.5){alarmTrigger();}
+}
+function alarmTrigger(){
+  if(alarmNodes)return;
+  if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);
+  try{
+    alarmCtx=alarmCtx||new (window.AudioContext||window.webkitAudioContext)();
+    var o=alarmCtx.createOscillator(),g=alarmCtx.createGain(),lfo=alarmCtx.createOscillator(),lg=alarmCtx.createGain();
+    o.type='square';o.frequency.value=1100;
+    lfo.type='sine';lfo.frequency.value=4;lg.gain.value=500;
+    lfo.connect(lg);lg.connect(o.frequency);
+    g.gain.value=1;o.connect(g);g.connect(alarmCtx.destination);
+    o.start();lfo.start();alarmNodes={o:o,lfo:lfo,g:g};
+  }catch(e){}
+  document.body.style.animation='alarmFlash .4s infinite';
+}
+function alarmStop(){
+  alarmActive=false;alarmBase=null;
+  window.removeEventListener('devicemotion',alarmMotion);
+  if(alarmCountT)clearInterval(alarmCountT);
+  if(alarmNodes){try{alarmNodes.o.stop();alarmNodes.lfo.stop();}catch(e){}alarmNodes=null;}
+  if(alarmWake){try{alarmWake.release();}catch(e){}alarmWake=null;}
+  if(navigator.vibrate)navigator.vibrate(0);
+  document.body.style.animation='';
+  alarmShow('off');toast('🔓 Vigilancia desactivada');
+}
+
+/* ═══ ANTIRROBO 3: DNI de la bici ═══ */
+function dniLoad(){
+  var d=null;try{d=JSON.parse(localStorage.getItem('rs_dni_bici')||'null');}catch(e){}
+  if(!d)return;
+  document.getElementById('dni-marca').value=d.marca||'';
+  document.getElementById('dni-modelo').value=d.modelo||'';
+  document.getElementById('dni-color').value=d.color||'';
+  document.getElementById('dni-serie').value=d.serie||'';
+  if(d.foto){var img=document.getElementById('dni-foto-preview');img.src=d.foto;img.style.display='block';}
+}
+function dniFoto(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas'),mx=480,sc=Math.min(1,mx/Math.max(img.width,img.height));
+      c.width=img.width*sc;c.height=img.height*sc;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      var data=c.toDataURL('image/jpeg',0.7);
+      var pv=document.getElementById('dni-foto-preview');pv.src=data;pv.style.display='block';
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+function dniSave(){
+  var pv=document.getElementById('dni-foto-preview');
+  var d={
+    marca:document.getElementById('dni-marca').value.trim(),
+    modelo:document.getElementById('dni-modelo').value.trim(),
+    color:document.getElementById('dni-color').value.trim(),
+    serie:document.getElementById('dni-serie').value.trim(),
+    foto:pv.style.display!=='none'?pv.src:''
+  };
+  try{localStorage.setItem('rs_dni_bici',JSON.stringify(d));toast('💾 Ficha de la bici guardada');}
+  catch(e){d.foto='';try{localStorage.setItem('rs_dni_bici',JSON.stringify(d));toast('Ficha guardada (foto demasiado grande)');}catch(e2){toast('No se pudo guardar');}}
+}
+
+/* ═══ ANTIRROBO 4: Kit de robo ═══ */
+function roboKit(){
+  var d=null,p=null;
+  try{d=JSON.parse(localStorage.getItem('rs_dni_bici')||'null');}catch(e){}
+  try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  if(!d||(!d.marca&&!d.serie)){toast('Rellena antes el DNI de tu bici 🪪');return;}
+  var hoy=new Date();
+  var txt='🔴 BICICLETA ROBADA — SE BUSCA 🔴\n\n'
+    +'🚲 '+(d.marca||'')+' '+(d.modelo||'')+(d.color?' · Color '+d.color:'')+'\n'
+    +(d.serie?'🔢 Nº de serie: '+d.serie+'\n':'')
+    +(p?'📍 Última ubicación conocida: https://maps.google.com/?q='+p.lat+','+p.lon+'\n':'')
+    +'📅 '+hoy.toLocaleDateString('es-ES')+' '+('0'+hoy.getHours()).slice(-2)+':'+('0'+hoy.getMinutes()).slice(-2)+'\n\n'
+    +'Si la ves, contacta conmigo. ¡Comparte por favor! 🙏\n\n'
+    +'— Generado con RideSafe IA · ridesafeia.es';
+  if(navigator.share){
+    navigator.share({title:'Bici robada — Se busca',text:txt}).catch(function(){});
+  }else{
+    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  }
 }
 
 /* ===============================
