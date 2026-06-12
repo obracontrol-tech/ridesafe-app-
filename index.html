@@ -244,6 +244,39 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   display:flex;gap:8px;
   margin:12px 16px 0;
 }
+/* ¿Salgo o no salgo? */
+.salgo-card{
+  margin:12px 16px 0;
+  background:linear-gradient(135deg,#101c22 0%,#0d1a10 100%);
+  border:1px solid rgba(168,230,61,.25);
+  border-radius:16px;padding:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+.salgo-top{display:flex;align-items:center;gap:12px}
+.salgo-icon{font-size:28px;flex-shrink:0}
+.salgo-info{flex:1;min-width:0}
+.salgo-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;color:#fff;letter-spacing:.3px}
+.salgo-sub{font-size:10.5px;color:var(--muted);line-height:1.3}
+.salgo-btn{
+  flex-shrink:0;padding:10px 14px;border:none;border-radius:12px;
+  background:var(--lime);color:#080c0a;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;letter-spacing:1px;
+  box-shadow:0 2px 12px rgba(168,230,61,.35);
+  transition:transform .15s;
+}
+.salgo-btn:active{transform:scale(.95)}
+.salgo-btn:disabled{opacity:.5}
+.salgo-result{display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(168,230,61,.15)}
+.salgo-result.show{display:block;animation:cardCascade .35s ease-out}
+.salgo-verdict{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+  letter-spacing:1px;margin-bottom:8px;
+}
+.salgo-verdict.si{color:var(--lime)}
+.salgo-verdict.no{color:#ff6688}
+.salgo-text{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.salgo-meta{font-size:10px;color:var(--muted);margin-top:8px}
 .qs-item{
   flex:1;
   background:var(--card);
@@ -2160,6 +2193,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
 
   <!-- GRID MÓDULOS -->
+  <!-- ¿SALGO O NO SALGO? — Asesor IA del día -->
+  <div class="salgo-card" id="salgo-card">
+    <div class="salgo-top">
+      <div class="salgo-icon">🌤️</div>
+      <div class="salgo-info">
+        <div class="salgo-title">¿Salgo o no salgo?</div>
+        <div class="salgo-sub">Tu asesor IA del día: clima, ropa y mejor hora</div>
+      </div>
+      <button class="salgo-btn" id="salgo-btn" onclick="checkSalgo()">CONSULTAR</button>
+    </div>
+    <div class="salgo-result" id="salgo-result"></div>
+  </div>
+
   <div class="section-label">Módulos</div>
   <div class="grid">
 
@@ -3074,6 +3120,56 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
    ═══════════════════════════════════════ */
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2500);}
 function openPanel(id){document.getElementById(id).classList.add('show');}
+/* ¿Salgo o no salgo? — clima + IA */
+function checkSalgo(){
+  var btn=document.getElementById('salgo-btn'),res=document.getElementById('salgo-result');
+  btn.disabled=true;btn.textContent='...';
+  res.className='salgo-result show';
+  res.innerHTML='<div style="font-size:12px;color:var(--muted)">📡 Obteniendo tu ubicación...</div>';
+  function fail(msg){res.innerHTML='<div style="color:#ff6688;font-size:12px">'+msg+'</div>';btn.disabled=false;btn.textContent='CONSULTAR';}
+  function go(lat,lon){
+    res.innerHTML='<div style="font-size:12px;color:var(--muted)">🌤️ Consultando el tiempo...</div>';
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,precipitation_probability,wind_speed_10m&forecast_hours=12&timezone=auto')
+    .then(function(r){return r.json();})
+    .then(function(w){
+      var c=w.current,hh=w.hourly;
+      var resumen='Ahora: '+c.temperature_2m+'°C (sensación '+c.apparent_temperature+'°C), viento '+c.wind_speed_10m+' km/h (rachas '+c.wind_gusts_10m+'), precipitación '+c.precipitation+' mm. Próximas 12h (hora|temp°C|prob.lluvia%|viento km/h): ';
+      for(var i=0;i<hh.time.length;i++){resumen+=hh.time[i].slice(11,16)+'|'+hh.temperature_2m[i]+'|'+hh.precipitation_probability[i]+'|'+hh.wind_speed_10m[i]+'; ';}
+      res.innerHTML='<div style="font-size:12px;color:var(--muted)">🤖 La IA está analizando...</div>';
+      return fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:350,
+          messages:[{role:'user',content:'Eres el asesor de un ciclista (carretera/MTB). Datos meteo de su zona: '+resumen+' Responde EXACTAMENTE en este formato: primera línea solo "SI" o "NO" (¿es buen momento para salir en bici hoy?). Después 3-4 líneas cortas con: mejor franja horaria para salir, qué ropa llevar, y un aviso si hay viento o lluvia. Usa emojis. Sin markdown, texto directo y cercano.'}]
+        })
+      });
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var txt=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:'';
+      if(!txt){fail('La IA no respondió. Inténtalo de nuevo.');return;}
+      var lines=txt.trim().split('\n');
+      var v0=lines[0].toUpperCase().replace(/Í/g,'I');
+      var v=v0.indexOf('SI')>-1&&v0.indexOf('NO')===-1;
+      var rest=lines.slice(1).join('\n').trim();
+      var hora=new Date();var hs=('0'+hora.getHours()).slice(-2)+':'+('0'+hora.getMinutes()).slice(-2);
+      res.innerHTML='<div class="salgo-verdict '+(v?'si':'no')+'">'+(v?'✅ ¡A RODAR!':'🛑 MEJOR HOY NO')+'</div>'
+        +'<div class="salgo-text">'+escHtml(rest)+'</div>'
+        +'<div class="salgo-meta">Actualizado a las '+hs+' · RideSafe IA</div>';
+      btn.disabled=false;btn.textContent='CONSULTAR';
+    })
+    .catch(function(){fail('Error de conexión. Comprueba internet e inténtalo de nuevo.');});
+  }
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      function(p){go(p.coords.latitude.toFixed(3),p.coords.longitude.toFixed(3));},
+      function(){go(41.617,0.620);},
+      {timeout:8000,maximumAge:600000}
+    );
+  }else{go(41.617,0.620);}
+}
 /* Saludo dinámico según hora */
 (function(){var h=new Date().getHours();var t=document.getElementById('hero-title');if(!t)return;
 if(h>=6&&h<13){t.innerHTML='Buenos días ☀️<br>A <span>rodar</span> se ha dicho';}
