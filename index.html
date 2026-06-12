@@ -2805,6 +2805,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <div id="resumen-track" style="position:absolute;inset:0;background:#1a1a1a"></div>
       <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0">
         <img id="resumen-foto-img" style="width:100%;height:100%;display:block;object-fit:cover"/>
+        <div id="resumen-mini-track" style="position:absolute;bottom:104px;right:14px;width:90px;height:90px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.4)"></div>
       </div>
       <!-- Cabecera -->
       <div style="position:absolute;top:0;left:0;right:0;padding:16px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);display:flex;align-items:center;gap:8px">
@@ -3924,19 +3925,22 @@ function deleteRoute(id){if(!confirm('¿Eliminar esta ruta?'))return;var rs=JSON
 var resumenRutaActual = null;
 
 var resumenMap = null;
+var resumenMiniMap = null;
 
-function pintarTrackMapa(points, contenedorId){
+function pintarTrackMapa(points, contenedorId, esMini){
   var cont = document.getElementById(contenedorId);
   if(!cont || !points || points.length<2) return;
   cont.innerHTML = '';
-  if(resumenMap){ resumenMap.remove(); resumenMap=null; }
+  var mapVar = esMini ? 'resumenMiniMap' : 'resumenMap';
+  if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
-  resumenMap = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'}).addTo(resumenMap);
-  var line = L.polyline(latlngs,{color:'#a8e63d',weight:5}).addTo(resumenMap);
-  L.circleMarker(latlngs[0],{radius:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(resumenMap);
-  L.circleMarker(latlngs[latlngs.length-1],{radius:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(resumenMap);
-  resumenMap.fitBounds(line.getBounds(),{padding:[24,90]});
+  var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'}).addTo(map);
+  var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
+  L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
+  L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
+  map.fitBounds(line.getBounds(),{padding:esMini?[6,6]:[24,90]});
+  if(esMini) resumenMiniMap = map; else resumenMap = map;
 }
 
 function pintarLugarRuta(points){
@@ -3959,6 +3963,8 @@ function volverAlMapa(){
   document.getElementById('resumen-foto-wrap').style.display = 'none';
   document.getElementById('resumen-foto-btn').textContent = '📷 Foto';
   document.getElementById('resumen-foto-btn').onclick = function(){ document.getElementById('resumen-foto-input').click(); };
+  if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
+  document.getElementById('resumen-mini-track').innerHTML='';
 }
 function onResumenFoto(ev){
   var file = ev.target.files && ev.target.files[0];
@@ -3970,6 +3976,9 @@ function onResumenFoto(ev){
     document.getElementById('resumen-foto-wrap').style.display = 'block';
     document.getElementById('resumen-foto-btn').textContent = '🗺️ Mapa';
     document.getElementById('resumen-foto-btn').onclick = volverAlMapa;
+    if(resumenRutaActual){
+      setTimeout(function(){ pintarTrackMapa(resumenRutaActual.points, 'resumen-mini-track', true); }, 150);
+    }
   };
   reader.readAsDataURL(file);
 }
@@ -4001,6 +4010,7 @@ function closeResumenModal(){
   document.getElementById('resumen-modal').classList.remove('show');
   resumenRutaActual = null;
   if(resumenMap){ resumenMap.remove(); resumenMap=null; }
+  if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
 }
 function verResumenRuta(id){
   var rutas=JSON.parse(localStorage.getItem('rs_routes')||'[]');
