@@ -2312,6 +2312,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 
   </div><!-- /grid -->
 
+  <!-- TARJETA COMUNIDAD -->
+  <div class="comunidad-card">
+    <div class="comunidad-title">💬 Esta app la hacemos <span>entre todos</span></div>
+    <div class="comunidad-sub">¿Te falta algo? ¿Tienes una idea? Cuéntanoslo y la construimos juntos.</div>
+    <div class="comunidad-btns">
+      <button class="com-btn com-wa" onclick="sugerirWhatsApp()">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.84 9.84 0 0 1-1.51-5.26c0-5.44 4.43-9.86 9.89-9.86 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87zm8.4-18.27A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.15 11.9c0 2.1.55 4.14 1.59 5.94L.05 24l6.31-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.9-11.9a11.82 11.82 0 0 0-3.5-8.38z"/></svg>
+        Sugiéreme mejoras
+      </button>
+      <button class="com-btn com-tg" onclick="openSugerenciaTG()">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M23.91 3.79L20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>
+        Enviar por Telegram
+      </button>
+    </div>
+  </div>
+
   <!-- Espacio extra abajo -->
   <div style="height:16px"></div>
 
@@ -2422,6 +2438,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 </div>
 
 <!-- PANEL LEGAL INFO -->
+<!-- PANEL SUGERENCIA TELEGRAM -->
+<div class="panel" id="panel-sugerencia">
+  <div class="p-header">
+    <button class="p-back" onclick="closePanel('panel-sugerencia')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="p-title">Tu <span>Sugerencia</span></div>
+  </div>
+  <div class="p-body" style="overflow-y:auto;padding:20px 16px">
+    <div style="background:var(--lime-dim);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:28px">🚴</span>
+      <div style="font-size:13px;color:var(--muted);line-height:1.4">Tu mensaje llega directamente al creador de la app por Telegram. ¡Toda idea cuenta!</div>
+    </div>
+    <input type="text" id="sug-nombre" placeholder="Tu nombre (opcional)" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
+    <textarea id="sug-texto" rows="5" placeholder="Escribe aquí tu sugerencia, idea o problema..." style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;resize:vertical;box-sizing:border-box"></textarea>
+    <button id="sug-enviar-btn" onclick="enviarSugerenciaTG()" style="width:100%;margin-top:14px;background:var(--lime);color:#0a0f0a;border:none;border-radius:14px;padding:16px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">✈️ Enviar sugerencia</button>
+    <div id="sug-estado" style="text-align:center;margin-top:12px;font-size:14px;min-height:20px"></div>
+  </div>
+</div>
+
 <div class="panel" id="panel-legal-info">
   <div class="p-header">
     <button class="p-back" onclick="closeLegalPanel()">
@@ -3174,6 +3210,39 @@ if(h>=6&&h<13){t.innerHTML='Buenos días ☀️<br>A <span>rodar</span> se ha di
 else if(h>=13&&h<21){t.innerHTML='Buenas tardes 🚴<br>Tu ruta <span>off-road</span> te espera';}
 else{t.innerHTML='Buenas noches 🌙<br>Planifica tu <span>próxima salida</span>';}})();
 function closePanel(id){document.getElementById(id).classList.remove('show');}
+
+/* ═══ COMUNIDAD: WhatsApp + Telegram ═══ */
+function sugerirWhatsApp(){
+  var txt=encodeURIComponent('Hola JM 👋 Te escribo desde RideSafe IA. Mi sugerencia: ');
+  window.open('https://wa.me/34643223301?text='+txt,'_blank');
+}
+function openSugerenciaTG(){
+  document.getElementById('sug-estado').textContent='';
+  document.getElementById('panel-sugerencia').classList.add('show');
+}
+function enviarSugerenciaTG(){
+  var nombre=(document.getElementById('sug-nombre').value||'Anónimo').trim();
+  var texto=document.getElementById('sug-texto').value.trim();
+  var estado=document.getElementById('sug-estado');
+  var btn=document.getElementById('sug-enviar-btn');
+  if(!texto){estado.style.color='#ff8833';estado.textContent='Escribe tu sugerencia antes de enviar 😉';return;}
+  btn.disabled=true;btn.style.opacity='.6';
+  estado.style.color='var(--muted)';estado.textContent='Enviando...';
+  var msg='💬 SUGERENCIA RideSafe IA\n👤 '+nombre+'\n📝 '+texto+'\n🕐 '+new Date().toLocaleString('es-ES');
+  fetch('https://api.telegram.org/bot8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM/sendMessage',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:'8601457137',text:msg})
+  }).then(function(r){return r.json();}).then(function(d){
+    btn.disabled=false;btn.style.opacity='1';
+    if(d.ok){estado.style.color='var(--lime)';estado.textContent='✅ ¡Enviada! Gracias por mejorar la app';
+      document.getElementById('sug-texto').value='';
+      setTimeout(function(){closePanel('panel-sugerencia');},2000);
+    }else{estado.style.color='#ff3355';estado.textContent='❌ No se pudo enviar. Prueba por WhatsApp';}
+  }).catch(function(){
+    btn.disabled=false;btn.style.opacity='1';
+    estado.style.color='#ff3355';estado.textContent='❌ Sin conexión. Prueba más tarde';
+  });
+}
 
 /* Quick stats en inicio */
 function updateQuickStats(){
@@ -6108,6 +6177,31 @@ function ebGuia(tema) {
   border-color:var(--lime);color:var(--lime);
 }
 .tipo-card:active{transform:scale(.97)}
+
+/* ═══ TARJETA COMUNIDAD ═══ */
+.comunidad-card{
+  margin:18px 0 4px;padding:18px 16px;
+  background:linear-gradient(135deg,rgba(168,230,61,.07),rgba(0,229,255,.05));
+  border:1px solid var(--border);border-radius:18px;
+}
+.comunidad-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--text);
+}
+.comunidad-title span{color:var(--lime)}
+.comunidad-sub{font-size:13px;color:var(--muted);margin:6px 0 14px;line-height:1.4}
+.comunidad-btns{display:flex;gap:10px}
+.com-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:14px;padding:13px 8px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.com-btn svg{width:18px;height:18px;flex-shrink:0}
+.com-wa{background:rgba(37,211,102,.14);color:#25d366;border:1px solid rgba(37,211,102,.35)}
+.com-tg{background:rgba(0,136,204,.14);color:#34aadf;border:1px solid rgba(52,170,223,.35)}
+.com-btn:active{transform:scale(.96)}
+
 </style>
 
 </body>
