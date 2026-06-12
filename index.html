@@ -2801,48 +2801,49 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 <!-- MODAL RESUMEN DE RUTA -->
 <div id="resumen-modal">
   <div class="wp-box" style="max-width:340px;background:transparent;border:none;padding:0;box-shadow:none">
-    <div id="resumen-card" style="border-radius:18px;position:relative;overflow:hidden;aspect-ratio:9/14;width:100%">
+    <div id="resumen-card" style="border-radius:18px;position:relative;overflow:hidden;aspect-ratio:9/13;width:100%">
       <div id="resumen-track" style="position:absolute;inset:0;width:100%;height:100%;background:#1a1a1a;z-index:1"></div>
       <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0;z-index:100">
         <img id="resumen-foto-img" style="width:100%;height:100%;display:block;object-fit:cover"/>
-        <div id="resumen-mini-track" style="position:absolute;bottom:104px;right:14px;width:90px;height:90px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.4)"></div>
       </div>
-      <!-- Cabecera -->
-      <div style="position:absolute;top:0;left:0;right:0;padding:16px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);display:flex;align-items:center;gap:8px;z-index:500">
-        <span style="font-size:22px">🚴</span>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,.5)">¡Ruta completada!</div>
-          <div id="resumen-fecha" style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.5)"></div>
+      <!-- Mini-mapa esquina (siempre, si hay foto) -->
+      <div id="resumen-mini-track" style="display:none;position:absolute;bottom:64px;right:14px;width:84px;height:84px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.4);z-index:520"></div>
+      <!-- Cabecera: lugar + botón mapa/foto -->
+      <div style="position:absolute;top:0;left:0;right:0;padding:14px 16px;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent);display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:500">
+        <div id="resumen-lugar" style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6)">
+          <span style="color:var(--lime)">📍</span><span id="resumen-lugar-txt">RideSafe IA</span>
+        </div>
+        <button id="resumen-foto-btn" onclick="document.getElementById('resumen-foto-input').click()" style="background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);white-space:nowrap">
+          📷 Foto
+        </button>
+        <input type="file" id="resumen-foto-input" accept="image/*" capture="environment" style="display:none" onchange="onResumenFoto(event)">
+      </div>
+      <!-- Panel lateral de estadísticas -->
+      <div style="position:absolute;left:14px;top:60px;bottom:54px;width:108px;background:rgba(10,16,12,.72);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;backdrop-filter:blur(3px);z-index:500;display:flex;flex-direction:column;justify-content:space-around">
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">📏</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--lime);line-height:1" id="resumen-km">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⏱️</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-tiempo">0:00</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">tiempo</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⚡</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-vel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km/h</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⛰️</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#ffaa00;line-height:1" id="resumen-desnivel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">m desnivel</div></div>
         </div>
       </div>
-      <!-- Lugar -->
-      <div id="resumen-lugar" style="position:absolute;top:64px;left:16px;right:16px;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);display:none;z-index:500"></div>
-      <!-- Botón foto (no se incluye en la captura) -->
-      <button id="resumen-foto-btn" onclick="document.getElementById('resumen-foto-input').click()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);z-index:600">
-        📷 Foto
-      </button>
-      <input type="file" id="resumen-foto-input" accept="image/*" capture="environment" style="display:none" onchange="onResumenFoto(event)">
-      <!-- Stats overlay -->
-      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 35%,rgba(0,0,0,.85));z-index:500">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px">
-          <div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--lime);line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)" id="resumen-km">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px">km</div>
-          </div>
-          <div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#fff;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)" id="resumen-tiempo">0:00</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px">tiempo</div>
-          </div>
-          <div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#fff;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)" id="resumen-vel">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px">km/h media</div>
-          </div>
-          <div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#ffaa00;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)" id="resumen-desnivel">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px">m desnivel</div>
-          </div>
-        </div>
-        <div style="text-align:center;font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px;margin-top:10px">RIDESAFE IA · app.ridesafeia.es</div>
+      <!-- Pie: fecha + marca -->
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent);display:flex;align-items:center;justify-content:space-between;z-index:500">
+        <div id="resumen-fecha" style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.5)"></div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--lime);text-shadow:0 1px 3px rgba(0,0,0,.5)">🛡️ RIDESAFE IA</div>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
@@ -3944,8 +3945,8 @@ function pintarTrackMapa(points, contenedorId, esMini){
 }
 
 function pintarLugarRuta(points){
-  var el = document.getElementById('resumen-lugar');
-  el.style.display = 'none';
+  var txt = document.getElementById('resumen-lugar-txt');
+  txt.textContent = 'RideSafe IA';
   if(!points || !points.length) return;
   var mid = points[Math.floor(points.length/2)];
   fetch('https://nominatim.openstreetmap.org/reverse?lat='+mid[0]+'&lon='+mid[1]+'&format=json&zoom=12',{headers:{'Accept-Language':'es'}})
@@ -3954,13 +3955,14 @@ function pintarLugarRuta(points){
       if(!d || !d.address) return;
       var a = d.address;
       var lugar = a.village || a.town || a.city || a.municipality || a.county || a.state || '';
-      if(lugar){ el.textContent = '📍 '+lugar; el.style.display='block'; }
+      if(lugar) txt.textContent = lugar;
     }).catch(function(){});
 }
 
 var resumenFotoData = null;
 function volverAlMapa(){
   document.getElementById('resumen-foto-wrap').style.display = 'none';
+  document.getElementById('resumen-mini-track').style.display = 'none';
   document.getElementById('resumen-foto-btn').textContent = '📷 Foto';
   document.getElementById('resumen-foto-btn').onclick = function(){ document.getElementById('resumen-foto-input').click(); };
   if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
@@ -3974,6 +3976,7 @@ function onResumenFoto(ev){
     resumenFotoData = e.target.result;
     document.getElementById('resumen-foto-img').src = resumenFotoData;
     document.getElementById('resumen-foto-wrap').style.display = 'block';
+    document.getElementById('resumen-mini-track').style.display = 'block';
     document.getElementById('resumen-foto-btn').textContent = '🗺️ Mapa';
     document.getElementById('resumen-foto-btn').onclick = volverAlMapa;
     if(resumenRutaActual){
@@ -3987,6 +3990,7 @@ function mostrarResumenRuta(route){
   resumenRutaActual = route;
   resumenFotoData = null;
   document.getElementById('resumen-foto-wrap').style.display = 'none';
+  document.getElementById('resumen-mini-track').style.display = 'none';
   document.getElementById('resumen-foto-img').src = '';
   document.getElementById('resumen-foto-btn').textContent = '📷 Foto';
   document.getElementById('resumen-foto-btn').onclick = function(){ document.getElementById('resumen-foto-input').click(); };
