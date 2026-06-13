@@ -3000,6 +3000,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <button id="plan-calcular" class="btn-primary" style="margin-top:8px" onclick="calcularRuta()">&#127758; CALCULAR RUTA</button>
   </div>
   <div id="plan-mapa" style="flex:1"></div>
+  <div id="plan-alts" style="display:none;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 14px;display:flex;gap:8px;overflow-x:auto"></div>
   <div id="plan-info" style="display:none;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:12px 14px">
     <div class="stat-grid" style="margin-bottom:10px">
       <div class="stat-box"><span class="sl">Distancia</span><span class="sv" id="pi-km">--</span></div>
@@ -3792,33 +3793,89 @@ function useLocationForPlan(){
   navigator.geolocation.getCurrentPosition(function(pos){planOrigen={lat:pos.coords.latitude,lng:pos.coords.longitude,name:'Mi ubicación'};document.getElementById('plan-origen').value='Mi ubicación';toast('Origen: tu ubicación');});
 }
 
+var planAlternativas=[], planAltSeleccionada=0, planAltLayers=[];
+
 function calcularRuta(){
   if(!orsKey){document.getElementById('ors-key-modal').style.display='flex';return;}
   if(!planOrigen){toast('Indica el origen');return;}if(!planDestino){toast('Indica el destino');return;}
   var btn=document.getElementById('plan-calcular');btn.disabled=true;btn.textContent='\u23F3 Calculando...';
-  var url='https://api.openrouteservice.org/v2/directions/'+planPerfil+'?api_key='+encodeURIComponent(orsKey)+'&start='+(planOrigen.lng||0.62)+','+(planOrigen.lat||41.6176)+'&end='+planDestino.lng+','+planDestino.lat;
-  fetch(url,{headers:{'Accept':'application/geo+json, application/json'}})
+  var url='https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson';
+  var body={
+    coordinates:[[planOrigen.lng||0.62, planOrigen.lat||41.6176],[planDestino.lng, planDestino.lat]],
+    alternative_routes:{target_count:3, weight_factor:1.6, share_factor:0.6},
+    elevation:true
+  };
+  fetch(url,{
+    method:'POST',
+    headers:{'Accept':'application/geo+json, application/json','Content-Type':'application/json','Authorization':orsKey},
+    body:JSON.stringify(body)
+  })
   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
   .then(function(data){
-    planRoute=data;
-    if(planLayer)planMap.removeLayer(planLayer);planMarkers.forEach(function(m){planMap.removeLayer(m);});planMarkers=[];
-    planLayer=L.geoJSON(data,{style:{color:'#a8e63d',weight:5,opacity:.9}}).addTo(planMap);
-    planMap.fitBounds(planLayer.getBounds(),{padding:[20,20]});
-    var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
-    var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
-    planMarkers.push(L.marker([planOrigen.lat||41.6176,planOrigen.lng||0.62],{icon:si}).addTo(planMap).bindPopup('Origen'));
-    planMarkers.push(L.marker([planDestino.lat,planDestino.lng],{icon:ei}).addTo(planMap).bindPopup('Destino'));
-    var p=data.features[0].properties.summary;
-    document.getElementById('pi-km').innerHTML=(p.distance/1000).toFixed(1)+' <span style="font-size:9px;color:#666;font-weight:400">km</span>';
-    var h=Math.floor(p.duration/3600),m=Math.floor((p.duration%3600)/60);
-    document.getElementById('pi-time').innerHTML=(h>0?h+'h ':'')+m+' <span style="font-size:9px;color:#666;font-weight:400">min</span>';
-    var elev=data.features[0].properties.ascent?Math.round(data.features[0].properties.ascent):'--';
-    document.getElementById('pi-elev').innerHTML=elev+' <span style="font-size:9px;color:#666;font-weight:400">m</span>';
-    document.getElementById('plan-info').style.display='block';
-    toast('Ruta: '+(p.distance/1000).toFixed(1)+' km');
+    planAlternativas = data.features || [];
+    if(!planAlternativas.length) throw new Error('sin rutas');
+    planAltSeleccionada = 0;
+    renderPlanAlternativas();
+    mostrarRutaSeleccionada();
+    toast(planAlternativas.length>1 ? planAlternativas.length+' rutas encontradas' : 'Ruta calculada');
   })
   .catch(function(err){toast('Error: '+err.message);})
   .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
+}
+
+function renderPlanAlternativas(){
+  var cont=document.getElementById('plan-alts');
+  if(planAlternativas.length<=1){cont.style.display='none';cont.innerHTML='';return;}
+  cont.style.display='flex';
+  cont.innerHTML = planAlternativas.map(function(f,i){
+    var p=f.properties.summary;
+    var km=(p.distance/1000).toFixed(1);
+    var min=Math.round(p.duration/60);
+    var label = i===0 ? 'Recomendada' : 'Alternativa '+i;
+    return '<button class="alt-chip'+(i===planAltSeleccionada?' on':'')+'" onclick="seleccionarRutaAlt('+i+')" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid '+(i===planAltSeleccionada?'var(--lime)':'var(--border)')+';background:'+(i===planAltSeleccionada?'var(--lime-dim)':'transparent')+';color:'+(i===planAltSeleccionada?'var(--lime)':'var(--muted)')+';font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer">'+label+' · '+km+' km · '+min+' min</button>';
+  }).join('');
+}
+
+function seleccionarRutaAlt(i){
+  planAltSeleccionada=i;
+  renderPlanAlternativas();
+  mostrarRutaSeleccionada();
+}
+
+function mostrarRutaSeleccionada(){
+  var data=planAlternativas[planAltSeleccionada];
+  if(!data)return;
+  planRoute={type:'FeatureCollection',features:[data]};
+
+  // limpiar capas previas
+  planAltLayers.forEach(function(l){planMap.removeLayer(l);});planAltLayers=[];
+  if(planLayer)planMap.removeLayer(planLayer);
+  planMarkers.forEach(function(m){planMap.removeLayer(m);});planMarkers=[];
+
+  // dibujar el resto de alternativas en gris fino (debajo)
+  planAlternativas.forEach(function(f,i){
+    if(i===planAltSeleccionada)return;
+    var l=L.geoJSON(f,{style:{color:'#888',weight:3,opacity:.45,dashArray:'4 4'}}).addTo(planMap);
+    l.on('click',function(){seleccionarRutaAlt(i);});
+    planAltLayers.push(l);
+  });
+
+  // dibujar la seleccionada encima en verde
+  planLayer=L.geoJSON(data,{style:{color:'#a8e63d',weight:5,opacity:.9}}).addTo(planMap);
+  planMap.fitBounds(planLayer.getBounds(),{padding:[20,20]});
+
+  var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
+  var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
+  planMarkers.push(L.marker([planOrigen.lat||41.6176,planOrigen.lng||0.62],{icon:si}).addTo(planMap).bindPopup('Origen'));
+  planMarkers.push(L.marker([planDestino.lat,planDestino.lng],{icon:ei}).addTo(planMap).bindPopup('Destino'));
+
+  var p=data.properties.summary;
+  document.getElementById('pi-km').innerHTML=(p.distance/1000).toFixed(1)+' <span style="font-size:9px;color:#666;font-weight:400">km</span>';
+  var h=Math.floor(p.duration/3600),m=Math.floor((p.duration%3600)/60);
+  document.getElementById('pi-time').innerHTML=(h>0?h+'h ':'')+m+' <span style="font-size:9px;color:#666;font-weight:400">min</span>';
+  var elev=data.properties.ascent?Math.round(data.properties.ascent):'--';
+  document.getElementById('pi-elev').innerHTML=elev+' <span style="font-size:9px;color:#666;font-weight:400">m</span>';
+  document.getElementById('plan-info').style.display='block';
 }
 
 function startNavFromPlan(){
