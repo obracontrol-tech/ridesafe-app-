@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
@@ -205,15 +206,35 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   content:'';position:absolute;inset:0;
   background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 60%);
 }
+.btn-iniciar:active{transform:scale(.97);box-shadow:0 2px 12px rgba(168,230,61,.3)}
 .btn-iniciar::after{
   content:'';position:absolute;top:0;left:-80%;
-  width:45%;height:100%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);
-  transform:skewX(-18deg);
-  animation:sheen 3.8s ease-in-out infinite;
+  width:50%;height:100%;
+  background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.45) 50%,transparent 100%);
+  animation:btnShine 4s ease-in-out infinite;
 }
-@keyframes sheen{0%{left:-80%}45%,100%{left:140%}}
-.btn-iniciar:active{transform:scale(.97);box-shadow:0 2px 12px rgba(168,230,61,.3)}
+@keyframes btnShine{
+  0%{left:-80%}
+  18%{left:130%}
+  100%{left:130%}
+}
+/* Entrada en cascada de los módulos */
+@keyframes cardCascade{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.grid>*{opacity:0;animation:cardCascade .45s ease-out forwards}
+.grid>*:nth-child(1){animation-delay:.05s}
+.grid>*:nth-child(2){animation-delay:.12s}
+.grid>*:nth-child(3){animation-delay:.19s}
+.grid>*:nth-child(4){animation-delay:.26s}
+.grid>*:nth-child(5){animation-delay:.33s}
+.grid>*:nth-child(6){animation-delay:.40s}
+.grid>*:nth-child(7){animation-delay:.47s}
+.grid>*:nth-child(8){animation-delay:.54s}
+.grid>*:nth-child(9){animation-delay:.61s}
+.grid>*:nth-child(10){animation-delay:.68s}
+.grid>*:nth-child(n+11){animation-delay:.75s}
 .btn-iniciar svg{width:20px;height:20px;flex-shrink:0;position:relative;z-index:1}
 .btn-iniciar-txt{position:relative;z-index:1}
 
@@ -224,6 +245,39 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   display:flex;gap:8px;
   margin:12px 16px 0;
 }
+/* ¿Salgo o no salgo? */
+.salgo-card{
+  margin:12px 16px 0;
+  background:linear-gradient(135deg,#101c22 0%,#0d1a10 100%);
+  border:1px solid rgba(168,230,61,.25);
+  border-radius:16px;padding:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+.salgo-top{display:flex;align-items:center;gap:12px}
+.salgo-icon{font-size:28px;flex-shrink:0}
+.salgo-info{flex:1;min-width:0}
+.salgo-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;color:#fff;letter-spacing:.3px}
+.salgo-sub{font-size:10.5px;color:var(--muted);line-height:1.3}
+.salgo-btn{
+  flex-shrink:0;padding:10px 14px;border:none;border-radius:12px;
+  background:var(--lime);color:#080c0a;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;letter-spacing:1px;
+  box-shadow:0 2px 12px rgba(168,230,61,.35);
+  transition:transform .15s;
+}
+.salgo-btn:active{transform:scale(.95)}
+.salgo-btn:disabled{opacity:.5}
+.salgo-result{display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(168,230,61,.15)}
+.salgo-result.show{display:block;animation:cardCascade .35s ease-out}
+.salgo-verdict{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+  letter-spacing:1px;margin-bottom:8px;
+}
+.salgo-verdict.si{color:var(--lime)}
+.salgo-verdict.no{color:#ff6688}
+.salgo-text{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.salgo-meta{font-size:10px;color:var(--muted);margin-top:8px}
 .qs-item{
   flex:1;
   background:var(--card);
@@ -334,19 +388,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;
 }
-.modulo:active{background:var(--card2);border-color:rgba(168,230,61,.45);box-shadow:0 0 16px rgba(168,230,61,.14)}
-
-/* Entrada escalonada de tarjetas */
-.modulo,.modulo-big{animation:cardIn .55s cubic-bezier(.22,.9,.3,1) both}
-.grid>*:nth-child(1){animation-delay:.04s}
-.grid>*:nth-child(2){animation-delay:.09s}
-.grid>*:nth-child(3){animation-delay:.14s}
-.grid>*:nth-child(4){animation-delay:.19s}
-.grid>*:nth-child(5){animation-delay:.24s}
-.grid>*:nth-child(6){animation-delay:.29s}
-.grid>*:nth-child(7){animation-delay:.34s}
-.grid>*:nth-child(8){animation-delay:.39s}
-@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modulo:active{background:var(--card2);border-color:var(--border2)}
 
 /* Icono módulo con fondo coloreado */
 .mod-icon{
@@ -431,8 +473,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   background:var(--bg);
   display:none;flex-direction:column;
 }
-.panel.show{display:flex;animation:panelIn .28s cubic-bezier(.22,.9,.3,1)}
-@keyframes panelIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+.panel.show{display:flex;animation:panelIn .28s ease-out}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* Brillo verde al pulsar un módulo */
+.modulo-big:active,.modulo:active{
+  border-color:var(--lime)!important;
+  box-shadow:0 0 18px rgba(168,230,61,.35)!important;
+}
 
 /* Panel header */
 .p-header{
@@ -559,6 +609,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 
 #wp-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
 #wp-modal.show{display:flex}
+#resumen-modal{position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
+#resumen-modal.show{display:flex}
+#resumen-modal .wp-box{animation:resumenPop .35s ease-out}
+@keyframes resumenPop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
 .wp-box{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:24px;width:100%;max-width:340px}
 
 #elevation-bar{flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px;display:none}
@@ -1431,6 +1485,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   font-weight:600;letter-spacing:.3px;
 }
 
+/* ═══ PANTALLA PATROCINADOR ═══ */
+#sponsor-screen{
+  position:fixed;inset:0;z-index:900;
+  background:#070d09;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:30px;text-align:center;
+}
+#sponsor-screen.show{display:flex}
+.sponsor-logo-wrap{margin-bottom:20px}
+.sponsor-logo{max-width:220px;max-height:160px;border-radius:16px;display:block}
+.sponsor-tagline{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--text);letter-spacing:.5px}
+.sponsor-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.sponsor-progress{width:160px;height:4px;background:rgba(255,255,255,.1);border-radius:4px;margin-top:24px;overflow:hidden}
+.sponsor-progress-bar{height:100%;width:0;background:var(--lime);border-radius:4px;transition:width 2.4s linear}
+.sponsor-skip{position:absolute;bottom:34px;right:24px;background:none;border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer}
+
 
 
 
@@ -1784,6 +1854,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 .anti-btn-unlock:active{transform:scale(.97)}
 .anti-alerta{padding:14px;background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.3);border-radius:12px;font-size:12px;color:var(--red);line-height:1.6;display:none}
 .anti-alerta.show{display:block}
+@keyframes alarmFlash{
+  0%,100%{background:var(--bg)}
+  50%{background:#3a0a12}
+}
 
 </style>
 </head>
@@ -1953,8 +2027,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 </div>
 
 <!-- BANNER DÍAS RESTANTES -->
-<div id="trial-banner" id="trial-banner"></div>
+<div id="trial-banner"></div>
 
+<!-- PANTALLA PATROCINADOR -->
+<div id="sponsor-screen">
   <div class="sponsor-logo-wrap">
     <img class="sponsor-logo" src="data:image/jpeg;base64,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" alt="ADN Bikes"/>
   </div>
@@ -1977,12 +2053,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   <!-- MODO TRIAL ACTIVO -->
   <div id="acceso-trial-activo" style="display:none;width:100%;max-width:340px;text-align:center;margin-bottom:24px">
     <div style="background:var(--lime-dim);border:1px solid var(--border);border-radius:16px;padding:16px">
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Prueba gratuita</div>
-      <span class="acceso-trial-dias" id="acceso-dias">15</span>
-      <div style="font-size:12px;color:var(--muted)">días restantes</div>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Acceso libre para todos</div>
+      <span class="acceso-trial-dias" id="acceso-dias">30</span>
+      <div style="font-size:12px;color:var(--muted)">días gratis restantes</div>
     </div>
     <button class="acceso-btn" style="margin-top:16px" onclick="accesoEntrar()">🚴 ENTRAR A RIDESAFE IA</button>
-    <div style="font-size:11px;color:var(--dim);margin-top:8px">¿Ya tienes clave? Introdúcela abajo</div>
+    <div style="background:linear-gradient(135deg,rgba(168,230,61,.1),rgba(0,229,255,.06));border:1px solid rgba(168,230,61,.35);border-radius:16px;padding:14px;margin-top:16px;text-align:center">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--lime);text-transform:uppercase;letter-spacing:1px">⭐ Oferta Fundador</div>
+      <div style="font-size:22px;font-weight:900;color:var(--text);margin:4px 0">1,99€/mes <span style="font-size:12px;font-weight:400;color:var(--lime)">PARA SIEMPRE</span></div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5">Después del 15 de julio: 4,99€/mes<br>Sin permanencia · Cancela cuando quieras</div>
+      <button onclick="fundadorWhatsApp()" style="margin-top:10px;background:#25d366;color:#fff;border:none;border-radius:12px;padding:10px 18px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;letter-spacing:.5px;cursor:pointer">💚 QUIERO SER FUNDADOR</button>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:10px">¿Ya tienes clave? Introdúcela abajo</div>
   </div>
 
   <!-- MODO CLAVE -->
@@ -2144,6 +2226,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
 
   <!-- GRID MÓDULOS -->
+  <!-- ¿SALGO O NO SALGO? — Asesor IA del día -->
+  <div class="salgo-card" id="salgo-card">
+    <div class="salgo-top">
+      <div class="salgo-icon">🌤️</div>
+      <div class="salgo-info">
+        <div class="salgo-title">¿Salgo o no salgo?</div>
+        <div class="salgo-sub">Tu asesor IA del día: clima, ropa y mejor hora</div>
+      </div>
+      <button class="salgo-btn" id="salgo-btn" onclick="checkSalgo()">CONSULTAR</button>
+    </div>
+    <div class="salgo-result" id="salgo-result"></div>
+  </div>
+
   <div class="section-label">Módulos</div>
   <div class="grid">
 
@@ -2220,12 +2315,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
 
     <!-- AJUSTES / PERFIL -->
-    <div class="modulo mod-anti" onclick="openAntiRobo()" style="opacity:.7">
+    <div class="modulo mod-anti" onclick="openAntiRobo()">
       <div class="mod-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <div class="modulo-title">Antirrobo</div>
-      <div class="modulo-sub">Próximamente</div>
+      <div class="modulo-sub">Alarma, aparcamiento, DNI bici</div>
     </div>
 
     <div class="modulo mod-offline" onclick="openOffline()">
@@ -2245,6 +2340,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
 
   </div><!-- /grid -->
+
+  <!-- TARJETA COMUNIDAD -->
+  <div class="comunidad-card">
+    <div class="comunidad-title">💬 Esta app la hacemos <span>entre todos</span></div>
+    <div class="comunidad-sub">¿Te falta algo? ¿Tienes una idea? Cuéntanoslo y la construimos juntos.</div>
+    <div class="comunidad-btns">
+      <button class="com-btn com-wa" onclick="sugerirWhatsApp()">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.84 9.84 0 0 1-1.51-5.26c0-5.44 4.43-9.86 9.89-9.86 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87zm8.4-18.27A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.15 11.9c0 2.1.55 4.14 1.59 5.94L.05 24l6.31-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.9-11.9a11.82 11.82 0 0 0-3.5-8.38z"/></svg>
+        Sugiéreme mejoras
+      </button>
+      <button class="com-btn com-tg" onclick="openSugerenciaTG()">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M23.91 3.79L20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>
+        Enviar por Telegram
+      </button>
+    </div>
+  </div>
 
   <!-- Espacio extra abajo -->
   <div style="height:16px"></div>
@@ -2356,6 +2467,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 </div>
 
 <!-- PANEL LEGAL INFO -->
+<!-- PANEL SUGERENCIA TELEGRAM -->
+<div class="panel" id="panel-sugerencia">
+  <div class="p-header">
+    <button class="p-back" onclick="closePanel('panel-sugerencia')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="p-title">Tu <span>Sugerencia</span></div>
+  </div>
+  <div class="p-body" style="overflow-y:auto;padding:20px 16px">
+    <div style="background:var(--lime-dim);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:28px">🚴</span>
+      <div style="font-size:13px;color:var(--muted);line-height:1.4">Tu mensaje llega directamente al creador de la app por Telegram. ¡Toda idea cuenta!</div>
+    </div>
+    <input type="text" id="sug-nombre" placeholder="Tu nombre (opcional)" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
+    <textarea id="sug-texto" rows="5" placeholder="Escribe aquí tu sugerencia, idea o problema..." style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;resize:vertical;box-sizing:border-box"></textarea>
+    <button id="sug-enviar-btn" onclick="enviarSugerenciaTG()" style="width:100%;margin-top:14px;background:var(--lime);color:#0a0f0a;border:none;border-radius:14px;padding:16px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">✈️ Enviar sugerencia</button>
+    <div id="sug-estado" style="text-align:center;margin-top:12px;font-size:14px;min-height:20px"></div>
+  </div>
+</div>
+
 <div class="panel" id="panel-legal-info">
   <div class="p-header">
     <button class="p-back" onclick="closeLegalPanel()">
@@ -2491,81 +2622,75 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
   <div class="p-body" style="overflow-y:auto;padding:20px 16px">
 
-    <!-- Banner Próximamente -->
-    <div style="background:rgba(255,136,51,.08);border:1.5px solid rgba(255,136,51,.4);border-radius:16px;padding:16px;margin-bottom:20px;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🔐</div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--orange);margin-bottom:6px">PRÓXIMAMENTE</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.7">Esta función requiere un <strong style="color:var(--text)">chip GPS/GSM</strong> instalado en la bicicleta.<br>Estamos trabajando en la integración con hardware compatible.<br><br>Consulta con nosotros para más información.</div>
-      <a href="https://wa.me/34643223301?text=Hola!%20Me%20interesa%20el%20sistema%20antirrobo%20de%20RideSafe%20AI" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 20px;background:#25D366;color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;text-decoration:none">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Más información
-      </a>
-    </div>
-
-    <!-- Estado conexión -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;opacity:.4;pointer-events:none">
-      <div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--text)">Chip RideSafe</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-device-id">Dispositivo: #1234</div>
+<!-- ═══ 1. MODO APARCAMIENTO ═══ -->
+    <div class="card">
+      <div class="card-title">🅿️ Modo Aparcamiento</div>
+      <div class="card-sub" style="margin-bottom:12px">Guarda dónde dejas la bici y vuelve a ella sin perderte</div>
+      <div id="park-empty">
+        <button class="btn-primary" style="width:100%" onclick="parkBike()">📍 APARCAR BICI AQUÍ</button>
       </div>
-      <span class="anti-status anti-desconectado" id="anti-status-badge">● Desconectado</span>
-    </div>
-
-    <!-- Alerta movimiento -->
-    <div class="anti-alerta" id="anti-alerta">
-      🚨 <strong>ALERTA — Movimiento detectado</strong><br>
-      Tu bicicleta se está moviendo sin autorización.<br>
-      <span id="anti-alerta-pos"></span>
-    </div>
-
-    <!-- Telemetría -->
-    <div class="telem-grid">
-      <div class="telem-card">
-        <div class="telem-label">📍 GPS</div>
-        <div class="telem-val" id="anti-gps" style="font-size:13px;line-height:1.4">—</div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">⚡ Velocidad</div>
-        <div class="telem-val"><span id="anti-speed">—</span> <span style="font-size:13px;color:var(--muted)">km/h</span></div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">🔋 Batería chip</div>
-        <div class="telem-val"><span id="anti-battery">—</span><span style="font-size:13px;color:var(--muted)">%</span></div>
-      </div>
-      <div class="telem-card">
-        <div class="telem-label">🛡️ Estado</div>
-        <div class="telem-val" id="anti-state" style="font-size:15px">—</div>
+      <div id="park-info" style="display:none">
+        <div style="background:var(--lime-dim);border:1px solid rgba(168,230,61,.25);border-radius:12px;padding:12px;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text);font-weight:600">🚲 Bici aparcada</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px" id="park-meta">—</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" style="flex:1" onclick="parkReturn()">🧭 VOLVER A MI BICI</button>
+          <button onclick="parkClear()" style="flex-shrink:0;padding:0 16px;background:none;border:1.5px solid var(--border2);border-radius:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer">✓ YA LA TENGO</button>
+        </div>
       </div>
     </div>
 
-    <!-- Modo asistencia -->
-    <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--text)">Modo asistencia</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="anti-assist">—</div>
+    <!-- ═══ 2. ALARMA DE MOVIMIENTO ═══ -->
+    <div class="card">
+      <div class="card-title">🚨 Alarma de movimiento</div>
+      <div class="card-sub" style="margin-bottom:12px">Deja el móvil en la bolsa del sillín. Si alguien mueve la bici: sirena a todo volumen</div>
+      <div id="alarm-off">
+        <button class="anti-btn-lock" style="margin-bottom:0" onclick="alarmStart()">🔐 ACTIVAR VIGILANCIA</button>
       </div>
-      <span style="font-size:20px" id="anti-assist-icon">⚙️</span>
+      <div id="alarm-arming" style="display:none;text-align:center;padding:10px 0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--orange)" id="alarm-count">10</div>
+        <div style="font-size:11px;color:var(--muted)">Coloca el móvil en la bici y no lo toques...</div>
+      </div>
+      <div id="alarm-on" style="display:none">
+        <div style="background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.3);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--red)">🛡️ VIGILANDO</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Cualquier movimiento disparará la sirena</div>
+        </div>
+        <button class="anti-btn-unlock" onclick="alarmStop()">🔓 DESACTIVAR</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.5">⚠️ La pantalla debe quedar encendida con la app abierta. Sube el volumen al máximo antes de activar.</div>
     </div>
 
-    <!-- Botones -->
-    <button class="anti-btn-lock" id="anti-lock-btn" onclick="antiLock()">
-      🔐 ACTIVAR ANTIRROBO
-    </button>
-    <button class="anti-btn-unlock" id="anti-unlock-btn" onclick="antiUnlock()">
-      🔓 DESACTIVAR ANTIRROBO
-    </button>
+    <!-- ═══ 3. DNI DE LA BICI ═══ -->
+    <div class="card">
+      <div class="card-title">🪪 DNI de tu bici</div>
+      <div class="card-sub" style="margin-bottom:12px">Tenlo todo a mano si algún día tienes que denunciar</div>
+      <input class="input" id="dni-marca" placeholder="Marca (Orbea, Trek, Specialized...)" style="margin-bottom:8px"/>
+      <input class="input" id="dni-modelo" placeholder="Modelo" style="margin-bottom:8px"/>
+      <input class="input" id="dni-color" placeholder="Color" style="margin-bottom:8px"/>
+      <input class="input" id="dni-serie" placeholder="Nº de serie del cuadro (bajo el pedalier)" style="margin-bottom:8px"/>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <label for="dni-foto-input" style="flex:1;display:block;text-align:center;padding:11px;background:var(--card2);border:1.5px dashed var(--border2);border-radius:11px;color:var(--muted);font-size:12px;cursor:pointer">📷 Foto de la bici</label>
+        <input type="file" id="dni-foto-input" accept="image/*" style="display:none" onchange="dniFoto(this)"/>
+        <img id="dni-foto-preview" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"/>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="dniSave()">💾 GUARDAR FICHA</button>
+    </div>
 
-    <!-- Ver en mapa -->
-    </div><!-- /desactivado -->
-    <button onclick="antiVerMapa()" style="opacity:.4;pointer-events:none" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px">
-      📍 Ver ubicación en Google Maps
-    </button>
+    <!-- ═══ 4. KIT DE ROBO ═══ -->
+    <div class="card" style="border-color:rgba(255,51,85,.3)">
+      <div class="card-title" style="color:var(--red)">📄 Kit de robo</div>
+      <div class="card-sub" style="margin-bottom:12px">Si pasa lo peor: difunde la alerta en segundos por WhatsApp y grupos ciclistas</div>
+      <button class="anti-btn-lock" style="margin-bottom:0" onclick="roboKit()">🔴 ME HAN ROBADO LA BICI</button>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.5">Genera un mensaje con todos los datos de tu bici y la última ubicación conocida, listo para compartir y para la denuncia policial.</div>
+    </div>
 
-    <!-- Info conexión -->
-    <div style="margin-top:16px;padding:14px;background:var(--lime-dim);border:1px solid var(--border);border-radius:12px;font-size:11px;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--lime)">Conexión:</strong> WebSocket en tiempo real con el chip GPS.<br>
-      Cuando el chip detecta movimiento sin autorización envía alerta por Telegram y WhatsApp automáticamente.<br>
-      <strong style="color:var(--lime)">API:</strong> api.ridesafeai.es
+    <!-- ═══ PRO: CHIP GPS (próximamente) ═══ -->
+    <div style="background:rgba(255,136,51,.06);border:1px solid rgba(255,136,51,.3);border-radius:14px;padding:14px;text-align:center">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--orange)">🛰️ RASTREO GPS REAL — PRÓXIMAMENTE</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px">Chip GPS/GSM instalado en la bici con localización en tiempo real aunque te la roben.</div>
+      <a href="https://wa.me/34643223301?text=Hola!%20Me%20interesa%20el%20chip%20GPS%20antirrobo%20de%20RideSafe%20IA" target="_blank" style="display:inline-block;margin-top:10px;padding:8px 18px;background:#25D366;color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;text-decoration:none">Quiero ser el primero</a>
     </div>
 
     <div style="height:20px"></div>
@@ -2691,9 +2816,63 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PANEL SEGURIDAD
-     ═══════════════════════════════════════════ -->
+<!-- MODAL RESUMEN DE RUTA -->
+<div id="resumen-modal">
+  <div class="wp-box" style="max-width:340px;background:transparent;border:none;padding:0;box-shadow:none">
+    <div id="resumen-card" style="border-radius:18px;position:relative;overflow:hidden;aspect-ratio:9/13;width:100%">
+      <div id="resumen-track" style="position:absolute;inset:0;width:100%;height:100%;background:#1a1a1a;z-index:1"></div>
+      <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0;z-index:100">
+        <img id="resumen-foto-img" style="width:100%;height:100%;display:block;object-fit:cover"/>
+      </div>
+      <!-- Mini-mapa esquina (siempre, si hay foto) -->
+      <div id="resumen-mini-track" style="display:none;position:absolute;bottom:64px;right:14px;width:84px;height:84px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.4);z-index:520"></div>
+      <!-- Cabecera: lugar + botón mapa/foto -->
+      <div style="position:absolute;top:0;left:0;right:0;padding:14px 16px;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent);display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:500">
+        <div id="resumen-lugar" style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6)">
+          <span style="color:var(--lime)">📍</span><span id="resumen-lugar-txt">RideSafe IA</span>
+        </div>
+        <button id="resumen-foto-btn" onclick="document.getElementById('resumen-foto-input').click()" style="background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);white-space:nowrap">
+          📷 Foto
+        </button>
+        <input type="file" id="resumen-foto-input" accept="image/*" capture="environment" style="display:none" onchange="onResumenFoto(event)">
+      </div>
+      <!-- Panel lateral de estadísticas -->
+      <div style="position:absolute;left:14px;top:60px;bottom:54px;width:108px;background:rgba(10,16,12,.72);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;backdrop-filter:blur(3px);z-index:500;display:flex;flex-direction:column;justify-content:space-around">
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">📏</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--lime);line-height:1" id="resumen-km">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⏱️</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-tiempo">0:00</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">tiempo</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⚡</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-vel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km/h</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <span style="font-size:14px;line-height:1.4">⛰️</span>
+          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#ffaa00;line-height:1" id="resumen-desnivel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">m desnivel</div></div>
+        </div>
+      </div>
+      <!-- Pie: fecha + marca -->
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent);display:flex;align-items:center;justify-content:space-between;z-index:500">
+        <div id="resumen-fecha" style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.5)"></div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--lime);text-shadow:0 1px 3px rgba(0,0,0,.5)">🛡️ RIDESAFE IA</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button style="flex:1;padding:13px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="closeResumenModal()">Cerrar</button>
+      <button class="btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="compartirRuta()">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:16px;height:16px"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.84 9.84 0 0 1-1.51-5.26c0-5.44 4.43-9.86 9.89-9.86 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87zm8.4-18.27A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.15 11.9c0 2.1.55 4.14 1.59 5.94L.05 24l6.31-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.9-11.9a11.82 11.82 0 0 0-3.5-8.38z"/></svg>
+        Compartir
+      </button>
+    </div>
+  </div>
+</div>
 <div class="panel" id="panel-seg">
   <div class="p-header">
     <button class="p-back" onclick="closeSeg()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -3058,12 +3237,115 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
    ═══════════════════════════════════════ */
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},2500);}
 function openPanel(id){document.getElementById(id).classList.add('show');}
+
+/* ═══ LÍMITE DIARIO ASESOR IA ═══ */
+var IA_LIMITE_GRATIS = 5;
+var IA_LIMITE_SUSCRITO = 15;
+function iaGate(){
+  var hoy = new Date().toDateString();
+  var uso = {};
+  try{ uso = JSON.parse(localStorage.getItem('rs_ia_uso')||'{}'); }catch(e){}
+  if (uso.fecha !== hoy) uso = {fecha:hoy, n:0};
+  var max = localStorage.getItem('rs_clave_activa')==='1' ? IA_LIMITE_SUSCRITO : IA_LIMITE_GRATIS;
+  if (uso.n >= max){
+    toast('🤖 Límite diario del Asesor IA alcanzado ('+max+' consultas). ¡Mañana más!');
+    return false;
+  }
+  uso.n++;
+  localStorage.setItem('rs_ia_uso', JSON.stringify(uso));
+  return true;
+}
+
+/* ¿Salgo o no salgo? — clima + IA */
+function checkSalgo(){
+  if(!iaGate()) return;
+  var btn=document.getElementById('salgo-btn'),res=document.getElementById('salgo-result');
+  btn.disabled=true;btn.textContent='...';
+  res.className='salgo-result show';
+  res.innerHTML='<div style="font-size:12px;color:var(--muted)">📡 Obteniendo tu ubicación...</div>';
+  function fail(msg){res.innerHTML='<div style="color:#ff6688;font-size:12px">'+msg+'</div>';btn.disabled=false;btn.textContent='CONSULTAR';}
+  function go(lat,lon){
+    res.innerHTML='<div style="font-size:12px;color:var(--muted)">🌤️ Consultando el tiempo...</div>';
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,precipitation_probability,wind_speed_10m&forecast_hours=12&timezone=auto')
+    .then(function(r){return r.json();})
+    .then(function(w){
+      var c=w.current,hh=w.hourly;
+      var resumen='Ahora: '+c.temperature_2m+'°C (sensación '+c.apparent_temperature+'°C), viento '+c.wind_speed_10m+' km/h (rachas '+c.wind_gusts_10m+'), precipitación '+c.precipitation+' mm. Próximas 12h (hora|temp°C|prob.lluvia%|viento km/h): ';
+      for(var i=0;i<hh.time.length;i++){resumen+=hh.time[i].slice(11,16)+'|'+hh.temperature_2m[i]+'|'+hh.precipitation_probability[i]+'|'+hh.wind_speed_10m[i]+'; ';}
+      res.innerHTML='<div style="font-size:12px;color:var(--muted)">🤖 La IA está analizando...</div>';
+      return fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:350,
+          messages:[{role:'user',content:'Eres el asesor de un ciclista (carretera/MTB). Datos meteo de su zona: '+resumen+' Responde EXACTAMENTE en este formato: primera línea solo "SI" o "NO" (¿es buen momento para salir en bici hoy?). Después 3-4 líneas cortas con: mejor franja horaria para salir, qué ropa llevar, y un aviso si hay viento o lluvia. Usa emojis. Sin markdown, texto directo y cercano.'}]
+        })
+      });
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var txt=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:'';
+      if(!txt){fail('La IA no respondió. Inténtalo de nuevo.');return;}
+      var lines=txt.trim().split('\n');
+      var v0=lines[0].toUpperCase().replace(/Í/g,'I');
+      var v=v0.indexOf('SI')>-1&&v0.indexOf('NO')===-1;
+      var rest=lines.slice(1).join('\n').trim();
+      var hora=new Date();var hs=('0'+hora.getHours()).slice(-2)+':'+('0'+hora.getMinutes()).slice(-2);
+      res.innerHTML='<div class="salgo-verdict '+(v?'si':'no')+'">'+(v?'✅ ¡A RODAR!':'🛑 MEJOR HOY NO')+'</div>'
+        +'<div class="salgo-text">'+escHtml(rest)+'</div>'
+        +'<div class="salgo-meta">Actualizado a las '+hs+' · RideSafe IA</div>';
+      btn.disabled=false;btn.textContent='CONSULTAR';
+    })
+    .catch(function(){fail('Error de conexión. Comprueba internet e inténtalo de nuevo.');});
+  }
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      function(p){go(p.coords.latitude.toFixed(3),p.coords.longitude.toFixed(3));},
+      function(){go(41.617,0.620);},
+      {timeout:8000,maximumAge:600000}
+    );
+  }else{go(41.617,0.620);}
+}
 /* Saludo dinámico según hora */
 (function(){var h=new Date().getHours();var t=document.getElementById('hero-title');if(!t)return;
 if(h>=6&&h<13){t.innerHTML='Buenos días ☀️<br>A <span>rodar</span> se ha dicho';}
 else if(h>=13&&h<21){t.innerHTML='Buenas tardes 🚴<br>Tu ruta <span>off-road</span> te espera';}
 else{t.innerHTML='Buenas noches 🌙<br>Planifica tu <span>próxima salida</span>';}})();
 function closePanel(id){document.getElementById(id).classList.remove('show');}
+
+/* ═══ COMUNIDAD: WhatsApp + Telegram ═══ */
+function sugerirWhatsApp(){
+  var txt=encodeURIComponent('Hola JM 👋 Te escribo desde RideSafe IA. Mi sugerencia: ');
+  window.open('https://wa.me/34643223301?text='+txt,'_blank');
+}
+function openSugerenciaTG(){
+  document.getElementById('sug-estado').textContent='';
+  document.getElementById('panel-sugerencia').classList.add('show');
+}
+function enviarSugerenciaTG(){
+  var nombre=(document.getElementById('sug-nombre').value||'Anónimo').trim();
+  var texto=document.getElementById('sug-texto').value.trim();
+  var estado=document.getElementById('sug-estado');
+  var btn=document.getElementById('sug-enviar-btn');
+  if(!texto){estado.style.color='#ff8833';estado.textContent='Escribe tu sugerencia antes de enviar 😉';return;}
+  btn.disabled=true;btn.style.opacity='.6';
+  estado.style.color='var(--muted)';estado.textContent='Enviando...';
+  var msg='💬 SUGERENCIA RideSafe IA\n👤 '+nombre+'\n📝 '+texto+'\n🕐 '+new Date().toLocaleString('es-ES');
+  fetch('https://api.telegram.org/bot8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM/sendMessage',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:'8601457137',text:msg})
+  }).then(function(r){return r.json();}).then(function(d){
+    btn.disabled=false;btn.style.opacity='1';
+    if(d.ok){estado.style.color='var(--lime)';estado.textContent='✅ ¡Enviada! Gracias por mejorar la app';
+      document.getElementById('sug-texto').value='';
+      setTimeout(function(){closePanel('panel-sugerencia');},2000);
+    }else{estado.style.color='#ff3355';estado.textContent='❌ No se pudo enviar. Prueba por WhatsApp';}
+  }).catch(function(){
+    btn.disabled=false;btn.style.opacity='1';
+    estado.style.color='#ff3355';estado.textContent='❌ Sin conexión. Prueba más tarde';
+  });
+}
 
 /* Quick stats en inicio */
 function updateQuickStats(){
@@ -3268,6 +3550,7 @@ function toggleRecording(){
       var _vel = elapsed>0 ? ((navDist/1000)/(elapsed/3600)).toFixed(1) : '0';
       toast('Ruta guardada: '+_km+' km');
       tgAlertaFinActividad(_km, _mins+':'+_secs, _vel);
+      mostrarResumenRuta(route);
     }else{toast('Ruta muy corta');}
     document.getElementById('nav-live2').classList.remove('show');
     document.getElementById('nav-status').textContent='\u25CF Listo';
@@ -3642,7 +3925,7 @@ function renderRutas(){
     var km=(r.distance/1000).toFixed(2),mins=Math.floor(r.duration/60),secs=String(r.duration%60).padStart(2,'0');
     var spd=r.duration>0?((r.distance/1000)/(r.duration/3600)).toFixed(1):'--';
     var card=document.createElement('div');card.className='ruta-card';
-    card.innerHTML='<div class="ruta-info"><div class="ruta-top"><div><div class="ruta-num">Ruta #'+(rutas.length-i)+'</div><div class="ruta-fecha">'+fecha+' - '+hora+'</div>'+(r.elevationGain?'<div style="font-size:10px;color:#ffaa00;margin-top:2px">Desnivel: '+Math.round(r.elevationGain)+'m</div>':'')+'</div><button class="ruta-del" onclick="deleteRoute('+r.id+')">&#10005;</button></div><div class="ruta-stats2"><div><span class="rs-label">Dist</span><span class="rs-val">'+km+' <span>km</span></span></div><div><span class="rs-label">Tiempo</span><span class="rs-val">'+mins+':'+secs+'</span></div><div><span class="rs-label">Vel</span><span class="rs-val">'+spd+' <span>km/h</span></span></div></div></div>';
+    card.innerHTML='<div class="ruta-info"><div class="ruta-top"><div><div class="ruta-num">Ruta #'+(rutas.length-i)+'</div><div class="ruta-fecha">'+fecha+' - '+hora+'</div>'+(r.elevationGain?'<div style="font-size:10px;color:#ffaa00;margin-top:2px">Desnivel: '+Math.round(r.elevationGain)+'m</div>':'')+'</div><div style="display:flex;gap:6px"><button class="ruta-del" style="color:var(--lime);border-color:var(--border)" onclick="verResumenRuta('+r.id+')" title="Compartir">&#128228;</button><button class="ruta-del" onclick="deleteRoute('+r.id+')">&#10005;</button></div></div><div class="ruta-stats2"><div><span class="rs-label">Dist</span><span class="rs-val">'+km+' <span>km</span></span></div><div><span class="rs-label">Tiempo</span><span class="rs-val">'+mins+':'+secs+'</span></div><div><span class="rs-label">Vel</span><span class="rs-val">'+spd+' <span>km/h</span></span></div></div></div>';
     if(r.points&&r.points.length>1){
       var svgWrap=document.createElement('div');svgWrap.className='ruta-track';
       var lats=r.points.map(function(p){return p[0];}),lngs=r.points.map(function(p){return p[1];});
@@ -3656,6 +3939,150 @@ function renderRutas(){
   });
 }
 function deleteRoute(id){if(!confirm('¿Eliminar esta ruta?'))return;var rs=JSON.parse(localStorage.getItem('rs_routes')||'[]').filter(function(r){return r.id!==id;});localStorage.setItem('rs_routes',JSON.stringify(rs));renderRutas();updateQuickStats();toast('Ruta eliminada');}
+
+/* ═══ RESUMEN DE RUTA + COMPARTIR ═══ */
+var resumenRutaActual = null;
+
+var resumenMap = null;
+var resumenMiniMap = null;
+
+function pintarTrackMapa(points, contenedorId, esMini){
+  var cont = document.getElementById(contenedorId);
+  if(!cont || !points || points.length<2) return;
+  cont.innerHTML = '';
+  var mapVar = esMini ? 'resumenMiniMap' : 'resumenMap';
+  if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
+  var latlngs = points.map(function(p){return [p[0],p[1]];});
+  var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'}).addTo(map);
+  var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
+  L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
+  L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
+  map.fitBounds(line.getBounds(),{padding:esMini?[6,6]:[24,90]});
+  if(esMini) resumenMiniMap = map; else resumenMap = map;
+}
+
+function pintarLugarRuta(points){
+  var txt = document.getElementById('resumen-lugar-txt');
+  txt.textContent = 'RideSafe IA';
+  if(!points || !points.length) return;
+  var mid = points[Math.floor(points.length/2)];
+  fetch('https://nominatim.openstreetmap.org/reverse?lat='+mid[0]+'&lon='+mid[1]+'&format=json&zoom=12',{headers:{'Accept-Language':'es'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(!d || !d.address) return;
+      var a = d.address;
+      var lugar = a.village || a.town || a.city || a.municipality || a.county || a.state || '';
+      if(lugar) txt.textContent = lugar;
+    }).catch(function(){});
+}
+
+var resumenFotoData = null;
+function volverAlMapa(){
+  document.getElementById('resumen-foto-wrap').style.display = 'none';
+  document.getElementById('resumen-mini-track').style.display = 'none';
+  document.getElementById('resumen-foto-btn').textContent = '📷 Foto';
+  document.getElementById('resumen-foto-btn').onclick = function(){ document.getElementById('resumen-foto-input').click(); };
+  if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
+  document.getElementById('resumen-mini-track').innerHTML='';
+}
+function onResumenFoto(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    resumenFotoData = e.target.result;
+    document.getElementById('resumen-foto-img').src = resumenFotoData;
+    document.getElementById('resumen-foto-wrap').style.display = 'block';
+    document.getElementById('resumen-mini-track').style.display = 'block';
+    document.getElementById('resumen-foto-btn').textContent = '🗺️ Mapa';
+    document.getElementById('resumen-foto-btn').onclick = volverAlMapa;
+    if(resumenRutaActual){
+      setTimeout(function(){ pintarTrackMapa(resumenRutaActual.points, 'resumen-mini-track', true); }, 150);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function mostrarResumenRuta(route){
+  resumenRutaActual = route;
+  resumenFotoData = null;
+  document.getElementById('resumen-foto-wrap').style.display = 'none';
+  document.getElementById('resumen-mini-track').style.display = 'none';
+  document.getElementById('resumen-foto-img').src = '';
+  document.getElementById('resumen-foto-btn').textContent = '📷 Foto';
+  document.getElementById('resumen-foto-btn').onclick = function(){ document.getElementById('resumen-foto-input').click(); };
+  document.getElementById('resumen-foto-input').value = '';
+  var km=(route.distance/1000).toFixed(1);
+  var mins=Math.floor(route.duration/60), secs=String(route.duration%60).padStart(2,'0');
+  var spd=route.duration>0?((route.distance/1000)/(route.duration/3600)).toFixed(1):'0';
+  var fecha=new Date(route.timestamp).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('resumen-fecha').textContent = fecha.charAt(0).toUpperCase()+fecha.slice(1);
+  document.getElementById('resumen-km').innerHTML = km;
+  document.getElementById('resumen-tiempo').textContent = mins+':'+secs;
+  document.getElementById('resumen-vel').textContent = spd;
+  document.getElementById('resumen-desnivel').textContent = Math.round(route.elevationGain||0);
+  document.getElementById('resumen-modal').classList.add('show');
+  pintarLugarRuta(route.points);
+  setTimeout(function(){
+    pintarTrackMapa(route.points, 'resumen-track');
+  }, 150);
+}
+function closeResumenModal(){
+  document.getElementById('resumen-modal').classList.remove('show');
+  resumenRutaActual = null;
+  if(resumenMap){ resumenMap.remove(); resumenMap=null; }
+  if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
+}
+function verResumenRuta(id){
+  var rutas=JSON.parse(localStorage.getItem('rs_routes')||'[]');
+  var r=rutas.find(function(x){return x.id===id;});
+  if(r) mostrarResumenRuta(r);
+}
+
+function compartirRuta(){
+  if(!resumenRutaActual){ toast('No hay ruta para compartir'); return; }
+  var r=resumenRutaActual;
+  var km=(r.distance/1000).toFixed(1);
+  var mins=Math.floor(r.duration/60), secs=String(r.duration%60).padStart(2,'0');
+  var spd=r.duration>0?((r.distance/1000)/(r.duration/3600)).toFixed(1):'0';
+  var desnivel=Math.round(r.elevationGain||0);
+  var texto = '🚴 ¡Acabo de completar una ruta con RideSafe IA!\n\n'+
+    '📏 Distancia: '+km+' km\n'+
+    '⏱️ Tiempo: '+mins+':'+secs+'\n'+
+    '⚡ Velocidad media: '+spd+' km/h\n'+
+    (desnivel>0?'⛰️ Desnivel: '+desnivel+' m\n':'')+
+    '\n¿Te apuntas a la próxima? 💚\napp.ridesafeia.es';
+
+  var card = document.getElementById('resumen-card');
+  var btn = document.getElementById('resumen-foto-btn');
+  if(btn) btn.style.display='none'; // ocultar botón al capturar
+  setTimeout(function(){
+  if(window.html2canvas){
+    html2canvas(card,{backgroundColor:'#0a120c',scale:2,useCORS:true,allowTaint:true,imageTimeout:8000}).then(function(canvas){
+      if(btn) btn.style.display='';
+      canvas.toBlob(function(blob){
+        var file = new File([blob], 'ruta-ridesafe.png', {type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:'Mi ruta RideSafe IA', text:texto}).catch(function(){});
+        }else{
+          compartirRutaTexto(texto);
+        }
+      },'image/png');
+    }).catch(function(){ if(btn) btn.style.display=''; compartirRutaTexto(texto); });
+  }else{
+    if(btn) btn.style.display='';
+    compartirRutaTexto(texto);
+  }
+  }, 900);
+}
+function compartirRutaTexto(texto){
+  if(navigator.share){
+    navigator.share({title:'Mi ruta RideSafe IA', text:texto}).catch(function(){});
+  }else{
+    window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+  }
+}
 function deleteAllRoutes(){if(!confirm('¿Borrar todo el historial?'))return;localStorage.removeItem('rs_routes');renderRutas();updateQuickStats();toast('Historial borrado');}
 
 /* ═══════════════════════════════════════
@@ -3927,14 +4354,14 @@ function checkOnboarding(){
 /* Selección bici */
 function obSelBici(el){
   document.querySelectorAll('.ob-bike').forEach(function(b){b.classList.remove('sel');});
-  el.classList.add('sel');
+  el.classList.add('seleccionado');
   obValidarBtn();
 }
 
 /* Selección nivel */
 function obSelNivel(el){
   document.querySelectorAll('.ob-nivel').forEach(function(n){n.classList.remove('sel');});
-  el.classList.add('sel');
+  el.classList.add('seleccionado');
   obValidarBtn();
 }
 
@@ -3982,6 +4409,8 @@ function renderPerfilEnInicio(){
     var hdr = document.querySelector('.hdr');
     var badge = document.createElement('div');
     badge.id = 'perfil-badge-inicio';
+    badge.onclick = function(){ openPerfil(); };
+    badge.style.cursor = 'pointer';
     badge.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);top:60px;z-index:5;text-align:center;';
     hdr.parentNode.insertBefore(badge, hdr.nextSibling);
     existing = badge;
@@ -4099,8 +4528,8 @@ function renderAjustes(){
 
 function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('sel'); }
-function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('sel'); }
+function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('seleccionado'); }
+function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('seleccionado'); }
 
 function ajGuardar(){
   var nombre = document.getElementById('aj-nombre').value.trim();
@@ -4730,6 +5159,13 @@ var TRIAL_CLAVES_VALIDAS = [
   'RIDE-PRO-06','RIDE-PRO-07','RIDE-PRO-08','RIDE-PRO-09','RIDE-PRO-10',
   'RIDE-PRO-11','RIDE-PRO-12','RIDE-PRO-13','RIDE-PRO-14','RIDE-PRO-15',
   'RIDE-PRO-16','RIDE-PRO-17','RIDE-PRO-18','RIDE-PRO-19','RIDE-PRO-20',
+  // Claves FUNDADOR 1,99€/mes para siempre
+  'RIDE-FUND-01','RIDE-FUND-02','RIDE-FUND-03','RIDE-FUND-04','RIDE-FUND-05',
+  'RIDE-FUND-06','RIDE-FUND-07','RIDE-FUND-08','RIDE-FUND-09','RIDE-FUND-10',
+  'RIDE-FUND-11','RIDE-FUND-12','RIDE-FUND-13','RIDE-FUND-14','RIDE-FUND-15',
+  'RIDE-FUND-16','RIDE-FUND-17','RIDE-FUND-18','RIDE-FUND-19','RIDE-FUND-20',
+  'RIDE-FUND-21','RIDE-FUND-22','RIDE-FUND-23','RIDE-FUND-24','RIDE-FUND-25',
+  'RIDE-FUND-26','RIDE-FUND-27','RIDE-FUND-28','RIDE-FUND-29','RIDE-FUND-30',
 ];
 
 /* trialInit reemplazado por appInit */
@@ -5000,31 +5436,118 @@ setTimeout(function() {
    Sin PIN — solo clave de activación
    ========================================= */
 
+/* ═══ PERIODO DE LANZAMIENTO GRATIS ═══ */
+var LANZAMIENTO_FIN = new Date('2026-07-15T23:59:59');
+var PRECIO_FUNDADOR = '1,99€/mes';
+var PRECIO_NORMAL = '4,99€/mes';
+
+function lanzamientoActivo(){ return Date.now() < LANZAMIENTO_FIN.getTime(); }
+function lanzamientoDias(){ return Math.max(0, Math.ceil((LANZAMIENTO_FIN.getTime()-Date.now())/86400000)); }
+
+function fundadorWhatsApp(){
+  var msg = encodeURIComponent('¡Hola! Quiero ser FUNDADOR de RideSafe IA (1,99€/mes para siempre). ¿Cómo hago el pago por Bizum?');
+  window.open('https://wa.me/34643223301?text='+msg,'_blank');
+}
+
+function lanzamientoBanner(){
+  var b = document.getElementById('trial-banner');
+  if (!b) return;
+  if (localStorage.getItem('rs_clave_activa')==='1' || !lanzamientoActivo()){ b.style.display='none'; return; }
+  b.innerHTML = '⭐ Hazte FUNDADOR: <b>1,99€/mes para siempre</b> · Quedan ' + lanzamientoDias() + ' días gratis';
+  b.style.cssText = 'display:block;background:linear-gradient(90deg,rgba(168,230,61,.15),rgba(0,229,255,.1));border-bottom:1px solid var(--border);padding:9px 14px;font-size:12px;color:var(--text);text-align:center;cursor:pointer';
+  b.onclick = fundadorWhatsApp;
+}
+
+/* ═══ PANTALLA PATROCINADOR ═══ */
+var sponsorTimer = null;
+function sponsorMostrar(){
+  var s = document.getElementById('sponsor-screen');
+  if(!s) return;
+  s.classList.add('show');
+  setTimeout(function(){
+    var bar = document.getElementById('sponsor-bar');
+    if(bar) bar.style.width = '100%';
+  }, 100);
+  sponsorTimer = setTimeout(sponsorSkip, 2600);
+}
+function sponsorSkip(){
+  clearTimeout(sponsorTimer);
+  var s = document.getElementById('sponsor-screen');
+  if(!s) return;
+  s.style.transition = 'opacity .4s ease';
+  s.style.opacity = '0';
+  setTimeout(function(){
+    s.classList.remove('show');
+    s.style.opacity = '';
+    s.style.transition = '';
+  }, 400);
+}
+
+/* ═══ PANEL PERFIL ═══ */
+var perfilTmp = {nivel:'', tipo:''};
+function openPerfil(){
+  perfilTmp.nivel = perfilUsuario.nivel || '';
+  perfilTmp.tipo = perfilUsuario.bici || '';
+  document.getElementById('perfil-nombre').value = perfilUsuario.nombre || '';
+  document.getElementById('perfil-zona').value = perfilUsuario.zona || '';
+  document.getElementById('perfil-nombre-display').textContent = perfilUsuario.nombre || 'Tu nombre aquí';
+  document.getElementById('perfil-avatar-display').textContent = (perfilUsuario.nombre||'?').charAt(0).toUpperCase();
+  var lbl = {novato:'🟢 Novato', medio:'🟡 Medio', pro:'🔴 Pro'};
+  document.getElementById('perfil-nivel-display').textContent = lbl[perfilUsuario.nivel] || 'Sin configurar';
+  document.querySelectorAll('#panel-perfil .nivel-card').forEach(function(c){
+    c.classList.toggle('seleccionado', c.getAttribute('data-nivel')===perfilTmp.nivel);
+  });
+  document.querySelectorAll('#panel-perfil .tipo-card').forEach(function(c){
+    c.classList.toggle('seleccionado', c.getAttribute('data-tipo')===perfilTmp.tipo);
+  });
+  openPanel('panel-perfil');
+}
+function closePerfil(){ closePanel('panel-perfil'); }
+function seleccionarNivel(nivel, el){
+  perfilTmp.nivel = nivel;
+  document.querySelectorAll('#panel-perfil .nivel-card').forEach(function(c){ c.classList.remove('seleccionado'); });
+  el.classList.add('seleccionado');
+}
+function seleccionarTipo(tipo, el){
+  perfilTmp.tipo = tipo;
+  document.querySelectorAll('#panel-perfil .tipo-card').forEach(function(c){ c.classList.remove('seleccionado'); });
+  el.classList.add('seleccionado');
+}
+function guardarPerfil(){
+  var nombre = document.getElementById('perfil-nombre').value.trim();
+  if(!nombre){ toast('Pon tu nombre primero 😉'); return; }
+  perfilUsuario.nombre = nombre;
+  perfilUsuario.zona = document.getElementById('perfil-zona').value.trim();
+  if(perfilTmp.nivel){ perfilUsuario.nivel = perfilTmp.nivel; perfilUsuario.nivelAuto = false; }
+  if(perfilTmp.tipo) perfilUsuario.bici = perfilTmp.tipo;
+  localStorage.setItem('rs_perfil', JSON.stringify(perfilUsuario));
+  renderPerfilEnInicio();
+  toast('✅ Perfil guardado');
+  closePerfil();
+}
+
 function appInit() {
   var claveActiva = localStorage.getItem('rs_clave_activa') === '1';
 
   // Si tiene clave activa — entrar directamente
-  if (claveActiva) return;
+  if (claveActiva) { lanzamientoBanner(); return; }
 
-  // Verificar trial
-  var inicio = localStorage.getItem('rs_trial_inicio');
-  if (!inicio) {
-    // Primera vez — crear trial y mostrar pantalla con días
-    localStorage.setItem('rs_trial_inicio', Date.now().toString());
-    mostrarAccesoTrial(TRIAL_DIAS);
+  if (lanzamientoActivo()) {
+    // Periodo de lanzamiento — acceso libre para todos
+    mostrarAccesoLanzamiento();
     return;
   }
 
-  var diasPasados = Math.floor((Date.now() - parseInt(inicio)) / (1000 * 60 * 60 * 24));
-  var diasRestantes = TRIAL_DIAS - diasPasados;
+  // Lanzamiento terminado — solo con clave
+  mostrarAccesoClave();
+}
 
-  if (diasRestantes > 0) {
-    // Trial activo — mostrar pantalla con días restantes y botón entrar
-    mostrarAccesoTrial(diasRestantes);
-  } else {
-    // Trial caducado — solo clave
-    mostrarAccesoClave();
-  }
+function mostrarAccesoLanzamiento() {
+  document.getElementById('acceso-dias').textContent = lanzamientoDias();
+  document.getElementById('acceso-trial-activo').style.display = 'block';
+  document.getElementById('acceso-subtitle').textContent = '🎉 App GRATIS hasta el 15 de julio';
+  document.getElementById('acceso-screen').classList.add('show');
+  lanzamientoBanner();
 }
 
 function mostrarAccesoTrial(dias) {
@@ -5037,8 +5560,8 @@ function mostrarAccesoTrial(dias) {
 function mostrarAccesoClave() {
   document.getElementById('acceso-trial-activo').style.display = 'none';
   document.getElementById('acceso-card-title').textContent = 'Activa tu suscripción';
-  document.getElementById('acceso-card-sub').textContent = 'Tu periodo de prueba ha finalizado. Introduce tu clave de activación para continuar usando RideSafe IA.';
-  document.getElementById('acceso-subtitle').textContent = 'Prueba gratuita finalizada';
+  document.getElementById('acceso-card-sub').innerHTML = 'El periodo gratuito de lanzamiento ha finalizado.<br><b style="color:var(--lime)">Suscríbete por ' + PRECIO_NORMAL + '</b> — cancela cuando quieras.<br>Pide tu clave por WhatsApp y actívala aquí.';
+  document.getElementById('acceso-subtitle').textContent = 'Periodo gratuito finalizado';
   document.getElementById('acceso-screen').classList.add('show');
 }
 
@@ -5110,6 +5633,7 @@ function accesoWhatsApp() {
 }
 
 // Lanzar al cargar
+sponsorMostrar();
 appInit();
 
 
@@ -5178,6 +5702,7 @@ function diagnosticoMotor(problema) {
     toast('Describe el problema primero');
     return;
   }
+  if(!iaGate()) return;
 
   var resultEl = document.getElementById('diag-result');
   resultEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--cyan);font-size:13px"><div class="spin" style="border-top-color:var(--cyan)"></div> Analizando con IA...</div>';
@@ -5467,12 +5992,160 @@ var antiConectado = false;
 
 function openAntiRobo() {
   openPanel('panel-antirobo');
-  connectTelemetry();
+  parkRender();dniLoad();
 }
 
 function closeAntiRobo() {
   closePanel('panel-antirobo');
-  // No desconectamos el socket al cerrar — seguimos monitorizando en background
+}
+
+/* ═══ ANTIRROBO 1: Modo Aparcamiento ═══ */
+function parkRender(){
+  var p=null;try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  document.getElementById('park-empty').style.display=p?'none':'block';
+  document.getElementById('park-info').style.display=p?'block':'none';
+  if(p){
+    var d=new Date(p.t);
+    document.getElementById('park-meta').textContent='Desde las '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · '+p.lat.toFixed(5)+', '+p.lon.toFixed(5);
+  }
+}
+function parkBike(){
+  if(!navigator.geolocation){toast('GPS no disponible');return;}
+  toast('📡 Obteniendo posición...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var p={lat:pos.coords.latitude,lon:pos.coords.longitude,t:Date.now()};
+    try{localStorage.setItem('rs_park',JSON.stringify(p));}catch(e){}
+    parkRender();toast('🅿️ Bici aparcada y guardada');
+  },function(){toast('No se pudo obtener el GPS');},{enableHighAccuracy:true,timeout:10000});
+}
+function parkReturn(){
+  var p=null;try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  if(!p){toast('No hay bici aparcada');return;}
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+p.lat+','+p.lon+'&travelmode=walking','_blank');
+}
+function parkClear(){
+  try{localStorage.removeItem('rs_park');}catch(e){}
+  parkRender();toast('✓ ¡Buen reencuentro!');
+}
+
+/* ═══ ANTIRROBO 2: Alarma de movimiento ═══ */
+var alarmActive=false,alarmBase=null,alarmCtx=null,alarmNodes=null,alarmCountT=null,alarmWake=null;
+function alarmShow(state){
+  document.getElementById('alarm-off').style.display=state==='off'?'block':'none';
+  document.getElementById('alarm-arming').style.display=state==='arming'?'block':'none';
+  document.getElementById('alarm-on').style.display=state==='on'?'block':'none';
+}
+function alarmStart(){
+  function arm(){
+    var c=10;alarmShow('arming');document.getElementById('alarm-count').textContent=c;
+    alarmCountT=setInterval(function(){
+      c--;document.getElementById('alarm-count').textContent=c;
+      if(c<=0){clearInterval(alarmCountT);alarmArmed();}
+    },1000);
+  }
+  if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(function(r){
+      if(r==='granted'){arm();}else{toast('Permiso de sensores denegado');}
+    }).catch(function(){toast('Permiso de sensores denegado');});
+  }else{arm();}
+}
+function alarmArmed(){
+  alarmActive=true;alarmBase=null;alarmShow('on');
+  window.addEventListener('devicemotion',alarmMotion);
+  if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){alarmWake=w;}).catch(function(){});}
+  toast('🛡️ Vigilancia activada');
+}
+function alarmMotion(e){
+  if(!alarmActive)return;
+  var a=e.accelerationIncludingGravity;if(!a||a.x===null)return;
+  var m=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+  if(alarmBase===null){alarmBase=m;return;}
+  alarmBase=alarmBase*0.9+m*0.1;
+  if(Math.abs(m-alarmBase)>3.5){alarmTrigger();}
+}
+function alarmTrigger(){
+  if(alarmNodes)return;
+  if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);
+  try{
+    alarmCtx=alarmCtx||new (window.AudioContext||window.webkitAudioContext)();
+    var o=alarmCtx.createOscillator(),g=alarmCtx.createGain(),lfo=alarmCtx.createOscillator(),lg=alarmCtx.createGain();
+    o.type='square';o.frequency.value=1100;
+    lfo.type='sine';lfo.frequency.value=4;lg.gain.value=500;
+    lfo.connect(lg);lg.connect(o.frequency);
+    g.gain.value=1;o.connect(g);g.connect(alarmCtx.destination);
+    o.start();lfo.start();alarmNodes={o:o,lfo:lfo,g:g};
+  }catch(e){}
+  document.body.style.animation='alarmFlash .4s infinite';
+}
+function alarmStop(){
+  alarmActive=false;alarmBase=null;
+  window.removeEventListener('devicemotion',alarmMotion);
+  if(alarmCountT)clearInterval(alarmCountT);
+  if(alarmNodes){try{alarmNodes.o.stop();alarmNodes.lfo.stop();}catch(e){}alarmNodes=null;}
+  if(alarmWake){try{alarmWake.release();}catch(e){}alarmWake=null;}
+  if(navigator.vibrate)navigator.vibrate(0);
+  document.body.style.animation='';
+  alarmShow('off');toast('🔓 Vigilancia desactivada');
+}
+
+/* ═══ ANTIRROBO 3: DNI de la bici ═══ */
+function dniLoad(){
+  var d=null;try{d=JSON.parse(localStorage.getItem('rs_dni_bici')||'null');}catch(e){}
+  if(!d)return;
+  document.getElementById('dni-marca').value=d.marca||'';
+  document.getElementById('dni-modelo').value=d.modelo||'';
+  document.getElementById('dni-color').value=d.color||'';
+  document.getElementById('dni-serie').value=d.serie||'';
+  if(d.foto){var img=document.getElementById('dni-foto-preview');img.src=d.foto;img.style.display='block';}
+}
+function dniFoto(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas'),mx=480,sc=Math.min(1,mx/Math.max(img.width,img.height));
+      c.width=img.width*sc;c.height=img.height*sc;
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      var data=c.toDataURL('image/jpeg',0.7);
+      var pv=document.getElementById('dni-foto-preview');pv.src=data;pv.style.display='block';
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+function dniSave(){
+  var pv=document.getElementById('dni-foto-preview');
+  var d={
+    marca:document.getElementById('dni-marca').value.trim(),
+    modelo:document.getElementById('dni-modelo').value.trim(),
+    color:document.getElementById('dni-color').value.trim(),
+    serie:document.getElementById('dni-serie').value.trim(),
+    foto:pv.style.display!=='none'?pv.src:''
+  };
+  try{localStorage.setItem('rs_dni_bici',JSON.stringify(d));toast('💾 Ficha de la bici guardada');}
+  catch(e){d.foto='';try{localStorage.setItem('rs_dni_bici',JSON.stringify(d));toast('Ficha guardada (foto demasiado grande)');}catch(e2){toast('No se pudo guardar');}}
+}
+
+/* ═══ ANTIRROBO 4: Kit de robo ═══ */
+function roboKit(){
+  var d=null,p=null;
+  try{d=JSON.parse(localStorage.getItem('rs_dni_bici')||'null');}catch(e){}
+  try{p=JSON.parse(localStorage.getItem('rs_park')||'null');}catch(e){}
+  if(!d||(!d.marca&&!d.serie)){toast('Rellena antes el DNI de tu bici 🪪');return;}
+  var hoy=new Date();
+  var txt='🔴 BICICLETA ROBADA — SE BUSCA 🔴\n\n'
+    +'🚲 '+(d.marca||'')+' '+(d.modelo||'')+(d.color?' · Color '+d.color:'')+'\n'
+    +(d.serie?'🔢 Nº de serie: '+d.serie+'\n':'')
+    +(p?'📍 Última ubicación conocida: https://maps.google.com/?q='+p.lat+','+p.lon+'\n':'')
+    +'📅 '+hoy.toLocaleDateString('es-ES')+' '+('0'+hoy.getHours()).slice(-2)+':'+('0'+hoy.getMinutes()).slice(-2)+'\n\n'
+    +'Si la ves, contacta conmigo. ¡Comparte por favor! 🙏\n\n'
+    +'— Generado con RideSafe IA · ridesafeia.es';
+  if(navigator.share){
+    navigator.share({title:'Bici robada — Se busca',text:txt}).catch(function(){});
+  }else{
+    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  }
 }
 
 /* ===============================
@@ -5684,6 +6357,7 @@ var ebGuiaNombres = {
 };
 
 function ebGuia(tema) {
+  if(!iaGate()) return;
   var resultEl = document.getElementById('eb-guia-result');
   var tituloEl = document.getElementById('eb-guia-titulo');
   var txtEl = document.getElementById('eb-guia-txt');
@@ -5850,6 +6524,31 @@ function ebGuia(tema) {
   border-color:var(--lime);color:var(--lime);
 }
 .tipo-card:active{transform:scale(.97)}
+
+/* ═══ TARJETA COMUNIDAD ═══ */
+.comunidad-card{
+  margin:18px 0 4px;padding:18px 16px;
+  background:linear-gradient(135deg,rgba(168,230,61,.07),rgba(0,229,255,.05));
+  border:1px solid var(--border);border-radius:18px;
+}
+.comunidad-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--text);
+}
+.comunidad-title span{color:var(--lime)}
+.comunidad-sub{font-size:13px;color:var(--muted);margin:6px 0 14px;line-height:1.4}
+.comunidad-btns{display:flex;gap:10px}
+.com-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:14px;padding:13px 8px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.com-btn svg{width:18px;height:18px;flex-shrink:0}
+.com-wa{background:rgba(37,211,102,.14);color:#25d366;border:1px solid rgba(37,211,102,.35)}
+.com-tg{background:rgba(0,136,204,.14);color:#34aadf;border:1px solid rgba(52,170,223,.35)}
+.com-btn:active{transform:scale(.96)}
+
 </style>
 
 </body>
