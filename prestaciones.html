@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RideSafe IA — Prestaciones</title>
+<meta name="description" content="Descubre RideSafe IA: antirrobo con GPS, asesor meteo con IA y tarjetas de ruta para ciclistas de carretera y MTB.">
+<meta name="theme-color" content="#a8e63d">
+<link rel="icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+   ═══════════════════════════════════════ */
+:root{
+  --bg:#080c0a;
+  --bg2:#0d120f;
+  --card:#111a13;
+  --card2:#161f18;
+  --border:#1e2b20;
+  --border2:#253028;
+  --lime:#a8e63d;
+  --lime-dim:rgba(168,230,61,.12);
+  --lime-glow:rgba(168,230,61,.35);
+  --cyan:#00e5ff;
+  --orange:#ff8833;
+  --text:#e8f0ea;
+  --text2:#b0c0b4;
+  --muted:#7a8f7e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Barlow',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:var(--lime);
+  margin-bottom:14px;
+}
+.eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime-glow)}
+
+/* ═══════════════════════════════════════
+   NAV
+   ═══════════════════════════════════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:64px;display:flex;align-items:center;
+  background:rgba(8,12,10,.7);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  max-width:1080px;margin:0 auto;padding:0 24px;
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;
+  font-size:20px;letter-spacing:1px;color:#fff;
+}
+.logo span{color:var(--lime)}
+.nav-cta{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:13px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--bg);background:var(--lime);
+  padding:9px 18px;border-radius:99px;text-decoration:none;
+  box-shadow:0 4px 18px rgba(168,230,61,.3);
+}
+
+/* ═══════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════ */
+.hero{
+  padding:128px 0 60px;
+  display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;
+}
+.hero h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(34px,6.4vw,58px);font-weight:900;
+  text-transform:uppercase;line-height:1.05;letter-spacing:.5px;
+  margin-bottom:16px;
+}
+.hero h1 em{font-style:normal;color:var(--lime);text-shadow:0 0 24px rgba(168,230,61,.3)}
+.hero p{
+  font-size:16px;line-height:1.6;color:var(--text2);
+  max-width:440px;margin-bottom:28px;
+}
+.cta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-primary{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;
+  font-size:17px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--bg);background:var(--lime);
+  padding:16px 28px;border-radius:14px;text-decoration:none;
+  box-shadow:0 4px 24px rgba(168,230,61,.4),0 0 0 1px rgba(168,230,61,.2);
+}
+.btn-primary::after{
+  content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);
+  transform:skewX(-18deg);animation:sheen 3.8s ease-in-out infinite;
+}
+.cta-note{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+
+/* ═══════════════════════════════════════
+   PHONE MOCKUP — base
+   ═══════════════════════════════════════ */
+.phone-wrap{display:flex;justify-content:center}
+.phone{
+  width:260px;height:540px;border-radius:38px;
+  background:var(--bg);border:7px solid #15211a;
+  box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 0 1px var(--border2),0 0 60px -10px var(--lime-glow);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.phone::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:80px;height:18px;background:#15211a;border-radius:0 0 12px 12px;z-index:5;
+}
+.phone-screen{position:absolute;inset:0;padding:30px 14px 14px;display:flex;flex-direction:column;gap:10px}
+
+/* mini header */
+.m-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+.m-head-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;letter-spacing:1px;color:#fff}
+.m-head-logo span{color:var(--lime)}
+.m-dot{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:blink 2s infinite}
+
+/* mini card base */
+.m-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}
+.m-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text);margin-bottom:2px}
+.m-sub{font-size:10px;color:var(--muted);line-height:1.3}
+
+/* HERO PHONE — home screen */
+.m-hero{
+  flex:1;border-radius:16px;background:linear-gradient(150deg,#13241a,#0c1610);
+  border:1px solid rgba(168,230,61,.18);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;
+}
+.m-hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;line-height:1.1;text-transform:uppercase}
+.m-hero-title span{color:var(--lime)}
+.m-btn{
+  position:relative;overflow:hidden;background:var(--lime);color:var(--bg);
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;letter-spacing:1px;
+  text-transform:uppercase;text-align:center;padding:10px;border-radius:10px;
+}
+.m-btn::after{
+  content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+  transform:skewX(-18deg);animation:sheen 3.8s ease-in-out infinite;
+}
+.m-stats{display:flex;gap:6px}
+.m-stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 4px;text-align:center}
+.m-stat b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--lime)}
+.m-stat small{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.m-mod{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:9px;animation:cardIn .55s cubic-bezier(.22,.9,.3,1) both}
+.m-grid .m-mod:nth-child(1){animation-delay:.05s}
+.m-grid .m-mod:nth-child(2){animation-delay:.12s}
+.m-grid .m-mod:nth-child(3){animation-delay:.19s}
+.m-grid .m-mod:nth-child(4){animation-delay:.26s}
+.m-mod-icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.m-mod-icon svg{width:13px;height:13px;stroke-width:2.4}
+.m-mod span{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+
+/* ═══════════════════════════════════════
+   FEATURE SECTIONS
+   ═══════════════════════════════════════ */
+.feature{
+  display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center;
+  padding:70px 0;border-top:1px solid var(--border);
+}
+.feature--rev .feature-visual{order:2}
+.feature--rev .feature-text{order:1}
+.feature h2{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;
+  font-size:clamp(26px,4.4vw,38px);text-transform:uppercase;line-height:1.1;
+  margin-bottom:14px;letter-spacing:.5px;
+}
+.feature p{font-size:15px;line-height:1.65;color:var(--text2);max-width:420px;margin-bottom:16px}
+.feature-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.feature-list li{
+  display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--text2);
+}
+.feature-list svg{width:16px;height:16px;stroke:var(--lime);stroke-width:2.6;flex-shrink:0;margin-top:2px}
+
+/* ANTIRROBO phone content */
+.m-radar{
+  flex:1;border-radius:16px;background:radial-gradient(circle at center,rgba(168,230,61,.08),transparent 70%),var(--bg2);
+  border:1px solid var(--border);position:relative;display:flex;align-items:center;justify-content:center;
+}
+.radar-ring{position:absolute;border:1px solid rgba(168,230,61,.35);border-radius:50%;animation:radarPulse 2.6s ease-out infinite}
+.radar-ring:nth-child(1){width:60px;height:60px;animation-delay:0s}
+.radar-ring:nth-child(2){width:60px;height:60px;animation-delay:.9s}
+.radar-ring:nth-child(3){width:60px;height:60px;animation-delay:1.8s}
+.radar-dot{width:14px;height:14px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px var(--lime-glow);position:relative;z-index:2}
+.m-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 12px}
+.m-toggle span{font-size:11px;font-weight:700;color:var(--text)}
+.m-pill{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:99px;background:var(--lime-dim);color:var(--lime);border:1px solid rgba(168,230,61,.3)}
+
+/* ASESOR IA phone content */
+.m-weather{display:flex;align-items:center;gap:10px;padding:4px 2px}
+.m-weather b{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#fff}
+.m-weather small{font-size:9px;color:var(--muted);display:block}
+.m-bubble{
+  background:var(--lime-dim);border:1px solid rgba(168,230,61,.25);border-radius:12px;
+  padding:10px 12px;font-size:11.5px;line-height:1.5;color:var(--text);
+  animation:fadeUp .6s ease both;
+}
+.m-bubble b{color:var(--lime)}
+.m-bubble.delay{animation-delay:.3s}
+.m-bubble.alt{background:var(--card);border-color:var(--border);font-size:10.5px;color:var(--text2)}
+
+/* RUTAS — galería de tarjetas reales */
+.route-gallery{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  max-width:380px;margin:0 auto;
+}
+.route-card-img{
+  position:relative;border-radius:16px;overflow:hidden;
+  border:1px solid var(--border2);
+  box-shadow:0 16px 40px rgba(0,0,0,.5);
+  animation:cardIn .6s cubic-bezier(.22,.9,.3,1) both;
+}
+.route-card-img:nth-child(2){animation-delay:.12s}
+.route-card-img img{width:100%;display:block}
+.route-card-tag{
+  position:absolute;bottom:8px;left:8px;
+  background:rgba(8,12,10,.7);backdrop-filter:blur(6px);
+  border:1px solid rgba(168,230,61,.3);color:var(--lime);
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:4px 10px;border-radius:99px;
+}
+
+/* ═══════════════════════════════════════
+   PRICING
+   ═══════════════════════════════════════ */
+.pricing{padding:70px 0;border-top:1px solid var(--border);text-align:center}
+.pricing h2{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(26px,4.4vw,38px);
+  text-transform:uppercase;margin-bottom:10px;
+}
+.pricing>p{color:var(--text2);font-size:15px;max-width:480px;margin:0 auto 36px}
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:640px;margin:0 auto}
+.price-card{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px 20px;text-align:left;
+}
+.price-card.founder{border-color:rgba(168,230,61,.35);box-shadow:0 0 40px -12px var(--lime-glow);position:relative}
+.price-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.price-card.founder .price-tag{color:var(--lime)}
+.price-val{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;margin-bottom:4px}
+.price-val span{font-size:14px;font-weight:700;color:var(--muted)}
+.price-desc{font-size:12.5px;color:var(--text2);line-height:1.5}
+.price-badge{
+  position:absolute;top:-11px;right:18px;background:var(--lime);color:var(--bg);
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:900;letter-spacing:1px;
+  padding:4px 10px;border-radius:99px;text-transform:uppercase;
+}
+
+/* ═══════════════════════════════════════
+   FINAL CTA + FOOTER
+   ═══════════════════════════════════════ */
+.final-cta{padding:80px 0;text-align:center;border-top:1px solid var(--border)}
+.final-cta h2{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(28px,5.5vw,46px);
+  text-transform:uppercase;margin-bottom:20px;line-height:1.1;
+}
+.final-cta h2 span{color:var(--lime)}
+footer{padding:32px 0 50px;border-top:1px solid var(--border);text-align:center}
+footer p{font-size:12px;color:var(--muted);line-height:1.7}
+footer a{color:var(--lime);text-decoration:none}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes sheen{0%{left:-80%}45%,100%{left:140%}}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes radarPulse{0%{transform:scale(.4);opacity:.9}100%{transform:scale(3.4);opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;padding:96px 0 40px;text-align:left}
+  .hero p{max-width:none}
+  .phone-wrap{order:-1;margin-bottom:10px}
+  .phone{width:220px;height:460px}
+  .feature{grid-template-columns:1fr;gap:30px;padding:50px 0;text-align:left}
+  .feature--rev .feature-visual,.feature--rev .feature-text{order:initial}
+  .feature p{max-width:none}
+  .route-gallery{grid-template-columns:1fr;max-width:280px;margin:0 auto}
+  .price-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo">RIDE<span>SAFE</span> IA</div>
+    <a class="nav-cta" href="./index.html">Abrir app</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero container">
+  <div class="hero-text">
+    <div class="eyebrow">RideSafe IA · Tour de prestaciones</div>
+    <h1>Todo lo que tu bici necesita,<br>en <em>una sola app</em></h1>
+    <p>Antirrobo con GPS, un asesor con IA que decide si hoy toca salir, y tarjetas de ruta listas para compartir. Sin instalar nada: abre, guarda en tu pantalla de inicio y rueda.</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="./index.html">Probar gratis →</a>
+      <span class="cta-note">Gratis para todos hasta el 15/07/2026</span>
+    </div>
+  </div>
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="m-head">
+          <div class="m-head-logo">RIDE<span>SAFE</span></div>
+          <div class="m-dot"></div>
+        </div>
+        <div class="m-hero">
+          <div class="m-hero-title">Buenas tardes 🚴<br>Tu ruta <span>off-road</span> te espera</div>
+          <div class="m-btn">Iniciar ruta</div>
+        </div>
+        <div class="m-stats">
+          <div class="m-stat"><b>128</b><small>KM mes</small></div>
+          <div class="m-stat"><b>4h 20</b><small>Tiempo</small></div>
+          <div class="m-stat"><b>980</b><small>Desnivel</small></div>
+        </div>
+        <div class="m-grid">
+          <div class="m-mod">
+            <div class="m-mod-icon" style="background:rgba(168,230,61,.12);border:1px solid rgba(168,230,61,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L4 6 v6 c0 5 3.5 8 8 9 c4.5-1 8-4 8-9 V6 Z"/><path d="M9 12 l2 2 4-4"/></svg>
+            </div>
+            <span>Antirrobo</span>
+          </div>
+          <div class="m-mod">
+            <div class="m-mod-icon" style="background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.5A4 4 0 0 0 7 18Z"/></svg>
+            </div>
+            <span>Asesor IA</span>
+          </div>
+          <div class="m-mod">
+            <div class="m-mod-icon" style="background:rgba(255,136,51,.1);border:1px solid rgba(255,136,51,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M6 19 L10 8 h4 l4 11 M10 8 L14 12 L8 12"/></svg>
+            </div>
+            <span>Rutas</span>
+          </div>
+          <div class="m-mod">
+            <div class="m-mod-icon" style="background:rgba(120,140,125,.1);border:1px solid rgba(120,140,125,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <span>Grupo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 01 ANTIRROBO ═══════════════ -->
+<section class="feature container">
+  <div class="feature-text">
+    <div class="eyebrow">01 · Antirrobo</div>
+    <h2>Tu bici, bajo vigilancia</h2>
+    <p>Aparcas, activas el modo Antirrobo y RideSafe IA queda en guardia: si la bici se mueve sin permiso, salta la alarma y recibes la alerta al momento.</p>
+    <ul class="feature-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Bloqueo GPS al aparcar, con última ubicación guardada</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Alarma por movimiento o vibración sospechosa</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Ficha de identificación de tu bici para recuperarla</li>
+    </ul>
+  </div>
+  <div class="phone-wrap feature-visual">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="m-head">
+          <div class="m-head-logo">ANTI<span>RROBO</span></div>
+          <div class="m-pill">Activo</div>
+        </div>
+        <div class="m-radar">
+          <div class="radar-ring"></div>
+          <div class="radar-ring"></div>
+          <div class="radar-ring"></div>
+          <div class="radar-dot"></div>
+        </div>
+        <div class="m-card">
+          <div class="m-toggle">
+            <span>Alarma de movimiento</span>
+            <div class="m-pill">ON</div>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-title">Bici asegurada</div>
+          <div class="m-sub">Plaça Major · hace 4 min · sin movimientos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 02 ASESOR IA ═══════════════ -->
+<section class="feature feature--rev container">
+  <div class="feature-text">
+    <div class="eyebrow">02 · Asesor IA</div>
+    <h2>¿Salgo o no salgo?</h2>
+    <p>Antes de calzarte el casco, pregúntale a la IA. Analiza viento, lluvia y temperatura de tu zona y te dice si hoy es buen día para rodar — y cuál es la mejor franja horaria.</p>
+    <ul class="feature-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Respuesta clara: sí, no, o "mejor espera"</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Datos meteo en tiempo real de tu ubicación</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Recomendación de la mejor franja para salir</li>
+    </ul>
+  </div>
+  <div class="phone-wrap feature-visual">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="m-head">
+          <div class="m-head-logo">ASESOR <span>IA</span></div>
+          <div class="m-dot"></div>
+        </div>
+        <div class="m-card">
+          <div class="m-weather">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.5A4 4 0 0 0 7 18Z"/></svg>
+            <div>
+              <b>22°</b>
+              <small>Viento 12 km/h · Sin lluvia</small>
+            </div>
+          </div>
+        </div>
+        <div class="m-bubble"><b>✅ Sí, hoy sales.</b><br>Condiciones buenas hasta las 19h, sin previsión de lluvia.</div>
+        <div class="m-bubble alt delay">Mejor franja: 9:00 – 12:00 · viento más suave</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 03 RUTAS ═══════════════ -->
+<section class="feature container">
+  <div class="feature-text">
+    <div class="eyebrow">03 · Tus rutas</div>
+    <h2>Cada salida, una tarjeta para presumir</h2>
+    <p>Al terminar la ruta, RideSafe IA genera una tarjeta con tus datos — distancia, desnivel, tiempo y velocidad media — lista para compartir en tu grupo o redes, estilo Strava.</p>
+    <ul class="feature-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Resumen automático al finalizar cada salida</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Histórico de kilómetros y desnivel acumulado</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Un toque para compartir con tu grupo</li>
+    </ul>
+  </div>
+  <div class="route-gallery feature-visual">
+    <div class="route-card-img">
+      <img src="./ruta-mtb.jpg" alt="Tarjeta de ruta MTB en La Pobla de Segur, generada por RideSafe IA" loading="lazy">
+      <span class="route-card-tag">MTB</span>
+    </div>
+    <div class="route-card-img">
+      <img src="./ruta-carretera.jpg" alt="Tarjeta de ruta de carretera en La Pobla de Segur, generada por RideSafe IA" loading="lazy">
+      <span class="route-card-tag">Carretera</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PRICING ═══════════════ -->
+<section class="pricing container">
+  <div class="eyebrow" style="justify-content:center">Disponibilidad</div>
+  <h2>Gratis ahora. Founder para siempre.</h2>
+  <p>RideSafe IA es gratuita para todo el mundo hasta el 15 de julio de 2026. A partir de esa fecha, los primeros 30 usuarios Founder conservan un precio especial de por vida.</p>
+  <div class="price-grid">
+    <div class="price-card founder">
+      <div class="price-badge">30 plazas</div>
+      <div class="price-tag">Founder</div>
+      <div class="price-val">1,99€ <span>/ mes</span></div>
+      <div class="price-desc">Precio fijo para siempre. Acceso completo a IA, Antirrobo y rutas, sin límites.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-tag">Estándar</div>
+      <div class="price-val">4,99€ <span>/ mes</span></div>
+      <div class="price-desc">A partir del 15/07/2026 para nuevos usuarios fuera del programa Founder.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FINAL CTA ═══════════════ -->
+<section class="final-cta container">
+  <h2>Tu próxima ruta empieza<br>con un <span>toque</span></h2>
+  <a class="btn-primary" href="./index.html">Abrir RideSafe IA →</a>
+</section>
+
+<footer>
+  <p>
+    RideSafe IA — un proyecto de JM Prestige AI Solutions, Lleida<br>
+    WhatsApp: <a href="https://wa.me/34643223301">+34 643 223 301</a> · <a href="mailto:info@obracontrolgps.net">info@obracontrolgps.net</a>
+  </p>
+</footer>
+
+</body>
+</html>
