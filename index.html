@@ -611,6 +611,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 #wp-modal.show{display:flex}
 #resumen-modal{position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
 #resumen-modal.show{display:flex}
+#comunidad-modal{position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
+#comunidad-modal.show{display:flex}
 #resumen-modal .wp-box{animation:resumenPop .35s ease-out}
 @keyframes resumenPop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
 .wp-box{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:24px;width:100%;max-width:340px}
@@ -2818,7 +2820,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 
 <!-- MODAL RESUMEN DE RUTA -->
 <div id="resumen-modal">
-  <div class="wp-box" style="max-width:340px;background:transparent;border:none;padding:0;box-shadow:none">
+  <div class="wp-box" style="max-width:380px;background:transparent;border:none;padding:0;box-shadow:none">
     <div id="resumen-card" style="border-radius:18px;position:relative;overflow:hidden;aspect-ratio:9/13;width:100%">
       <div id="resumen-track" style="position:absolute;inset:0;width:100%;height:100%;background:#1a1a1a;z-index:1"></div>
       <div id="resumen-foto-wrap" style="display:none;position:absolute;inset:0;z-index:100">
@@ -2866,10 +2868,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button style="flex:1;padding:13px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="closeResumenModal()">Cerrar</button>
+      <button title="Sugerir esta ruta a la comunidad" style="width:48px;flex-shrink:0;padding:13px 0;background:var(--card2);border:1px solid rgba(168,230,61,.35);border-radius:12px;color:var(--lime);font-size:18px;cursor:pointer" onclick="sugerirRuta()">&#128229;</button>
       <button class="btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="compartirRuta()">
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:16px;height:16px"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.84 9.84 0 0 1-1.51-5.26c0-5.44 4.43-9.86 9.89-9.86 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87zm8.4-18.27A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.15 11.9c0 2.1.55 4.14 1.59 5.94L.05 24l6.31-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.9-11.9a11.82 11.82 0 0 0-3.5-8.38z"/></svg>
         Compartir
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: VER RUTA DE LA COMUNIDAD
+     ═══════════════════════════════════════════ -->
+<div id="comunidad-modal">
+  <div class="wp-box" style="max-width:380px">
+    <div id="comunidad-map" style="width:100%;height:220px;border-radius:14px;overflow:hidden;margin-bottom:14px;background:#1a1a1a"></div>
+    <h3 id="comunidad-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;margin-bottom:10px;color:var(--text)"></h3>
+    <div class="stat-grid" id="comunidad-stats" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px">
+      <button style="flex:1;padding:13px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="cerrarComunidadModal()">Cerrar</button>
+      <a class="btn-primary" id="comunidad-llegar" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;text-decoration:none">&#128205; Cómo llegar</a>
     </div>
   </div>
 </div>
@@ -3060,6 +3078,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="p-title">Mis <span>Rutas</span></div>
     <button id="rutas-borrar" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:16px;padding:5px 12px;cursor:pointer" onclick="deleteAllRoutes()">&#128465; Borrar</button>
   </div>
+  <div class="tabs">
+    <div class="tabx on" onclick="rutasTab('mias',this)">Mis rutas</div>
+    <div class="tabx" onclick="rutasTab('comunidad',this)">Comunidad</div>
+  </div>
   <div class="p-body" id="rutas-body">
     <div class="stat-grid">
       <div class="stat-box"><span class="sl">Rutas</span><span class="sv" id="rs-count">0</span></div>
@@ -3067,6 +3089,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <div class="stat-box"><span class="sl">Tiempo</span><span class="sv" id="rs-time">0</span></div>
     </div>
     <div id="rutas-lista"></div>
+  </div>
+  <div class="p-body" id="rutas-comunidad-body" style="display:none">
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:12px">Rutas grabadas y compartidas por otros ciclistas de RideSafe IA. Toca una para verla en el mapa.</div>
+    <div id="rutas-comunidad-lista">
+      <div style="text-align:center;padding:40px;color:var(--muted)">Cargando rutas...</div>
+    </div>
   </div>
 </div>
 
@@ -3954,11 +3982,12 @@ function pintarTrackMapa(points, contenedorId, esMini){
   if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
   var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,crossOrigin:'anonymous'}).addTo(map);
   var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
   L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
   L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
   map.fitBounds(line.getBounds(),{padding:esMini?[6,6]:[24,90]});
+  setTimeout(function(){ map.invalidateSize(); map.fitBounds(line.getBounds(),{padding:esMini?[6,6]:[24,90]}); }, 250);
   if(esMini) resumenMiniMap = map; else resumenMap = map;
 }
 
@@ -3998,7 +4027,7 @@ function onResumenFoto(ev){
     document.getElementById('resumen-foto-btn').textContent = '🗺️ Mapa';
     document.getElementById('resumen-foto-btn').onclick = volverAlMapa;
     if(resumenRutaActual){
-      setTimeout(function(){ pintarTrackMapa(resumenRutaActual.points, 'resumen-mini-track', true); }, 150);
+      setTimeout(function(){ pintarTrackMapa(resumenRutaActual.points, 'resumen-mini-track', true); }, 400);
     }
   };
   reader.readAsDataURL(file);
@@ -4026,7 +4055,7 @@ function mostrarResumenRuta(route){
   pintarLugarRuta(route.points);
   setTimeout(function(){
     pintarTrackMapa(route.points, 'resumen-track');
-  }, 150);
+  }, 400);
 }
 function closeResumenModal(){
   document.getElementById('resumen-modal').classList.remove('show');
@@ -4083,6 +4112,117 @@ function compartirRutaTexto(texto){
     window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
   }
 }
+
+/* ═══ RUTAS — pestañas Mis rutas / Comunidad ═══ */
+function rutasTab(tab, el){
+  document.querySelectorAll('#panel-rutas .tabx').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  var borrarBtn = document.getElementById('rutas-borrar');
+  if(tab==='mias'){
+    document.getElementById('rutas-body').style.display='';
+    document.getElementById('rutas-comunidad-body').style.display='none';
+    if(borrarBtn) borrarBtn.style.display='';
+  }else{
+    document.getElementById('rutas-body').style.display='none';
+    document.getElementById('rutas-comunidad-body').style.display='';
+    if(borrarBtn) borrarBtn.style.display='none';
+    cargarRutasComunidad();
+  }
+}
+
+/* ═══ RUTAS COMUNIDAD — compartir y ver rutas sugeridas ═══ */
+function downsamplePoints(points, maxN){
+  if(!points || points.length<=maxN) return points;
+  var step = points.length/maxN, out=[];
+  for(var i=0;i<maxN;i++){ out.push(points[Math.floor(i*step)]); }
+  out.push(points[points.length-1]);
+  return out;
+}
+
+function sugerirRuta(){
+  if(!resumenRutaActual){ toast('No hay ruta para sugerir'); return; }
+  var r=resumenRutaActual;
+  if(!r.points || r.points.length<2){ toast('Esta ruta no tiene trazado GPS'); return; }
+  if(!confirm('Esta ruta se compartirá públicamente: otros ciclistas de RideSafe IA podrán verla y usarla como propuesta. ¿Continuar?')) return;
+  var lugarTxt = (document.getElementById('resumen-lugar-txt')||{}).textContent || 'RideSafe IA';
+  var data = {
+    distancia: r.distance||0,
+    duracion: r.duration||0,
+    desnivel: Math.round(r.elevationGain||0),
+    lugar: lugarTxt,
+    bici: (perfilUsuario && perfilUsuario.bici) || '',
+    nivel: (perfilUsuario && perfilUsuario.nivel) || '',
+    nombre: (perfilUsuario && perfilUsuario.nombre) || 'Ciclista RideSafe',
+    fecha: Date.now(),
+    points: downsamplePoints(r.points, 80)
+  };
+  db.ref('rutas_sugeridas').push(data).then(function(){
+    toast('🚴 ¡Ruta compartida con la comunidad!');
+  }).catch(function(){ toast('Error al compartir la ruta'); });
+}
+
+var rutasComunidadCargadas = false;
+function cargarRutasComunidad(){
+  var cont = document.getElementById('rutas-comunidad-lista');
+  if(rutasComunidadCargadas) return;
+  db.ref('rutas_sugeridas').limitToLast(30).once('value').then(function(snap){
+    rutasComunidadCargadas = true;
+    var items = [];
+    snap.forEach(function(ch){ var v=ch.val(); if(v && v.points && v.points.length>1){ v._id=ch.key; items.push(v); } });
+    items.sort(function(a,b){ return (b.fecha||0)-(a.fecha||0); });
+    if(!items.length){
+      cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Aún no hay rutas compartidas por la comunidad.<br>¡Sé el primero en sugerir una desde el resumen de tu ruta! 🚴</div>';
+      return;
+    }
+    cont.innerHTML='';
+    items.forEach(function(r){
+      var km=((r.distancia||0)/1000).toFixed(1);
+      var mins=Math.floor((r.duracion||0)/60);
+      var bici = r.bici==='mtb' ? '⛰️ MTB' : (r.bici==='carretera' ? '🚴 Carretera' : '🚲 Bici');
+      var fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '';
+      var div = document.createElement('div');
+      div.className='ruta-card';
+      div.style.cursor='pointer';
+      div.innerHTML='<div class="ruta-info"><div class="ruta-top"><div><div class="ruta-num">📍 '+escHtml(r.lugar||'Ruta sugerida')+'</div><div class="ruta-fecha">'+bici+' · '+escHtml(r.nombre||'')+(fecha?' · '+fecha:'')+'</div></div></div><div class="ruta-stats2"><div><span class="rs-label">Dist</span><span class="rs-val">'+km+' <span>km</span></span></div><div><span class="rs-label">Tiempo</span><span class="rs-val">'+mins+' <span>min</span></span></div><div><span class="rs-label">Desnivel</span><span class="rs-val">'+(r.desnivel||0)+' <span>m</span></span></div></div></div>';
+      div.onclick = function(){ verRutaComunidad(r); };
+      cont.appendChild(div);
+    });
+  }).catch(function(){
+    cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">No se pudieron cargar las rutas de la comunidad.<br>Comprueba tu conexión e inténtalo de nuevo.</div>';
+  });
+}
+
+var comunidadMap = null;
+function verRutaComunidad(r){
+  document.getElementById('comunidad-modal').classList.add('show');
+  document.getElementById('comunidad-titulo').textContent = '📍 '+(r.lugar||'Ruta sugerida');
+  var km=((r.distancia||0)/1000).toFixed(1);
+  var mins=Math.floor((r.duracion||0)/60);
+  document.getElementById('comunidad-stats').innerHTML =
+    '<div class="stat-box"><span class="sl">Dist</span><span class="sv">'+km+'</span></div>'+
+    '<div class="stat-box"><span class="sl">Tiempo</span><span class="sv">'+mins+'</span></div>'+
+    '<div class="stat-box"><span class="sl">Desnivel</span><span class="sv">'+(r.desnivel||0)+'</span></div>';
+  var start = r.points[0];
+  document.getElementById('comunidad-llegar').href = 'https://www.google.com/maps/dir/?api=1&destination='+start[0]+','+start[1];
+  setTimeout(function(){
+    var cont = document.getElementById('comunidad-map');
+    cont.innerHTML='';
+    if(comunidadMap){ comunidadMap.remove(); comunidadMap=null; }
+    var latlngs = r.points.map(function(p){return [p[0],p[1]];});
+    comunidadMap = L.map('comunidad-map',{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,crossOrigin:'anonymous'}).addTo(comunidadMap);
+    var line = L.polyline(latlngs,{color:'#a8e63d',weight:4}).addTo(comunidadMap);
+    L.circleMarker(latlngs[0],{radius:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(comunidadMap);
+    L.circleMarker(latlngs[latlngs.length-1],{radius:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(comunidadMap);
+    comunidadMap.fitBounds(line.getBounds(),{padding:[16,16]});
+    setTimeout(function(){ comunidadMap.invalidateSize(); comunidadMap.fitBounds(line.getBounds(),{padding:[16,16]}); },250);
+  },200);
+}
+function cerrarComunidadModal(){
+  document.getElementById('comunidad-modal').classList.remove('show');
+  if(comunidadMap){ comunidadMap.remove(); comunidadMap=null; }
+}
+
 function deleteAllRoutes(){if(!confirm('¿Borrar todo el historial?'))return;localStorage.removeItem('rs_routes');renderRutas();updateQuickStats();toast('Historial borrado');}
 
 /* ═══════════════════════════════════════
