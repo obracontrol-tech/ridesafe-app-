@@ -4617,14 +4617,14 @@ function checkOnboarding(){
 /* Selección bici */
 function obSelBici(el){
   document.querySelectorAll('.ob-bike').forEach(function(b){b.classList.remove('sel');});
-  el.classList.add('seleccionado');
+  el.classList.add('sel');
   obValidarBtn();
 }
 
 /* Selección nivel */
 function obSelNivel(el){
   document.querySelectorAll('.ob-nivel').forEach(function(n){n.classList.remove('sel');});
-  el.classList.add('seleccionado');
+  el.classList.add('sel');
   obValidarBtn();
 }
 
@@ -4791,8 +4791,8 @@ function renderAjustes(){
 
 function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('seleccionado'); }
-function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('seleccionado'); }
+function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('sel'); }
+function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('sel'); }
 
 function ajGuardar(){
   var nombre = document.getElementById('aj-nombre').value.trim();
