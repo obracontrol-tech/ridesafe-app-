@@ -3334,7 +3334,7 @@ function checkSalgo(){
         method:'POST',
         headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
         body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',
+          model:'claude-sonnet-4-6',
           max_tokens:350,
           messages:[{role:'user',content:'Eres el asesor de un ciclista (carretera/MTB). Datos meteo de su zona: '+resumen+' Responde EXACTAMENTE en este formato: primera línea solo "SI" o "NO" (¿es buen momento para salir en bici hoy?). Después 3-4 líneas cortas con: mejor franja horaria para salir, qué ropa llevar, y un aviso si hay viento o lluvia. Usa emojis. Sin markdown, texto directo y cercano.'}]
         })
@@ -4031,7 +4031,7 @@ function askAI(msg){
   var thinkDiv=document.createElement('div');thinkDiv.className='ai-msg bot';thinkDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div><div class="ai-thinking"><span></span><span></span><span></span></div>';msgsDiv.appendChild(thinkDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;
   var history=aiHistory.slice(-8).map(function(m){return{role:m.role==='bot'?'assistant':'user',content:m.content};});
   history.push({role:'user',content:msg});
-  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:buildSystem(),messages:history})})
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:buildSystem(),messages:history})})
   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
   .then(function(d){var reply=d.content&&d.content[0]?d.content[0].text:'Sin respuesta';aiHistory.push({role:'user',content:msg});aiHistory.push({role:'bot',content:reply});msgsDiv.removeChild(thinkDiv);var botDiv=document.createElement('div');botDiv.className='ai-msg bot';botDiv.innerHTML='<div class="ai-msg-name">RideSafe IA &#10022;</div>'+reply.replace(/\n/g,'<br>');msgsDiv.appendChild(botDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
   .catch(function(){msgsDiv.removeChild(thinkDiv);var errDiv=document.createElement('div');errDiv.className='ai-msg bot';errDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div>Error de conexión';msgsDiv.appendChild(errDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
@@ -5976,7 +5976,7 @@ function diagnosticoMotor(problema) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 400,
       messages: [{
         role: 'user',
@@ -6634,7 +6634,7 @@ function ebGuia(tema) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 500,
       messages: [{ role: 'user', content: ebGuiaTemas[tema] }]
     })
