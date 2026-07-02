@@ -3,348 +3,583 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>RideSafe IA — Ciclismo de Carretera & MTB</title>
+<title>RideSafe IA — Ciclismo Inteligente</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#a8e63d">
-<link rel="apple-touch-icon" href="./icon-192.png"/>
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="full-screen" content="yes">
-<meta name="browsermode" content="application">
-<meta name="x5-fullscreen" content="true">
-<meta name="360-fullscreen" content="true">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
 <style>
-/* ═══════════════════════════════════════
-   RESET & BASE
-   ═══════════════════════════════════════ */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;font-family:'Barlow',sans-serif;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-
-/* ═══════════════════════════════════════
-   VARIABLES PRO
-   ═══════════════════════════════════════ */
-:root{
-  --lime:#a8e63d;
-  --lime-dim:rgba(168,230,61,.12);
-  --lime-glow:rgba(168,230,61,.35);
-  --cyan:#00e5ff;
-  --red:#ff3355;
-  --orange:#ff8833;
-  --bg:#080c0a;
-  --bg2:#0d120f;
-  --card:#111a13;
-  --card2:#161f18;
-  --border:#1e2b20;
-  --border2:#253028;
-  --muted:#7a8f7e;
-  --dim:#3a4a3e;
-  --text:#e8f0ea;
-  --text2:#b0c0b4;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-*::-webkit-scrollbar{display:none}
-*{scrollbar-width:none}
-
-#inicio{
-  position:fixed;inset:0;
-  overflow-y:auto;
-  padding-bottom:72px;
-  background:var(--bg);
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #080c0a;
+  color: #fff;
+  font-family: 'Barlow', sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.hdr{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 18px 12px;
-  background:linear-gradient(180deg,rgba(8,12,10,.98) 0%,rgba(8,12,10,.9) 100%);
-  position:relative;
-  z-index:10;
+:root {
+  --lime: #a8e63d;
+  --lime-glow: rgba(168, 230, 61, 0.35);
+  --bg: #080c0a;
+  --bg2: #0d120f;
+  --card: #111a13;
+  --card2: #161f18;
+  --border: #1e2b20;
+  --border2: #253028;
+  --muted: #7a8f7e;
+  --text: #e8f0ea;
+  --text2: #b0c0b4;
 }
-
-.hdr::after{
-  content:'';position:absolute;bottom:0;left:18px;right:18px;height:1px;
-  background:linear-gradient(90deg,transparent,var(--border2),transparent);
-}
-
-.logo{
-  display:flex;align-items:center;gap:2px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:28px;font-weight:900;
-  letter-spacing:-0.5px;
-  line-height:1;
-}
-
-.logo-ride{color:#fff}
-.logo-safe{color:var(--lime);text-shadow:0 0 20px var(--lime-glow)}
-.logo-ai{
-  font-size:13px;font-weight:700;
-  background:var(--lime);color:#080c0a;
-  padding:2px 6px;border-radius:5px;
-  margin-left:3px;letter-spacing:.5px;
-  align-self:flex-start;margin-top:3px;
-}
-
-.btn-iniciar{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  margin:14px 16px 0;
-  padding:16px;
-  background:var(--lime);
-  border:none;border-radius:16px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:20px;font-weight:900;
-  color:#080c0a;letter-spacing:1.5px;
-  cursor:pointer;
-  width:calc(100% - 32px);
-  box-shadow:0 4px 24px rgba(168,230,61,.4),0 0 0 1px rgba(168,230,61,.2);
-  transition:transform .15s,box-shadow .15s;
-  position:relative;overflow:hidden;
-}
-
-.btn-iniciar:active{transform:scale(.97);box-shadow:0 2px 12px rgba(168,230,61,.3)}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  padding:0 16px;
-}
-
-.modulo{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px 12px;
-  cursor:pointer;
-  transition:border-color .15s,background .15s;
-  position:relative;overflow:hidden;
-}
-
-.modulo:active{background:var(--card2);border-color:var(--border2)}
-
-.mod-icon{
-  width:40px;height:40px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:10px;
-  flex-shrink:0;
-  font-size:24px;
-}
-
-.mod-title{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:16px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.3px;
-  color:#fff;margin-bottom:2px;
-}
-
-.mod-sub{font-size:11px;color:var(--muted);line-height:1.2}
 
 /* ═══════════════════════════════════════
-   PANEL PERFIL
+   PANTALLAS
    ═══════════════════════════════════════ */
-.panel{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.7);
-  display:none;flex-direction:column;
-  z-index:1000;
-  overflow-y:auto;
-  padding-bottom:20px;
+
+.pantalla {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 1;
 }
 
-.panel.visible{display:flex}
-
-.p-header{
-  background:var(--card);
-  padding:16px 18px;
-  display:flex;align-items:center;gap:12px;
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;
-  z-index:1001;
+.pantalla.activa {
+  display: flex;
 }
-
-.p-back{
-  width:36px;height:36px;
-  background:transparent;border:none;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;
-}
-
-.p-back svg{width:20px;height:20px;stroke:var(--text);stroke-width:2;fill:none}
-
-.p-title{
-  flex:1;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:18px;font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-}
-
-.p-title span{color:var(--lime)}
-
-.p-body{
-  background:var(--bg);
-  padding:20px 16px;
-  max-width:500px;
-  margin:0 auto;
-  width:100%;
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:16px;
-}
-
-.card-title{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:15px;font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  color:#fff;
-  margin-bottom:12px;
-}
-
-.card-sub{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.4;
-}
-
-.input{
-  width:100%;
-  background:rgba(255,255,255,.08);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:12px;
-  color:#fff;
-  font-size:14px;
-  font-family:inherit;
-}
-
-.input::placeholder{color:var(--muted)}
-
-.btn-primary{
-  width:100%;
-  background:var(--lime);
-  border:none;
-  border-radius:14px;
-  padding:14px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:16px;font-weight:900;
-  color:#080c0a;
-  cursor:pointer;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  transition:transform .15s;
-}
-
-.btn-primary:active{transform:scale(.97)}
 
 /* ═══════════════════════════════════════
-   NIVELES Y TIPOS
+   PANTALLA BIENVENIDA
    ═══════════════════════════════════════ */
-.nivel-card{
-  display:flex;align-items:center;gap:14px;
-  padding:14px;border-radius:14px;
-  background:var(--card2);border:2px solid var(--border);
-  cursor:pointer;transition:all .2s;
+
+#pantalla-bienvenida {
+  background: linear-gradient(135deg, rgba(168, 230, 61, 0.1), rgba(0, 229, 255, 0.05));
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
 }
 
-.nivel-card.seleccionado{
-  background:rgba(168,230,61,.08);
-  border-color:var(--lime);
+.bienvenida-container {
+  max-width: 100%;
 }
 
-.nivel-card:active{transform:scale(.98)}
-
-.nivel-icon{font-size:22px;flex-shrink:0}
-
-.nivel-info{flex:1}
-
-.nivel-nombre{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:17px;font-weight:800;color:var(--text);
-  text-transform:uppercase;letter-spacing:.5px;
+.logo-grande {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-bottom: 30px;
 }
 
-.nivel-desc{font-size:11px;color:var(--muted);margin-top:2px}
-
-.nivel-check{
-  font-size:16px;color:var(--lime);font-weight:900;
-  opacity:0;transition:opacity .2s;
+.logo-ride {
+  color: #fff;
 }
 
-.nivel-card.seleccionado .nivel-check{opacity:1}
-
-.tipo-card{
-  flex:1;padding:12px 8px;border-radius:12px;
-  background:var(--card2);border:2px solid var(--border);
-  text-align:center;cursor:pointer;transition:all .2s;
-  color:var(--muted);
+.logo-safe {
+  color: var(--lime);
+  text-shadow: 0 0 20px var(--lime-glow);
 }
 
-.tipo-card.seleccionado{
-  background:rgba(168,230,61,.08);
-  border-color:var(--lime);color:var(--lime);
+.logo-ai {
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--lime);
+  color: #080c0a;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  margin-left: 4px;
 }
 
-.tipo-card:active{transform:scale(.97)}
+.tagline {
+  font-size: 18px;
+  color: var(--text2);
+  margin-bottom: 40px;
+  line-height: 1.6;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-entrar {
+  width: 100%;
+  max-width: 340px;
+  padding: 18px;
+  background: var(--lime);
+  border: none;
+  border-radius: 16px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: #080c0a;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(168, 230, 61, 0.4);
+  transition: transform 0.15s;
+  margin: 0 auto;
+  display: block;
+}
+
+.btn-entrar:active {
+  transform: scale(0.97);
+}
+
+/* ═══════════════════════════════════════
+   PANTALLA HOME
+   ═══════════════════════════════════════ */
+
+#pantalla-home {
+  padding-bottom: 72px;
+  overflow-y: auto;
+}
+
+.hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: linear-gradient(180deg, rgba(8, 12, 10, 0.98) 0%, rgba(8, 12, 10, 0.9) 100%);
+  border-bottom: 1px solid var(--border2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.logo-ride {
+  color: #fff;
+}
+
+.logo-safe {
+  color: var(--lime);
+}
+
+.logo-ai {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--lime);
+  color: #080c0a;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 2px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px;
+}
+
+.modulo {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modulo:active {
+  background: var(--card2);
+  border-color: var(--border2);
+  transform: scale(0.97);
+}
+
+.mod-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.mod-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.mod-sub {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+/* ═══════════════════════════════════════
+   PANTALLA PERFIL
+   ═══════════════════════════════════════ */
+
+#pantalla-perfil {
+  padding-bottom: 72px;
+}
+
+.panel-header {
+  background: var(--card);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+}
+
+.btn-back {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.btn-back svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.panel-title {
+  flex: 1;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.panel-title span {
+  color: var(--lime);
+}
+
+.panel-body {
+  background: var(--bg);
+  padding: 20px 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.card-sub {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 6px;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.nivel-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--card2);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+}
+
+.nivel-card.seleccionado {
+  background: rgba(168, 230, 61, 0.08);
+  border-color: var(--lime);
+}
+
+.nivel-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.nivel-info {
+  flex: 1;
+}
+
+.nivel-nombre {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nivel-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.nivel-check {
+  font-size: 16px;
+  color: var(--lime);
+  font-weight: 900;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.nivel-card.seleccionado .nivel-check {
+  opacity: 1;
+}
+
+.tipo-card {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: var(--card2);
+  border: 2px solid var(--border);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--muted);
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.tipo-card:last-child {
+  margin-right: 0;
+}
+
+.tipo-card.seleccionado {
+  background: rgba(168, 230, 61, 0.08);
+  border-color: var(--lime);
+  color: var(--lime);
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--lime);
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: #080c0a;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: transform 0.15s;
+  margin-bottom: 8px;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.perfil-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: #080c0a;
+  text-align: center;
+}
+
+.perfil-nombre {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.perfil-nivel {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
 
 /* ═══════════════════════════════════════
    FOOTER NAV
    ═══════════════════════════════════════ */
-.footer-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--card);
-  border-top:1px solid var(--border);
-  display:flex;justify-content:space-around;
-  padding:8px 0;
-  height:64px;
-  z-index:100;
+
+.footer-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  height: 64px;
+  z-index: 100;
 }
 
-.footer-btn{
-  flex:1;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:4px;
-  background:none;border:none;
-  color:var(--muted);
-  cursor:pointer;
-  font-size:12px;font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  transition:color .2s;
+.footer-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
 }
 
-.footer-btn.active{color:var(--lime)}
+.footer-btn.active {
+  color: var(--lime);
+}
 
-.footer-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5}
+.footer-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   OTRAS PANTALLAS
+   ═══════════════════════════════════════ */
+
+.pantalla-content {
+  padding: 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 100px;
+}
+
+.pantalla-content h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: var(--lime);
+}
+
+.pantalla-content p {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 300px;
+}
 
 </style>
 </head>
 <body>
 
-<!-- PANTALLA INICIO -->
-<div id="inicio">
+<!-- ═══════════════════════════════════════
+     PANTALLA BIENVENIDA
+     ═══════════════════════════════════════ -->
+<div id="pantalla-bienvenida" class="pantalla activa">
+  <div class="bienvenida-container">
+    <div class="logo-grande">
+      <span class="logo-ride">Ride</span><span class="logo-safe">Safe</span><span class="logo-ai">IA</span>
+    </div>
+    <div class="tagline">
+      Ciclismo inteligente para tu zona.<br>
+      Conoce gente, organiza salidas.
+    </div>
+    <button class="btn-entrar" onclick="entrarAApp()">
+      🚴 ENTRAR A RIDESAFE IA
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANTALLA HOME
+     ═══════════════════════════════════════ -->
+<div id="pantalla-home" class="pantalla">
   <div class="hdr">
     <div class="logo">
       <span class="logo-ride">Ride</span><span class="logo-safe">Safe</span><span class="logo-ai">IA</span>
     </div>
   </div>
 
-  <button class="btn-iniciar" onclick="accesoEntrar()">🚴 ENTRAR A RIDESAFE IA</button>
-
-  <div class="grid" style="padding-top:20px">
+  <div class="grid">
     <div class="modulo" onclick="abrirPerfil()">
       <div class="mod-icon">👤</div>
       <div class="mod-title">Mi Perfil</div>
@@ -371,19 +606,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </div>
 </div>
 
-<!-- PANEL PERFIL -->
-<div class="panel" id="panel-perfil">
-  <div class="p-header">
-    <button class="p-back" onclick="closePerfil()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">Mi <span>Perfil</span></div>
+<!-- ═══════════════════════════════════════
+     PANTALLA PERFIL
+     ═══════════════════════════════════════ -->
+<div id="pantalla-perfil" class="pantalla">
+  <div class="panel-header">
+    <button class="btn-back" onclick="irAHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="panel-title">Mi <span>Perfil</span></div>
     <button onclick="guardarPerfil()" style="padding:7px 16px;background:var(--lime);border:none;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#080c0a;cursor:pointer;letter-spacing:.5px">GUARDAR</button>
   </div>
-  <div class="p-body">
 
+  <div class="panel-body">
     <div style="text-align:center;padding:20px 0 24px">
-      <div id="perfil-avatar-display" style="width:80px;height:80px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#080c0a">?</div>
-      <div id="perfil-nombre-display" style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--text)">Tu nombre aquí</div>
-      <div id="perfil-nivel-display" style="font-size:12px;color:var(--muted);margin-top:4px">Sin configurar</div>
+      <div class="perfil-avatar" id="perfil-avatar-display">?</div>
+      <div class="perfil-nombre" id="perfil-nombre-display">Tu nombre aquí</div>
+      <div class="perfil-nivel" id="perfil-nivel-display">Sin configurar</div>
     </div>
 
     <div class="card">
@@ -395,7 +634,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <div class="card-title">🏆 Nivel de ciclista</div>
       <div class="card-sub" style="margin-bottom:16px">Ayuda a otros a saber si pueden seguir tu ritmo</div>
 
-      <div style="display:flex;flex-direction:column;gap:10px">
+      <div id="perfil-niveles" style="display:flex;flex-direction:column;gap:10px">
         <div class="nivel-card" data-nivel="novato" onclick="seleccionarNivel('novato',this)">
           <div class="nivel-icon">🟢</div>
           <div class="nivel-info">
@@ -428,16 +667,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="card">
       <div class="card-title">🚲 Tipo de bicicleta</div>
       <div class="card-sub" style="margin-bottom:14px">¿Qué tipo de rutas haces habitualmente?</div>
-      <div style="display:flex;gap:8px">
-        <div class="tipo-card" data-tipo="carretera" onclick="seleccionarTipo('carretera',this)">
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <div class="tipo-card" data-tipo="carretera" onclick="seleccionarTipo('carretera',this)" style="flex: 1 1 calc(50% - 4px);">
           <div style="font-size:24px;margin-bottom:4px">🚴</div>
           <div style="font-size:11px;font-weight:700">Carretera</div>
         </div>
-        <div class="tipo-card" data-tipo="mtb" onclick="seleccionarTipo('mtb',this)">
+        <div class="tipo-card" data-tipo="mtb" onclick="seleccionarTipo('mtb',this)" style="flex: 1 1 calc(50% - 4px);">
           <div style="font-size:24px;margin-bottom:4px">🚵</div>
           <div style="font-size:11px;font-weight:700">MTB</div>
         </div>
-        <div class="tipo-card" data-tipo="senderismo" onclick="seleccionarTipo('senderismo',this)">
+        <div class="tipo-card" data-tipo="senderismo" onclick="seleccionarTipo('senderismo',this)" style="flex: 1 1 calc(50% - 4px);">
           <div style="font-size:24px;margin-bottom:4px">🥾</div>
           <div style="font-size:11px;font-weight:700">Senderismo</div>
         </div>
@@ -449,20 +688,63 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <input class="input" id="perfil-zona" placeholder="Ej: Lleida, Pirineos, Costa..." maxlength="30"/>
     </div>
 
-    <button class="btn-primary" onclick="guardarPerfil()" style="margin-bottom:8px">
+    <button class="btn-primary" onclick="guardarPerfil()">
       ✅ GUARDAR PERFIL
     </button>
-
   </div>
 </div>
 
-<!-- FOOTER NAV -->
+<!-- ═══════════════════════════════════════
+     OTRAS PANTALLAS
+     ═══════════════════════════════════════ -->
+<div id="pantalla-rutas" class="pantalla">
+  <div class="hdr">
+    <button class="btn-back" onclick="irAHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="panel-title">🗺️ <span>Rutas</span></div>
+  </div>
+  <div class="pantalla-content">
+    <h2>🗺️ Rutas</h2>
+    <p>Sección de rutas en desarrollo. Próximamente con 3 modalidades: Carretera, MTB y Senderismo.</p>
+  </div>
+</div>
+
+<div id="pantalla-comunidad" class="pantalla">
+  <div class="hdr">
+    <button class="btn-back" onclick="irAHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="panel-title">👥 <span>Comunidad</span></div>
+  </div>
+  <div class="pantalla-content">
+    <h2>👥 Comunidad</h2>
+    <p>Encuentra ciclistas de tu zona, organiza salidas y conoce gente con tus mismos intereses.</p>
+  </div>
+</div>
+
+<div id="pantalla-salgo" class="pantalla">
+  <div class="hdr">
+    <button class="btn-back" onclick="irAHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="panel-title">⚡ <span>¿Salgo?</span></div>
+  </div>
+  <div class="pantalla-content">
+    <h2>⚡ ¿Salgo?</h2>
+    <p>Consejo IA sobre si es buen día para salir basado en clima y condiciones.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER NAV
+     ═══════════════════════════════════════ -->
 <div class="footer-nav">
   <button class="footer-btn active" onclick="irAHome()">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     Inicio
   </button>
-  <button class="footer-btn" onclick="irARutas()">
+  <button class="footer-btn" onclick="abrirRutas()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     Rutas
   </button>
@@ -476,14 +758,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   </button>
 </div>
 
-</body>
-
-<!-- ═══════════════════════════════════════════
-     JAVASCRIPT - GESTOR DE PERFIL
-     ═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════ -->
 <script>
 
-// ═══ VARIABLES GLOBALES ═══
 let perfilActual = {
   nombre: '',
   nivel: '',
@@ -491,55 +770,74 @@ let perfilActual = {
   zona: ''
 };
 
-// ═══ ABRIR/CERRAR PERFIL ═══
-function abrirPerfil() {
-  document.getElementById('panel-perfil').classList.add('visible');
-  cargarPerfilGuardado();
-}
-
-function closePerfil() {
-  document.getElementById('panel-perfil').classList.remove('visible');
-}
-
-// ═══ SELECCIONAR NIVEL ═══
-function seleccionarNivel(nivel, element) {
-  // Quitar selección anterior
-  document.querySelectorAll('.nivel-card').forEach(el => {
-    el.classList.remove('seleccionado');
-  });
+// ═══ CAMBIAR PANTALLA ═══
+function mostrarPantalla(id) {
+  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  document.getElementById(id).classList.add('activa');
   
-  // Agregar selección nueva
+  // Actualizar footer
+  document.querySelectorAll('.footer-btn').forEach(b => b.classList.remove('active'));
+}
+
+function entrarAApp() {
+  mostrarPantalla('pantalla-home');
+  document.querySelector('.footer-btn').classList.add('active');
+}
+
+function irAHome() {
+  mostrarPantalla('pantalla-home');
+  document.querySelectorAll('.footer-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.footer-btn').classList.add('active');
+}
+
+function abrirPerfil() {
+  mostrarPantalla('pantalla-perfil');
+  cargarPerfilGuardado();
+  actualizarFooter(3);
+}
+
+function abrirRutas() {
+  mostrarPantalla('pantalla-rutas');
+  actualizarFooter(1);
+}
+
+function abrirComunidad() {
+  mostrarPantalla('pantalla-comunidad');
+  actualizarFooter(2);
+}
+
+function abrirSalgo() {
+  mostrarPantalla('pantalla-salgo');
+  actualizarFooter(3);
+}
+
+function actualizarFooter(index) {
+  document.querySelectorAll('.footer-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === index);
+  });
+}
+
+// ═══ PERFIL ═══
+function seleccionarNivel(nivel, element) {
+  document.querySelectorAll('.nivel-card').forEach(el => el.classList.remove('seleccionado'));
   element.classList.add('seleccionado');
   perfilActual.nivel = nivel;
-  
-  // Actualizar display
   actualizarDisplayPerfil();
 }
 
-// ═══ SELECCIONAR TIPO BICI ═══
 function seleccionarTipo(tipo, element) {
-  // Quitar selección anterior
-  document.querySelectorAll('.tipo-card').forEach(el => {
-    el.classList.remove('seleccionado');
-  });
-  
-  // Agregar selección nueva
+  document.querySelectorAll('.tipo-card').forEach(el => el.classList.remove('seleccionado'));
   element.classList.add('seleccionado');
   perfilActual.tipo = tipo;
-  
-  // Actualizar display
   actualizarDisplayPerfil();
 }
 
-// ═══ GUARDAR PERFIL ═══
 function guardarPerfil() {
-  // Obtener datos
   const nombre = document.getElementById('perfil-nombre').value.trim();
   const zona = document.getElementById('perfil-zona').value.trim();
   const nivel = perfilActual.nivel;
   const tipo = perfilActual.tipo;
   
-  // Validar
   if (!nombre) {
     alert('Por favor, ingresa tu nombre');
     return;
@@ -555,97 +853,55 @@ function guardarPerfil() {
     return;
   }
   
-  // Guardar datos
   perfilActual.nombre = nombre;
   perfilActual.zona = zona;
   
-  // Guardar en localStorage
   localStorage.setItem('ridesafe-perfil', JSON.stringify(perfilActual));
   
   alert('✅ Perfil guardado correctamente');
   actualizarDisplayPerfil();
-  closePerfil();
+  irAHome();
 }
 
-// ═══ CARGAR PERFIL GUARDADO ═══
 function cargarPerfilGuardado() {
   const perfil = localStorage.getItem('ridesafe-perfil');
   
   if (perfil) {
     perfilActual = JSON.parse(perfil);
     
-    // Cargar en inputs
     document.getElementById('perfil-nombre').value = perfilActual.nombre || '';
     document.getElementById('perfil-zona').value = perfilActual.zona || '';
     
-    // Marcar nivel seleccionado
     if (perfilActual.nivel) {
       const nivelCard = document.querySelector(`.nivel-card[data-nivel="${perfilActual.nivel}"]`);
-      if (nivelCard) {
-        nivelCard.classList.add('seleccionado');
-      }
+      if (nivelCard) nivelCard.classList.add('seleccionado');
     }
     
-    // Marcar tipo seleccionado
     if (perfilActual.tipo) {
       const tipoCard = document.querySelector(`.tipo-card[data-tipo="${perfilActual.tipo}"]`);
-      if (tipoCard) {
-        tipoCard.classList.add('seleccionado');
-      }
+      if (tipoCard) tipoCard.classList.add('seleccionado');
     }
     
     actualizarDisplayPerfil();
   }
 }
 
-// ═══ ACTUALIZAR DISPLAY ═══
 function actualizarDisplayPerfil() {
-  const nombreDisplay = document.getElementById('perfil-nombre-display');
-  const nivelDisplay = document.getElementById('perfil-nivel-display');
-  const avatarDisplay = document.getElementById('perfil-avatar-display');
-  
   const nombre = document.getElementById('perfil-nombre').value || 'Sin nombre';
   const nivel = perfilActual.nivel || 'Sin configurar';
   
-  // Mostrar nombre
-  nombreDisplay.textContent = nombre;
+  document.getElementById('perfil-nombre-display').textContent = nombre;
   
-  // Mostrar nivel
   const nivelTexto = {
     'novato': '🟢 Novato',
     'medio': '🟡 Medio',
     'pro': '🔴 Pro'
   };
-  nivelDisplay.textContent = nivelTexto[nivel] || 'Sin configurar';
   
-  // Avatar con inicial
+  document.getElementById('perfil-nivel-display').textContent = nivelTexto[nivel] || 'Sin configurar';
+  
   const inicial = nombre.charAt(0).toUpperCase();
-  avatarDisplay.textContent = inicial || '?';
-}
-
-// ═══ NAVEGACIÓN ═══
-function irAHome() {
-  closePerfil();
-}
-
-function irARutas() {
-  alert('🗺️ Sección Rutas en desarrollo...');
-}
-
-function abrirRutas() {
-  alert('🗺️ Sección Rutas en desarrollo...');
-}
-
-function abrirComunidad() {
-  alert('👥 Sección Comunidad en desarrollo...');
-}
-
-function abrirSalgo() {
-  alert('⚡ Sección ¿Salgo? en desarrollo...');
-}
-
-function accesoEntrar() {
-  alert('🚴 Acceso a la app...');
+  document.getElementById('perfil-avatar-display').textContent = inicial || '?';
 }
 
 // Cargar perfil al iniciar
@@ -653,4 +909,5 @@ document.addEventListener('DOMContentLoaded', cargarPerfilGuardado);
 
 </script>
 
+</body>
 </html>
