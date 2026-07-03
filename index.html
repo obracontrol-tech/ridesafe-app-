@@ -3049,6 +3049,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       <div class="perfil" data-perfil="cycling-regular" onclick="setPerfil(this)">&#128690; Regular</div>
       <div class="perfil" data-perfil="foot-hiking" onclick="setPerfil(this)">&#127939; Senderismo</div>
     </div>
+    <div class="perfiles" style="margin-top:6px">
+      <div class="perfil on" data-modo="ab" onclick="setPlanModo(this)">&#10145;&#65039; De A a B</div>
+      <div class="perfil" data-modo="loop" onclick="setPlanModo(this)">&#128260; Circular</div>
+    </div>
+    <div id="plan-loop-row" style="display:none;margin-top:6px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px">&#128207; Distancia del bucle</div>
+      <div class="perfiles">
+        <div class="perfil" data-km="20" onclick="setLoopKm(this)">20 km</div>
+        <div class="perfil on" data-km="40" onclick="setLoopKm(this)">40 km</div>
+        <div class="perfil" data-km="60" onclick="setLoopKm(this)">60 km</div>
+        <div class="perfil" data-km="80" onclick="setLoopKm(this)">80 km</div>
+        <div class="perfil" data-km="100" onclick="setLoopKm(this)">100 km</div>
+      </div>
+    </div>
+    <div id="plan-alts" style="display:none;margin-top:8px"></div>
     <button id="plan-calcular" class="btn-primary" style="margin-top:8px" onclick="calcularRuta()">&#127758; CALCULAR RUTA</button>
   </div>
   <div id="plan-mapa" style="flex:1"></div>
@@ -3929,7 +3944,96 @@ function initPlanMap(){
   setTimeout(function(){planMap.invalidateSize();},200);
 }
 
-function setPerfil(btn){planPerfil=btn.dataset.perfil;document.querySelectorAll('.perfil').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+function setPerfil(btn){planPerfil=btn.dataset.perfil;document.querySelectorAll('.perfil[data-perfil]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+
+var planModo='ab',planLoopKm=40,planAltIndex=0,planAltLayers=[];
+function setPlanModo(btn){
+  planModo=btn.dataset.modo;
+  document.querySelectorAll('.perfil[data-modo]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+  var esLoop=planModo==='loop';
+  document.getElementById('plan-loop-row').style.display=esLoop?'block':'none';
+  document.getElementById('plan-destino').parentElement.style.display=esLoop?'none':'block';
+  if(esLoop)toast('Circular: solo necesitas el origen');
+}
+function setLoopKm(btn){
+  planLoopKm=parseInt(btn.dataset.km,10);
+  document.querySelectorAll('.perfil[data-km]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+}
+
+function calcularRuta(){
+  if(!orsKey){document.getElementById('ors-key-modal').style.display='flex';return;}
+  if(!planOrigen){toast('Indica el origen');return;}
+  if(planModo==='ab'&&!planDestino){toast('Indica el destino');return;}
+  var btn=document.getElementById('plan-calcular');btn.disabled=true;btn.textContent='\u23F3 Calculando...';
+  var body;
+  if(planModo==='loop'){
+    body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true};
+  }else{
+    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true};
+  }
+  fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
+    method:'POST',
+    headers:{'Authorization':orsKey,'Content-Type':'application/json','Accept':'application/geo+json, application/json'},
+    body:JSON.stringify(body)
+  })
+  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(data){
+    planRoute=data;planAltIndex=0;
+    renderAlternativas(data);
+    if(planModo==='loop')toast('Bucle de ~'+planLoopKm+' km listo. ¿No te convence? Pulsa CALCULAR otra vez y sale uno distinto');
+  })
+  .catch(function(err){toast('Error: '+err.message+((''+err.message)==='403'?' — revisa tu API key ORS':''));})
+  .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
+}
+
+function renderAlternativas(data){
+  if(planLayer){planMap.removeLayer(planLayer);planLayer=null;}
+  planAltLayers.forEach(function(l){planMap.removeLayer(l);});planAltLayers=[];
+  planMarkers.forEach(function(m){planMap.removeLayer(m);});planMarkers=[];
+  var feats=data.features||[];if(!feats.length){toast('Sin ruta posible');return;}
+  feats.forEach(function(f,i){
+    var lyr=L.geoJSON(f,{style:{color:i===planAltIndex?'#a8e63d':'#5a6b5e',weight:i===planAltIndex?6:4,opacity:i===planAltIndex?0.95:0.55}}).addTo(planMap);
+    lyr.on('click',function(){selectAlt(i);});
+    planAltLayers.push(lyr);
+  });
+  var g=L.featureGroup(planAltLayers);planMap.fitBounds(g.getBounds(),{padding:[20,20]});
+  var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
+  planMarkers.push(L.marker([planOrigen.lat,planOrigen.lng],{icon:si}).addTo(planMap).bindPopup('Origen'));
+  if(planModo==='ab'&&planDestino){
+    var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
+    planMarkers.push(L.marker([planDestino.lat,planDestino.lng],{icon:ei}).addTo(planMap).bindPopup('Destino'));
+  }
+  var box=document.getElementById('plan-alts');box.innerHTML='';
+  if(feats.length>1){
+    feats.forEach(function(f,i){
+      var s=f.properties.summary,d=document.createElement('div');
+      d.className='perfil'+(i===planAltIndex?' on':'');
+      d.textContent='Opción '+(i+1)+' · '+(s.distance/1000).toFixed(1)+' km';
+      d.onclick=function(){selectAlt(i);};
+      box.appendChild(d);
+    });
+    box.style.display='flex';box.className='perfiles';
+  }else{box.style.display='none';}
+  actualizarStatsPlan();
+}
+
+function selectAlt(i){
+  planAltIndex=i;
+  planAltLayers.forEach(function(l,j){l.setStyle({color:j===i?'#a8e63d':'#5a6b5e',weight:j===i?6:4,opacity:j===i?0.95:0.55});if(j===i&&l.bringToFront)l.bringToFront();});
+  var box=document.getElementById('plan-alts');
+  Array.prototype.forEach.call(box.children,function(c,j){c.classList.toggle('on',j===i);});
+  actualizarStatsPlan();
+}
+
+function actualizarStatsPlan(){
+  var f=planRoute.features[planAltIndex],p=f.properties.summary;
+  document.getElementById('pi-km').innerHTML=(p.distance/1000).toFixed(1)+' <span style="font-size:9px;color:#666;font-weight:400">km</span>';
+  var h=Math.floor(p.duration/3600),m=Math.floor((p.duration%3600)/60);
+  document.getElementById('pi-time').innerHTML=(h>0?h+'h ':'')+m+' <span style="font-size:9px;color:#666;font-weight:400">min</span>';
+  var elev=f.properties.ascent?Math.round(f.properties.ascent):'--';
+  document.getElementById('pi-elev').innerHTML=elev+' <span style="font-size:9px;color:#666;font-weight:400">m</span>';
+  document.getElementById('plan-info').style.display='block';
+}
 
 var planOrigen=null,planDestino=null;
 document.getElementById('plan-origen').addEventListener('input',function(){var q=this.value.trim();if(q.length<3||q==='Mi ubicación'){document.getElementById('plan-sugs-origen').classList.remove('show');return;}planSearch(q,'origen');});
@@ -3947,40 +4051,11 @@ function useLocationForPlan(){
   navigator.geolocation.getCurrentPosition(function(pos){planOrigen={lat:pos.coords.latitude,lng:pos.coords.longitude,name:'Mi ubicación'};document.getElementById('plan-origen').value='Mi ubicación';toast('Origen: tu ubicación');});
 }
 
-function calcularRuta(){
-  if(!orsKey){document.getElementById('ors-key-modal').style.display='flex';return;}
-  if(!planOrigen){toast('Indica el origen');return;}if(!planDestino){toast('Indica el destino');return;}
-  var btn=document.getElementById('plan-calcular');btn.disabled=true;btn.textContent='\u23F3 Calculando...';
-  var url='https://api.openrouteservice.org/v2/directions/'+planPerfil+'?api_key='+encodeURIComponent(orsKey)+'&start='+(planOrigen.lng||0.62)+','+(planOrigen.lat||41.6176)+'&end='+planDestino.lng+','+planDestino.lat;
-  fetch(url,{headers:{'Accept':'application/geo+json, application/json'}})
-  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
-  .then(function(data){
-    planRoute=data;
-    if(planLayer)planMap.removeLayer(planLayer);planMarkers.forEach(function(m){planMap.removeLayer(m);});planMarkers=[];
-    planLayer=L.geoJSON(data,{style:{color:'#a8e63d',weight:5,opacity:.9}}).addTo(planMap);
-    planMap.fitBounds(planLayer.getBounds(),{padding:[20,20]});
-    var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
-    var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
-    planMarkers.push(L.marker([planOrigen.lat||41.6176,planOrigen.lng||0.62],{icon:si}).addTo(planMap).bindPopup('Origen'));
-    planMarkers.push(L.marker([planDestino.lat,planDestino.lng],{icon:ei}).addTo(planMap).bindPopup('Destino'));
-    var p=data.features[0].properties.summary;
-    document.getElementById('pi-km').innerHTML=(p.distance/1000).toFixed(1)+' <span style="font-size:9px;color:#666;font-weight:400">km</span>';
-    var h=Math.floor(p.duration/3600),m=Math.floor((p.duration%3600)/60);
-    document.getElementById('pi-time').innerHTML=(h>0?h+'h ':'')+m+' <span style="font-size:9px;color:#666;font-weight:400">min</span>';
-    var elev=data.features[0].properties.ascent?Math.round(data.features[0].properties.ascent):'--';
-    document.getElementById('pi-elev').innerHTML=elev+' <span style="font-size:9px;color:#666;font-weight:400">m</span>';
-    document.getElementById('plan-info').style.display='block';
-    toast('Ruta: '+(p.distance/1000).toFixed(1)+' km');
-  })
-  .catch(function(err){toast('Error: '+err.message);})
-  .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
-}
-
 function startNavFromPlan(){
   if(!planRoute)return;
   closePlan();openNav();
   setTimeout(function(){
-    var coords=planRoute.features[0].geometry.coordinates.map(function(c){return[c[1],c[0]];});
+    var coords=planRoute.features[planAltIndex].geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
     if(navGpxLayer)navMap.removeLayer(navGpxLayer);
     navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:5,opacity:.9,dashArray:'10 5'}).addTo(navMap);
