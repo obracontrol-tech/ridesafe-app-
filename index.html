@@ -606,6 +606,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 }
 .layer-opt:hover{background:var(--card)}
 .layer-opt.active{background:var(--lime-dim);color:var(--lime);border-color:rgba(168,230,61,.3)}
+.layer-opt{display:flex;align-items:center;gap:10px}
+.layer-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:#111}
+.layer-opt.active .layer-thumb{border-color:var(--lime)}
 
 #wp-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
 #wp-modal.show{display:flex}
@@ -2760,11 +2763,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
       </button>
     </div>
     <div id="layer-menu">
-      <div class="layer-opt active" data-layer="topo" onclick="setMapLayer('topo')">&#9968; Topográfico</div>
-      <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')">&#128692; Ciclismo</div>
-      <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')">&#128506; Estándar</div>
-      <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')">&#127759; Satélite</div>
-      <div class="layer-opt" data-layer="hiking" onclick="setMapLayer('hiking')">&#127939; Senderismo</div>
+      <div class="layer-opt active" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#9968; Topográfico</span></div>
+      <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')"><img class="layer-thumb" loading="lazy" src="https://a.tile-cyclosm.openstreetmap.fr/cyclosm/13/4110/3053.png" alt=""><span>&#128692; Ciclismo</span></div>
+      <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
+      <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
+      <div class="layer-opt" data-layer="hiking" onclick="setMapLayer('hiking')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127939; Senderismo</span></div>
+      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127769; Nocturno</span></div>
     </div>
   </div>
   <input type="file" id="gpx-input" accept=".gpx" style="display:none" onchange="handleGPX(this)"/>
@@ -3426,7 +3430,8 @@ var MAP_LAYERS={
   cycle:{url:'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',name:'Ciclismo',attribution:'&copy; CyclOSM',maxZoom:20},
   standard:{url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',name:'Estándar',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
   satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',name:'Satélite',attribution:'&copy; Esri',maxZoom:18},
-  hiking:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Senderismo',attribution:'&copy; OSM',maxZoom:19}
+  hiking:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Senderismo',attribution:'&copy; OSM',maxZoom:19},
+  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Nocturno',attribution:'&copy; OSM &copy; CARTO',maxZoom:20}
 };
 
 /* ═══════════════════════════════════════
@@ -3538,15 +3543,18 @@ function initNavMap(){
   if(navMap)return;
   navMap=L.map('nav-mapa',{zoomControl:true}).setView([41.6176,0.62],13);
   navBikeIcon=L.divIcon({className:'',html:bikeIconHtml,iconSize:[18,18],iconAnchor:[9,9]});
-  setMapLayer('topo');
+  var savedLayer='topo';try{savedLayer=localStorage.getItem('rs_map_layer')||'topo';}catch(e){}
+  if(!MAP_LAYERS[savedLayer])savedLayer='topo';
+  setMapLayer(savedLayer);
   navMap.on('click',function(e){if(navWpAdding){showWpModal(e.latlng.lat,e.latlng.lng);navWpAdding=false;}});
   setTimeout(function(){navMap.invalidateSize();tryGetGPS();},200);
 }
 
 function setMapLayer(key){
   currentLayer=key;var cfg=MAP_LAYERS[key];if(!cfg)return;
+  try{localStorage.setItem('rs_map_layer',key);}catch(e){}
   if(navTileLayer){navMap.removeLayer(navTileLayer);}
-  navTileLayer=L.tileLayer(cfg.url,{attribution:cfg.attribution,subdomains:key==='standard'||key==='cycle'?'abcd':'abc',maxZoom:cfg.maxZoom}).addTo(navMap);
+  navTileLayer=L.tileLayer(cfg.url,{attribution:cfg.attribution,subdomains:(key==='standard'||key==='cycle'||key==='night')?'abcd':'abc',maxZoom:cfg.maxZoom}).addTo(navMap);
   document.querySelectorAll('.layer-opt').forEach(function(el){el.classList.toggle('active',el.dataset.layer===key);});
   document.getElementById('layer-menu').classList.remove('show');
 }
