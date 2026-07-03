@@ -4529,21 +4529,39 @@ function unirseGrupo(){
   var c = document.getElementById('grupo-codigo-input').value.trim();
   if(!n){toast('Introduce tu nombre');return;}
   if(!c){toast('Introduce el código');return;}
-  // Comprobar límite antes de unirse
+  if(typeof db==='undefined'||!db){toast('Sin conexión con el servidor. Revisa tu internet');return;}
   var codigoUpper = c.toUpperCase();
-  db.ref('grupos/' + codigoUpper + '/miembros').once('value', function(snap){
+  toast('⏳ Comprobando grupo ' + codigoUpper + '...');
+  var respondio=false;
+  var tguard=setTimeout(function(){
+    if(!respondio){toast('⚠️ El servidor no responde. Revisa internet o los permisos de Firebase');}
+  },8000);
+  db.ref('grupos/' + codigoUpper + '/miembros').once('value')
+  .then(function(snap){
+    respondio=true;clearTimeout(tguard);
     var datos = snap.val() || {};
     var numMiembros = Object.keys(datos).length;
     if(numMiembros >= GRUPO_MAX){
-      // Grupo lleno
       document.getElementById('grupo-lleno-aviso').style.display = 'flex';
       setTimeout(function(){
         document.getElementById('grupo-lleno-aviso').style.display = 'none';
       }, 4000);
       return;
     }
+    if(numMiembros === 0){
+      toast('Grupo ' + codigoUpper + ' creado/abierto — eres el primero');
+    }
     grupoCodigo = codigoUpper; grupoMiNombre = n; grupoActivo = true;
     activateGrupo();
+  })
+  .catch(function(err){
+    respondio=true;clearTimeout(tguard);
+    var msg=(err&&err.code)||''+err;
+    if(msg.indexOf('PERMISSION')>=0||msg.indexOf('permission')>=0){
+      toast('🔒 Firebase bloquea el acceso a grupos. Hay que ajustar las reglas de la base de datos');
+    }else{
+      toast('Error al unirse: '+msg);
+    }
   });
 }
 
