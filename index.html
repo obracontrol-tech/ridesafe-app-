@@ -3196,6 +3196,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
         <div class="stat-box"><span class="sl">Online</span><span class="sv" id="gs-online">0</span></div>
         <div class="stat-box"><span class="sl">Activos</span><span class="sv" id="gs-activos">0</span></div>
       </div>
+      <div class="card" style="padding:10px;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:8px">&#128506;&#65039; Pelotón en vivo</div>
+        <div id="grupo-mapa" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px;text-align:center">Cada ciclista comparte su posición mientras la app está abierta</div>
+      </div>
+      <button id="btn-pinchazo" onclick="togglePinchazo()" style="width:100%;padding:14px;border-radius:14px;background:rgba(255,51,85,.12);border:1.5px solid rgba(255,51,85,.4);color:#ff6688;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;letter-spacing:.5px;cursor:pointer;margin-bottom:12px">&#128295; AVISAR: HE PINCHADO / PROBLEMA</button>
       <div class="walkie-card">
         <div class="card-title" style="margin-bottom:6px">🎙️ Sala de Voz</div>
         <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:12px">Habla con tu grupo en tiempo real usando Telegram Voice Chat. Gratis, sin instalación extra.</div>
@@ -4507,7 +4513,7 @@ var GRUPO_MAX = 10;
   } catch(e){}
 })();
 
-function openGrupo(){openPanel('panel-grupo');}
+function openGrupo(){openPanel('panel-grupo');if(grupoActivo)setTimeout(function(){initGrupoMapa();},250);}
 function closeGrupo(){closePanel('panel-grupo');}
 
 function crearGrupo(){
@@ -4549,13 +4555,9 @@ function activateGrupo(){
   document.getElementById('grupo-badge').classList.add('on');
   toast('En grupo ' + grupoCodigo);
 
-  // Registrar en Firebase
-  grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
-  // Usar ID fijo guardado o generar uno nuevo
   if (!grupoMiId) {
     grupoMiId = grupoMiNombre.replace(/\s/g,'') + '_' + Math.floor(Math.random()*9000+1000);
   }
-  // Guardar en localStorage para persistir entre sesiones
   localStorage.setItem('rs_grupo', JSON.stringify({
     codigo: grupoCodigo,
     nombre: grupoMiNombre,
@@ -4563,49 +4565,174 @@ function activateGrupo(){
     ts: Date.now()
   }));
 
-  // Escribir presencia
-  var miPresencia = grupoRef.child(grupoMiId);
-  miPresencia.set({
-    nombre: grupoMiNombre,
-    activo: true,
-    ts: Date.now()
-  });
-
-  // Limpiar al cerrar pestaña/app
-  miPresencia.onDisconnect().remove();
-
-  // Escuchar cambios en tiempo real
-  grupoRef.on('value', function(snap){
-    var datos = snap.val() || {};
-    var lista = Object.values(datos).filter(function(m){ return m && m.nombre; });
-    var online = lista.length;
-
-    document.getElementById('gs-miembros').textContent = online;
-    document.getElementById('gs-online').textContent = online;
-    document.getElementById('gs-activos').textContent = online;
-
-    renderMiembrosFirebase(lista);
-  });
-
+  grupoConectar();
+  setTimeout(function(){ initGrupoMapa(); }, 300);
   setWalkieStatus('&#128308; Walkie próximamente — LiveKit pendiente','var(--muted)');
+}
+
+/* ═══ PELOTÓN EN VIVO: GPS compartido + rezagados + pinchazos ═══ */
+var grupoMapa=null, grupoMkrs={}, grupoWatch=null, grupoUltEscritura=0, grupoAvisados={}, grupoMiEstado='ok', grupoFitHecho=false;
+var GRUPO_DIST_REZAGADO = 500;   /* metros para considerar rezagado */
+var GRUPO_POS_CADUCA = 90000;    /* ms sin actualizar = sin señal */
+
+function distMetros(lat1,lon1,lat2,lon2){
+  var R=6371000,rad=Math.PI/180;
+  var dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function grupoConectar(){
+  grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
+  var miPresencia = grupoRef.child(grupoMiId);
+  miPresencia.update({ nombre: grupoMiNombre, activo: true, ts: Date.now(), estado: grupoMiEstado });
+  miPresencia.onDisconnect().remove();
+  grupoRef.on('value', grupoOnValue);
+  grupoIniciarGPS();
+}
+
+function grupoIniciarGPS(){
+  if(grupoWatch!==null || !navigator.geolocation) return;
+  grupoWatch = navigator.geolocation.watchPosition(function(pos){
+    var ahora = Date.now();
+    if(ahora - grupoUltEscritura < 8000) return; /* escribir máx cada 8s: ahorra batería y Firebase */
+    grupoUltEscritura = ahora;
+    if(grupoRef && grupoMiId){
+      grupoRef.child(grupoMiId).update({
+        lat: pos.coords.latitude, lng: pos.coords.longitude,
+        ts: ahora, estado: grupoMiEstado
+      });
+    }
+  }, function(){}, {enableHighAccuracy:true, maximumAge:15000, timeout:20000});
+}
+
+function initGrupoMapa(){
+  var el = document.getElementById('grupo-mapa');
+  if(!el || grupoMapa){ if(grupoMapa){setTimeout(function(){grupoMapa.invalidateSize();},150);} return; }
+  grupoMapa = L.map('grupo-mapa',{zoomControl:false,attributionControl:false}).setView([41.6176,0.62],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(grupoMapa);
+  setTimeout(function(){grupoMapa.invalidateSize();},200);
+}
+
+function grupoOnValue(snap){
+  var datos = snap.val() || {};
+  var lista = [];
+  Object.keys(datos).forEach(function(id){
+    var m = datos[id];
+    if(m && m.nombre) { m._id = id; lista.push(m); }
+  });
+  var online = lista.length;
+  var gsM=document.getElementById('gs-miembros'),gsO=document.getElementById('gs-online'),gsA=document.getElementById('gs-activos');
+  if(gsM)gsM.textContent=online; if(gsO)gsO.textContent=online; if(gsA)gsA.textContent=online;
+
+  var ahora = Date.now();
+  var conPos = lista.filter(function(m){ return typeof m.lat==='number' && (ahora-(m.ts||0)) < GRUPO_POS_CADUCA; });
+
+  /* Detección de rezagados: distancia mínima al resto del pelotón */
+  lista.forEach(function(m){ m._rezagado=false; m._sinSenal = !(typeof m.lat==='number' && (ahora-(m.ts||0))<GRUPO_POS_CADUCA); });
+  if(conPos.length >= 2){
+    conPos.forEach(function(m){
+      var minD = Infinity;
+      conPos.forEach(function(o){
+        if(o._id===m._id) return;
+        var d = distMetros(m.lat,m.lng,o.lat,o.lng);
+        if(d<minD) minD=d;
+      });
+      m._distMin = minD;
+      if(minD > GRUPO_DIST_REZAGADO) m._rezagado = true;
+    });
+  }
+
+  /* Avisos: pinchazo o rezagado nuevo → toast + vibración (una vez por episodio) */
+  lista.forEach(function(m){
+    var key=m._id;
+    if(m.estado==='pinchazo' && grupoAvisados[key]!=='pinchazo'){
+      grupoAvisados[key]='pinchazo';
+      if(m._id!==grupoMiId){ toast('🔧 ¡'+m.nombre+' ha pinchado! Mira el mapa del grupo'); if(navigator.vibrate)navigator.vibrate([300,150,300]); }
+    } else if(m._rezagado && m.estado!=='pinchazo' && grupoAvisados[key]!=='rezagado'){
+      grupoAvisados[key]='rezagado';
+      if(m._id!==grupoMiId){ toast('⚠️ '+m.nombre+' se está quedando atrás ('+Math.round(m._distMin)+' m)'); if(navigator.vibrate)navigator.vibrate(200); }
+    } else if(!m._rezagado && m.estado!=='pinchazo'){
+      grupoAvisados[key]=null;
+    }
+  });
+
+  grupoPintarMapa(lista, conPos);
+  renderMiembrosFirebase(lista);
+}
+
+function grupoPintarMapa(lista, conPos){
+  if(!grupoMapa) return;
+  /* Quitar marcadores de miembros que ya no están */
+  Object.keys(grupoMkrs).forEach(function(id){
+    if(!lista.some(function(m){return m._id===id && !m._sinSenal;})){
+      grupoMapa.removeLayer(grupoMkrs[id]); delete grupoMkrs[id];
+    }
+  });
+  conPos.forEach(function(m){
+    var esYo = m._id===grupoMiId;
+    var color = m.estado==='pinchazo' ? '#ff3355' : (m._rezagado ? '#ff8833' : (esYo ? '#a8e63d' : '#00e5ff'));
+    var emoji = m.estado==='pinchazo' ? '&#128295;' : m.nombre.charAt(0).toUpperCase();
+    var html = '<div style="width:30px;height:30px;border-radius:50%;background:'+color+';color:#080c0a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;border:2.5px solid #080c0a;box-shadow:0 0 8px '+color+'">'+emoji+'</div>';
+    var icon = L.divIcon({className:'',html:html,iconSize:[30,30],iconAnchor:[15,15]});
+    if(grupoMkrs[m._id]){
+      grupoMkrs[m._id].setLatLng([m.lat,m.lng]).setIcon(icon);
+    }else{
+      grupoMkrs[m._id]=L.marker([m.lat,m.lng],{icon:icon}).addTo(grupoMapa).bindPopup('<b>'+escHtml(m.nombre)+'</b>');
+    }
+  });
+  if(conPos.length && !grupoFitHecho){
+    var g=L.featureGroup(Object.keys(grupoMkrs).map(function(id){return grupoMkrs[id];}));
+    grupoMapa.fitBounds(g.getBounds().pad(0.3));
+    grupoFitHecho=true;
+  }
+}
+
+function togglePinchazo(){
+  grupoMiEstado = grupoMiEstado==='pinchazo' ? 'ok' : 'pinchazo';
+  if(grupoRef && grupoMiId) grupoRef.child(grupoMiId).update({estado:grupoMiEstado, ts:Date.now()});
+  var b=document.getElementById('btn-pinchazo');
+  if(grupoMiEstado==='pinchazo'){
+    b.innerHTML='&#9989; YA ESTOY BIEN — QUITAR AVISO';
+    b.style.background='rgba(168,230,61,.12)';b.style.borderColor='rgba(168,230,61,.4)';b.style.color='var(--lime)';
+    toast('Aviso enviado al grupo: ven a ayudarte 🔧');
+  }else{
+    b.innerHTML='&#128295; AVISAR: HE PINCHADO / PROBLEMA';
+    b.style.background='rgba(255,51,85,.12)';b.style.borderColor='rgba(255,51,85,.4)';b.style.color='#ff6688';
+    toast('Aviso retirado ✓');
+  }
 }
 
 function renderMiembrosFirebase(lista){
   var listEl = document.getElementById('grupo-miembros-lista');
   listEl.innerHTML = '';
+  var yo = lista.filter(function(m){return m._id===grupoMiId;})[0];
   lista.forEach(function(m){
-    var esYo = m.nombre === grupoMiNombre;
+    var esYo = m._id === grupoMiId;
     var ini = m.nombre.charAt(0).toUpperCase();
-    var color = esYo ? 'var(--lime)' : 'var(--cyan)';
-    var colorText = esYo ? '#080c0a' : '#080c0a';
+    var color = m.estado==='pinchazo' ? '#ff3355' : (m._rezagado ? '#ff8833' : (esYo ? 'var(--lime)' : 'var(--cyan)'));
+    var estadoTxt, estadoCls;
+    if(m.estado==='pinchazo'){ estadoTxt='&#128295; Pinchazo'; estadoCls='m-status-off'; }
+    else if(m._rezagado){ estadoTxt='&#9888;&#65039; Rezagado'; estadoCls='m-status-off'; }
+    else if(m._sinSenal){ estadoTxt='Sin señal GPS'; estadoCls=''; }
+    else { estadoTxt='Online'; estadoCls='m-status-online'; }
+    var distTxt='';
+    if(!esYo && yo && typeof yo.lat==='number' && typeof m.lat==='number' && !m._sinSenal && !yo._sinSenal){
+      var d=distMetros(yo.lat,yo.lng,m.lat,m.lng);
+      distTxt = d<1000 ? 'a '+Math.round(d)+' m de ti' : 'a '+(d/1000).toFixed(1)+' km de ti';
+    }
     var div = document.createElement('div');
     div.className = 'miembro-row' + (esYo ? ' yo' : '');
-    div.innerHTML = '<div class="miembro-av" style="background:'+color+';color:'+colorText+'">'
+    div.style.cursor='pointer';
+    div.innerHTML = '<div class="miembro-av" style="background:'+color+';color:#080c0a">'
       + ini + '</div>'
       + '<div class="miembro-info"><div class="miembro-nombre">'
-      + m.nombre + (esYo ? ' (tú)' : '') + '</div>'
-      + '<div class="miembro-pos">Online</div></div>'
-      + '<div class="miembro-status m-status-online">Online</div>';
+      + escHtml(m.nombre) + (esYo ? ' (tú)' : '') + '</div>'
+      + '<div class="miembro-pos">'+(distTxt||(esYo?'Eres tú':'—'))+'</div></div>'
+      + '<div class="miembro-status '+estadoCls+'" style="color:'+color+'">'+estadoTxt+'</div>';
+    div.onclick=function(){
+      if(grupoMapa && typeof m.lat==='number' && !m._sinSenal){ grupoMapa.setView([m.lat,m.lng],16); toast('📍 '+m.nombre); }
+    };
     listEl.appendChild(div);
   });
 }
@@ -4622,6 +4749,11 @@ function renderMiembros(){
 
 function salirGrupo(){
   if(!confirm('¿Salir del grupo?'))return;
+  // Detener GPS compartido
+  if(grupoWatch!==null){ navigator.geolocation.clearWatch(grupoWatch); grupoWatch=null; }
+  // Limpiar marcadores del mapa
+  if(grupoMapa){ Object.keys(grupoMkrs).forEach(function(id){ grupoMapa.removeLayer(grupoMkrs[id]); }); }
+  grupoMkrs={}; grupoAvisados={}; grupoFitHecho=false; grupoMiEstado='ok';
   // Limpiar Firebase
   if(grupoRef && grupoMiId){
     grupoRef.child(grupoMiId).remove();
@@ -5772,25 +5904,8 @@ sendSOS = function() {
 /* Restaurar grupo activo al arrancar */
 setTimeout(function() {
   if (grupoActivo && grupoCodigo && grupoMiNombre && grupoMiId) {
-    // Reconectar a Firebase sin mostrar panel
-    grupoRef = db.ref('grupos/' + grupoCodigo + '/miembros');
-    var miPresencia = grupoRef.child(grupoMiId);
-    miPresencia.set({ nombre: grupoMiNombre, activo: true, ts: Date.now() });
-    miPresencia.onDisconnect().remove();
-
-    // Escuchar cambios
-    grupoRef.on('value', function(snap){
-      var datos = snap.val() || {};
-      var lista = Object.values(datos).filter(function(m){ return m && m.nombre; });
-      var online = lista.length;
-      var gsM = document.getElementById('gs-miembros');
-      var gsO = document.getElementById('gs-online');
-      var gsA = document.getElementById('gs-activos');
-      if(gsM) gsM.textContent = online;
-      if(gsO) gsO.textContent = online;
-      if(gsA) gsA.textContent = online;
-      renderMiembrosFirebase(lista);
-    });
+    // Reconectar a Firebase con pelotón en vivo (GPS + rezagados + pinchazos)
+    grupoConectar();
 
     // Actualizar badge del módulo grupo
     var badge = document.getElementById('grupo-badge');
