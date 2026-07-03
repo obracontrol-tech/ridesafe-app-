@@ -3052,6 +3052,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="perfiles" style="margin-top:6px">
       <div class="perfil on" data-modo="ab" onclick="setPlanModo(this)">&#10145;&#65039; De A a B</div>
       <div class="perfil" data-modo="loop" onclick="setPlanModo(this)">&#128260; Circular</div>
+      <div class="perfil" data-modo="vs" onclick="setPlanModo(this)">&#9878;&#65039; Comparar</div>
     </div>
     <div id="plan-loop-row" style="display:none;margin-top:6px">
       <div style="font-size:10px;color:var(--muted);margin-bottom:4px">&#128207; Distancia del bucle</div>
@@ -3944,9 +3945,15 @@ function initPlanMap(){
   setTimeout(function(){planMap.invalidateSize();},200);
 }
 
-function setPerfil(btn){planPerfil=btn.dataset.perfil;document.querySelectorAll('.perfil[data-perfil]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+function setPerfil(btn){
+  planPerfil=btn.dataset.perfil;
+  document.querySelectorAll('.perfil[data-perfil]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+  /* Si ya hay ruta calculada, recalcular con la nueva disciplina automáticamente */
+  if(planRoute&&planModo!=='vs'&&planOrigen&&(planModo==='loop'||planDestino))calcularRuta();
+}
 
 var planModo='ab',planLoopKm=40,planAltIndex=0,planAltLayers=[];
+var VS_PERFILES=[{p:'cycling-road',n:'Carretera'},{p:'cycling-mountain',n:'MTB'},{p:'cycling-regular',n:'Regular'},{p:'foot-hiking',n:'Senderismo'}];
 function setPlanModo(btn){
   planModo=btn.dataset.modo;
   document.querySelectorAll('.perfil[data-modo]').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
@@ -3954,6 +3961,7 @@ function setPlanModo(btn){
   document.getElementById('plan-loop-row').style.display=esLoop?'block':'none';
   document.getElementById('plan-destino').parentElement.style.display=esLoop?'none':'block';
   if(esLoop)toast('Circular: solo necesitas el origen');
+  if(planModo==='vs')toast('Comparar: verás la misma ruta por cada disciplina');
 }
 function setLoopKm(btn){
   planLoopKm=parseInt(btn.dataset.km,10);
@@ -3963,8 +3971,33 @@ function setLoopKm(btn){
 function calcularRuta(){
   if(!orsKey){document.getElementById('ors-key-modal').style.display='flex';return;}
   if(!planOrigen){toast('Indica el origen');return;}
-  if(planModo==='ab'&&!planDestino){toast('Indica el destino');return;}
+  if(planModo!=='loop'&&!planDestino){toast('Indica el destino');return;}
   var btn=document.getElementById('plan-calcular');btn.disabled=true;btn.textContent='\u23F3 Calculando...';
+
+  if(planModo==='vs'){
+    /* ═══ COMPARAR DISCIPLINAS: misma ruta por cada perfil, en paralelo ═══ */
+    var coords=[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]];
+    Promise.all(VS_PERFILES.map(function(vp){
+      return fetch('https://api.openrouteservice.org/v2/directions/'+vp.p+'/geojson',{
+        method:'POST',
+        headers:{'Authorization':orsKey,'Content-Type':'application/json','Accept':'application/geo+json, application/json'},
+        body:JSON.stringify({coordinates:coords,elevation:true})
+      })
+      .then(function(r){if(!r.ok)throw 0;return r.json();})
+      .then(function(d){var f=d.features&&d.features[0];if(f)f.properties._label=vp.n;return f||null;})
+      .catch(function(){return null;});
+    }))
+    .then(function(feats){
+      feats=feats.filter(function(f){return f;});
+      if(!feats.length){toast('Ninguna disciplina encontró ruta');return;}
+      planRoute={type:'FeatureCollection',features:feats};planAltIndex=0;
+      renderAlternativas(planRoute);
+      toast(feats.length+' disciplinas comparadas — toca cada opción para ver diferencias');
+    })
+    .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
+    return;
+  }
+
   var body;
   if(planModo==='loop'){
     body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true};
@@ -4008,7 +4041,8 @@ function renderAlternativas(data){
     feats.forEach(function(f,i){
       var s=f.properties.summary,d=document.createElement('div');
       d.className='perfil'+(i===planAltIndex?' on':'');
-      d.textContent='Opción '+(i+1)+' · '+(s.distance/1000).toFixed(1)+' km';
+      var lbl=(f.properties&&f.properties._label)?f.properties._label:'Opción '+(i+1);
+      d.textContent=lbl+' · '+(s.distance/1000).toFixed(1)+' km';
       d.onclick=function(){selectAlt(i);};
       box.appendChild(d);
     });
