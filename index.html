@@ -4790,7 +4790,7 @@ function renderAjustes(){
     +'<button onclick="cambiarPin()" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px;font-family:\'Barlow\',sans-serif">🔒 Cambiar PIN</button>';
 }
 
-function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('sel'); }
 function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('sel'); }
@@ -5999,14 +5999,6 @@ function diagnosticoMotor(problema) {
   });
 }
 
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-}
-
-
 /* =========================================
    AVISO LEGAL — aceptación con registro
    ========================================= */
@@ -6077,11 +6069,10 @@ function legalAceptar() {
       if (typeof db !== 'undefined' && db) {
         var key = 'acept_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
         db.ref('aceptaciones_legales/' + key).set(registro)
-          .then(function(){ console.log('Legal guardado OK'); })
-          .catch(function(e){ console.log('Error Firebase legal:', e); });
+          .catch(function(e){});
       }
     } catch(e) {
-      console.log('Firebase no disponible:', e);
+      /* Firebase no disponible */
     }
   }
   // Intentar inmediatamente y con delay por si Firebase no está listo
@@ -6463,7 +6454,7 @@ function connectTelemetry() {
           antiAlarma(data.gps);
         }
 
-      } catch(e) { console.log('Anti parse error:', e); }
+      } catch(e) {}
     };
 
     antiSocket.onclose = function() {
