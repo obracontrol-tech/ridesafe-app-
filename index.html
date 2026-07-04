@@ -4118,7 +4118,7 @@ function saveORSKey(){
 var aiKey='',aiHistory=[],aiThinking=false;
 try{aiKey=localStorage.getItem('rs_ai_key')||'';}catch(e){}
 
-function openAI(){openPanel('panel-ai');if(!aiKey)document.getElementById('ai-key-setup').classList.add('show');}
+function openAI(){openPanel('panel-ai');}
 function closeAI(){closePanel('panel-ai');}
 
 function saveAIKey(){
@@ -4148,17 +4148,18 @@ function buildSystem(){
 }
 
 function askAI(msg){
-  if(!aiKey){document.getElementById('ai-key-setup').classList.add('show');return;}
-  if(aiThinking)return;aiThinking=true;document.getElementById('ai-send-btn').disabled=true;
+  if(aiThinking)return;
+  if(!iaGate())return;
+  aiThinking=true;document.getElementById('ai-send-btn').disabled=true;
   var msgsDiv=document.getElementById('ai-msgs');
   var userDiv=document.createElement('div');userDiv.className='ai-msg user';userDiv.textContent=msg;msgsDiv.appendChild(userDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;
   var thinkDiv=document.createElement('div');thinkDiv.className='ai-msg bot';thinkDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div><div class="ai-thinking"><span></span><span></span><span></span></div>';msgsDiv.appendChild(thinkDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;
   var history=aiHistory.slice(-8).map(function(m){return{role:m.role==='bot'?'assistant':'user',content:m.content};});
   history.push({role:'user',content:msg});
-  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:buildSystem(),messages:history})})
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:buildSystem(),messages:history})})
   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
   .then(function(d){var reply=d.content&&d.content[0]?d.content[0].text:'Sin respuesta';aiHistory.push({role:'user',content:msg});aiHistory.push({role:'bot',content:reply});msgsDiv.removeChild(thinkDiv);var botDiv=document.createElement('div');botDiv.className='ai-msg bot';botDiv.innerHTML='<div class="ai-msg-name">RideSafe IA &#10022;</div>'+reply.replace(/\n/g,'<br>');msgsDiv.appendChild(botDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
-  .catch(function(){msgsDiv.removeChild(thinkDiv);var errDiv=document.createElement('div');errDiv.className='ai-msg bot';errDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div>Error de conexión';msgsDiv.appendChild(errDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
+  .catch(function(err){msgsDiv.removeChild(thinkDiv);var errDiv=document.createElement('div');errDiv.className='ai-msg bot';errDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div>Error de conexión ('+err.message+'). Inténtalo de nuevo en unos segundos.';msgsDiv.appendChild(errDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
   .finally(function(){aiThinking=false;document.getElementById('ai-send-btn').disabled=false;});
 }
 
