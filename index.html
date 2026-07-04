@@ -4589,7 +4589,7 @@ function activateGrupo(){
 }
 
 /* ═══ PELOTÓN EN VIVO: GPS compartido + rezagados + pinchazos ═══ */
-var grupoMapa=null, grupoMkrs={}, grupoWatch=null, grupoUltEscritura=0, grupoAvisados={}, grupoMiEstado='ok', grupoFitHecho=false;
+var grupoMapa=null, grupoMkrs={}, grupoWatch=null, grupoUltEscritura=0, grupoAvisados={}, grupoMiEstado='ok', grupoFitHecho=false, grupoUltNum=0;
 var GRUPO_DIST_REZAGADO = 500;   /* metros para considerar rezagado */
 var GRUPO_POS_CADUCA = 90000;    /* ms sin actualizar = sin señal */
 
@@ -4628,7 +4628,7 @@ function initGrupoMapa(){
   var el = document.getElementById('grupo-mapa');
   if(!el || grupoMapa){ if(grupoMapa){setTimeout(function(){grupoMapa.invalidateSize();},150);} return; }
   grupoMapa = L.map('grupo-mapa',{zoomControl:false,attributionControl:false}).setView([41.6176,0.62],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(grupoMapa);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(grupoMapa);
   setTimeout(function(){grupoMapa.invalidateSize();},200);
 }
 
@@ -4699,9 +4699,14 @@ function grupoPintarMapa(lista, conPos){
       grupoMkrs[m._id]=L.marker([m.lat,m.lng],{icon:icon}).addTo(grupoMapa).bindPopup('<b>'+escHtml(m.nombre)+'</b>');
     }
   });
-  if(conPos.length && !grupoFitHecho){
-    var g=L.featureGroup(Object.keys(grupoMkrs).map(function(id){return grupoMkrs[id];}));
-    grupoMapa.fitBounds(g.getBounds().pad(0.3));
+  if(conPos.length && (!grupoFitHecho || conPos.length!==grupoUltNum)){
+    grupoUltNum=conPos.length;
+    if(conPos.length===1){
+      grupoMapa.setView([conPos[0].lat,conPos[0].lng],15);
+    }else{
+      var g=L.featureGroup(Object.keys(grupoMkrs).map(function(id){return grupoMkrs[id];}));
+      grupoMapa.fitBounds(g.getBounds().pad(0.3),{maxZoom:16});
+    }
     grupoFitHecho=true;
   }
 }
