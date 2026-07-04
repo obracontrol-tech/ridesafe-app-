@@ -4514,7 +4514,7 @@ var GRUPO_MAX = 10;
   } catch(e){}
 })();
 
-function openGrupo(){openPanel('panel-grupo');if(grupoActivo)setTimeout(function(){initGrupoMapa();},250);}
+function openGrupo(){openPanel('panel-grupo');grupoAudioInit();if(grupoActivo)setTimeout(function(){initGrupoMapa();},250);}
 function closeGrupo(){closePanel('panel-grupo');}
 
 function crearGrupo(){
@@ -4585,6 +4585,7 @@ function activateGrupo(){
   }));
 
   grupoConectar();
+  grupoAudioInit(); /* desbloquear audio con el gesto del usuario */
   setTimeout(function(){ initGrupoMapa(); }, 300);
   setWalkieStatus('&#128308; Walkie próximamente — LiveKit pendiente','var(--muted)');
 }
@@ -4599,6 +4600,34 @@ function distMetros(lat1,lon1,lat2,lon2){
   var dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad;
   var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* ═══ Avisos acústicos del pelotón (Web Audio, sin archivos) ═══ */
+var grupoAudioCtx=null;
+function grupoAudioInit(){
+  try{
+    if(!grupoAudioCtx){var AC=window.AudioContext||window.webkitAudioContext;if(AC)grupoAudioCtx=new AC();}
+    if(grupoAudioCtx&&grupoAudioCtx.state==='suspended')grupoAudioCtx.resume();
+  }catch(e){}
+}
+function grupoBeep(tipo){
+  grupoAudioInit();
+  if(!grupoAudioCtx)return;
+  try{
+    var patron = tipo==='pinchazo'
+      ? [{f:880,d:.18,t:0},{f:880,d:.18,t:.28},{f:1046,d:.3,t:.56}]   /* 3 pitidos urgentes, el último más agudo */
+      : [{f:587,d:.2,t:0},{f:587,d:.2,t:.32}];                        /* 2 pitidos de aviso */
+    patron.forEach(function(p){
+      var osc=grupoAudioCtx.createOscillator(),gain=grupoAudioCtx.createGain();
+      osc.type='square';osc.frequency.value=p.f;
+      var t0=grupoAudioCtx.currentTime+p.t;
+      gain.gain.setValueAtTime(0.0001,t0);
+      gain.gain.exponentialRampToValueAtTime(0.35,t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001,t0+p.d);
+      osc.connect(gain);gain.connect(grupoAudioCtx.destination);
+      osc.start(t0);osc.stop(t0+p.d+0.05);
+    });
+  }catch(e){}
 }
 
 function grupoConectar(){
@@ -4662,15 +4691,15 @@ function grupoOnValue(snap){
     });
   }
 
-  /* Avisos: pinchazo o rezagado nuevo → toast + vibración (una vez por episodio) */
+  /* Avisos: pinchazo o rezagado nuevo → sonido + toast + vibración (una vez por episodio) */
   lista.forEach(function(m){
     var key=m._id;
     if(m.estado==='pinchazo' && grupoAvisados[key]!=='pinchazo'){
       grupoAvisados[key]='pinchazo';
-      if(m._id!==grupoMiId){ toast('🔧 ¡'+m.nombre+' ha pinchado! Mira el mapa del grupo'); if(navigator.vibrate)navigator.vibrate([300,150,300]); }
+      if(m._id!==grupoMiId){ grupoBeep('pinchazo'); toast('🔧 ¡'+m.nombre+' ha pinchado! Mira el mapa del grupo'); if(navigator.vibrate)navigator.vibrate([300,150,300]); }
     } else if(m._rezagado && m.estado!=='pinchazo' && grupoAvisados[key]!=='rezagado'){
       grupoAvisados[key]='rezagado';
-      if(m._id!==grupoMiId){ toast('⚠️ '+m.nombre+' se está quedando atrás ('+Math.round(m._distMin)+' m)'); if(navigator.vibrate)navigator.vibrate(200); }
+      if(m._id!==grupoMiId){ grupoBeep('rezagado'); toast('⚠️ '+m.nombre+' se está quedando atrás ('+Math.round(m._distMin)+' m)'); if(navigator.vibrate)navigator.vibrate(200); }
     } else if(!m._rezagado && m.estado!=='pinchazo'){
       grupoAvisados[key]=null;
     }
@@ -4713,6 +4742,7 @@ function grupoPintarMapa(lista, conPos){
 }
 
 function togglePinchazo(){
+  grupoAudioInit();
   grupoMiEstado = grupoMiEstado==='pinchazo' ? 'ok' : 'pinchazo';
   if(grupoRef && grupoMiId) grupoRef.child(grupoMiId).update({estado:grupoMiEstado, ts:Date.now()});
   var b=document.getElementById('btn-pinchazo');
