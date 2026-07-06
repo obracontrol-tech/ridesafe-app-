@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- v2.1 Comunidad - redeploy 06/07/2026 -->
+<!-- v2.2 Comunidad - feedback visual al tocar mapa -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -529,7 +529,7 @@ function revocarClave(clave) {
 }
 
 // ================= COMUNIDAD =================
-var mapaCom = null, marcadoresCom = [], puntosCache = {}, editandoPuntoId = null;
+var mapaCom = null, marcadoresCom = [], puntosCache = {}, editandoPuntoId = null, tempMarker = null;
 var TIPOS_PT = {plaza:'🏛️',parking:'🅿️',fuente:'⛲',cafe:'☕',tienda:'🏪',inicio_ruta:'🚴'};
 
 function cargarComunidad(){
@@ -540,6 +540,16 @@ function cargarComunidad(){
     mapaCom.on('click', function(e){
       document.getElementById('pt-lat').value = e.latlng.lat.toFixed(6);
       document.getElementById('pt-lng').value = e.latlng.lng.toFixed(6);
+      if(tempMarker) mapaCom.removeLayer(tempMarker);
+      tempMarker = L.marker(e.latlng, {opacity:0.75}).addTo(mapaCom)
+        .bindPopup('📍 <b>Nuevo punto aquí</b><br>Rellena el formulario de abajo y guarda').openPopup();
+      ['pt-lat','pt-lng'].forEach(function(i){
+        var el = document.getElementById(i);
+        el.style.borderColor = 'var(--lime)';
+        el.style.boxShadow = '0 0 12px rgba(168,230,61,.4)';
+        setTimeout(function(){ el.style.borderColor=''; el.style.boxShadow=''; }, 2500);
+      });
+      document.getElementById('pt-nombre').focus();
     });
   }
   setTimeout(function(){ mapaCom.invalidateSize(); }, 150);
@@ -618,8 +628,10 @@ function guardarPunto(){
     ref = db.ref('puntos_encuentro').push(punto);
   }
   Promise.resolve(ref).then(function(){
+    if(tempMarker){ mapaCom.removeLayer(tempMarker); tempMarker = null; }
     limpiarFormPunto();
     refrescarPuntos();
+    alert('✅ Punto guardado: ' + nombre);
   }).catch(function(e){ alert('Error al guardar: ' + e.message); });
 }
 
