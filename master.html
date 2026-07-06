@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -85,6 +87,28 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .legal-tabla td{padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border2)}
 .legal-tabla tr:last-child td{border-bottom:none}
 .legal-tabla tr:hover td{background:var(--card2)}
+/* COMUNIDAD */
+#mapa-com{height:420px;border-radius:16px;border:1px solid var(--border2);margin-bottom:16px;z-index:1}
+.com-form{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-bottom:16px}
+.com-form h3{font-family:'Barlow Condensed',sans-serif;font-size:16px;color:var(--lime);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.com-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.com-grid .full{grid-column:1/-1}
+.com-inp{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px}
+.com-inp:focus{outline:none;border-color:var(--lime)}
+.com-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+.com-hint{font-size:11px;color:var(--dim);margin-top:8px}
+.punto-row{display:grid;grid-template-columns:32px 1fr 110px 200px;padding:10px 16px;border-bottom:1px solid var(--border2);align-items:center;gap:8px}
+.punto-row:last-child{border-bottom:none}
+.punto-row:hover{background:var(--card2)}
+.punto-acc{display:flex;gap:6px;justify-content:flex-end}
+.mini-btn{padding:5px 10px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s}
+.mini-btn:hover{border-color:var(--lime);color:var(--lime)}
+.mini-btn.rojo:hover{border-color:#ff3355;color:#ff3355}
+.est-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.est-activo{background:rgba(168,230,61,.15);color:var(--lime)}
+.est-suspendido{background:rgba(255,51,85,.15);color:#ff3355}
+.est-evento{background:rgba(0,229,255,.15);color:#00e5ff}
+@media(max-width:700px){.com-grid{grid-template-columns:1fr}.punto-row{grid-template-columns:32px 1fr;gap:6px}.punto-acc{grid-column:1/-1;justify-content:flex-start}}
 </style>
 </head>
 <body>
@@ -118,6 +142,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
     <button class="tab-btn" onclick="showTab('grupos',this)">👥 Grupos</button>
     <button class="tab-btn" onclick="showTab('canal',this)">📣 Canal</button>
     <button class="tab-btn" onclick="showTab('legal',this)">⚖️ Legal</button>
+    <button class="tab-btn" onclick="showTab('comunidad',this)">🗺️ Comunidad</button>
   </div>
 
   <div class="body">
@@ -195,6 +220,47 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
     </div>
 
     <!-- LEGAL -->
+    <!-- COMUNIDAD -->
+    <div class="tab-panel" id="tab-comunidad">
+      <div class="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+        <div class="stat"><div class="stat-val" id="st-com-total">—</div><div class="stat-lbl">Puntos totales</div></div>
+        <div class="stat"><div class="stat-val" id="st-com-activos">—</div><div class="stat-lbl">Activos</div></div>
+        <div class="stat"><div class="stat-val" id="st-com-eventos">—</div><div class="stat-lbl">Con evento</div></div>
+      </div>
+
+      <div id="mapa-com"></div>
+
+      <div class="com-form">
+        <h3 id="com-form-titulo">➕ Nuevo punto de encuentro</h3>
+        <div class="com-grid">
+          <div><span class="com-lbl">Nombre *</span><input class="com-inp" id="pt-nombre" placeholder="Fuente del parc de la Mitjana"></div>
+          <div><span class="com-lbl">Tipo</span><select class="com-inp" id="pt-tipo">
+            <option value="plaza">🏛️ Plaza</option><option value="parking">🅿️ Parking</option>
+            <option value="fuente">⛲ Fuente</option><option value="cafe">☕ Café</option>
+            <option value="tienda">🏪 Tienda</option><option value="inicio_ruta">🚴 Inicio de ruta</option>
+          </select></div>
+          <div><span class="com-lbl">Latitud *</span><input class="com-inp" id="pt-lat" placeholder="Toca el mapa"></div>
+          <div><span class="com-lbl">Longitud *</span><input class="com-inp" id="pt-lng" placeholder="Toca el mapa"></div>
+          <div><span class="com-lbl">Dirección</span><input class="com-inp" id="pt-dir" placeholder="Opcional"></div>
+          <div><span class="com-lbl">Horario habitual</span><input class="com-inp" id="pt-hora" placeholder="Sáb y dom 8:00"></div>
+          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pt-desc" placeholder="Punto de salida habitual rutas carretera norte"></div>
+          <div><span class="com-lbl">Estado</span><select class="com-inp" id="pt-estado">
+            <option value="activo">✅ Activo</option><option value="suspendido">⛔ Suspendido</option>
+            <option value="evento">📅 Evento programado</option>
+          </select></div>
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button class="gen-btn" id="pt-guardar" onclick="guardarPunto()" style="flex:1">💾 GUARDAR PUNTO</button>
+            <button class="mini-btn" id="pt-cancelar" onclick="limpiarFormPunto()" style="display:none;padding:12px">✖</button>
+          </div>
+        </div>
+        <div class="com-hint">💡 Toca el mapa para rellenar las coordenadas automáticamente. Todos los puntos son neutrales: mismo peso visual, sin jerarquías comerciales.</div>
+      </div>
+
+      <div class="tabla">
+        <div id="lista-puntos"><div class="empty"><span class="spin"></span> Cargando...</div></div>
+      </div>
+    </div>
+
     <div class="tab-panel" id="tab-legal">
       <button class="refresh-btn" onclick="cargarLegal()">🔄 Actualizar</button>
       <div class="stats-grid">
@@ -284,6 +350,7 @@ function showTab(id, btn){
   if(id==='radar') cargarRadar();
   if(id==='grupos') cargarGrupos();
   if(id==='legal') cargarLegal();
+  if(id==='comunidad') cargarComunidad();
 }
 
 // CLAVES
@@ -458,6 +525,164 @@ function revocarClave(clave) {
     .catch(function(e) {
       alert('Error al revocar: ' + e.message);
     });
+}
+
+// ================= COMUNIDAD =================
+var mapaCom = null, marcadoresCom = [], puntosCache = {}, editandoPuntoId = null;
+var TIPOS_PT = {plaza:'🏛️',parking:'🅿️',fuente:'⛲',cafe:'☕',tienda:'🏪',inicio_ruta:'🚴'};
+
+function cargarComunidad(){
+  if(!mapaCom){
+    mapaCom = L.map('mapa-com').setView([41.617, 0.622], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(mapaCom);
+    mapaCom.on('click', function(e){
+      document.getElementById('pt-lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('pt-lng').value = e.latlng.lng.toFixed(6);
+    });
+  }
+  setTimeout(function(){ mapaCom.invalidateSize(); }, 150);
+  refrescarPuntos();
+}
+
+function refrescarPuntos(){
+  db.ref('puntos_encuentro').once('value', function(snap){
+    puntosCache = snap.val() || {};
+    pintarPuntos();
+  });
+}
+
+function pintarPuntos(){
+  marcadoresCom.forEach(function(m){ mapaCom.removeLayer(m); });
+  marcadoresCom = [];
+  var ids = Object.keys(puntosCache);
+  var activos = 0, eventos = 0;
+  var el = document.getElementById('lista-puntos');
+  if(!ids.length){
+    el.innerHTML = '<div class="empty">🗺️ Sin puntos de encuentro. Toca el mapa y crea el primero.</div>';
+  } else {
+    var h = '';
+    ids.sort(function(a,b){ return (puntosCache[b].creado||0)-(puntosCache[a].creado||0); });
+    ids.forEach(function(id){
+      var p = puntosCache[id];
+      if(p.estado === 'activo') activos++;
+      if(p.estado === 'evento') eventos++;
+      var icono = TIPOS_PT[p.tipo] || '📍';
+      if(p.estado !== 'suspendido'){
+        var mk = L.marker([p.lat, p.lng]).addTo(mapaCom)
+          .bindPopup('<b>'+escHtml(p.nombre)+'</b><br>'+icono+' '+escHtml(p.tipo||'')+(p.horario?'<br>🕐 '+escHtml(p.horario):''));
+        marcadoresCom.push(mk);
+      }
+      h += '<div class="punto-row">'
+        + '<span style="font-size:18px">'+icono+'</span>'
+        + '<div><div style="font-weight:600;color:var(--text)">'+escHtml(p.nombre)+'</div>'
+        + '<div style="font-size:11px;color:var(--dim)">'+(p.direccion?escHtml(p.direccion)+' · ':'')+p.lat.toFixed(4)+', '+p.lng.toFixed(4)+'</div></div>'
+        + '<span class="est-pill est-'+p.estado+'">'+p.estado+'</span>'
+        + '<div class="punto-acc">'
+        + '<button class="mini-btn" onclick="centrarPunto(\''+id+'\')">🎯</button>'
+        + '<button class="mini-btn" onclick="editarPunto(\''+id+'\')">✏️</button>'
+        + '<button class="mini-btn" onclick="anunciarPunto(\''+id+'\')">📣</button>'
+        + '<button class="mini-btn rojo" onclick="eliminarPunto(\''+id+'\')">🗑️</button>'
+        + '</div></div>';
+    });
+    el.innerHTML = h;
+  }
+  document.getElementById('st-com-total').textContent = ids.length;
+  document.getElementById('st-com-activos').textContent = activos;
+  document.getElementById('st-com-eventos').textContent = eventos;
+}
+
+function guardarPunto(){
+  var nombre = document.getElementById('pt-nombre').value.trim();
+  var lat = parseFloat(document.getElementById('pt-lat').value);
+  var lng = parseFloat(document.getElementById('pt-lng').value);
+  if(!nombre){ alert('Falta el nombre del punto'); return; }
+  if(isNaN(lat) || isNaN(lng)){ alert('Faltan coordenadas. Toca el mapa para rellenarlas.'); return; }
+  var punto = {
+    nombre: nombre,
+    tipo: document.getElementById('pt-tipo').value,
+    lat: lat, lng: lng,
+    direccion: document.getElementById('pt-dir').value.trim(),
+    horario: document.getElementById('pt-hora').value.trim(),
+    descripcion: document.getElementById('pt-desc').value.trim(),
+    estado: document.getElementById('pt-estado').value,
+    actualizado: Date.now()
+  };
+  var ref;
+  if(editandoPuntoId){
+    punto.creado = (puntosCache[editandoPuntoId] && puntosCache[editandoPuntoId].creado) || Date.now();
+    ref = db.ref('puntos_encuentro/' + editandoPuntoId).set(punto);
+  } else {
+    punto.creado = Date.now();
+    ref = db.ref('puntos_encuentro').push(punto);
+  }
+  Promise.resolve(ref).then(function(){
+    limpiarFormPunto();
+    refrescarPuntos();
+  }).catch(function(e){ alert('Error al guardar: ' + e.message); });
+}
+
+function editarPunto(id){
+  var p = puntosCache[id]; if(!p) return;
+  editandoPuntoId = id;
+  document.getElementById('pt-nombre').value = p.nombre || '';
+  document.getElementById('pt-tipo').value = p.tipo || 'plaza';
+  document.getElementById('pt-lat').value = p.lat;
+  document.getElementById('pt-lng').value = p.lng;
+  document.getElementById('pt-dir').value = p.direccion || '';
+  document.getElementById('pt-hora').value = p.horario || '';
+  document.getElementById('pt-desc').value = p.descripcion || '';
+  document.getElementById('pt-estado').value = p.estado || 'activo';
+  document.getElementById('com-form-titulo').textContent = '✏️ Editando: ' + p.nombre;
+  document.getElementById('pt-guardar').textContent = '💾 ACTUALIZAR PUNTO';
+  document.getElementById('pt-cancelar').style.display = 'block';
+  mapaCom.setView([p.lat, p.lng], 15);
+  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
+}
+
+function limpiarFormPunto(){
+  editandoPuntoId = null;
+  ['pt-nombre','pt-lat','pt-lng','pt-dir','pt-hora','pt-desc'].forEach(function(i){
+    document.getElementById(i).value = '';
+  });
+  document.getElementById('pt-tipo').value = 'plaza';
+  document.getElementById('pt-estado').value = 'activo';
+  document.getElementById('com-form-titulo').textContent = '➕ Nuevo punto de encuentro';
+  document.getElementById('pt-guardar').textContent = '💾 GUARDAR PUNTO';
+  document.getElementById('pt-cancelar').style.display = 'none';
+}
+
+function centrarPunto(id){
+  var p = puntosCache[id]; if(!p) return;
+  mapaCom.setView([p.lat, p.lng], 16);
+  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
+}
+
+function eliminarPunto(id){
+  var p = puntosCache[id]; if(!p) return;
+  if(!confirm('¿Eliminar el punto "' + p.nombre + '"?\nEsta acción no se puede deshacer.')) return;
+  db.ref('puntos_encuentro/' + id).remove()
+    .then(function(){ refrescarPuntos(); })
+    .catch(function(e){ alert('Error: ' + e.message); });
+}
+
+function anunciarPunto(id){
+  var p = puntosCache[id]; if(!p) return;
+  var icono = TIPOS_PT[p.tipo] || '📍';
+  var txt = '🗺️ <b>Punto de encuentro RideSafe</b>\n\n'
+    + icono + ' <b>' + p.nombre + '</b>\n'
+    + (p.direccion ? '📍 ' + p.direccion + '\n' : '')
+    + (p.horario ? '🕐 ' + p.horario + '\n' : '')
+    + (p.descripcion ? '\n' + p.descripcion + '\n' : '')
+    + '\n🧭 https://maps.google.com/?q=' + p.lat + ',' + p.lng;
+  if(!confirm('¿Publicar este punto en el canal ' + TG_CANAL + '?')) return;
+  fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id: TG_CANAL, text: txt, parse_mode:'HTML'})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(d.ok) alert('✅ Publicado en ' + TG_CANAL);
+    else alert('Error: ' + (d.description || 'desconocido'));
+  }).catch(function(){ alert('Error de conexión'); });
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
