@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- v2.3 Comunidad - subir rutas GPX + moderacion -->
+<!-- v2.4 Comunidad - creador de rutas ORS -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -259,6 +259,36 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 
       <div class="tabla">
         <div id="lista-puntos"><div class="empty"><span class="spin"></span> Cargando...</div></div>
+      </div>
+
+      <div class="sec-title" style="margin-top:24px">🛣️ Crear ruta sobre el mapa</div>
+      <div class="com-form">
+        <div id="ruta-off">
+          <button class="gen-btn" onclick="activarModoRuta()" style="width:100%">🛣️ EMPEZAR A CREAR RUTA</button>
+          <div class="com-hint">Se activa el modo ruta: cada toque en el mapa añade una parada (1, 2, 3...). Luego el sistema traza el camino real por carretera entre ellas.</div>
+        </div>
+        <div id="ruta-on" style="display:none">
+          <div style="background:var(--lime-dim);border:1px solid var(--lime);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--lime)">
+            🟢 <b>MODO RUTA ACTIVO</b> — toca el mapa para añadir paradas · <span id="ruta-npts">0 paradas</span>
+          </div>
+          <div class="com-grid">
+            <div><span class="com-lbl">Tipo de ruta</span><select class="com-inp" id="ruta-perfil">
+              <option value="cycling-road">🚴 Carretera</option>
+              <option value="cycling-mountain">⛰️ MTB</option>
+              <option value="cycling-regular">🚲 Mixta</option>
+              <option value="cycling-electric">⚡ eBike</option>
+            </select></div>
+            <div style="display:flex;align-items:flex-end;gap:8px">
+              <button class="mini-btn" onclick="deshacerParada()" style="padding:11px;flex:1">↩️ Quitar última</button>
+              <button class="mini-btn" onclick="cerrarCircuito()" style="padding:11px;flex:1">🔁 Volver al inicio</button>
+            </div>
+            <div class="full" style="display:flex;gap:8px">
+              <button class="gen-btn" id="btn-trazar" onclick="trazarRuta()" style="flex:2">🗺️ TRAZAR RUTA</button>
+              <button class="mini-btn rojo" onclick="cancelarModoRuta()" style="flex:1;padding:11px">✖ Cancelar</button>
+            </div>
+          </div>
+          <div class="com-hint">Mínimo 2 paradas. "Volver al inicio" convierte la ruta en circular. Tras trazar, abajo aparecerá el formulario para publicarla.</div>
+        </div>
       </div>
 
       <div class="sec-title" style="margin-top:24px">🚴 Subir ruta GPX a la comunidad</div>
@@ -558,6 +588,87 @@ function revocarClave(clave) {
 
 // ================= RUTAS GPX COMUNIDAD =================
 var gpxParsed = null, gpxPreviewLine = null;
+var ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdkOGFjNDY4Yjc1MzQ3Zjg5M2Q0M2RiMTRhODExYzBmIiwiaCI6Im11cm11cjY0In0=';
+var modoRuta = false, wayPoints = [], wayMarkers = [];
+
+function activarModoRuta(){
+  modoRuta = true;
+  wayPoints = []; wayMarkers = [];
+  document.getElementById('ruta-off').style.display = 'none';
+  document.getElementById('ruta-on').style.display = 'block';
+  if(tempMarker){ mapaCom.removeLayer(tempMarker); tempMarker = null; }
+  actualizarContadorRuta();
+  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
+}
+
+function anadirParada(latlng){
+  wayPoints.push([latlng.lat, latlng.lng]);
+  var n = wayPoints.length;
+  var mk = L.marker(latlng, {icon: L.divIcon({className:'', html:'<div style="background:#a8e63d;color:#060a07;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:Barlow Condensed,sans-serif;font-size:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)">'+n+'</div>', iconSize:[26,26], iconAnchor:[13,13]})}).addTo(mapaCom);
+  wayMarkers.push(mk);
+  actualizarContadorRuta();
+}
+
+function actualizarContadorRuta(){
+  document.getElementById('ruta-npts').textContent = wayPoints.length + (wayPoints.length===1 ? ' parada' : ' paradas');
+}
+
+function deshacerParada(){
+  if(!wayPoints.length) return;
+  wayPoints.pop();
+  mapaCom.removeLayer(wayMarkers.pop());
+  actualizarContadorRuta();
+}
+
+function cerrarCircuito(){
+  if(wayPoints.length < 2){ alert('Añade al menos 2 paradas antes de cerrar el circuito'); return; }
+  var inicio = wayPoints[0];
+  anadirParada({lat: inicio[0], lng: inicio[1]});
+}
+
+function cancelarModoRuta(){
+  modoRuta = false;
+  wayMarkers.forEach(function(m){ mapaCom.removeLayer(m); });
+  wayPoints = []; wayMarkers = [];
+  document.getElementById('ruta-off').style.display = 'block';
+  document.getElementById('ruta-on').style.display = 'none';
+}
+
+function trazarRuta(){
+  if(wayPoints.length < 2){ alert('Necesitas al menos 2 paradas. Toca el mapa para añadirlas.'); return; }
+  var btn = document.getElementById('btn-trazar');
+  btn.disabled = true; btn.textContent = '⏳ Trazando...';
+  var coords = wayPoints.map(function(p){ return [p[1], p[0]]; });
+  var perfil = document.getElementById('ruta-perfil').value;
+  fetch('https://api.openrouteservice.org/v2/directions/' + perfil + '/geojson', {
+    method: 'POST',
+    headers: {'Authorization': ORS_KEY, 'Content-Type': 'application/json', 'Accept': 'application/geo+json, application/json'},
+    body: JSON.stringify({coordinates: coords, elevation: true})
+  })
+  .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(function(data){
+    var f = data.features && data.features[0];
+    if(!f){ alert('No se encontró ruta entre esas paradas'); return; }
+    var latlngs = f.geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
+    var dist = Math.round((f.properties.summary && f.properties.summary.distance) || 0);
+    var desnivel = Math.round(f.properties.ascent || 0);
+    gpxParsed = { points: downsampleGPX(latlngs, 120), distancia: dist, desnivel: desnivel };
+    if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); }
+    gpxPreviewLine = L.polyline(latlngs, {color:'#00e5ff', weight:5, opacity:.9}).addTo(mapaCom);
+    mapaCom.fitBounds(gpxPreviewLine.getBounds(), {padding:[24,24]});
+    document.getElementById('gx-lugar').value = '';
+    document.getElementById('gx-mins').value = Math.round((dist/1000)/20*60);
+    document.getElementById('gx-stats').innerHTML = '📊 <b>' + (dist/1000).toFixed(1) + ' km</b> · desnivel +' + desnivel + ' m · trazado por carretera real';
+    document.getElementById('gpx-preview').style.display = 'block';
+    modoRuta = false;
+    document.getElementById('ruta-off').style.display = 'block';
+    document.getElementById('ruta-on').style.display = 'none';
+    document.getElementById('gx-lugar').scrollIntoView({behavior:'smooth'});
+    document.getElementById('gx-lugar').focus();
+  })
+  .catch(function(e){ alert('Error al trazar (' + e.message + ')' + (String(e.message)==='403' ? ' — clave ORS caducada' : '')); })
+  .finally(function(){ btn.disabled = false; btn.textContent = '🗺️ TRAZAR RUTA'; });
+}
 
 function distHaversine(a, b){
   var R = 6371000, rad = Math.PI/180;
@@ -639,6 +750,8 @@ function publicarGPX(){
   db.ref('rutas_sugeridas').push(data).then(function(){
     alert('✅ Ruta publicada en la comunidad');
     gpxParsed = null;
+    wayMarkers.forEach(function(m){ mapaCom.removeLayer(m); });
+    wayPoints = []; wayMarkers = [];
     document.getElementById('gpx-preview').style.display = 'none';
     if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); gpxPreviewLine = null; }
     cargarRutasCom();
@@ -701,6 +814,7 @@ function cargarComunidad(){
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(mapaCom);
     mapaCom.on('click', function(e){
+      if(modoRuta){ anadirParada(e.latlng); return; }
       document.getElementById('pt-lat').value = e.latlng.lat.toFixed(6);
       document.getElementById('pt-lng').value = e.latlng.lng.toFixed(6);
       if(tempMarker) mapaCom.removeLayer(tempMarker);
