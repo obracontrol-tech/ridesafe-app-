@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- v2.2 Comunidad - feedback visual al tocar mapa -->
+<!-- v2.3 Comunidad - subir rutas GPX + moderacion -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -259,6 +259,34 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 
       <div class="tabla">
         <div id="lista-puntos"><div class="empty"><span class="spin"></span> Cargando...</div></div>
+      </div>
+
+      <div class="sec-title" style="margin-top:24px">🚴 Subir ruta GPX a la comunidad</div>
+      <div class="com-form">
+        <input type="file" id="gpx-file" accept=".gpx" style="display:none" onchange="leerGPX(this)">
+        <button class="gen-btn" onclick="document.getElementById('gpx-file').click()" style="width:100%">📂 ELEGIR ARCHIVO GPX</button>
+        <div id="gpx-preview" style="display:none;margin-top:14px">
+          <div class="com-grid">
+            <div><span class="com-lbl">Nombre de la ruta *</span><input class="com-inp" id="gx-lugar"></div>
+            <div><span class="com-lbl">Tipo de bici</span><select class="com-inp" id="gx-bici">
+              <option value="carretera">🚴 Carretera</option><option value="mtb">⛰️ MTB</option>
+              <option value="gravel">🛤️ Gravel</option><option value="ebike">⚡ eBike</option>
+            </select></div>
+            <div><span class="com-lbl">Nivel</span><select class="com-inp" id="gx-nivel">
+              <option value="novato">🟢 Novato</option><option value="medio" selected>🟡 Medio</option>
+              <option value="pro">🔴 Pro</option>
+            </select></div>
+            <div><span class="com-lbl">Duración estimada (min)</span><input class="com-inp" id="gx-mins" type="number"></div>
+            <div><span class="com-lbl">Publicado por</span><input class="com-inp" id="gx-autor" value="RideSafe IA Oficial"></div>
+            <div style="display:flex;align-items:flex-end"><button class="gen-btn" onclick="publicarGPX()" style="width:100%">📤 PUBLICAR EN LA APP</button></div>
+          </div>
+          <div class="com-hint" id="gx-stats"></div>
+        </div>
+      </div>
+
+      <div class="sec-title" style="margin-top:24px">Rutas publicadas en la comunidad</div>
+      <div class="tabla">
+        <div id="lista-rutas-com"><div class="empty"><span class="spin"></span> Cargando...</div></div>
       </div>
     </div>
 
@@ -528,6 +556,141 @@ function revocarClave(clave) {
     });
 }
 
+// ================= RUTAS GPX COMUNIDAD =================
+var gpxParsed = null, gpxPreviewLine = null;
+
+function distHaversine(a, b){
+  var R = 6371000, rad = Math.PI/180;
+  var dLat = (b[0]-a[0])*rad, dLng = (b[1]-a[1])*rad;
+  var s = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(a[0]*rad)*Math.cos(b[0]*rad)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+}
+
+function downsampleGPX(points, maxN){
+  if(points.length <= maxN) return points;
+  var step = points.length/maxN, out = [];
+  for(var i=0; i<maxN; i++){ out.push(points[Math.floor(i*step)]); }
+  out.push(points[points.length-1]);
+  return out;
+}
+
+function leerGPX(input){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var xml = new DOMParser().parseFromString(ev.target.result, 'text/xml');
+      var trkpts = xml.getElementsByTagName('trkpt');
+      if(!trkpts.length){ alert('El GPX no contiene puntos de trazado (trkpt)'); return; }
+      var points = [], eles = [];
+      for(var i=0; i<trkpts.length; i++){
+        var lat = parseFloat(trkpts[i].getAttribute('lat'));
+        var lon = parseFloat(trkpts[i].getAttribute('lon'));
+        if(isNaN(lat)||isNaN(lon)) continue;
+        points.push([lat, lon]);
+        var eleTag = trkpts[i].getElementsByTagName('ele')[0];
+        eles.push(eleTag ? parseFloat(eleTag.textContent) : null);
+      }
+      if(points.length < 2){ alert('GPX sin trazado válido'); return; }
+      var dist = 0;
+      for(var j=1; j<points.length; j++){ dist += distHaversine(points[j-1], points[j]); }
+      var desnivel = 0;
+      for(var k=1; k<eles.length; k++){
+        if(eles[k]!==null && eles[k-1]!==null && eles[k]>eles[k-1]) desnivel += eles[k]-eles[k-1];
+      }
+      var nombreTag = xml.getElementsByTagName('name')[0];
+      var nombreRuta = nombreTag ? nombreTag.textContent.trim() : file.name.replace('.gpx','');
+      gpxParsed = {
+        points: downsampleGPX(points, 120),
+        distancia: Math.round(dist),
+        desnivel: Math.round(desnivel)
+      };
+      document.getElementById('gx-lugar').value = nombreRuta;
+      document.getElementById('gx-mins').value = Math.round((dist/1000) / 20 * 60);
+      document.getElementById('gx-stats').innerHTML = '📊 <b>' + (dist/1000).toFixed(1) + ' km</b> · desnivel +' + Math.round(desnivel) + ' m · ' + points.length + ' puntos GPS (se publican ' + gpxParsed.points.length + ')';
+      document.getElementById('gpx-preview').style.display = 'block';
+      if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); }
+      gpxPreviewLine = L.polyline(gpxParsed.points, {color:'#00e5ff', weight:4, opacity:.85}).addTo(mapaCom);
+      mapaCom.fitBounds(gpxPreviewLine.getBounds(), {padding:[24,24]});
+    }catch(e){ alert('Error leyendo el GPX: ' + e.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function publicarGPX(){
+  if(!gpxParsed){ alert('Primero elige un archivo GPX'); return; }
+  var lugar = document.getElementById('gx-lugar').value.trim();
+  if(!lugar){ alert('Ponle nombre a la ruta'); return; }
+  var mins = parseInt(document.getElementById('gx-mins').value) || 0;
+  var data = {
+    lugar: lugar,
+    distancia: gpxParsed.distancia,
+    duracion: mins * 60,
+    desnivel: gpxParsed.desnivel,
+    bici: document.getElementById('gx-bici').value,
+    nivel: document.getElementById('gx-nivel').value,
+    nombre: document.getElementById('gx-autor').value.trim() || 'RideSafe IA Oficial',
+    fecha: Date.now(),
+    points: gpxParsed.points
+  };
+  if(!confirm('Publicar "' + lugar + '" (' + (data.distancia/1000).toFixed(1) + ' km)?\nLa verán todos los ciclistas en la app, en Mis Rutas → Comunidad.')) return;
+  db.ref('rutas_sugeridas').push(data).then(function(){
+    alert('✅ Ruta publicada en la comunidad');
+    gpxParsed = null;
+    document.getElementById('gpx-preview').style.display = 'none';
+    if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); gpxPreviewLine = null; }
+    cargarRutasCom();
+  }).catch(function(e){ alert('Error: ' + e.message); });
+}
+
+var rutasComCache = {};
+function cargarRutasCom(){
+  db.ref('rutas_sugeridas').once('value', function(snap){
+    rutasComCache = snap.val() || {};
+    var ids = Object.keys(rutasComCache);
+    var el = document.getElementById('lista-rutas-com');
+    if(!ids.length){ el.innerHTML = '<div class="empty">🚴 Sin rutas publicadas aún</div>'; return; }
+    ids.sort(function(a,b){ return (rutasComCache[b].fecha||0)-(rutasComCache[a].fecha||0); });
+    var h = '';
+    ids.forEach(function(id){
+      var r = rutasComCache[id];
+      var km = ((r.distancia||0)/1000).toFixed(1);
+      var fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
+      var bici = {carretera:'🚴',mtb:'⛰️',gravel:'🛤️',ebike:'⚡'}[r.bici] || '🚲';
+      h += '<div class="punto-row" style="grid-template-columns:32px 1fr 90px 130px">'
+        + '<span style="font-size:18px">' + bici + '</span>'
+        + '<div><div style="font-weight:600;color:var(--text)">' + escHtml(r.lugar||'Ruta') + '</div>'
+        + '<div style="font-size:11px;color:var(--dim)">' + km + ' km · +' + (r.desnivel||0) + ' m · ' + escHtml(r.nombre||'') + ' · ' + fecha + '</div></div>'
+        + '<span class="est-pill est-activo">' + ((r.points&&r.points.length)||0) + ' pts</span>'
+        + '<div class="punto-acc">'
+        + '<button class="mini-btn" onclick="verRutaCom(\'' + id + '\')">🎯</button>'
+        + '<button class="mini-btn rojo" onclick="borrarRutaCom(\'' + id + '\')">🗑️</button>'
+        + '</div></div>';
+    });
+    el.innerHTML = h;
+  });
+}
+
+var rutaComLine = null;
+function verRutaCom(id){
+  var r = rutasComCache[id];
+  if(!r || !r.points || r.points.length < 2) return;
+  if(rutaComLine){ mapaCom.removeLayer(rutaComLine); }
+  rutaComLine = L.polyline(r.points, {color:'#a8e63d', weight:4, opacity:.9}).addTo(mapaCom);
+  mapaCom.fitBounds(rutaComLine.getBounds(), {padding:[24,24]});
+  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
+}
+
+function borrarRutaCom(id){
+  var r = rutasComCache[id];
+  if(!confirm('¿Eliminar la ruta "' + (r ? r.lugar : '') + '" de la comunidad?\nDesaparecerá de la app de todos los usuarios.')) return;
+  db.ref('rutas_sugeridas/' + id).remove()
+    .then(function(){ if(rutaComLine){ mapaCom.removeLayer(rutaComLine); rutaComLine=null; } cargarRutasCom(); })
+    .catch(function(e){ alert('Error: ' + e.message); });
+}
+
 // ================= COMUNIDAD =================
 var mapaCom = null, marcadoresCom = [], puntosCache = {}, editandoPuntoId = null, tempMarker = null;
 var TIPOS_PT = {plaza:'🏛️',parking:'🅿️',fuente:'⛲',cafe:'☕',tienda:'🏪',inicio_ruta:'🚴'};
@@ -554,6 +717,7 @@ function cargarComunidad(){
   }
   setTimeout(function(){ mapaCom.invalidateSize(); }, 150);
   refrescarPuntos();
+  cargarRutasCom();
 }
 
 function refrescarPuntos(){
