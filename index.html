@@ -5727,7 +5727,7 @@ var TRIAL_CLAVES_VALIDAS = [
   'RIDE-PRO-06','RIDE-PRO-07','RIDE-PRO-08','RIDE-PRO-09','RIDE-PRO-10',
   'RIDE-PRO-11','RIDE-PRO-12','RIDE-PRO-13','RIDE-PRO-14','RIDE-PRO-15',
   'RIDE-PRO-16','RIDE-PRO-17','RIDE-PRO-18','RIDE-PRO-19','RIDE-PRO-20',
-  // Claves FUNDADOR 1,99€/mes para siempre
+  // Claves FUND (reservadas, siguen siendo validas)
   'RIDE-FUND-01','RIDE-FUND-02','RIDE-FUND-03','RIDE-FUND-04','RIDE-FUND-05',
   'RIDE-FUND-06','RIDE-FUND-07','RIDE-FUND-08','RIDE-FUND-09','RIDE-FUND-10',
   'RIDE-FUND-11','RIDE-FUND-12','RIDE-FUND-13','RIDE-FUND-14','RIDE-FUND-15',
@@ -5988,15 +5988,14 @@ setTimeout(function() {
    ========================================= */
 
 /* ═══ PERIODO DE LANZAMIENTO GRATIS ═══ */
-var LANZAMIENTO_FIN = new Date('2026-07-15T23:59:59');
-var PRECIO_FUNDADOR = '1,99€/mes';
-var PRECIO_NORMAL = '4,99€/mes';
+var LANZAMIENTO_FIN = new Date('2026-07-30T23:59:59');
+var PRECIO_NORMAL = '3,99€/mes';
 
 function lanzamientoActivo(){ return Date.now() < LANZAMIENTO_FIN.getTime(); }
 function lanzamientoDias(){ return Math.max(0, Math.ceil((LANZAMIENTO_FIN.getTime()-Date.now())/86400000)); }
 
 function fundadorWhatsApp(){
-  var msg = encodeURIComponent('¡Hola! Quiero ser FUNDADOR de RideSafe IA (1,99€/mes para siempre). ¿Cómo hago el pago por Bizum?');
+  var msg = encodeURIComponent('¡Hola! Quiero activar RideSafe IA (3,99€/mes, cancelo cuando quiera). ¿Cómo hago el pago por Bizum?');
   window.open('https://wa.me/34643223301?text='+msg,'_blank');
 }
 
@@ -6093,7 +6092,7 @@ function appInit() {
 function mostrarAccesoLanzamiento() {
   document.getElementById('acceso-dias').textContent = lanzamientoDias();
   document.getElementById('acceso-trial-activo').style.display = 'block';
-  document.getElementById('acceso-subtitle').textContent = '🎉 App GRATIS hasta el 15 de julio';
+  document.getElementById('acceso-subtitle').textContent = '🎉 App GRATIS hasta el 30 de julio';
   document.getElementById('acceso-screen').classList.add('show');
   lanzamientoBanner();
 }
