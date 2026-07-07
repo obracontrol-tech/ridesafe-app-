@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -119,9 +120,10 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
     <div class="login-logo">Ride<span>Safe</span></div>
     <div><span class="login-badge">MASTER CONSOLE</span></div>
     <br>
-    <input class="login-input" id="pin-input" type="password" placeholder="••••••" maxlength="12" autocomplete="off"/>
-    <button class="login-btn" onclick="doLogin()">ENTRAR</button>
-    <div class="login-err" id="login-err">PIN incorrecto</div>
+    <input class="login-input" id="email-input" type="email" placeholder="Email desarrollador" autocomplete="username" style="letter-spacing:0;font-size:15px"/>
+    <input class="login-input" id="pass-input" type="password" placeholder="Contraseña" autocomplete="current-password" style="letter-spacing:2px;font-size:15px"/>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">ENTRAR</button>
+    <div class="login-err" id="login-err">Acceso denegado</div>
   </div>
 </div>
 
@@ -338,7 +340,6 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 </div>
 
 <script>
-var MASTER_PIN = 'RS2026ADM';
 var TG_TOKEN = '8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM';
 var TG_CANAL = '@RideSafeAI';
 var COLORES = ['#a8e63d','#00e5ff','#ff8833','#9966ff','#ffcc00','#ff3355'];
@@ -375,23 +376,43 @@ var TODAS_CLAVES = [
 
 var clavesDinamicas = JSON.parse(localStorage.getItem('rs_master_claves') || '[]');
 
-// LOGIN
-document.getElementById('pin-input').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+// LOGIN DESARROLLADOR (Firebase Authentication)
+var auth = firebase.auth();
+
+document.getElementById('pass-input').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+document.getElementById('email-input').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('pass-input').focus(); });
 
 function doLogin(){
-  if(document.getElementById('pin-input').value.trim() === MASTER_PIN){
+  var email = document.getElementById('email-input').value.trim();
+  var pass = document.getElementById('pass-input').value;
+  if(!email || !pass){ mostrarErrorLogin('Rellena email y contraseña'); return; }
+  document.getElementById('login-btn').textContent = 'ENTRANDO...';
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(function(err){
+      document.getElementById('login-btn').textContent = 'ENTRAR';
+      mostrarErrorLogin('Acceso denegado');
+    });
+}
+function mostrarErrorLogin(msg){
+  var el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display='none'; }, 3000);
+}
+auth.onAuthStateChanged(function(user){
+  if(user){
     document.getElementById('login').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
+    document.getElementById('login-btn').textContent = 'ENTRAR';
     iniciarReloj(); cargarClaves(); cargarRadar();
   } else {
-    document.getElementById('login-err').style.display = 'block';
-    setTimeout(function(){ document.getElementById('login-err').style.display='none'; }, 3000);
+    document.getElementById('login').style.display = 'flex';
+    document.getElementById('panel').style.display = 'none';
   }
-}
+});
 function doLogout(){
-  document.getElementById('login').style.display = 'flex';
-  document.getElementById('panel').style.display = 'none';
-  document.getElementById('pin-input').value = '';
+  auth.signOut();
+  document.getElementById('pass-input').value = '';
 }
 function iniciarReloj(){
   setInterval(function(){
