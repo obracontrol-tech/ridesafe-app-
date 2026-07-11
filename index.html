@@ -7220,7 +7220,7 @@ function qdEsc(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function qdTiles(map){
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OSM &copy; CARTO'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,detectRetina:true,attribution:'&copy; OSM &copy; CARTO'}).addTo(map);
 }
 function qdIconoNeon(){
   return L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #080c0a;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]});
