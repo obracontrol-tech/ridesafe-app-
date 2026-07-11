@@ -3219,6 +3219,90 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 </div>
 
 <!-- ═══════════════════════════════════════════
+     PANEL COMUNIDAD — PUNTO DE ENCUENTRO (v1)
+     Módulo aditivo. No toca ningún código existente.
+     ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-comunidad">
+  <div class="p-header">
+    <button class="p-back" onclick="closePanel('panel-comunidad')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="p-title">Punto de <span>Encuentro</span></div>
+    <div class="p-badge" id="qd-badge">0 quedadas</div>
+  </div>
+  <div class="p-body">
+
+    <!-- VISTA LISTA -->
+    <div id="qd-vista-lista">
+      <div class="card" style="text-align:center">
+        <div class="card-title">&#128205; Quedadas ciclistas</div>
+        <div class="card-sub" style="margin-bottom:12px">Crea una quedada o &uacute;nete a una. Comp&aacute;rtela por WhatsApp y que nadie ruede solo.</div>
+        <button class="btn-primary" onclick="qdAbrirCrear()">&#10133; CREAR QUEDADA</button>
+      </div>
+      <div id="qd-lista">
+        <div class="card" style="text-align:center;color:var(--muted)">Cargando quedadas...</div>
+      </div>
+    </div>
+
+    <!-- VISTA CREAR -->
+    <div id="qd-vista-crear" style="display:none">
+      <div class="card">
+        <div class="card-title">&#128221; Nueva quedada</div>
+        <div class="card-sub" style="margin-bottom:12px">Rellena los datos y publica. Todos los ciclistas de RideSafe la ver&aacute;n.</div>
+        <input class="input" id="qd-nombre" maxlength="60" placeholder="Nombre: Ej. Ruta del pantano + caf&eacute;" style="margin-bottom:10px"/>
+        <input class="input" id="qd-fecha" type="datetime-local" style="margin-bottom:10px"/>
+        <div class="card-sub" style="margin-bottom:6px">Disciplina</div>
+        <div id="qd-chips" class="qd-chips"></div>
+        <div class="card-sub" style="margin:10px 0 6px">Nivel y plazas</div>
+        <div style="display:flex;gap:8px">
+          <select class="input" id="qd-nivel" style="flex:1">
+            <option value="tranquilo">&#128154; Tranquilo</option>
+            <option value="intermedio" selected>&#128999; Intermedio</option>
+            <option value="avanzado">&#128293; Avanzado</option>
+          </select>
+          <select class="input" id="qd-max" style="flex:1">
+            <option value="10">M&aacute;x. 10</option>
+            <option value="15" selected>M&aacute;x. 15</option>
+            <option value="25">M&aacute;x. 25</option>
+            <option value="50">M&aacute;x. 50</option>
+          </select>
+        </div>
+        <textarea class="input" id="qd-desc" maxlength="200" rows="2" placeholder="Descripci&oacute;n corta: ritmo, paradas, caf&eacute;..." style="margin-top:10px;resize:none"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128506;&#65039; &iquest;D&oacute;nde qued&aacute;is?</div>
+        <div class="card-sub" style="margin-bottom:10px">Toca el mapa para colocar el punto, o usa tu GPS.</div>
+        <div id="qd-mapa-crear" style="width:100%;height:220px;border-radius:14px;overflow:hidden;background:#1a1a1a;margin-bottom:10px"></div>
+        <button class="btn-primary" style="background:var(--card2);color:var(--lime);border:1px solid rgba(168,230,61,.35)" onclick="qdUsarGPS()">&#128225; USAR MI UBICACI&Oacute;N</button>
+      </div>
+      <button class="btn-primary" onclick="qdPublicar()">&#128640; PUBLICAR QUEDADA</button>
+      <button class="btn-primary" style="background:var(--card2);color:var(--muted);border:1px solid var(--border);margin-top:8px" onclick="qdCerrarCrear()">Cancelar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: DETALLE DE QUEDADA -->
+<div id="qd-modal">
+  <div class="qd-modal-box">
+    <div id="qd-modal-map" style="width:100%;height:200px;border-radius:14px;overflow:hidden;margin-bottom:12px;background:#1a1a1a"></div>
+    <h3 id="qd-modal-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;margin-bottom:4px;color:var(--text)"></h3>
+    <div id="qd-modal-info" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div id="qd-modal-desc" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+    <div class="card-sub" style="margin-bottom:6px">&#128692; Apuntados</div>
+    <div id="qd-modal-asistentes" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn-primary" style="flex:1" onclick="qdRsvp('voy')">&#128692; &iexcl;VOY!</button>
+      <button class="btn-primary" style="flex:1;background:var(--card2);color:var(--lime);border:1px solid rgba(168,230,61,.35)" onclick="qdRsvp('quizas')">&#129300; Quiz&aacute;s</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn-primary" style="flex:1;background:#0d3d1e;border:1px solid #25D366;color:#25D366" onclick="qdCompartir()">&#128172; Compartir WhatsApp</button>
+      <a class="btn-primary" id="qd-modal-llegar" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;text-decoration:none;background:var(--card2);color:var(--text2);border:1px solid var(--border)">&#128205; C&oacute;mo llegar</a>
+    </div>
+    <button id="qd-modal-borrar" style="display:none;width:100%;padding:11px;background:transparent;border:1px solid rgba(255,51,85,.4);border-radius:12px;color:#ff3355;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="qdBorrar()">&#128465;&#65039; Borrar mi quedada</button>
+    <button style="width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="qdCerrarModal()">Cerrar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      PANEL E-BIKE PRO
      ═══════════════════════════════════════════ -->
 <div class="panel" id="panel-ebike">
@@ -7092,6 +7176,260 @@ function ebGuia(tema) {
 .com-btn:active{transform:scale(.96)}
 
 </style>
+
+<style>
+/* ═══ COMUNIDAD: PUNTO DE ENCUENTRO (aditivo) ═══ */
+#qd-modal{position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
+#qd-modal.show{display:flex}
+.qd-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto}
+.qd-chips{display:flex;flex-wrap:wrap;gap:6px}
+.qd-chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;user-select:none}
+.qd-chip.on{border-color:rgba(168,230,61,.6);color:var(--lime);background:var(--lime-dim);box-shadow:0 0 10px rgba(168,230,61,.15)}
+.qd-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.qd-item:active{border-color:rgba(168,230,61,.5)}
+.qd-fecha{flex-shrink:0;width:52px;text-align:center;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:8px 4px}
+.qd-fecha .d{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--lime);line-height:1}
+.qd-fecha .m{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.qd-info{flex:1;min-width:0}
+.qd-info .t{font-size:14.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qd-info .s{font-size:12px;color:var(--muted);margin-top:3px}
+.qd-cupo{flex-shrink:0;font-size:12px;font-weight:800;color:var(--lime)}
+</style>
+<script>
+/* ═══════════════════════════════════════════
+   COMUNIDAD — PUNTO DE ENCUENTRO v1
+   Bloque 100% aditivo. Redefine únicamente
+   openComunidadApp() (antes era un placeholder).
+   Nodo Firebase nuevo: 'quedadas'
+   ═══════════════════════════════════════════ */
+var QD_DISC = {ruta:'\uD83D\uDEE3\uFE0F Ruta', mtb:'\u26F0\uFE0F MTB', gravel:'\uD83C\uDF3E Gravel', urbana:'\uD83C\uDFD9\uFE0F Urbana', ciclo:'\uD83E\uDDED Cicloturismo', ebike:'\u26A1 E-Bike'};
+var QD_NIVEL = {tranquilo:'\uD83D\uDC9A Tranquilo', intermedio:'\uD83D\uDFE7 Intermedio', avanzado:'\uD83D\uDD25 Avanzado'};
+var qdMapaCrear=null, qdMarkerCrear=null, qdMapaModal=null, qdMarkerModal=null;
+var qdCache={}, qdActual=null, qdCargado=false;
+
+/* Identidad ligera del dispositivo (sin tocar auth ni perfil) */
+function qdMiId(){
+  var id = localStorage.getItem('rs_device_id');
+  if(!id){ id = 'dev_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem('rs_device_id', id); }
+  return id;
+}
+function qdMiNombre(){
+  return (typeof perfilUsuario!=='undefined' && perfilUsuario.nombre) ? perfilUsuario.nombre : '';
+}
+function qdEsc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function qdTiles(map){
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OSM &copy; CARTO'}).addTo(map);
+}
+function qdIconoNeon(){
+  return L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #080c0a;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]});
+}
+
+/* ── Abrir módulo (sustituye al placeholder) ── */
+function openComunidadApp(){
+  openPanel('panel-comunidad');
+  qdCerrarCrear();
+  qdRenderChips();
+  qdCargarLista();
+}
+
+/* ── Lista de quedadas ── */
+function qdCargarLista(){
+  var cont = document.getElementById('qd-lista');
+  db.ref('quedadas').orderByChild('fechaHora').once('value').then(function(snap){
+    qdCache = snap.val() || {};
+    qdCargado = true;
+    var ahora = Date.now() - 3*3600*1000; /* mostrar hasta 3h después de empezar */
+    var items = [];
+    Object.keys(qdCache).forEach(function(k){
+      var q = qdCache[k]; if(!q || !q.fechaHora) return;
+      var t = new Date(q.fechaHora).getTime();
+      if(t > ahora) items.push([t, k, q]);
+    });
+    items.sort(function(a,b){return a[0]-b[0];});
+    document.getElementById('qd-badge').textContent = items.length + (items.length===1?' quedada':' quedadas');
+    if(!items.length){
+      cont.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:34px;margin-bottom:8px">\uD83C\uDF35</div><div class="card-sub">Todav\u00EDa no hay quedadas activas.<br>\u00A1S\u00E9 el primero en crear una!</div></div>';
+      return;
+    }
+    var MES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    var html = '';
+    items.forEach(function(it){
+      var k = it[1], q = it[2], f = new Date(q.fechaHora);
+      var apuntados = q.asistentes ? Object.keys(q.asistentes).filter(function(a){return q.asistentes[a].estado==='voy';}).length : 0;
+      var disc = (q.disciplina||[]).map(function(d){return (QD_DISC[d]||'').split(' ')[0];}).join(' ');
+      var hora = ('0'+f.getHours()).slice(-2)+':'+('0'+f.getMinutes()).slice(-2);
+      html += '<div class="qd-item" onclick="qdVer(\''+qdEsc(k)+'\')">'
+        + '<div class="qd-fecha"><div class="d">'+f.getDate()+'</div><div class="m">'+MES[f.getMonth()]+'</div></div>'
+        + '<div class="qd-info"><div class="t">'+qdEsc(q.nombre)+'</div>'
+        + '<div class="s">'+hora+' h \u00B7 '+disc+' \u00B7 '+qdEsc((QD_NIVEL[q.nivel]||q.nivel||''))+'</div></div>'
+        + '<div class="qd-cupo">'+apuntados+'/'+(q.maxRiders||15)+'</div></div>';
+    });
+    cont.innerHTML = html;
+  }).catch(function(){
+    cont.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">No se pudieron cargar las quedadas. Revisa tu conexi\u00F3n.</div>';
+  });
+}
+
+/* ── Crear quedada ── */
+function qdRenderChips(){
+  var c = document.getElementById('qd-chips');
+  if(c.children.length) return;
+  Object.keys(QD_DISC).forEach(function(d){
+    var el = document.createElement('div');
+    el.className = 'qd-chip'; el.textContent = QD_DISC[d]; el.dataset.disc = d;
+    el.onclick = function(){ el.classList.toggle('on'); };
+    c.appendChild(el);
+  });
+}
+function qdAbrirCrear(){
+  if(!qdMiNombre()){ toast('\uD83D\uDC64 Configura primero tu nombre en Mi Perfil'); return; }
+  document.getElementById('qd-vista-lista').style.display='none';
+  document.getElementById('qd-vista-crear').style.display='';
+  var f = document.getElementById('qd-fecha');
+  if(!f.value){
+    var d = new Date(Date.now()+24*3600*1000); d.setMinutes(0);
+    f.value = d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)+'T'+('0'+d.getHours()).slice(-2)+':00';
+  }
+  setTimeout(function(){
+    if(!qdMapaCrear){
+      qdMapaCrear = L.map('qd-mapa-crear',{zoomControl:false}).setView([41.6176,0.6200],13);
+      qdTiles(qdMapaCrear);
+      qdMapaCrear.on('click', function(e){ qdPonMarker(e.latlng.lat, e.latlng.lng); });
+    }
+    qdMapaCrear.invalidateSize();
+  },150);
+}
+function qdCerrarCrear(){
+  document.getElementById('qd-vista-crear').style.display='none';
+  document.getElementById('qd-vista-lista').style.display='';
+}
+function qdPonMarker(lat,lng){
+  if(qdMarkerCrear) qdMapaCrear.removeLayer(qdMarkerCrear);
+  qdMarkerCrear = L.marker([lat,lng],{icon:qdIconoNeon()}).addTo(qdMapaCrear);
+  qdMapaCrear.panTo([lat,lng]);
+}
+function qdUsarGPS(){
+  if(!navigator.geolocation){ toast('GPS no disponible'); return; }
+  toast('\uD83D\uDCE1 Buscando tu ubicaci\u00F3n...');
+  navigator.geolocation.getCurrentPosition(function(p){
+    qdMapaCrear.setView([p.coords.latitude,p.coords.longitude],15);
+    qdPonMarker(p.coords.latitude,p.coords.longitude);
+  }, function(){ toast('No se pudo obtener el GPS'); }, {enableHighAccuracy:true,timeout:10000});
+}
+function qdPublicar(){
+  var nombre = document.getElementById('qd-nombre').value.trim();
+  var fecha = document.getElementById('qd-fecha').value;
+  var disc = Array.prototype.slice.call(document.querySelectorAll('#qd-chips .qd-chip.on')).map(function(e){return e.dataset.disc;});
+  if(!nombre){ toast('\u270F\uFE0F Ponle un nombre a la quedada'); return; }
+  if(!fecha || new Date(fecha).getTime() < Date.now()){ toast('\uD83D\uDCC5 Elige una fecha futura'); return; }
+  if(!disc.length){ toast('\uD83D\uDEB4 Elige al menos una disciplina'); return; }
+  if(!qdMarkerCrear){ toast('\uD83D\uDCCD Marca el punto de encuentro en el mapa'); return; }
+  var ll = qdMarkerCrear.getLatLng();
+  var q = {
+    nombre: nombre.slice(0,60),
+    fechaHora: fecha,
+    disciplina: disc,
+    nivel: document.getElementById('qd-nivel').value,
+    maxRiders: parseInt(document.getElementById('qd-max').value,10)||15,
+    descripcion: document.getElementById('qd-desc').value.trim().slice(0,200),
+    lat: ll.lat, lng: ll.lng,
+    creadorId: qdMiId(),
+    creadorNombre: qdMiNombre(),
+    creado: firebase.database.ServerValue.TIMESTAMP,
+    asistentes: {}
+  };
+  q.asistentes[qdMiId()] = {nombre: qdMiNombre(), estado:'voy', ts: Date.now()};
+  var ref = db.ref('quedadas').push();
+  ref.set(q).then(function(){
+    toast('\uD83D\uDE80 \u00A1Quedada publicada!');
+    document.getElementById('qd-nombre').value=''; document.getElementById('qd-desc').value='';
+    qdCerrarCrear();
+    qdCargarLista();
+    setTimeout(function(){ qdVer(ref.key); }, 400);
+  }).catch(function(){ toast('\u26A0\uFE0F Error al publicar. Revisa las reglas de Firebase (nodo quedadas).'); });
+}
+
+/* ── Detalle + RSVP ── */
+function qdVer(id){
+  db.ref('quedadas/'+id).once('value').then(function(snap){
+    var q = snap.val(); if(!q){ toast('Esta quedada ya no existe'); qdCargarLista(); return; }
+    qdCache[id]=q; qdActual=id;
+    var f = new Date(q.fechaHora);
+    var DIA = ['Domingo','Lunes','Martes','Mi\u00E9rcoles','Jueves','Viernes','S\u00E1bado'];
+    document.getElementById('qd-modal-titulo').textContent = q.nombre;
+    var disc = (q.disciplina||[]).map(function(d){return QD_DISC[d]||d;}).join(' \u00B7 ');
+    document.getElementById('qd-modal-info').innerHTML =
+      '\uD83D\uDCC5 '+DIA[f.getDay()]+' '+f.getDate()+'/'+(f.getMonth()+1)+' \u00B7 '+('0'+f.getHours()).slice(-2)+':'+('0'+f.getMinutes()).slice(-2)+' h<br>'
+      + qdEsc(disc)+' \u00B7 '+qdEsc(QD_NIVEL[q.nivel]||'')+'<br>\uD83D\uDC64 Organiza: '+qdEsc(q.creadorNombre||'An\u00F3nimo');
+    document.getElementById('qd-modal-desc').textContent = q.descripcion||'';
+    var asis = q.asistentes||{}; var html=''; var nVoy=0;
+    Object.keys(asis).forEach(function(k){
+      var a = asis[k]; if(a.estado==='voy') nVoy++;
+      html += '<span style="display:inline-block;margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:700;'
+        + (a.estado==='voy' ? 'background:var(--lime-dim);color:var(--lime);border:1px solid rgba(168,230,61,.4)' : 'background:var(--card2);color:var(--muted);border:1px solid var(--border)')
+        + '">'+qdEsc(a.nombre)+(a.estado==='quizas'?' \u00B7 quiz\u00E1s':'')+'</span>';
+    });
+    document.getElementById('qd-modal-asistentes').innerHTML = html || '<span style="font-size:12px;color:var(--muted)">Nadie apuntado todav\u00EDa. \u00A1S\u00E9 el primero!</span>';
+    document.getElementById('qd-modal-llegar').href = 'https://www.google.com/maps/dir/?api=1&destination='+q.lat+','+q.lng;
+    document.getElementById('qd-modal-borrar').style.display = (q.creadorId===qdMiId()) ? '' : 'none';
+    document.getElementById('qd-modal').classList.add('show');
+    setTimeout(function(){
+      if(!qdMapaModal){
+        qdMapaModal = L.map('qd-modal-map',{zoomControl:false,dragging:false}).setView([q.lat,q.lng],14);
+        qdTiles(qdMapaModal);
+      } else { qdMapaModal.setView([q.lat,q.lng],14); }
+      if(qdMarkerModal) qdMapaModal.removeLayer(qdMarkerModal);
+      qdMarkerModal = L.marker([q.lat,q.lng],{icon:qdIconoNeon()}).addTo(qdMapaModal);
+      qdMapaModal.invalidateSize();
+    },150);
+  });
+}
+function qdCerrarModal(){ document.getElementById('qd-modal').classList.remove('show'); qdActual=null; }
+function qdRsvp(estado){
+  if(!qdActual) return;
+  if(!qdMiNombre()){ toast('\uD83D\uDC64 Configura primero tu nombre en Mi Perfil'); return; }
+  var q = qdCache[qdActual]||{};
+  var asis = q.asistentes||{};
+  var nVoy = Object.keys(asis).filter(function(k){return asis[k].estado==='voy' && k!==qdMiId();}).length;
+  if(estado==='voy' && nVoy >= (q.maxRiders||15)){ toast('\uD83D\uDE1F Quedada completa ('+q.maxRiders+' plazas)'); return; }
+  db.ref('quedadas/'+qdActual+'/asistentes/'+qdMiId()).set({nombre:qdMiNombre(), estado:estado, ts:Date.now()}).then(function(){
+    toast(estado==='voy' ? '\uD83D\uDEB4 \u00A1Apuntado! Nos vemos en la salida' : '\uD83E\uDD14 Anotado como "quiz\u00E1s"');
+    qdVer(qdActual); qdCargarLista();
+  }).catch(function(){ toast('\u26A0\uFE0F No se pudo guardar'); });
+}
+function qdBorrar(){
+  if(!qdActual) return;
+  var q = qdCache[qdActual]||{};
+  if(q.creadorId!==qdMiId()) return;
+  if(!confirm('\u00BFBorrar esta quedada?')) return;
+  db.ref('quedadas/'+qdActual).remove().then(function(){
+    toast('\uD83D\uDDD1\uFE0F Quedada borrada');
+    qdCerrarModal(); qdCargarLista();
+  });
+}
+function qdCompartir(){
+  if(!qdActual) return;
+  var q = qdCache[qdActual]||{};
+  var f = new Date(q.fechaHora);
+  var url = 'https://app.ridesafeia.es/?quedada='+qdActual;
+  var txt = '\uD83D\uDEB4 \u00A1Quedada ciclista!\n\n\uD83D\uDCCC '+q.nombre+'\n\uD83D\uDCC5 '+f.getDate()+'/'+(f.getMonth()+1)+' a las '+('0'+f.getHours()).slice(-2)+':'+('0'+f.getMinutes()).slice(-2)+' h\n\nAp\u00FAntate aqu\u00ED (gratis):\n'+url+'\n\n\uD83D\uDEE1\uFE0F RideSafe IA \u2014 pedalea acompa\u00F1ado';
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+/* ── Enlace mágico: app.ridesafeia.es/?quedada=ID ── */
+(function(){
+  try{
+    var p = new URLSearchParams(location.search).get('quedada');
+    if(p){
+      window.addEventListener('load', function(){
+        setTimeout(function(){ openComunidadApp(); qdVer(p); }, 900);
+      });
+    }
+  }catch(e){}
+})();
+</script>
 
 </body>
 </html>
