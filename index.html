@@ -3754,7 +3754,7 @@ document.getElementById('nav-search').addEventListener('input',function(){clearT
 document.getElementById('nav-search').addEventListener('keydown',function(e){if(e.key==='Enter')navBuscar();});
 
 function fetchSugs(q){
-  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=4',{headers:{'Accept-Language':'es'}})
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=6&countrycodes=es&viewbox=0.20,42.95,1.90,41.20&bounded=0',{headers:{'Accept-Language':'es'}})
   .then(function(r){return r.json();})
   .then(function(d){var box=document.getElementById('nav-sugs');box.innerHTML='';d.forEach(function(x){var div=document.createElement('div');div.className='plan-sug';div.style.cssText='padding:9px 12px;color:#b0c0b4;font-size:12px;cursor:pointer;border-bottom:1px solid #1e2b20';div.textContent=x.display_name;div.onclick=function(){goToPlace(x);};box.appendChild(div);});box.style.display=d.length?'block':'none';})
   .catch(function(){});
@@ -4228,13 +4228,14 @@ function actualizarStatsPlan(){
 }
 
 var planOrigen=null,planDestino=null;
-document.getElementById('plan-origen').addEventListener('input',function(){var q=this.value.trim();if(q.length<3||q==='Mi ubicación'){document.getElementById('plan-sugs-origen').classList.remove('show');return;}planSearch(q,'origen');});
-document.getElementById('plan-destino').addEventListener('input',function(){var q=this.value.trim();if(q.length<3){document.getElementById('plan-sugs-destino').classList.remove('show');return;}planSearch(q,'destino');});
+var planSearchTO={origen:null,destino:null};
+document.getElementById('plan-origen').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.origen);if(q.length<3||q==='Mi ubicación'){document.getElementById('plan-sugs-origen').classList.remove('show');return;}planSearchTO.origen=setTimeout(function(){planSearch(q,'origen');},400);});
+document.getElementById('plan-destino').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.destino);if(q.length<3){document.getElementById('plan-sugs-destino').classList.remove('show');return;}planSearchTO.destino=setTimeout(function(){planSearch(q,'destino');},400);});
 
 function planSearch(q,tipo){
-  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=4',{headers:{'Accept-Language':'es'}})
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=6&countrycodes=es&viewbox=0.20,42.95,1.90,41.20&bounded=0',{headers:{'Accept-Language':'es'}})
   .then(function(r){return r.json();})
-  .then(function(d){var box=document.getElementById('plan-sugs-'+tipo);box.innerHTML='';d.forEach(function(x){var div=document.createElement('div');div.className='plan-sug';div.textContent=x.display_name;div.onclick=function(){var obj={lat:parseFloat(x.lat),lng:parseFloat(x.lon),name:x.display_name.split(',')[0]};if(tipo==='origen'){planOrigen=obj;document.getElementById('plan-origen').value=obj.name;}else{planDestino=obj;document.getElementById('plan-destino').value=obj.name;}box.classList.remove('show');};box.appendChild(div);});box.classList.toggle('show',d.length>0);})
+  .then(function(d){var box=document.getElementById('plan-sugs-'+tipo);box.innerHTML='';d.forEach(function(x){var div=document.createElement('div');div.className='plan-sug';div.textContent=x.display_name.split(',').slice(0,3).join(',');div.onclick=function(){var obj={lat:parseFloat(x.lat),lng:parseFloat(x.lon),name:x.display_name.split(',')[0]};if(tipo==='origen'){planOrigen=obj;document.getElementById('plan-origen').value=obj.name;}else{planDestino=obj;document.getElementById('plan-destino').value=obj.name;}box.classList.remove('show');};box.appendChild(div);});box.classList.toggle('show',d.length>0);})
   .catch(function(){});
 }
 
