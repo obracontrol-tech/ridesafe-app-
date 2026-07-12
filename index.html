@@ -4229,13 +4229,58 @@ function actualizarStatsPlan(){
 
 var planOrigen=null,planDestino=null;
 var planSearchTO={origen:null,destino:null};
-document.getElementById('plan-origen').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.origen);if(q.length<3||q==='Mi ubicación'){document.getElementById('plan-sugs-origen').classList.remove('show');return;}planSearchTO.origen=setTimeout(function(){planSearch(q,'origen');},400);});
-document.getElementById('plan-destino').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.destino);if(q.length<3){document.getElementById('plan-sugs-destino').classList.remove('show');return;}planSearchTO.destino=setTimeout(function(){planSearch(q,'destino');},400);});
+document.getElementById('plan-origen').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.origen);if(q.length<3||q==='Mi ubicación'){document.getElementById('plan-sugs-origen').classList.remove('show');return;}planSearchTO.origen=setTimeout(function(){planSearch(q,'origen');},300);});
+document.getElementById('plan-destino').addEventListener('input',function(){var q=this.value.trim();clearTimeout(planSearchTO.destino);if(q.length<3){document.getElementById('plan-sugs-destino').classList.remove('show');return;}planSearchTO.destino=setTimeout(function(){planSearch(q,'destino');},300);});
+
+function planPintarSugs(lista,tipo){
+  var box=document.getElementById('plan-sugs-'+tipo);box.innerHTML='';
+  lista.forEach(function(s){
+    var div=document.createElement('div');div.className='plan-sug';div.textContent=s.label;
+    div.onclick=function(){
+      var obj={lat:s.lat,lng:s.lng,name:s.name};
+      if(tipo==='origen'){planOrigen=obj;document.getElementById('plan-origen').value=obj.name;}
+      else{planDestino=obj;document.getElementById('plan-destino').value=obj.name;}
+      box.classList.remove('show');
+    };
+    box.appendChild(div);
+  });
+  box.classList.toggle('show',lista.length>0);
+}
 
 function planSearch(q,tipo){
+  /* Photon (Komoot): autocompletado tolerante, con preferencia por la zona de Lleida */
+  fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit=8&lat=41.62&lon=0.63&lang=default')
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var vistos={},lista=[];
+    (d.features||[]).forEach(function(f){
+      var p=f.properties||{};
+      if(p.countrycode&&p.countrycode!=='ES')return;
+      if(!p.name||!f.geometry)return;
+      var extra=[];
+      if(p.city&&p.city!==p.name)extra.push(p.city);
+      else if(p.county&&p.county!==p.name)extra.push(p.county);
+      if(p.state)extra.push(p.state);
+      var label=p.name+(extra.length?', '+extra.join(', '):'');
+      if(vistos[label])return;vistos[label]=1;
+      lista.push({label:label,name:p.name,lat:f.geometry.coordinates[1],lng:f.geometry.coordinates[0]});
+    });
+    if(lista.length===0){planSearchRespaldo(q,tipo);return;}
+    planPintarSugs(lista.slice(0,6),tipo);
+  })
+  .catch(function(){planSearchRespaldo(q,tipo);});
+}
+
+function planSearchRespaldo(q,tipo){
+  /* Respaldo: Nominatim, por si Photon no responde */
   fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=6&countrycodes=es&viewbox=0.20,42.95,1.90,41.20&bounded=0',{headers:{'Accept-Language':'es'}})
   .then(function(r){return r.json();})
-  .then(function(d){var box=document.getElementById('plan-sugs-'+tipo);box.innerHTML='';d.forEach(function(x){var div=document.createElement('div');div.className='plan-sug';div.textContent=x.display_name.split(',').slice(0,3).join(',');div.onclick=function(){var obj={lat:parseFloat(x.lat),lng:parseFloat(x.lon),name:x.display_name.split(',')[0]};if(tipo==='origen'){planOrigen=obj;document.getElementById('plan-origen').value=obj.name;}else{planDestino=obj;document.getElementById('plan-destino').value=obj.name;}box.classList.remove('show');};box.appendChild(div);});box.classList.toggle('show',d.length>0);})
+  .then(function(d){
+    var lista=(d||[]).map(function(x){
+      return{label:x.display_name.split(',').slice(0,3).join(','),name:x.display_name.split(',')[0],lat:parseFloat(x.lat),lng:parseFloat(x.lon)};
+    });
+    planPintarSugs(lista,tipo);
+  })
   .catch(function(){});
 }
 
