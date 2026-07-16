@@ -665,6 +665,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 #nav-rec-btn2.rec svg{stroke:#fff}
 #nav-rec-lbl2{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:900;color:#080c0a}
 #nav-rec-btn2.rec #nav-rec-lbl2{color:#fff}
+#nav-voz-btn.on{background:var(--lime-dim)!important;border-color:var(--lime)!important;color:var(--lime)!important;box-shadow:0 0 10px var(--lime-glow)}
 
 #offroute-alert{
   position:absolute;top:56px;left:10px;right:10px;z-index:300;
@@ -2867,6 +2868,9 @@ function closeGrupoMenuNow(){
     <button class="nav-btn" onclick="centerOnUser()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
     </button>
+    <button class="nav-btn" id="nav-voz-btn" onclick="toggleVoz()" title="Navegación por voz">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    </button>
     <button class="nav-btn" style="background:rgba(255,51,85,.1);border-color:rgba(255,51,85,.3);color:#ff6688" onclick="sendSOS()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </button>
@@ -3780,7 +3784,7 @@ function parseGPX(gpxText){
     if(lat&&lon)points.push([lat,lon]);if(ele)elevs.push(ele);
   });
   var dist=0;for(var i=1;i<points.length;i++)dist+=haversine(points[i-1][0],points[i-1][1],points[i][0],points[i][1]);
-  navGpxRoute=points;navElevations=elevs;
+  navGpxRoute=points;navElevations=elevs;vozSteps=[];vozIdx=0;
   if(navGpxLayer)navMap.removeLayer(navGpxLayer);
   navGpxLayer=L.polyline(points,{color:'#a8e63d',weight:5,opacity:0.9}).addTo(navMap);
   var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
@@ -3907,9 +3911,100 @@ setInterval(function(){
     if(d<minDist)minDist=d;
   }
   var alert=document.getElementById('offroute-alert');
-  if(minDist>100){alert.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';alert.classList.add('show');}
+  if(minDist>100){alert.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';alert.classList.add('show');vozAvisoDesvio(minDist);}
   else{alert.classList.remove('show');}
 },5000);
+
+/* ═══ NAVEGACIÓN POR VOZ (Web Speech API) ═══ */
+var vozOn=false,vozSteps=[],vozIdx=0,vozUltimoKm=0,vozDesvioTS=0,vozVoz=null;
+
+function vozInit(){
+  if(!('speechSynthesis' in window))return false;
+  var pick=function(){
+    var vs=speechSynthesis.getVoices();
+    vozVoz=vs.find(function(v){return v.lang==='es-ES';})||vs.find(function(v){return v.lang&&v.lang.indexOf('es')===0;})||null;
+  };
+  pick();
+  if('onvoiceschanged' in speechSynthesis)speechSynthesis.onvoiceschanged=pick;
+  return true;
+}
+
+function hablar(txt){
+  if(!vozOn||!('speechSynthesis' in window))return;
+  try{
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(txt);
+    u.lang='es-ES';if(vozVoz)u.voice=vozVoz;
+    u.rate=1;u.pitch=1;u.volume=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* Extrae las indicaciones de giro de la ruta ORS calculada */
+function vozPrepararPasos(feature){
+  vozSteps=[];vozIdx=0;
+  try{
+    var coords=feature.geometry.coordinates;
+    (feature.properties.segments||[]).forEach(function(seg){
+      (seg.steps||[]).forEach(function(st){
+        var wp=st.way_points&&st.way_points[0];
+        if(wp===undefined||!coords[wp])return;
+        vozSteps.push({lat:coords[wp][1],lng:coords[wp][0],txt:st.instruction||'',dicho:false});
+      });
+    });
+  }catch(e){vozSteps=[];}
+}
+
+function toggleVoz(){
+  var btn=document.getElementById('nav-voz-btn');
+  if(!vozOn){
+    if(!vozInit()){toast('Tu navegador no soporta voz');return;}
+    vozOn=true;btn.classList.add('on');
+    hablar('Navegación por voz activada');
+    toast('\ud83d\udd0a Voz activada'+(vozSteps.length?' — '+vozSteps.length+' indicaciones':''));
+  }else{
+    vozOn=false;btn.classList.remove('on');
+    try{speechSynthesis.cancel();}catch(e){}
+    toast('\ud83d\udd07 Voz desactivada');
+  }
+}
+
+/* Aviso hablado al desviarse (máx. 1 por minuto) */
+function vozAvisoDesvio(m){
+  if(!vozOn)return;
+  var ahora=Date.now();
+  if(ahora-vozDesvioTS<60000)return;
+  vozDesvioTS=ahora;
+  hablar('Atención. Te has desviado '+Math.round(m)+' metros de la ruta.');
+}
+
+/* Bucle principal de voz: cada 4 segundos */
+setInterval(function(){
+  if(!vozOn||!userPos)return;
+  if(vozSteps.length&&vozIdx<vozSteps.length){
+    for(var i=vozIdx;i<vozSteps.length;i++){
+      var s=vozSteps[i];if(s.dicho)continue;
+      var d=haversine(userPos[0],userPos[1],s.lat,s.lng);
+      if(d<150){
+        var pre=d>60?('En '+(Math.round(d/50)*50)+' metros, '):'';
+        hablar(pre+s.txt);
+        s.dicho=true;
+        for(var j=vozIdx;j<i;j++)vozSteps[j].dicho=true;
+        vozIdx=i+1;
+        break;
+      }
+    }
+  }
+  if(navRecOn&&navDist>0){
+    var km=Math.floor(navDist/1000);
+    if(km>0&&km%5===0&&km!==vozUltimoKm){
+      vozUltimoKm=km;
+      var el=Math.round((Date.now()-navStartTime)/1000);
+      var vel=el>0?((navDist/1000)/(el/3600)).toFixed(1):'0';
+      hablar('Llevas '+km+' kilómetros. Velocidad media '+vel.replace('.',' coma ')+' kilómetros por hora.');
+    }
+  }
+},4000);
 
 /* ═══════════════════════════════════════
    SEGURIDAD
@@ -4139,7 +4234,7 @@ function calcularRuta(){
       return fetch('https://api.openrouteservice.org/v2/directions/'+vp.p+'/geojson',{
         method:'POST',
         headers:{'Authorization':orsKey,'Content-Type':'application/json','Accept':'application/geo+json, application/json'},
-        body:JSON.stringify({coordinates:coords,elevation:true})
+        body:JSON.stringify({coordinates:coords,elevation:true,instructions:true,language:'es'})
       })
       .then(function(r){if(!r.ok)throw 0;return r.json();})
       .then(function(d){var f=d.features&&d.features[0];if(f)f.properties._label=vp.n;return f||null;})
@@ -4158,9 +4253,9 @@ function calcularRuta(){
 
   var body;
   if(planModo==='loop'){
-    body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true};
+    body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true,instructions:true,language:'es'};
   }else{
-    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true};
+    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es'};
   }
   fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
     method:'POST',
@@ -4295,6 +4390,7 @@ function startNavFromPlan(){
   setTimeout(function(){
     var coords=planRoute.features[planAltIndex].geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
+    vozPrepararPasos(planRoute.features[planAltIndex]);
     if(navGpxLayer)navMap.removeLayer(navGpxLayer);
     navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:5,opacity:.9,dashArray:'10 5'}).addTo(navMap);
     navMap.fitBounds(navGpxLayer.getBounds(),{padding:[30,30]});
