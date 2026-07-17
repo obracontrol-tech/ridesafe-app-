@@ -3911,8 +3911,8 @@ setInterval(function(){
     if(d<minDist)minDist=d;
   }
   var alert=document.getElementById('offroute-alert');
-  if(minDist>100){alert.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';alert.classList.add('show');vozAvisoDesvio(minDist);}
-  else{alert.classList.remove('show');}
+  if(minDist>100){alert.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';alert.classList.add('show');vozAvisoDesvio(minDist);vozIntentarRecalculo(minDist);}
+  else{alert.classList.remove('show');vozDesvioDesde=0;}
 },5000);
 
 /* ═══ NAVEGACIÓN POR VOZ (Web Speech API) ═══ */
@@ -3976,6 +3976,39 @@ function vozAvisoDesvio(m){
   if(ahora-vozDesvioTS<60000)return;
   vozDesvioTS=ahora;
   hablar('Atención. Te has desviado '+Math.round(m)+' metros de la ruta.');
+}
+
+/* ═══ RECÁLCULO AUTOMÁTICO DE RUTA (aditivo) ═══ */
+var vozDesvioDesde=0,vozRecalcTS=0,vozRecalcEnCurso=false;
+
+function vozIntentarRecalculo(m){
+  if(!vozOn||vozRecalcEnCurso)return;
+  if(!navGpxRoute||navGpxRoute.length<2||!userPos||!orsKey)return;
+  var ahora=Date.now();
+  if(!vozDesvioDesde){vozDesvioDesde=ahora;return;}
+  if(ahora-vozDesvioDesde<15000)return;
+  if(ahora-vozRecalcTS<45000)return;
+  vozRecalcTS=ahora;vozRecalcEnCurso=true;
+  var fin=navGpxRoute[navGpxRoute.length-1];
+  hablar('Recalculando ruta');
+  fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
+    method:'POST',
+    headers:{'Authorization':orsKey,'Content-Type':'application/json'},
+    body:JSON.stringify({coordinates:[[userPos[1],userPos[0]],[fin[1],fin[0]]],elevation:true,instructions:true,language:'es'})
+  }).then(function(r){return r.json();}).then(function(data){
+    vozRecalcEnCurso=false;
+    if(!data||!data.features||!data.features.length)return;
+    var f=data.features[0];
+    var coords=f.geometry.coordinates.map(function(c){return[c[1],c[0]];});
+    navGpxRoute=coords;
+    vozPrepararPasos(f);
+    if(navGpxLayer&&navMap)navMap.removeLayer(navGpxLayer);
+    if(navMap){navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:5,opacity:.9,dashArray:'10 5'}).addTo(navMap);}
+    vozDesvioDesde=0;
+    var alertEl=document.getElementById('offroute-alert');if(alertEl)alertEl.classList.remove('show');
+    hablar('Nueva ruta calculada. Sigue las indicaciones.');
+    toast('\ud83d\udd04 Ruta recalculada');
+  }).catch(function(e){vozRecalcEnCurso=false;});
 }
 
 /* Bucle principal de voz: cada 4 segundos */
