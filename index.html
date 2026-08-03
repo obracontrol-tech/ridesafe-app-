@@ -2403,7 +2403,8 @@ var GRUPOS_MENU = {
       {e:'📻', n:'Grupo · Pelotón en vivo', d:'GPS del grupo y walkie-talkie', fn:function(){openGrupo();}},
       {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
       {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
-      {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}}
+      {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}},
+      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición con alguien de confianza · Próximamente', fn:function(){openRideLivePromo();}}
     ]
   }
 };
@@ -3554,6 +3555,15 @@ if(h>=6&&h<13){t.innerHTML='Buenos días ☀️<br>A <span>rodar</span> se ha di
 else if(h>=13&&h<21){t.innerHTML='Buenas tardes 🚴<br>Tu ruta <span>off-road</span> te espera';}
 else{t.innerHTML='Buenas noches 🌙<br>Planifica tu <span>próxima salida</span>';}})();
 function closePanel(id){document.getElementById(id).classList.remove('show');}
+
+/* ═══ RIDE LIVE PROMO (próximamente) ═══ */
+function openRideLivePromo(){
+  toast('📡 Ride Live llegará en septiembre · Comparte tu salida con alguien de confianza y activa el SOS en un toque');
+  setTimeout(function(){
+    var ok = confirm('📡 RIDE LIVE — Próximamente\n\n✅ Comparte tu posición en tiempo real\n✅ Enlace privado y temporal para familia o amigos\n✅ Botón SOS ultrarrápido\n✅ Aviso si llevas mucho tiempo parado\n\n¿Quieres que te avisemos cuando esté listo?');
+    if(ok){ sugerirWhatsApp(); }
+  }, 800);
+}
 
 /* ═══ COMUNIDAD: WhatsApp + Telegram ═══ */
 function sugerirWhatsApp(){
