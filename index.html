@@ -7287,50 +7287,36 @@ function tgEnviar(msg) {
 
 
 /* E-BIKE GUIA IA */
-var ebGuiaTemas = {
-  bateria: 'Dame una guia practica sobre el cuidado de la bateria de una E-Bike: como cargarla, temperatura ideal, almacenaje y consejos para prolongar su vida util. 5 puntos claros con emojis.',
-  autonomia: 'Dame 5 consejos practicos para maximizar la autonomia de una E-Bike en ruta. Modo de asistencia, tecnica de pedaleo, terreno y velocidad. Con emojis.',
-  mantenimiento: 'Dame una guia breve de mantenimiento preventivo del motor de una E-Bike: revisiones periodicas, limpieza, lubricacion y señales de alerta. 5 puntos con emojis.',
-  normativa: 'Explicame la normativa actual de E-Bikes en España: limites de velocidad y potencia, donde se puede circular, si necesita seguro o matricula. Breve y claro con emojis.',
-  invierno: 'Dame consejos practicos para usar y conservar una E-Bike en invierno: frio y bateria, lluvia, almacenaje y neumaticos. 5 puntos con emojis.'
-};
-
+/* ═══ E-BIKE PRO — GUÍA ESTÁTICA (sin IA, sin coste, funciona offline) ═══ */
 var ebGuiaNombres = {
-  bateria: '🔋 Cuidado de la bateria',
-  autonomia: '🗺️ Maximizar autonomia',
+  bateria: '🔋 Cuidado de la batería',
+  autonomia: '🗺️ Maximizar autonomía',
   mantenimiento: '🔧 Mantenimiento del motor',
   normativa: '📋 Normativa E-Bike España',
   invierno: '❄️ E-Bike en invierno'
 };
 
+var ebGuiaContenido = {
+  bateria: '🔋 <strong>Cuidado de la batería</strong><br><br>⚡ <strong>Carga entre el 20% y el 80%</strong> para alargar la vida útil. Carga al 100% solo si vas a hacer una ruta larga.<br><br>🌡️ <strong>Temperatura ideal: 10°C a 25°C.</strong> No cargues la batería recién llegado en verano — espera 15 min a que se enfríe.<br><br>🚫 <strong>Evita el frío extremo.</strong> Por debajo de 0°C la autonomía puede caer un 30-40%. Guarda la bici en interior.<br><br>📦 <strong>Almacenaje largo:</strong> deja la batería al 50-60% de carga. Recárgala cada 2-3 meses si no la usas.<br><br>🔌 <strong>Usa siempre el cargador original</strong> o uno homologado. Los genéricos pueden dañar las celdas.',
+
+  autonomia: '🗺️ <strong>Maximizar autonomía en ruta</strong><br><br>🚴 <strong>Usa el modo ECO siempre que puedas.</strong> Reserva SPORT y BOOST para subidas. En llano, ECO da hasta un 40% más de km.<br><br>⚙️ <strong>Pedalea a cadencia alta con marcha pequeña.</strong> El motor trabaja mejor entre 70-90 rpm que a golpes con marcha grande.<br><br>🌬️ <strong>El viento en contra consume tanto como una subida.</strong> En días de viento fuerte ajusta tus expectativas de autonomía.<br><br>📉 <strong>Las bajadas son gratis.</strong> Apaga la asistencia en descensos largos — no necesitas motor y ahorras batería.<br><br>🎒 <strong>Menos peso, más kilómetros.</strong> Lleva solo lo necesario en la mochila o alforjas.',
+
+  mantenimiento: '🔧 <strong>Mantenimiento del motor</strong><br><br>🧹 <strong>Limpieza exterior mensual.</strong> Usa paño húmedo, nunca agua a presión directa sobre el motor — puede entrar por las juntas.<br><br>🔩 <strong>Revisa el apriete de tornillos</strong> del motor cada 500 km. Las vibraciones los aflojan con el tiempo.<br><br>🔊 <strong>Atención a ruidos nuevos.</strong> Un clic o crujido al pedalear puede ser el motor, el pedalier o la transmisión. Mejor revisarlo pronto.<br><br>🛠️ <strong>Revisión en taller cada 1.000 km</strong> o una vez al año. El técnico verificará firmware, conexiones y desgaste.<br><br>📡 <strong>Actualiza el firmware</strong> cuando el fabricante lo publique. Mejora la gestión de batería y corrige fallos.',
+
+  normativa: '📋 <strong>Normativa E-Bike en España</strong><br><br>⚡ <strong>Potencia máxima: 250W nominales.</strong> Con más potencia se considera ciclomotor y necesita matrícula, seguro y carnet.<br><br>🚀 <strong>Velocidad máxima de asistencia: 25 km/h.</strong> Por encima el motor deja de asistir por ley. Puedes ir más rápido pedaleando solo.<br><br>📋 <strong>No necesita matrícula ni seguro obligatorio</strong> si cumple 250W y 25 km/h. Un seguro voluntario de RC es muy recomendable.<br><br>🚲 <strong>Circula como una bicicleta convencional:</strong> carril bici, arcén, calzada. Prohibida en aceras salvo señalización.<br><br>👶 <strong>Edad mínima: 16 años</strong> en vía pública. Casco obligatorio en vías interurbanas — siempre recomendable.',
+
+  invierno: '❄️ <strong>E-Bike en invierno</strong><br><br>🌡️ <strong>El frío reduce la autonomía.</strong> Por debajo de 5°C puedes perder hasta un 25% de batería. Planifica rutas más cortas.<br><br>🧤 <strong>Guarda la batería en interior por la noche.</strong> Una batería a temperatura ambiente rinde mucho mejor que a 2°C en el garaje.<br><br>🌧️ <strong>La lluvia no es problema</strong> si la e-bike tiene certificación IPX4 o superior. Evita charcos profundos y lava bien después.<br><br>🛞 <strong>Baja la presión de los neumáticos</strong> un 10-15% en lluvia o barro para ganar agarre. Considera neumáticos con más dibujo.<br><br>🔦 <strong>En invierno anochece antes.</strong> Lleva siempre luces delantera y trasera homologadas. La visibilidad es clave para tu seguridad.'
+};
+
 function ebGuia(tema) {
-  if(!iaGate()) return;
   var resultEl = document.getElementById('eb-guia-result');
   var tituloEl = document.getElementById('eb-guia-titulo');
   var txtEl = document.getElementById('eb-guia-txt');
-
+  if(!resultEl||!tituloEl||!txtEl) return;
   tituloEl.textContent = ebGuiaNombres[tema] || tema;
-  txtEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--cyan);font-size:12px"><div class="spin" style="border-top-color:var(--cyan)"></div> Consultando IA...</div>';
+  txtEl.innerHTML = ebGuiaContenido[tema] || 'Contenido no disponible';
   resultEl.style.display = 'block';
   resultEl.scrollIntoView({behavior:'smooth', block:'nearest'});
-
-  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-App-Token': 'RSAI-W7K4X9-M2PQ3B' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: ebGuiaTemas[tema] }]
-    })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    var txt = d.content && d.content[0] ? d.content[0].text : 'Error al obtener respuesta';
-    txtEl.innerHTML = txt.replace(/\n/g, '<br>');
-  })
-  .catch(function(){
-    txtEl.innerHTML = '<span style="color:var(--red)">Error de conexion. Comprueba internet.</span>';
-  });
 }
 
 </script>
