@@ -3952,6 +3952,48 @@ function hablar(txt){
 }
 
 /* Extrae las indicaciones de giro de la ruta ORS calculada */
+/* Tabla de instrucciones naturales en español ciclista */
+var VOZ_TIPOS = {
+  0:'Sigue recto',
+  1:'Gira a la derecha',
+  2:'Gira a la derecha',
+  3:'Gira a la derecha',
+  4:'Gira a la izquierda',
+  5:'Gira a la izquierda',
+  6:'Gira a la izquierda',
+  7:'Da la vuelta',
+  8:'Sal de la rotonda',
+  9:'Sal de la rotonda',
+  10:'Sal de la rotonda',
+  11:'Sal de la rotonda',
+  12:'Has llegado a tu destino',
+  13:'Has llegado a tu destino'
+};
+var VOZ_TIPOS_DETALLE = {
+  1:'a la derecha',2:'a la derecha',3:'a la derecha',
+  4:'a la izquierda',5:'a la izquierda',6:'a la izquierda'
+};
+var VOZ_ROTONDA = {8:'primera',9:'segunda',10:'tercera',11:'cuarta'};
+
+function vozTraducirPaso(st){
+  var tipo = st.type !== undefined ? st.type : -1;
+  var nombre = (st.name && st.name !== '-' && st.name.length > 0 && st.name.length < 40) ? st.name : '';
+  if(tipo === 12 || tipo === 13) return 'Has llegado a tu destino';
+  if(tipo >= 8 && tipo <= 11){
+    var salida = VOZ_ROTONDA[tipo] || '';
+    return 'En la rotonda, toma la ' + salida + ' salida' + (nombre ? ' hacia ' + nombre : '');
+  }
+  if(tipo >= 1 && tipo <= 6){
+    var dir = VOZ_TIPOS_DETALLE[tipo] || '';
+    return 'Gira ' + dir + (nombre ? ' en ' + nombre : '');
+  }
+  if(tipo === 7) return 'Da la vuelta';
+  if(tipo === 0) return nombre ? 'Sigue recto por ' + nombre : 'Sigue recto';
+  // fallback: usar instrucción de ORS si existe y es corta
+  var ins = st.instruction || '';
+  return (ins && ins.length < 60) ? ins : 'Sigue la ruta';
+}
+
 function vozPrepararPasos(feature){
   vozSteps=[];vozIdx=0;
   try{
@@ -3960,7 +4002,8 @@ function vozPrepararPasos(feature){
       (seg.steps||[]).forEach(function(st){
         var wp=st.way_points&&st.way_points[0];
         if(wp===undefined||!coords[wp])return;
-        vozSteps.push({lat:coords[wp][1],lng:coords[wp][0],txt:st.instruction||'',dicho:false});
+        var txt = vozTraducirPaso(st);
+        vozSteps.push({lat:coords[wp][1],lng:coords[wp][0],txt:txt,tipo:st.type||0,dicho:false});
       });
     });
   }catch(e){vozSteps=[];}
@@ -3997,7 +4040,7 @@ function vozIntentarRecalculo(m){
   if(!navGpxRoute||navGpxRoute.length<2||!userPos||!orsKey)return;
   var ahora=Date.now();
   if(!vozDesvioDesde){vozDesvioDesde=ahora;return;}
-  if(ahora-vozDesvioDesde<15000)return;
+  if(ahora-vozDesvioDesde<10000)return;
   if(ahora-vozRecalcTS<45000)return;
   vozRecalcTS=ahora;vozRecalcEnCurso=true;
   var fin=navGpxRoute[navGpxRoute.length-1];
@@ -4029,7 +4072,10 @@ setInterval(function(){
     for(var i=vozIdx;i<vozSteps.length;i++){
       var s=vozSteps[i];if(s.dicho)continue;
       var d=haversine(userPos[0],userPos[1],s.lat,s.lng);
-      if(d<150){
+      /* Radio dinámico según velocidad del ciclista */
+      var velKmh = navVel ? parseFloat(navVel) : 20;
+      var radioVoz = velKmh > 45 ? 280 : velKmh > 30 ? 180 : velKmh > 15 ? 120 : 80;
+      if(d<radioVoz){
         var pre=d>60?('En '+(Math.round(d/50)*50)+' metros, '):'';
         hablar(pre+s.txt);
         s.dicho=true;
