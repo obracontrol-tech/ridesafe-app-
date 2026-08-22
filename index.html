@@ -2839,6 +2839,8 @@ function closeGrupoMenuNow(){
       <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
       <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
       <div class="layer-opt" data-layer="hiking" onclick="setMapLayer('hiking')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127939; Senderismo</span></div>
+      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127765; Noche</span></div>
+      <div class="layer-opt" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#127956; Topo</span></div>
       <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127769; Nocturno</span></div>
     </div>
   </div>
@@ -3620,6 +3622,8 @@ var MAP_LAYERS={
   standard:{url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',name:'Estándar',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
   satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',name:'Satélite',attribution:'&copy; Esri',maxZoom:18},
   hiking:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Senderismo',attribution:'&copy; OSM',maxZoom:19},
+  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Noche',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
+  topo:{url:'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',name:'Topo',attribution:'&copy; OSM &copy; OpenTopoMap',maxZoom:17},
   night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Nocturno',attribution:'&copy; OSM &copy; CARTO',maxZoom:20}
 };
 
@@ -3628,7 +3632,7 @@ var MAP_LAYERS={
    ═══════════════════════════════════════ */
 var navMap=null,navTileLayer=null,navUserMark=null,navSearchMark=null;
 var navRecOn=false,navPoints=[],navStartTime=null,navTimer=null,navWatch=null,navDist=0;
-var navBikeIcon=null,navGpxLayer=null,navGpxRoute=null,navElevations=[];
+var navBikeIcon=null,navGpxLayer=null,navGpxSombra=null,navGpxRoute=null,navElevations=[];
 var navWaypoints=[],navWpMarkers=[],navWpAdding=false;
 var currentLayer='topo',userPos=null;
 
@@ -3796,8 +3800,10 @@ function parseGPX(gpxText){
   });
   var dist=0;for(var i=1;i<points.length;i++)dist+=haversine(points[i-1][0],points[i-1][1],points[i][0],points[i][1]);
   navGpxRoute=points;navElevations=elevs;vozSteps=[];vozIdx=0;
+  if(navGpxSombra)navMap.removeLayer(navGpxSombra);
   if(navGpxLayer)navMap.removeLayer(navGpxLayer);
-  navGpxLayer=L.polyline(points,{color:'#a8e63d',weight:5,opacity:0.9}).addTo(navMap);
+  navGpxSombra=L.polyline(points,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);
+  navGpxLayer=L.polyline(points,{color:'#a8e63d',weight:6,opacity:1}).addTo(navMap);
   var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
   var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
   L.marker(points[0],{icon:si}).addTo(navMap).bindPopup('Inicio');
@@ -4056,8 +4062,9 @@ function vozIntentarRecalculo(m){
     var coords=f.geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
     vozPrepararPasos(f);
+    if(navGpxSombra&&navMap)navMap.removeLayer(navGpxSombra);
     if(navGpxLayer&&navMap)navMap.removeLayer(navGpxLayer);
-    if(navMap){navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:5,opacity:.9,dashArray:'10 5'}).addTo(navMap);}
+    if(navMap){navGpxSombra=L.polyline(coords,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:6,opacity:1,dashArray:'12 4'}).addTo(navMap);}
     vozDesvioDesde=0;
     var alertEl=document.getElementById('offroute-alert');if(alertEl)alertEl.classList.remove('show');
     hablar('Nueva ruta calculada. Sigue las indicaciones.');
@@ -4481,8 +4488,10 @@ function startNavFromPlan(){
     var coords=planRoute.features[planAltIndex].geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
     vozPrepararPasos(planRoute.features[planAltIndex]);
+    if(navGpxSombra)navMap.removeLayer(navGpxSombra);
     if(navGpxLayer)navMap.removeLayer(navGpxLayer);
-    navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:5,opacity:.9,dashArray:'10 5'}).addTo(navMap);
+    navGpxSombra=L.polyline(coords,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);
+    navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:6,opacity:1,dashArray:'12 4'}).addTo(navMap);
     navMap.fitBounds(navGpxLayer.getBounds(),{padding:[30,30]});
     document.getElementById('nav-status').textContent='\u25CF Ruta planificada';
     document.getElementById('nav-status').className='following';
