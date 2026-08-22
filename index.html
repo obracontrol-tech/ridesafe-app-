@@ -2194,6 +2194,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
     <div class="saludo-sub">Todo listo para tu próxima salida</div>
   </div>
 
+  <!-- HERO IMAGE -->
+  <div class="hero-home">
+    <img src="https://obracontrol-tech.github.io/ridesafe-app-/hero-home.jpg" alt="RideSafe IA — Tu comunidad ciclista" loading="eager" onerror="this.parentElement.style.display='none'">
+    <div class="hero-tagline">Tu comunidad ciclista · Lleida &amp; Segrià</div>
+  </div>
+
   <!-- BOTÓN PRINCIPAL -->
   <button class="btn-iniciar" onclick="openNav()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
@@ -2318,6 +2324,37 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
 .grupos-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:12px;
   padding:0 16px;margin-top:8px;
+}
+.hero-home{
+  position:relative;
+  width:calc(100% + 32px);
+  margin:-16px -16px 16px;
+  height:220px;
+  overflow:hidden;
+  border-radius:0 0 24px 24px;
+}
+.hero-home img{
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center top;
+  display:block;
+}
+.hero-home::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:80px;
+  background:linear-gradient(to bottom,transparent,#080e06);
+}
+.hero-tagline{
+  position:absolute;
+  bottom:14px;left:16px;right:16px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:600;
+  color:rgba(255,255,255,.7);
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  z-index:1;
 }
 .grupo-card{
   position:relative;
