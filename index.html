@@ -3935,24 +3935,50 @@ setInterval(function(){
 /* ═══ NAVEGACIÓN POR VOZ (Web Speech API) ═══ */
 var vozOn=false,vozSteps=[],vozIdx=0,vozUltimoKm=0,vozDesvioTS=0,vozVoz=null;
 
+/* ═══ VOZ: Google TTS Neural (primario) + Web Speech (fallback) ═══ */
+var vozAudio=null;
+
 function vozInit(){
-  if(!('speechSynthesis' in window))return false;
-  var pick=function(){
-    var vs=speechSynthesis.getVoices();
-    vozVoz=vs.find(function(v){return v.lang==='es-ES';})||vs.find(function(v){return v.lang&&v.lang.indexOf('es')===0;})||null;
-  };
-  pick();
-  if('onvoiceschanged' in speechSynthesis)speechSynthesis.onvoiceschanged=pick;
+  /* Siempre OK — usamos Google TTS via Worker */
   return true;
 }
 
 function hablar(txt){
-  if(!vozOn||!('speechSynthesis' in window))return;
+  if(!vozOn||!txt)return;
+  /* Cancelar audio anterior si sigue sonando */
+  try{if(vozAudio){vozAudio.pause();vozAudio.src='';vozAudio=null;}}catch(e){}
+  /* Llamar al Worker con {tts: texto} */
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+    body:JSON.stringify({tts:txt})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d&&d.audioContent){
+      /* Google devuelve MP3 en base64 — lo reproducimos directamente */
+      vozAudio=new Audio('data:audio/mp3;base64,'+d.audioContent);
+      vozAudio.volume=1;
+      vozAudio.play().catch(function(){
+        /* Fallback: Web Speech API si el navegador bloquea el audio */
+        hablarFallback(txt);
+      });
+    } else {
+      hablarFallback(txt);
+    }
+  })
+  .catch(function(){
+    /* Sin internet o error del Worker — usar Web Speech */
+    hablarFallback(txt);
+  });
+}
+
+function hablarFallback(txt){
+  if(!('speechSynthesis' in window))return;
   try{
     speechSynthesis.cancel();
     var u=new SpeechSynthesisUtterance(txt);
-    u.lang='es-ES';if(vozVoz)u.voice=vozVoz;
-    u.rate=1;u.pitch=1;u.volume=1;
+    u.lang='es-ES';u.rate=1;u.pitch=1;u.volume=1;
     speechSynthesis.speak(u);
   }catch(e){}
 }
