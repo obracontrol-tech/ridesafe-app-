@@ -3706,7 +3706,7 @@ var MAP_LAYERS={
    ═══════════════════════════════════════ */
 var navMap=null,navTileLayer=null,navUserMark=null,navSearchMark=null;
 var navRecOn=false,navPoints=[],navStartTime=null,navTimer=null,navWatch=null,navDist=0;
-var navBikeIcon=null,navGpxLayer=null,navGpxSombra=null,navGpxRoute=null,navElevations=[];
+var navBikeIcon=null,navGpxLayer=null,navGpxSombra=null,navGpxRoute=null,navElevations=[],navDestino=null;
 var navWaypoints=[],navWpMarkers=[],navWpAdding=false;
 var currentLayer='topo',userPos=null;
 
@@ -3873,7 +3873,7 @@ function parseGPX(gpxText){
     if(lat&&lon)points.push([lat,lon]);if(ele)elevs.push(ele);
   });
   var dist=0;for(var i=1;i<points.length;i++)dist+=haversine(points[i-1][0],points[i-1][1],points[i][0],points[i][1]);
-  navGpxRoute=points;navElevations=elevs;vozSteps=[];vozIdx=0;
+  navGpxRoute=points;navElevations=elevs;vozSteps=[];vozIdx=0;navDestino=points[points.length-1];
   if(navGpxSombra)navMap.removeLayer(navGpxSombra);
   if(navGpxLayer)navMap.removeLayer(navGpxLayer);
   navGpxSombra=L.polyline(points,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);
@@ -3997,14 +3997,22 @@ function updateLiveStats(){
 setInterval(function(){
   if(!navGpxRoute||!userPos||navPoints.length===0)return;
   var minDist=Infinity;
-  for(var i=0;i<navGpxRoute.length;i+=5){
+  for(var i=0;i<navGpxRoute.length;i+=3){
     var d=haversine(userPos[0],userPos[1],navGpxRoute[i][0],navGpxRoute[i][1]);
     if(d<minDist)minDist=d;
   }
-  var alert=document.getElementById('offroute-alert');
-  if(minDist>100){alert.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';alert.classList.add('show');vozAvisoDesvio(minDist);vozIntentarRecalculo(minDist);}
-  else{alert.classList.remove('show');vozDesvioDesde=0;}
-},5000);
+  var alertEl=document.getElementById('offroute-alert');
+  /* Umbral 180m — más tolerante con GPS de móvil en carretera */
+  if(minDist>180){
+    alertEl.textContent='\u26A0 Desviado '+minDist.toFixed(0)+'m de la ruta';
+    alertEl.classList.add('show');
+    vozAvisoDesvio(minDist);
+    vozIntentarRecalculo(minDist);
+  } else {
+    alertEl.classList.remove('show');
+    vozDesvioDesde=0;
+  }
+},8000);
 
 /* ═══ NAVEGACIÓN POR VOZ (Web Speech API) ═══ */
 var vozOn=false,vozSteps=[],vozIdx=0,vozUltimoKm=0,vozDesvioTS=0,vozVoz=null;
@@ -4147,9 +4155,9 @@ function vozIntentarRecalculo(m){
   var ahora=Date.now();
   if(!vozDesvioDesde){vozDesvioDesde=ahora;return;}
   if(ahora-vozDesvioDesde<10000)return;
-  if(ahora-vozRecalcTS<45000)return;
+  if(ahora-vozRecalcTS<90000)return;
   vozRecalcTS=ahora;vozRecalcEnCurso=true;
-  var fin=navGpxRoute[navGpxRoute.length-1];
+  var fin=navDestino||navGpxRoute[navGpxRoute.length-1];
   hablar('Recalculando ruta');
   fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
     method:'POST',
@@ -4161,6 +4169,7 @@ function vozIntentarRecalculo(m){
     var f=data.features[0];
     var coords=f.geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
+    if(!navDestino)navDestino=coords[coords.length-1];
     vozPrepararPasos(f);
     if(navGpxSombra&&navMap)navMap.removeLayer(navGpxSombra);
     if(navGpxLayer&&navMap)navMap.removeLayer(navGpxLayer);
