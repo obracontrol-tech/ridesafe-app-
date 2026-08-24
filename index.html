@@ -2908,14 +2908,12 @@ function closeGrupoMenuNow(){
       </button>
     </div>
     <div id="layer-menu">
-      <div class="layer-opt active" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#9968; Topográfico</span></div>
+      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://tiles.openfreemap.org/styles/bright/13/4110/3053.png" alt=""><span>&#127775; OpenFree</span></div>
       <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')"><img class="layer-thumb" loading="lazy" src="https://tile.waymarkedtrails.org/cycling/13/4110/3053.png" alt=""><span>&#128692; Ciclismo</span></div>
       <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
       <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
-      <div class="layer-opt" data-layer="hiking" onclick="setMapLayer('hiking')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127939; Senderismo</span></div>
-      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127765; Noche</span></div>
       <div class="layer-opt" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#127956; Topo</span></div>
-      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127769; Nocturno</span></div>
+      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127765; Noche</span></div>
     </div>
   </div>
   <input type="file" id="gpx-input" accept=".gpx" style="display:none" onchange="handleGPX(this)"/>
@@ -3691,14 +3689,12 @@ updateQuickStats();
    MAPA Y CAPAS
    ═══════════════════════════════════════ */
 var MAP_LAYERS={
-  topo:{url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',name:'Topográfico',attribution:'&copy; OpenTopoMap',maxZoom:17},
+  free:{url:'https://tiles.openfreemap.org/styles/bright/{z}/{x}/{y}.png',name:'OpenFree',attribution:'&copy; OpenFreeMap &copy; OSM',maxZoom:19},
   cycle:{url:'https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',name:'Ciclismo',attribution:'&copy; OSM &copy; Waymarked Trails',maxZoom:19},
   standard:{url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',name:'Estándar',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
   satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',name:'Satélite',attribution:'&copy; Esri',maxZoom:18},
-  hiking:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Senderismo',attribution:'&copy; OSM',maxZoom:19},
-  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Noche',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
   topo:{url:'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',name:'Topo',attribution:'&copy; OSM &copy; OpenTopoMap',maxZoom:17},
-  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Nocturno',attribution:'&copy; OSM &copy; CARTO',maxZoom:20}
+  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Noche',attribution:'&copy; OSM &copy; CARTO',maxZoom:20}
 };
 
 /* ═══════════════════════════════════════
@@ -4146,6 +4142,47 @@ function vozAvisoDesvio(m){
   hablar('Atención. Te has desviado '+Math.round(m)+' metros de la ruta.');
 }
 
+/* ═══ AVISOS INTELIGENTES DE VIENTO Y DESNIVEL ═══ */
+var vozAvisosMeteo={viento:false,pendiente:false};
+
+function vozAvisosInteligentes(){
+  if(!vozOn||!userPos)return;
+  /* Viento — datos ya disponibles de Open-Meteo */
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+userPos[0]+'&longitude='+userPos[1]+'&current=wind_speed_10m,wind_gusts_10m&timezone=auto')
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d||!d.current)return;
+    var vel=d.current.wind_speed_10m||0;
+    var rachas=d.current.wind_gusts_10m||0;
+    if(vel>30&&!vozAvisosMeteo.viento){
+      vozAvisosMeteo.viento=true;
+      hablar('Atención. Viento fuerte de '+Math.round(vel)+' kilómetros por hora. Rachas de '+Math.round(rachas)+'. Extrema precaución.');
+      setTimeout(function(){vozAvisosMeteo.viento=false;},300000); /* reset 5 min */
+    }
+  }).catch(function(){});
+}
+
+function vozAvisoPendiente(elevaciones){
+  if(!vozOn||!elevaciones||elevaciones.length<2)return;
+  var ultimo=elevaciones[elevaciones.length-1];
+  var anterior=elevaciones[Math.max(0,elevaciones.length-5)];
+  var dif=ultimo-anterior;
+  if(dif>40&&!vozAvisosMeteo.pendiente){
+    vozAvisosMeteo.pendiente=true;
+    hablar('Pendiente pronunciada por delante. Prepárate para subir.');
+    setTimeout(function(){vozAvisosMeteo.pendiente=false;},120000);
+  } else if(dif<-40&&!vozAvisosMeteo.pendiente){
+    vozAvisosMeteo.pendiente=true;
+    hablar('Bajada pronunciada. Reduce velocidad y controla los frenos.');
+    setTimeout(function(){vozAvisosMeteo.pendiente=false;},120000);
+  }
+}
+
+/* Lanzar avisos meteorológicos cada 5 minutos durante navegación */
+setInterval(function(){
+  if(navRecOn&&vozOn)vozAvisosInteligentes();
+},300000);
+
 /* ═══ RECÁLCULO AUTOMÁTICO DE RUTA (aditivo) ═══ */
 var vozDesvioDesde=0,vozRecalcTS=0,vozRecalcEnCurso=false;
 
@@ -4192,7 +4229,10 @@ setInterval(function(){
       var velKmh = navVel ? parseFloat(navVel) : 20;
       var radioVoz = velKmh > 45 ? 280 : velKmh > 30 ? 180 : velKmh > 15 ? 120 : 80;
       if(d<radioVoz){
-        var pre=d>60?('En '+(Math.round(d/50)*50)+' metros, '):'';
+        var pre='';
+        if(d>250){pre='En '+Math.round(d/100)*100+' metros, ';}
+        else if(d>80){pre='En '+Math.round(d/50)*50+' metros, ';}
+        else{pre='';}
         hablar(pre+s.txt);
         s.dicho=true;
         for(var j=vozIdx;j<i;j++)vozSteps[j].dicho=true;
