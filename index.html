@@ -600,15 +600,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   display:none;backdrop-filter:blur(8px);
 }
 #layer-menu.show{display:block}
+.layer-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 0}
 .layer-opt{
-  padding:8px 12px;border-radius:10px;font-size:12px;font-weight:600;
-  cursor:pointer;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;
+  padding:8px 10px;border-radius:12px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:'Barlow Condensed',sans-serif;
   letter-spacing:.5px;color:var(--muted);border:1px solid transparent;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
 }
 .layer-opt:hover{background:var(--card)}
 .layer-opt.active{background:var(--lime-dim);color:var(--lime);border-color:rgba(168,230,61,.3)}
-.layer-opt{display:flex;align-items:center;gap:10px}
-.layer-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:#111}
+.layer-thumb{width:56px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:#111;width:100%}
 .layer-opt.active .layer-thumb{border-color:var(--lime)}
 
 #wp-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
@@ -2908,13 +2909,14 @@ function closeGrupoMenuNow(){
       </button>
     </div>
     <div id="layer-menu">
-      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://tiles.openfreemap.org/styles/bright/13/4110/3053.png" alt=""><span>&#127775; Premium Road</span></div>
-      <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')"><img class="layer-thumb" loading="lazy" src="https://tile.waymarkedtrails.org/cycling/13/4110/3053.png" alt=""><span>&#128692; Ciclismo</span></div>
+      <div class="layer-list">
+      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#127775; Premium Road</span></div>
       <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
       <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
       <div class="layer-opt" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#9968; MTB Terrain</span></div>
       <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127773; Dark Pro</span></div>
       <div class="layer-opt" data-layer="nav" onclick="setMapLayer('nav')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.fr/osmfr/13/4110/3053.png" alt=""><span>&#128250; Navegación</span></div>
+      </div>
     </div>
   </div>
   <input type="file" id="gpx-input" accept=".gpx" style="display:none" onchange="handleGPX(this)"/>
