@@ -4014,6 +4014,24 @@ setInterval(function(){
   }
 },8000);
 
+/* ═══ SONIDO DE ALERTA + VIBRACIÓN antes de instrucciones ═══ */
+function vozPitido(){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,0.18].forEach(function(t){
+      var osc=ctx.createOscillator();
+      var gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.frequency.value=880;osc.type='sine';
+      gain.gain.setValueAtTime(0,ctx.currentTime+t);
+      gain.gain.linearRampToValueAtTime(0.4,ctx.currentTime+t+0.02);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+t+0.12);
+      osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.15);
+    });
+    if(navigator.vibrate)navigator.vibrate([100,50,100]);
+  }catch(e){}
+}
+
 /* ═══ NAVEGACIÓN POR VOZ (Web Speech API) ═══ */
 var vozOn=false,vozSteps=[],vozIdx=0,vozUltimoKm=0,vozDesvioTS=0,vozVoz=null;
 
@@ -4237,7 +4255,8 @@ setInterval(function(){
         if(d>250){pre='En '+Math.round(d/100)*100+' metros, ';}
         else if(d>80){pre='En '+Math.round(d/50)*50+' metros, ';}
         else{pre='';}
-        hablar(pre+s.txt);
+        vozPitido();
+        setTimeout(function(){ hablar(pre+s.txt); }, 350);
         s.dicho=true;
         for(var j=vozIdx;j<i;j++)vozSteps[j].dicho=true;
         vozIdx=i+1;
