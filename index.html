@@ -6734,17 +6734,10 @@ function guardarPerfil(){
 function appInit() {
   var claveActiva = localStorage.getItem('rs_clave_activa') === '1';
 
-  // Si tiene clave activa — entrar directamente
-  if (claveActiva) { lanzamientoBanner(); return; }
-
-  if (lanzamientoActivo()) {
-    // Periodo de lanzamiento — acceso libre para todos
-    mostrarAccesoLanzamiento();
-    return;
-  }
-
-  // Lanzamiento terminado — solo con clave
-  mostrarAccesoClave();
+  // RideSafe IA es 100% GRATUITA para todos
+  // (Cambio del 31 de agosto: se eliminó el paywall de suscripción)
+  lanzamientoBanner();
+  return;
 }
 
 function mostrarAccesoLanzamiento() {
