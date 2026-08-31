@@ -3645,7 +3645,18 @@ function generarLiveId(){
 
 function openRideLivePromo(){
   if(rideLiveOn){ rideLiveDetener(); return; }
-  if(!userPos){ toast('Activa el GPS primero'); return; }
+  /* Si no hay GPS todavía, lo pedimos nosotros */
+  if(!userPos){
+    toast('📡 Obteniendo tu posición GPS...');
+    if(!navigator.geolocation){ toast('GPS no disponible en este dispositivo'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos){
+      userPos=[pos.coords.latitude,pos.coords.longitude];
+      openRideLivePromo(); /* Reintentar con posición ya disponible */
+    },function(){
+      toast('No se pudo obtener el GPS. Actívalo en los ajustes del móvil.');
+    },{enableHighAccuracy:true,timeout:10000});
+    return;
+  }
 
   rideLiveId=generarLiveId();
   rideLiveOn=true;
