@@ -3697,11 +3697,8 @@ function openRideLivePromo(){
     },10000);
   }
 
-  if(navigator.getBattery){
-    navigator.getBattery().then(function(bat){
-      iniciarEnvio(Math.round(bat.level*100));
-    }).catch(function(){ iniciarEnvio(null); });
-  } else { iniciarEnvio(null); }
+  /* Iniciar directamente sin esperar batería */
+  iniciarEnvio(null);
 }
 
 function rideLiveDetener(){
