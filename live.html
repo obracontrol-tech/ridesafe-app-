@@ -19,7 +19,7 @@ body{background:#080e06;font-family:'Barlow Condensed',sans-serif;color:#fff;hei
 .rider-status{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
 .status-dot{width:8px;height:8px;border-radius:50%;background:#a8e63d;display:inline-block;margin-right:4px;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-#map{flex:1;width:100%}
+#map{flex:1;width:100%;min-height:300px;height:calc(100vh - 120px)}
 .info-bar{background:#0d120f;padding:10px 16px;display:flex;gap:16px;border-top:1px solid rgba(168,230,61,.15);flex-shrink:0}
 .info-item{display:flex;flex-direction:column;align-items:center;flex:1}
 .info-val{font-size:18px;font-weight:900;color:#a8e63d}
@@ -69,6 +69,7 @@ if(!liveId){
   /* Iniciar mapa */
   var map=L.map('map',{zoomControl:true,attributionControl:false}).setView([41.615,0.627],13);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+  setTimeout(function(){ map.invalidateSize(); },300);
 
   var marker=null;
   var riderIcon=L.divIcon({html:'<div style="width:18px;height:18px;background:#a8e63d;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px #a8e63d"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
@@ -101,6 +102,7 @@ if(!liveId){
       var pos=[d.lat,d.lng];
       if(!marker){
         marker=L.marker(pos,{icon:riderIcon}).addTo(map);
+        map.invalidateSize();
         map.setView(pos,15);
         if(!startTime)startTime=d.ts||Date.now();
         timerInt=setInterval(function(){
