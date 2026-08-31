@@ -69,26 +69,11 @@
 </div>
 
 <script>
-// Firebase Config
-var firebaseConfig = {
-  apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
-  authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
-  databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId: 'ridesafe-app-25ecb',
-  storageBucket: 'ridesafe-app-25ecb.firebasestorage.app',
-  messagingSenderId: '322135466974',
-  appId: '1:322135466974:web:28b4586375bfd6211bf34f'
-};
-
-if (!firebase.apps || !firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-var db = firebase.database();
-
 var liveId = null;
 var mapa = null;
 var marcador = null;
 var tiempoInicio = null;
+var db = null;
 
 function obtenerIdURL(){
   var params = new URLSearchParams(window.location.search);
@@ -96,6 +81,7 @@ function obtenerIdURL(){
 }
 
 function inicializarMapa(){
+  if (mapa) return;
   mapa = L.map('mapa').setView([41.6175, -0.6298], 13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
@@ -120,7 +106,7 @@ function calcularTiempoRuta(){
 }
 
 function actualizarMarcador(lat, lng, en_linea) {
-  if (!mapa) inicializarMapa();
+  inicializarMapa();
   
   if (marcador) {
     marcador.setLatLng([lat, lng]);
@@ -138,13 +124,19 @@ function actualizarMarcador(lat, lng, en_linea) {
 }
 
 function escucharRideLive(id){
+  if (!db) {
+    console.error('Firebase no está inicializado');
+    document.getElementById('estado').innerHTML = '❌ Error de conexión';
+    return;
+  }
+  
   db.ref('ride_live/' + id).on('value', function(snap){
     var datos = snap.val();
     
     if (!datos) {
-      document.getElementById('estado').innerHTML = '🔴 Sesión finalizada';
+      document.getElementById('estado').innerHTML = '🔴 Sesión finalizada o inexistente';
       document.getElementById('estado').className = 'info-valor estado-offline';
-      document.getElementById('nombre-ciclista').textContent = 'Sesión no encontrada';
+      document.getElementById('nombre-ciclista').textContent = 'Sin datos';
       return;
     }
     
@@ -152,37 +144,77 @@ function escucharRideLive(id){
       tiempoInicio = datos.ts;
     }
     
-    var { lat, lng, vel, dist, bat, nombre, ts } = datos;
-    var { minutos, online } = verificarSenal(ts);
+    var lat = datos.lat || 0;
+    var lng = datos.lng || 0;
+    var vel = datos.vel || 0;
+    var dist = datos.dist || 0;
+    var bat = datos.bat || '--';
+    var nombre = datos.nombre || 'Ciclista';
+    var ts = datos.ts || Date.now();
     
-    document.getElementById('nombre-ciclista').textContent = nombre || 'Ciclista';
-    document.getElementById('velocidad').textContent = (vel || 0).toFixed(1) + ' km/h';
-    document.getElementById('distancia').textContent = (dist || 0).toFixed(1) + ' km';
-    document.getElementById('bateria').textContent = (bat || '--') + '%';
+    var senal = verificarSenal(ts);
+    
+    document.getElementById('nombre-ciclista').textContent = nombre;
+    document.getElementById('velocidad').textContent = vel.toFixed(1) + ' km/h';
+    document.getElementById('distancia').textContent = dist.toFixed(1) + ' km';
+    document.getElementById('bateria').textContent = bat + '%';
     document.getElementById('tiempo').textContent = calcularTiempoRuta() + ' min';
     
-    if (online) {
+    if (senal.online) {
       document.getElementById('estado').innerHTML = '🟢 En directo';
       document.getElementById('estado').className = 'info-valor estado-ok';
     } else {
-      document.getElementById('estado').innerHTML = '🔴 Sin señal (' + minutos + ' min)';
+      document.getElementById('estado').innerHTML = '🔴 Sin señal (' + senal.minutos + ' min)';
       document.getElementById('estado').className = 'info-valor estado-offline';
     }
     
-    actualizarMarcador(lat, lng, online);
+    actualizarMarcador(lat, lng, senal.online);
+  }, function(error){
+    console.error('Error Firebase:', error);
+    document.getElementById('estado').innerHTML = '❌ Error: ' + error.message;
   });
+}
+
+function inicializarFirebase(){
+  if (typeof firebase === 'undefined') {
+    console.error('Firebase CDN no cargó');
+    document.getElementById('estado').innerHTML = '❌ Cargando...';
+    setTimeout(inicializarFirebase, 1000);
+    return;
+  }
+  
+  var firebaseConfig = {
+    apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
+    authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
+    databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
+    projectId: 'ridesafe-app-25ecb',
+    storageBucket: 'ridesafe-app-25ecb.firebasestorage.app',
+    messagingSenderId: '322135466974',
+    appId: '1:322135466974:web:28b4586375bfd6211bf34f'
+  };
+  
+  if (!firebase.apps || !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  
+  db = firebase.database();
+  console.log('Firebase inicializado correctamente');
+  
+  if (liveId) {
+    escucharRideLive(liveId);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   liveId = obtenerIdURL();
   
   if (!liveId) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e27;color:#ff6b6b;font-size:18px;text-align:center;padding:20px;">❌ ID de sesión no válido<br><br>Presiona el botón 📡 Ride Live en la app para obtener un enlace</div>';
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e27;color:#ff6b6b;font-size:18px;text-align:center;padding:20px;"><div>❌ ID de sesión no válido<br><br>Presiona el botón 📡 Ride Live en la app para obtener un enlace</div></div>';
     return;
   }
   
   inicializarMapa();
-  escucharRideLive(liveId);
+  inicializarFirebase();
 });
 </script>
 </body>
