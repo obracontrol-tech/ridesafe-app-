@@ -21,7 +21,6 @@
     .info-label{ color:#a8e63d; font-weight:600; }
     .info-valor{ color:#fff; }
     .estado-ok{ color:#4ade80; }
-    .estado-offline{ color:#ff6b6b; }
     .punto-ciclista{
       width:24px; height:24px; border-radius:50%;
       background:#4ade80; border:3px solid #fff;
@@ -62,45 +61,66 @@
 </div>
 
 <script>
-// Coordenadas base: Lleida
-var lledaBase = {lat: 41.6175, lng: -0.6298};
-
-// Ruta simulada (recorrido circular alrededor de Lleida)
-var rutaSimulada = [
-  {lat: 41.6175, lng: -0.6298},  // Centro Lleida
-  {lat: 41.6250, lng: -0.6200},  // Norte
-  {lat: 41.6300, lng: -0.6100},  
-  {lat: 41.6320, lng: -0.5950},  
-  {lat: 41.6300, lng: -0.5800},  // Este
-  {lat: 41.6200, lng: -0.5900},
-  {lat: 41.6100, lng: -0.6000},
-  {lat: 41.6050, lng: -0.6150},
-  {lat: 41.6075, lng: -0.6350},  // Oeste
-  {lat: 41.6150, lng: -0.6400},
+// Ruta simulada alrededor de Lleida (puntos de control)
+var rutaCompleta = [
+  {lat: 41.6175, lng: -0.6298},  // Centro
+  {lat: 41.6280, lng: -0.6150},  // NE
+  {lat: 41.6350, lng: -0.5900},  // E
+  {lat: 41.6300, lng: -0.5600},  // SE
+  {lat: 41.6100, lng: -0.5500},  // S
+  {lat: 41.5950, lng: -0.5700},  // SW
+  {lat: 41.5900, lng: -0.6150},  // W
+  {lat: 41.6000, lng: -0.6400},  // NW
   {lat: 41.6175, lng: -0.6298}   // Vuelta al inicio
 ];
 
 var mapa = null;
 var marcador = null;
-var posicionActual = 0;
+var posicionProgreso = 0;  // De 0 a 1 en la ruta completa
 var velocidadSimulada = 24;
 var distanciaTotal = 0;
 var tiempoInicio = Date.now();
 var bateriaSimulada = 85;
 
-function inicializarMapa(){
-  mapa = L.map('mapa').setView([lledaBase.lat, lledaBase.lng], 14);
+// Interpolación lineal entre dos puntos
+function interpolarPunto(p1, p2, t) {
+  return {
+    lat: p1.lat + (p2.lat - p1.lat) * t,
+    lng: p1.lng + (p2.lng - p1.lng) * t
+  };
+}
+
+// Obtener posición actual en la ruta (interpolada)
+function obtenerPosicionActual() {
+  var totalSegmentos = rutaCompleta.length - 1;
+  var segmento = Math.floor(posicionProgreso * totalSegmentos);
+  var progresosegmento = (posicionProgreso * totalSegmentos) - segmento;
+  
+  if (segmento >= rutaCompleta.length - 1) {
+    return rutaCompleta[rutaCompleta.length - 1];
+  }
+  
+  return interpolarPunto(
+    rutaCompleta[segmento],
+    rutaCompleta[segmento + 1],
+    progresosegmento
+  );
+}
+
+function inicializarMapa() {
+  mapa = L.map('mapa').setView([41.6175, -0.6298], 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(mapa);
   
   // Dibujar la ruta completa
-  var latlngs = rutaSimulada.map(p => [p.lat, p.lng]);
+  var latlngs = rutaCompleta.map(p => [p.lat, p.lng]);
   L.polyline(latlngs, {color: '#a8e63d', weight: 3, opacity: 0.6}).addTo(mapa);
   
-  // Crear marcador inicial
-  marcador = L.marker([lledaBase.lat, lledaBase.lng], {
+  // Crear marcador
+  var pos = obtenerPosicionActual();
+  marcador = L.marker([pos.lat, pos.lng], {
     icon: L.divIcon({
       className: 'punto-ciclista',
       iconSize: [24, 24],
@@ -109,25 +129,30 @@ function inicializarMapa(){
   }).addTo(mapa);
 }
 
-function actualizarPosicion(){
-  if (posicionActual >= rutaSimulada.length) {
-    posicionActual = 0;
+function actualizarPosicion() {
+  // Avanzar en la ruta (velocidad variable, entre 20 y 30 km/h)
+  var velocidadBase = 22 + Math.sin(Date.now() / 5000) * 5;
+  var incremento = (velocidadBase / 1000) * 0.1;  // Pequeño incremento cada 100ms
+  posicionProgreso += incremento;
+  
+  // Si completa la ruta, reiniciar
+  if (posicionProgreso >= 1) {
+    posicionProgreso = 0;
   }
   
-  var pos = rutaSimulada[posicionActual];
+  var pos = obtenerPosicionActual();
   marcador.setLatLng([pos.lat, pos.lng]);
-  mapa.setView([pos.lat, pos.lng], 15);
   
-  // Calcular distancia aproximada (0.1 km por paso)
-  distanciaTotal += 0.1;
+  // Actualizar distancia (cada 0.001 unidades = ~0.1 km)
+  distanciaTotal += 0.001 * 100;
   
-  // Velocidad variable (entre 18 y 32 km/h)
-  velocidadSimulada = 18 + Math.sin(posicionActual * 0.5) * 7 + Math.random() * 4;
+  // Velocidad realista
+  velocidadSimulada = velocidadBase;
   
-  // Batería decrementando lentamente
-  bateriaSimulada = Math.max(10, 85 - (posicionActual * 0.8));
+  // Batería decrementando
+  bateriaSimulada = Math.max(10, 85 - (posicionProgreso * 40));
   
-  // Tiempo en ruta (en minutos)
+  // Tiempo en ruta
   var tiempoMs = Date.now() - tiempoInicio;
   var tiempoMin = Math.floor(tiempoMs / 60000);
   
@@ -136,19 +161,14 @@ function actualizarPosicion(){
   document.getElementById('distancia').textContent = distanciaTotal.toFixed(1) + ' km';
   document.getElementById('bateria').textContent = bateriaSimulada.toFixed(0) + '%';
   document.getElementById('tiempo').textContent = tiempoMin + ' min';
-  
-  posicionActual++;
 }
 
 // Iniciar
 document.addEventListener('DOMContentLoaded', function(){
   inicializarMapa();
   
-  // Actualizar posición cada 5 segundos
-  setInterval(actualizarPosicion, 5000);
-  
-  // Actualizar inmediatamente
-  actualizarPosicion();
+  // Actualizar cada 100ms para movimiento suave
+  setInterval(actualizarPosicion, 100);
 });
 </script>
 </body>
