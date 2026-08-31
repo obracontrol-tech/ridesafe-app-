@@ -3645,53 +3645,47 @@ function generarLiveId(){
 
 function openRideLivePromo(){
   if(rideLiveOn){ rideLiveDetener(); return; }
-  /* Si no hay GPS todavía, lo pedimos nosotros */
-  if(!userPos){
-    toast('📡 Obteniendo tu posición GPS...');
-    if(!navigator.geolocation){ toast('GPS no disponible en este dispositivo'); return; }
-    navigator.geolocation.getCurrentPosition(function(pos){
-      userPos=[pos.coords.latitude,pos.coords.longitude];
-      openRideLivePromo(); /* Reintentar con posición ya disponible */
-    },function(){
-      toast('No se pudo obtener el GPS. Actívalo en los ajustes del móvil.');
-    },{enableHighAccuracy:true,timeout:10000});
-    return;
-  }
 
+  /* Generar ID y abrir WhatsApp INMEDIATAMENTE (dentro del toque del usuario) */
   rideLiveId=generarLiveId();
+  var url='https://app.ridesafeia.es/live.html?id='+rideLiveId;
+  var txt=encodeURIComponent('\uD83D\uDEB4 Te comparto mi salida en vivo con RideSafe IA. Puedes ver donde estoy en tiempo real: '+url+' (Abrelo en el navegador, no necesitas instalar nada)');
+  window.open('https://wa.me/?text='+txt,'_blank');
+
   rideLiveOn=true;
+  toast('\uD83D\uDCE1 Ride Live activo · Enlace enviado por WhatsApp');
 
-  /* Obtener batería si está disponible */
-  var batPromise=navigator.getBattery?navigator.getBattery():Promise.resolve(null);
-  batPromise.then(function(bat){
-    var batVal=bat?Math.round(bat.level*100):null;
-
-    /* Escribir posición inicial en Firebase */
+  /* Obtener GPS y empezar a enviar posición */
+  function iniciarEnvio(batVal){
     function enviarPosicion(){
-      if(!rideLiveOn||!userPos)return;
-      var datos={
-        lat:userPos[0],
-        lng:userPos[1],
+      if(!rideLiveOn)return;
+      var pos=userPos||[0,0];
+      db.ref('ride_live/'+rideLiveId).set({
+        lat:pos[0],lng:pos[1],
         vel:navVel||0,
         dist:navDist?(navDist/1000).toFixed(1):0,
         bat:batVal||'--',
         ts:Date.now(),
         nombre:localStorage.getItem('rs_nombre')||'Ciclista',
         sos:false
-      };
-      db.ref('ride_live/'+rideLiveId).set(datos);
+      });
     }
+    if(!userPos&&navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(p){
+        userPos=[p.coords.latitude,p.coords.longitude];
+        enviarPosicion();
+      },function(){},{ enableHighAccuracy:true,timeout:10000});
+    } else { enviarPosicion(); }
+    rideLiveInt=setInterval(function(){
+      if(userPos)enviarPosicion();
+    },10000);
+  }
 
-    enviarPosicion();
-    rideLiveInt=setInterval(enviarPosicion,10000);
-
-    /* Compartir enlace por WhatsApp */
-    var url='https://app.ridesafeia.es/live.html?id='+rideLiveId;
-    var txt=encodeURIComponent('\uD83D\uDEB4 Te comparto mi salida en vivo con RideSafe IA. Puedes ver donde estoy en tiempo real: '+url+' (No necesitas instalar nada, abrelo en el navegador)');
-    window.open('https://wa.me/?text='+txt,'_blank');
-
-    toast('📡 Ride Live activo · '+rideLiveId);
-  });
+  if(navigator.getBattery){
+    navigator.getBattery().then(function(bat){
+      iniciarEnvio(Math.round(bat.level*100));
+    }).catch(function(){ iniciarEnvio(null); });
+  } else { iniciarEnvio(null); }
 }
 
 function rideLiveDetener(){
