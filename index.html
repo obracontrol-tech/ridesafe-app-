@@ -6734,10 +6734,17 @@ function guardarPerfil(){
 function appInit() {
   var claveActiva = localStorage.getItem('rs_clave_activa') === '1';
 
-  // RideSafe IA es 100% GRATUITA para todos
-  // (Cambio del 31 de agosto: se eliminó el paywall de suscripción)
-  lanzamientoBanner();
-  return;
+  // Si tiene clave activa — entrar directamente
+  if (claveActiva) { lanzamientoBanner(); return; }
+
+  if (lanzamientoActivo()) {
+    // Periodo de lanzamiento — acceso libre para todos
+    mostrarAccesoLanzamiento();
+    return;
+  }
+
+  // Lanzamiento terminado — solo con clave
+  mostrarAccesoClave();
 }
 
 function mostrarAccesoLanzamiento() {
@@ -6756,9 +6763,11 @@ function mostrarAccesoTrial(dias) {
 }
 
 function mostrarAccesoClave() {
-  // DESACTIVADO: La app es ahora 100% gratuita
-  // No se muestra pantalla de pago
-  return;
+  document.getElementById('acceso-trial-activo').style.display = 'none';
+  document.getElementById('acceso-card-title').textContent = 'Activa tu suscripción';
+  document.getElementById('acceso-card-sub').innerHTML = 'El periodo gratuito de lanzamiento ha finalizado.<br><b style="color:var(--lime)">Suscríbete por ' + PRECIO_NORMAL + '</b> — cancela cuando quieras.<br>Pide tu clave por WhatsApp y actívala aquí.';
+  document.getElementById('acceso-subtitle').textContent = 'Periodo gratuito finalizado';
+  document.getElementById('acceso-screen').classList.add('show');
 }
 
 function accesoEntrar() {
