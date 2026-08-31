@@ -73,13 +73,13 @@
 <script>
 // Firebase Config — MISMA QUE EN app.html
 var firebaseConfig = {
-  apiKey: "AIzaSyDLmfKg23BxkFOAYTVrfmiAQm93HcPRTWQ",
-  authDomain: "ridesafe-app-25ecb.firebaseapp.com",
-  databaseURL: "https://ridesafe-app-25ecb.europe-west1.firebasedatabase.app",
-  projectId: "ridesafe-app-25ecb",
-  storageBucket: "ridesafe-app-25ecb.appspot.com",
-  messagingSenderId: "723275706844",
-  appId: "1:723275706844:web:f66f6c7e8cdc2c0ee5b2a4"
+  apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
+  authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
+  databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'ridesafe-app-25ecb',
+  storageBucket: 'ridesafe-app-25ecb.firebasestorage.app',
+  messagingSenderId: '322135466974',
+  appId: '1:322135466974:web:28b4586375bfd6211bf34f'
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
@@ -101,8 +101,8 @@ function obtenerIdURL(){
 // Inicializar mapa
 function inicializarMapa(){
   mapa = L.map('mapa').setView([41.3851, 2.1734], 13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© CartoDB',
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(mapa);
 }
