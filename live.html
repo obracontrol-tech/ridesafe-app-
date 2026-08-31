@@ -1,172 +1,214 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>RideSafe IA — Seguimiento en vivo</title>
-<meta name="theme-color" content="#a8e63d">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#080e06;font-family:'Barlow Condensed',sans-serif;color:#fff;overflow:hidden}
-.top{position:fixed;top:0;left:0;right:0;z-index:1000;background:#0d120f;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid rgba(168,230,61,.2)}
-.logo{font-size:15px;font-weight:900;color:#a8e63d;letter-spacing:1px}
-.rider-name{font-size:14px;font-weight:700;color:#fff}
-.rider-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;display:flex;align-items:center;gap:5px}
-.dot{width:8px;height:8px;border-radius:50%;background:#a8e63d;flex-shrink:0}
-.dot.red{background:#ff4466}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.dot.blink{animation:pulse 1.5s infinite}
-#map{position:fixed;top:56px;left:0;right:0;bottom:60px;z-index:1}
-.bottom{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#0d120f;border-top:2px solid rgba(168,230,61,.2);display:grid;grid-template-columns:repeat(4,1fr);height:60px}
-.stat{display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(168,230,61,.1)}
-.stat:last-child{border-right:none}
-.stat-val{font-size:17px;font-weight:900;color:#a8e63d}
-.stat-lbl{font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
-.sos{position:fixed;top:56px;left:0;right:0;z-index:2000;background:#ff4466;padding:8px;text-align:center;font-size:13px;font-weight:900;letter-spacing:1px;display:none}
-.sos.show{display:block;animation:pulse .5s infinite}
-#estado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;background:rgba(8,14,6,.95);padding:24px 32px;border-radius:16px;border:1px solid rgba(168,230,61,.3);text-align:center}
-#estado h3{color:#a8e63d;font-size:18px;margin-bottom:8px}
-#estado p{color:rgba(255,255,255,.6);font-size:13px;line-height:1.5}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RideSafe IA — Seguimiento en Vivo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{ font-family:'Barlow',sans-serif; background:#0a0e27; color:#fff; }
+    #mapa{ width:100%; height:100vh; }
+    #panel-info{
+      position:fixed; top:0; left:0; right:0; z-index:999;
+      background:linear-gradient(135deg,rgba(10,14,39,0.95) 0%,rgba(20,28,60,0.95) 100%);
+      padding:12px 16px;
+      border-bottom:1px solid rgba(168,230,61,0.2);
+      backdrop-filter:blur(10px);
+    }
+    .info-row{ display:flex; justify-content:space-between; align-items:center; margin:6px 0; font-size:14px; }
+    .info-label{ color:#a8e63d; font-weight:600; }
+    .info-valor{ color:#fff; }
+    .estado-ok{ color:#4ade80; }
+    .estado-offline{ color:#ff6b6b; animation:parpadeo 1s infinite; }
+    @keyframes parpadeo{ 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .punto-ciclista{
+      width:24px; height:24px; border-radius:50%;
+      background:#4ade80; border:3px solid #fff;
+      box-shadow:0 0 15px rgba(74,222,128,0.8), 0 0 30px rgba(74,222,128,0.4);
+      animation:latido 1.5s infinite;
+    }
+    .punto-offline{
+      background:#ff6b6b;
+      box-shadow:0 0 15px rgba(255,107,107,0.8);
+      animation:parpadeo 1s infinite;
+    }
+    @keyframes latido{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.2); }
+    }
+    .info-nombre{ font-size:16px; font-weight:700; color:#a8e63d; }
+    .tiempo-offline{ color:#ff8833; font-weight:600; }
+  </style>
 </head>
 <body>
-
-<div class="sos" id="sos-banner">🆘 SOS — EL CICLISTA NECESITA AYUDA URGENTE</div>
-
-<div class="top">
-  <div>
-    <div class="rider-name">🚴 <span id="rider-name">Ciclista</span></div>
-    <div class="rider-sub">
-      <div class="dot blink" id="status-dot"></div>
-      <span id="last-update">Conectando...</span>
-    </div>
+<div id="mapa"></div>
+<div id="panel-info">
+  <div class="info-nombre" id="nombre-ciclista">Ciclista</div>
+  <div class="info-row">
+    <span class="info-label">Estado:</span>
+    <span class="info-valor estado-ok" id="estado">🟢 En directo</span>
   </div>
-  <div class="logo">RIDESAFE IA</div>
-</div>
-
-<div id="map"></div>
-
-<div id="estado">
-  <h3>📡 Ride Live</h3>
-  <p id="estado-txt">Esperando posición<br>del ciclista...</p>
-</div>
-
-<div class="bottom">
-  <div class="stat"><div class="stat-val" id="sv">--</div><div class="stat-lbl">km/h</div></div>
-  <div class="stat"><div class="stat-val" id="sd">--</div><div class="stat-lbl">km</div></div>
-  <div class="stat"><div class="stat-val" id="sb">--</div><div class="stat-lbl">batería</div></div>
-  <div class="stat"><div class="stat-val" id="st">--</div><div class="stat-lbl">en ruta</div></div>
+  <div class="info-row">
+    <span class="info-label">Velocidad:</span>
+    <span class="info-valor" id="velocidad">0 km/h</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Distancia:</span>
+    <span class="info-valor" id="distancia">0 km</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Batería:</span>
+    <span class="info-valor" id="bateria">--</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Tiempo en ruta:</span>
+    <span class="info-valor" id="tiempo">0 min</span>
+  </div>
 </div>
 
 <script>
-/* Firebase */
-firebase.initializeApp({
-  apiKey:'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
-  authDomain:'ridesafe-app-25ecb.firebaseapp.com',
-  databaseURL:'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId:'ridesafe-app-25ecb'
-});
-var db=firebase.database();
+// Firebase Config — MISMA QUE EN app.html
+var firebaseConfig = {
+  apiKey: "AIzaSyDLmfKg23BxkFOAYTVrfmiAQm93HcPRTWQ",
+  authDomain: "ridesafe-app-25ecb.firebaseapp.com",
+  databaseURL: "https://ridesafe-app-25ecb.europe-west1.firebasedatabase.app",
+  projectId: "ridesafe-app-25ecb",
+  storageBucket: "ridesafe-app-25ecb.appspot.com",
+  messagingSenderId: "723275706844",
+  appId: "1:723275706844:web:f66f6c7e8cdc2c0ee5b2a4"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
 
-/* ID del ciclista desde la URL */
-var params=new URLSearchParams(window.location.search);
-var liveId=params.get('id');
+// Variables globales
+var liveId = null;
+var mapa = null;
+var marcador = null;
+var ultimoTimestamp = null;
+var tiempoInicio = null;
+var ultimaPosicion = null;
 
-if(!liveId){
-  document.getElementById('estado-txt').innerHTML='Enlace no válido.<br>Pide al ciclista que te comparta su Ride Live.';
-} else {
-  /* Iniciar mapa INMEDIATAMENTE con posición genérica */
-  var map=L.map('map',{zoomControl:true,attributionControl:false});
-  map.setView([41.615,0.627],13);
-  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',{
-    maxZoom:19,subdomains:'abc',attribution:'&copy; OSM France'
-  }).addTo(map);
+// Obtener el ID de la URL
+function obtenerIdURL(){
+  var params = new URLSearchParams(window.location.search);
+  return params.get('id');
+}
 
-  /* Forzar render del mapa */
-  setTimeout(function(){ map.invalidateSize(true); },100);
-  setTimeout(function(){ map.invalidateSize(true); },500);
-  setTimeout(function(){ map.invalidateSize(true); },1000);
+// Inicializar mapa
+function inicializarMapa(){
+  mapa = L.map('mapa').setView([41.3851, 2.1734], 13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© CartoDB',
+    maxZoom: 19
+  }).addTo(mapa);
+}
 
-  var marker=null;
-  var startTs=null;
-  var timerInt=null;
-
-  var riderIcon=L.divIcon({
-    html:'<div style="width:20px;height:20px;background:#a8e63d;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(168,230,61,.25)"></div>',
-    iconSize:[20,20],iconAnchor:[10,10],className:''
-  });
-
-  function formatTime(ms){
-    var s=Math.floor(ms/1000);
-    var h=Math.floor(s/3600);
-    var m=Math.floor((s%3600)/60);
-    return (h>0?h+'h ':'')+(m<10?'0':'')+m+'m';
+// Función para actualizar el marcador
+function actualizarMarcador(lat, lng, en_linea) {
+  if (!mapa) inicializarMapa();
+  
+  if (marcador) {
+    marcador.setLatLng([lat, lng]);
+  } else {
+    marcador = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: 'punto-ciclista' + (en_linea ? '' : ' punto-offline'),
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    }).addTo(mapa);
   }
+  
+  // Actualizar clase según estado
+  var divMarcador = marcador.getElement();
+  if (divMarcador) {
+    if (en_linea) {
+      divMarcador.querySelector('.punto-ciclista').classList.remove('punto-offline');
+    } else {
+      divMarcador.querySelector('.punto-ciclista').classList.add('punto-offline');
+    }
+  }
+  
+  mapa.setView([lat, lng], 15);
+  ultimaPosicion = [lat, lng];
+}
 
-  /* Escuchar Firebase en tiempo real */
-  db.ref('ride_live/'+liveId).on('value',function(snap){
-    var d=snap.val();
-    if(!d||!d.lat){
-      document.getElementById('last-update').textContent='Esperando señal GPS...';
+// Función para calcular tiempo sin señal
+function verificarSenal(timestamp){
+  var ahora = Date.now();
+  var difMs = ahora - timestamp;
+  var difMin = Math.floor(difMs / 60000);
+  
+  return {
+    minutos: difMin,
+    online: difMin < 3
+  };
+}
+
+// Función para calcular tiempo en ruta
+function calcularTiempoRuta(){
+  if (!tiempoInicio) return 0;
+  var ms = Date.now() - tiempoInicio;
+  return Math.floor(ms / 60000); // Retorna minutos
+}
+
+// Escuchar cambios en Firebase
+function escucharRideLive(id){
+  db.ref('ride_live/' + id).on('value', function(snap){
+    var datos = snap.val();
+    
+    if (!datos) {
+      document.getElementById('estado').innerHTML = '🔴 Sesión finalizada';
+      document.getElementById('estado').className = 'info-valor estado-offline';
       return;
     }
-
-    /* Ocultar estado de espera */
-    document.getElementById('estado').style.display='none';
-
-    /* SOS */
-    if(d.sos){
-      document.getElementById('sos-banner').classList.add('show');
-      if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);
-    }else{
-      document.getElementById('sos-banner').classList.remove('show');
+    
+    // Si es la primera vez, guardar timestamp de inicio
+    if (!tiempoInicio) {
+      tiempoInicio = datos.ts;
     }
-
-    /* Nombre */
-    if(d.nombre)document.getElementById('rider-name').textContent=d.nombre;
-
-    /* Posición en el mapa */
-    var pos=[parseFloat(d.lat),parseFloat(d.lng)];
-    if(isNaN(pos[0])||isNaN(pos[1]))return;
-
-    if(!marker){
-      marker=L.marker(pos,{icon:riderIcon}).addTo(map);
-      map.setView(pos,15);
-      map.invalidateSize(true);
-      if(!startTs){startTs=d.ts||Date.now();}
-      timerInt=setInterval(function(){
-        document.getElementById('st').textContent=formatTime(Date.now()-startTs);
-      },1000);
-    }else{
-      marker.setLatLng(pos);
-      map.panTo(pos);
+    
+    var { lat, lng, vel, dist, bat, nombre, ts } = datos;
+    
+    // Verificar si está en línea
+    var { minutos, online } = verificarSenal(ts);
+    
+    // Actualizar UI
+    document.getElementById('nombre-ciclista').textContent = nombre || 'Ciclista';
+    document.getElementById('velocidad').textContent = (vel || 0).toFixed(1) + ' km/h';
+    document.getElementById('distancia').textContent = (dist || 0).toFixed(1) + ' km';
+    document.getElementById('bateria').textContent = (bat || '--') + '%';
+    document.getElementById('tiempo').textContent = calcularTiempoRuta() + ' min';
+    
+    if (online) {
+      document.getElementById('estado').innerHTML = '🟢 En directo';
+      document.getElementById('estado').className = 'info-valor estado-ok';
+    } else {
+      document.getElementById('estado').innerHTML = '🔴 Sin señal (' + minutos + ' min)';
+      document.getElementById('estado').className = 'info-valor estado-offline';
     }
-
-    /* Stats */
-    document.getElementById('sv').textContent=d.vel?parseFloat(d.vel).toFixed(0):'0';
-    document.getElementById('sd').textContent=d.dist||'0';
-    document.getElementById('sb').textContent=d.bat?d.bat+'%':'--';
-
-    /* Última actualización */
-    var t=new Date();
-    document.getElementById('last-update').textContent='Actualizado '+t.getHours()+':'+(t.getMinutes()<10?'0':'')+t.getMinutes();
-    document.getElementById('status-dot').classList.remove('red');
+    
+    // Actualizar marcador en el mapa
+    actualizarMarcador(lat, lng, online);
   });
-
-  /* Aviso si lleva más de 3 min sin actualizar */
-  setInterval(function(){
-    db.ref('ride_live/'+liveId+'/ts').once('value',function(s){
-      if(s.val()&&Date.now()-s.val()>180000){
-        document.getElementById('status-dot').classList.add('red');
-        document.getElementById('last-update').textContent='Sin señal hace más de 3 min';
-      }
-    });
-  },30000);
 }
+
+// Iniciar
+document.addEventListener('DOMContentLoaded', function(){
+  liveId = obtenerIdURL();
+  
+  if (!liveId) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ff6b6b;font-size:18px;">❌ ID de sesión no válido</div>';
+    return;
+  }
+  
+  inicializarMapa();
+  escucharRideLive(liveId);
+});
 </script>
 </body>
 </html>
