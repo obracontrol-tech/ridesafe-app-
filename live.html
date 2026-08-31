@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>RideSafe IA — Seguimiento en vivo</title>
+<meta name="theme-color" content="#a8e63d">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080e06;font-family:'Barlow Condensed',sans-serif;color:#fff;height:100vh;display:flex;flex-direction:column}
+.top{background:#0d120f;padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(168,230,61,.15);flex-shrink:0}
+.logo{font-size:16px;font-weight:900;color:#a8e63d;letter-spacing:1px}
+.rider-info{flex:1}
+.rider-name{font-size:14px;font-weight:700;color:#fff}
+.rider-status{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#a8e63d;display:inline-block;margin-right:4px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#map{flex:1;width:100%}
+.info-bar{background:#0d120f;padding:10px 16px;display:flex;gap:16px;border-top:1px solid rgba(168,230,61,.15);flex-shrink:0}
+.info-item{display:flex;flex-direction:column;align-items:center;flex:1}
+.info-val{font-size:18px;font-weight:900;color:#a8e63d}
+.info-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.sos-banner{display:none;background:#ff4466;padding:10px 16px;text-align:center;font-size:13px;font-weight:700;letter-spacing:.5px;animation:blink .5s infinite}
+.sos-banner.show{display:block}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.no-signal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:999;background:rgba(8,14,6,.95);padding:24px;border-radius:16px;border:1px solid rgba(168,230,61,.2)}
+.no-signal h2{font-size:20px;font-weight:900;color:#a8e63d;margin-bottom:8px}
+.no-signal p{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="sos-banner" id="sos-banner">🆘 SOS ACTIVADO — EL CICLISTA NECESITA AYUDA</div>
+<div class="top">
+  <div class="rider-info">
+    <div class="rider-name">🚴 <span id="rider-name">Ciclista</span></div>
+    <div class="rider-status"><span class="status-dot" id="status-dot"></span><span id="last-update">Conectando...</span></div>
+  </div>
+  <div class="logo">RIDESAFE IA</div>
+</div>
+<div id="map"></div>
+<div class="info-bar">
+  <div class="info-item"><div class="info-val" id="info-vel">--</div><div class="info-lbl">km/h</div></div>
+  <div class="info-item"><div class="info-val" id="info-dist">--</div><div class="info-lbl">km recorridos</div></div>
+  <div class="info-item"><div class="info-val" id="info-bat">--</div><div class="info-lbl">batería</div></div>
+  <div class="info-item"><div class="info-val" id="info-time">--</div><div class="info-lbl">en ruta</div></div>
+</div>
+
+<script>
+var firebaseConfig={
+  apiKey:'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
+  authDomain:'ridesafe-app-25ecb.firebaseapp.com',
+  databaseURL:'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId:'ridesafe-app-25ecb'
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.database();
+
+/* Obtener ID de la URL */
+var params=new URLSearchParams(window.location.search);
+var liveId=params.get('id');
+
+if(!liveId){
+  document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:24px"><div><div style="font-size:48px">🚴</div><h2 style="color:#a8e63d;margin:12px 0">RideSafe IA</h2><p style="color:rgba(255,255,255,.6)">Enlace de seguimiento no válido.<br>Pide al ciclista que te comparta su Ride Live.</p></div></div>';
+}else{
+  /* Iniciar mapa */
+  var map=L.map('map',{zoomControl:true,attributionControl:false}).setView([41.615,0.627],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+  var marker=null;
+  var riderIcon=L.divIcon({html:'<div style="width:18px;height:18px;background:#a8e63d;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px #a8e63d"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
+  var startTime=null;
+  var timerInt=null;
+
+  function formatTime(ms){var s=Math.floor(ms/1000);var h=Math.floor(s/3600);var m=Math.floor((s%3600)/60);return (h>0?h+'h ':'')+(m<10?'0':'')+m+'m';}
+
+  /* Escuchar cambios en Firebase */
+  db.ref('ride_live/'+liveId).on('value',function(snap){
+    var d=snap.val();
+    if(!d){
+      document.getElementById('last-update').textContent='Sin señal — esperando...';
+      return;
+    }
+
+    /* SOS */
+    if(d.sos){
+      document.getElementById('sos-banner').classList.add('show');
+      if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);
+    }else{
+      document.getElementById('sos-banner').classList.remove('show');
+    }
+
+    /* Nombre del ciclista */
+    if(d.nombre)document.getElementById('rider-name').textContent=d.nombre;
+
+    /* Posición */
+    if(d.lat&&d.lng){
+      var pos=[d.lat,d.lng];
+      if(!marker){
+        marker=L.marker(pos,{icon:riderIcon}).addTo(map);
+        map.setView(pos,15);
+        if(!startTime)startTime=d.ts||Date.now();
+        timerInt=setInterval(function(){
+          if(startTime)document.getElementById('info-time').textContent=formatTime(Date.now()-startTime);
+        },1000);
+      }else{
+        marker.setLatLng(pos);
+        map.panTo(pos);
+      }
+    }
+
+    /* Stats */
+    if(d.vel!==undefined)document.getElementById('info-vel').textContent=parseFloat(d.vel).toFixed(0);
+    if(d.dist!==undefined)document.getElementById('info-dist').textContent=parseFloat(d.dist).toFixed(1);
+    if(d.bat!==undefined)document.getElementById('info-bat').textContent=d.bat+'%';
+
+    /* Última actualización */
+    var ahora=new Date();
+    document.getElementById('last-update').textContent='Actualizado: '+ahora.getHours()+':''+(ahora.getMinutes()<10?'0':'')+ahora.getMinutes();
+    document.getElementById('status-dot').style.background='#a8e63d';
+  });
+
+  /* Si lleva más de 3 min sin actualizar — aviso */
+  setInterval(function(){
+    db.ref('ride_live/'+liveId+'/ts').once('value',function(s){
+      if(s.val()&&Date.now()-s.val()>180000){
+        document.getElementById('status-dot').style.background='#ff4466';
+        document.getElementById('last-update').textContent='Sin señal hace más de 3 min';
+      }
+    });
+  },30000);
+}
+</script>
+</body>
+</html>

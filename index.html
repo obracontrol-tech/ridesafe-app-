@@ -2479,7 +2479,7 @@ var GRUPOS_MENU = {
       {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
       {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
       {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}},
-      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición con alguien de confianza · Próximamente', fn:function(){openRideLivePromo();}}
+      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}}
     ]
   }
 };
@@ -3633,13 +3633,62 @@ else if(h>=13&&h<21){t.innerHTML='Buenas tardes 🚴<br>Tu ruta <span>off-road</
 else{t.innerHTML='Buenas noches 🌙<br>Planifica tu <span>próxima salida</span>';}})();
 function closePanel(id){document.getElementById(id).classList.remove('show');}
 
-/* ═══ RIDE LIVE PROMO (próximamente) ═══ */
+/* ═══ RIDE LIVE — Seguimiento en tiempo real ═══ */
+var rideLiveId=null,rideLiveInt=null,rideLiveOn=false;
+
+function generarLiveId(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var id='LIVE-';
+  for(var i=0;i<5;i++)id+=chars[Math.floor(Math.random()*chars.length)];
+  return id;
+}
+
 function openRideLivePromo(){
-  toast('📡 Ride Live llegará en septiembre · Comparte tu salida con alguien de confianza y activa el SOS en un toque');
-  setTimeout(function(){
-    var ok = confirm('📡 RIDE LIVE — Próximamente\n\n✅ Comparte tu posición en tiempo real\n✅ Enlace privado y temporal para familia o amigos\n✅ Botón SOS ultrarrápido\n✅ Aviso si llevas mucho tiempo parado\n\n¿Quieres que te avisemos cuando esté listo?');
-    if(ok){ sugerirWhatsApp(); }
-  }, 800);
+  if(rideLiveOn){ rideLiveDetener(); return; }
+  if(!userPos){ toast('Activa el GPS primero'); return; }
+
+  rideLiveId=generarLiveId();
+  rideLiveOn=true;
+
+  /* Obtener batería si está disponible */
+  var batPromise=navigator.getBattery?navigator.getBattery():Promise.resolve(null);
+  batPromise.then(function(bat){
+    var batVal=bat?Math.round(bat.level*100):null;
+
+    /* Escribir posición inicial en Firebase */
+    function enviarPosicion(){
+      if(!rideLiveOn||!userPos)return;
+      var datos={
+        lat:userPos[0],
+        lng:userPos[1],
+        vel:navVel||0,
+        dist:navDist?(navDist/1000).toFixed(1):0,
+        bat:batVal||'--',
+        ts:Date.now(),
+        nombre:localStorage.getItem('rs_nombre')||'Ciclista',
+        sos:false
+      };
+      db.ref('ride_live/'+rideLiveId).set(datos);
+    }
+
+    enviarPosicion();
+    rideLiveInt=setInterval(enviarPosicion,10000);
+
+    /* Compartir enlace por WhatsApp */
+    var url='https://app.ridesafeia.es/live.html?id='+rideLiveId;
+    var txt=encodeURIComponent('\uD83D\uDEB4 Te comparto mi salida en vivo con RideSafe IA. Puedes ver donde estoy en tiempo real: '+url+' (No necesitas instalar nada, abrelo en el navegador)');
+    window.open('https://wa.me/?text='+txt,'_blank');
+
+    toast('📡 Ride Live activo · '+rideLiveId);
+  });
+}
+
+function rideLiveDetener(){
+  rideLiveOn=false;
+  if(rideLiveInt){clearInterval(rideLiveInt);rideLiveInt=null;}
+  if(rideLiveId){db.ref('ride_live/'+rideLiveId).remove();}
+  rideLiveId=null;
+  toast('📡 Ride Live finalizado');
 }
 
 /* ═══ COMUNIDAD: WhatsApp + Telegram ═══ */
