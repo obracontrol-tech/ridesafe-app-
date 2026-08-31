@@ -82,8 +82,8 @@ if(!liveId){
   /* Iniciar mapa INMEDIATAMENTE con posición genérica */
   var map=L.map('map',{zoomControl:true,attributionControl:false});
   map.setView([41.615,0.627],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-    maxZoom:19,subdomains:'abcd'
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',{
+    maxZoom:19,subdomains:'abc',attribution:'&copy; OSM France'
   }).addTo(map);
 
   /* Forzar render del mapa */

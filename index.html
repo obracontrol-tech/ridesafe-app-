@@ -3657,33 +3657,43 @@ function openRideLivePromo(){
 
   /* Obtener GPS y empezar a enviar posición */
   function iniciarEnvio(batVal){
+    var livePos=null;
+    var liveWatch=null;
+
     function enviarPosicion(){
-      if(!rideLiveOn||!userPos)return;
-      /* Solo envía si tiene GPS real — nunca [0,0] */
-      if(userPos[0]===0&&userPos[1]===0)return;
+      if(!rideLiveOn)return;
+      var pos=livePos||(userPos&&userPos[0]!==0?userPos:null);
+      if(!pos)return;
       db.ref('ride_live/'+rideLiveId).set({
-        lat:userPos[0],lng:userPos[1],
+        lat:pos[0],lng:pos[1],
         vel:navVel||0,
         dist:navDist?(navDist/1000).toFixed(1):0,
         bat:batVal||'--',
         ts:Date.now(),
         nombre:localStorage.getItem('rs_nombre')||'Ciclista',
         sos:false
-      }).catch(function(e){ console.log('Firebase error:',e); });
+      }).then(function(){
+        toast('\uD83D\uDCE1 Ride Live: posición enviada');
+      }).catch(function(){});
     }
-    /* Obtener GPS con watchPosition para actualizaciones continuas */
+
+    /* GPS propio del Ride Live — independiente del mapa */
     if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(function(p){
-        userPos=[p.coords.latitude,p.coords.longitude];
+      liveWatch=navigator.geolocation.watchPosition(function(p){
+        livePos=[p.coords.latitude,p.coords.longitude];
+        if(!userPos)userPos=livePos;
         enviarPosicion();
-        toast('\uD83D\uDCE1 Posición enviada al familiar');
-      },function(e){
-        toast('GPS: activa la ubicación en los ajustes');
-      },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+      },function(){
+        toast('Activa el GPS en los ajustes del móvil');
+      },{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
     }
-    /* Enviar cada 10 segundos si hay GPS */
-    rideLiveInt=setInterval(function(){
-      if(userPos&&userPos[0]!==0)enviarPosicion();
+
+    /* Guardar el watch para limpiarlo al detener */
+    rideLiveInt=liveWatch;
+
+    /* También enviar cada 10s por si watchPosition se pausa */
+    setInterval(function(){
+      if(rideLiveOn)enviarPosicion();
     },10000);
   }
 
@@ -3696,10 +3706,13 @@ function openRideLivePromo(){
 
 function rideLiveDetener(){
   rideLiveOn=false;
-  if(rideLiveInt){clearInterval(rideLiveInt);rideLiveInt=null;}
+  if(rideLiveInt){
+    try{navigator.geolocation.clearWatch(rideLiveInt);}catch(e){}
+    rideLiveInt=null;
+  }
   if(rideLiveId){db.ref('ride_live/'+rideLiveId).remove();}
   rideLiveId=null;
-  toast('📡 Ride Live finalizado');
+  toast('\uD83D\uDCE1 Ride Live finalizado');
 }
 
 /* ═══ COMUNIDAD: WhatsApp + Telegram ═══ */
