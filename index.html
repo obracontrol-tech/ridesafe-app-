@@ -742,6 +742,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080c0a;color:#fff;f
   color:var(--dim);font-family:'Barlow Condensed',sans-serif;transition:all .2s;
 }
 .perfil.on{background:var(--lime-dim);border-color:var(--lime);color:var(--lime)}
+#safe-route-toggle.on{background:var(--lime-dim);border-color:var(--lime);color:var(--lime)}
 
 /* ═══════════════════════════════════════
    ASISTENTE IA
@@ -2479,7 +2480,8 @@ var GRUPOS_MENU = {
       {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
       {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
       {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}},
-      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}}
+      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}},
+      {e:'🛡️', n:'Safe Route Mode', d:'Navegación inteligente que prioriza tu seguridad por encima de la velocidad o la distancia', fn:function(){abrirSafeRouteMode();}}
     ]
   }
 };
@@ -3181,6 +3183,7 @@ function closeGrupoMenuNow(){
   <div class="p-header" style="height:52px">
     <button class="p-back" onclick="closePlan()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="p-title">Planificar <span>Ruta</span></div>
+    <button id="safe-route-toggle" onclick="toggleSafeRoute()" style="margin-left:auto;margin-right:12px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">&#128737;&#65039; Modo Seguro: OFF</button>
   </div>
   <div style="flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 14px">
     <div class="plan-field">
@@ -4531,10 +4534,37 @@ function setFlashPattern(p,btn){flashPatron=p;document.querySelectorAll('#flash-
    ═══════════════════════════════════════ */
 var planMap=null,planLayer=null,planMarkers=[];
 var planPerfil='cycling-road',orsKey='',planRoute=null;
+var safeRouteOn=false;
 try{orsKey=localStorage.getItem('rs_ors_key')||'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdkOGFjNDY4Yjc1MzQ3Zjg5M2Q0M2RiMTRhODExYzBmIiwiaCI6Im11cm11cjY0In0=';}catch(e){}
 
 function openPlan(){openPanel('panel-plan');if(!planMap)initPlanMap();if(!orsKey)document.getElementById('ors-key-modal').style.display='flex';setTimeout(function(){planMap&&planMap.invalidateSize();},100);}
-function closePlan(){closePanel('panel-plan');document.getElementById('ors-key-modal').style.display='none';}
+function closePlan(){closePanel('panel-plan');document.getElementById('ors-key-modal').style.display='none';safeRouteOn=false;actualizarBotonSafeRoute();}
+
+function abrirSafeRouteMode(){
+  safeRouteOn=true;
+  openPlan();
+  actualizarBotonSafeRoute();
+  toast('\uD83D\uDEE1\uFE0F Safe Route Mode activado — buscaremos la ruta MÁS SEGURA, no la más rápida');
+}
+
+function toggleSafeRoute(){
+  safeRouteOn=!safeRouteOn;
+  actualizarBotonSafeRoute();
+  toast(safeRouteOn?'\uD83D\uDEE1\uFE0F Modo Seguro activado':'Modo Seguro desactivado — ruta normal');
+  if(planRoute&&planOrigen&&(planModo==='loop'||planDestino))calcularRuta();
+}
+
+function actualizarBotonSafeRoute(){
+  var b=document.getElementById('safe-route-toggle');
+  if(!b)return;
+  if(safeRouteOn){
+    b.classList.add('on');
+    b.innerHTML='\uD83D\uDEE1\uFE0F Modo Seguro: ON';
+  }else{
+    b.classList.remove('on');
+    b.innerHTML='\uD83D\uDEE1\uFE0F Modo Seguro: OFF';
+  }
+}
 
 function initPlanMap(){
   planMap=L.map('plan-mapa',{zoomControl:true}).setView([41.6176,0.62],10);
@@ -4595,11 +4625,14 @@ function calcularRuta(){
     return;
   }
 
+  var esCyclingProfile=planPerfil.indexOf('cycling')===0;
   var body;
   if(planModo==='loop'){
-    body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true,instructions:true,language:'es'};
+    body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true,instructions:true,language:'es',extra_info:['waytype','surface']};
+    if(safeRouteOn&&esCyclingProfile)body.options.avoid_features=['highways','tollways'];
   }else{
-    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es'};
+    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es',extra_info:['waytype','surface']};
+    if(safeRouteOn&&esCyclingProfile)body.options={avoid_features:['highways','tollways']};
   }
   fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
     method:'POST',
@@ -4616,11 +4649,48 @@ function calcularRuta(){
   .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
 }
 
+/* Tipos de vía OpenStreetMap devueltos por ORS (extras.waytype):
+   0 desconocido, 1 carretera principal, 2 carretera, 3 calle, 4 camino,
+   5 pista, 6 carril bici, 7 senda peatonal, 8 escalones, 9 ferry, 10 en obras */
+var WAYTYPE_SEGURO=[4,5,6,7];   // camino, pista, carril bici, senda — SEGURO
+var WAYTYPE_PELIGROSO=[1,2];    // carretera principal, carretera — PELIGROSO
+
+function calcularSeguridadRuta(feature){
+  try{
+    var wt=feature.properties.extras&&feature.properties.extras.waytype;
+    if(!wt||!wt.values||!wt.values.length)return null;
+    var totalPasos=0,pasosSeguro=0,pasosPeligro=0;
+    wt.values.forEach(function(v){
+      var desde=v[0],hasta=v[1],tipo=v[2];
+      var largo=hasta-desde;
+      totalPasos+=largo;
+      if(WAYTYPE_SEGURO.indexOf(tipo)!==-1)pasosSeguro+=largo;
+      if(WAYTYPE_PELIGROSO.indexOf(tipo)!==-1)pasosPeligro+=largo;
+    });
+    if(totalPasos===0)return null;
+    return {
+      pctSeguro:Math.round((pasosSeguro/totalPasos)*100),
+      pctPeligro:Math.round((pasosPeligro/totalPasos)*100)
+    };
+  }catch(e){return null;}
+}
+
 function renderAlternativas(data){
   if(planLayer){planMap.removeLayer(planLayer);planLayer=null;}
   planAltLayers.forEach(function(l){planMap.removeLayer(l);});planAltLayers=[];
   planMarkers.forEach(function(m){planMap.removeLayer(m);});planMarkers=[];
   var feats=data.features||[];if(!feats.length){toast('Sin ruta posible');return;}
+
+  /* Safe Route Mode: calcular seguridad de cada alternativa y elegir la más segura por defecto */
+  var seguridades=feats.map(calcularSeguridadRuta);
+  if(safeRouteOn&&feats.length>1){
+    var mejorIdx=0,mejorPct=-1;
+    seguridades.forEach(function(s,i){
+      if(s&&s.pctSeguro>mejorPct){mejorPct=s.pctSeguro;mejorIdx=i;}
+    });
+    planAltIndex=mejorIdx;
+  }
+
   feats.forEach(function(f,i){
     var lyr=L.geoJSON(f,{style:{color:i===planAltIndex?'#a8e63d':'#5a6b5e',weight:i===planAltIndex?6:4,opacity:i===planAltIndex?0.95:0.55}}).addTo(planMap);
     lyr.on('click',function(){selectAlt(i);});
@@ -4639,12 +4709,28 @@ function renderAlternativas(data){
       var s=f.properties.summary,d=document.createElement('div');
       d.className='perfil'+(i===planAltIndex?' on':'');
       var lbl=(f.properties&&f.properties._label)?f.properties._label:'Opción '+(i+1);
-      d.textContent=lbl+' · '+(s.distance/1000).toFixed(1)+' km';
+      var txt=lbl+' · '+(s.distance/1000).toFixed(1)+' km';
+      var seg=seguridades[i];
+      if(seg){
+        if(i===planAltIndex&&safeRouteOn){
+          txt+=' · \uD83D\uDEE1\uFE0F '+seg.pctSeguro+'% segura';
+        }else{
+          txt+=' · '+seg.pctSeguro+'% segura';
+        }
+      }
+      d.textContent=txt;
       d.onclick=function(){selectAlt(i);};
       box.appendChild(d);
     });
     box.style.display='flex';box.className='perfiles';
-  }else{box.style.display='none';}
+  }else{
+    if(feats.length===1&&seguridades[0]){
+      box.innerHTML='<div class="perfil on">\uD83D\uDEE1\uFE0F '+seguridades[0].pctSeguro+'% de la ruta es segura (carril bici, camino o senda)</div>';
+      box.style.display='flex';box.className='perfiles';
+    }else{
+      box.style.display='none';
+    }
+  }
   actualizarStatsPlan();
 }
 
