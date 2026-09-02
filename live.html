@@ -109,22 +109,32 @@ function calcularTiempoRuta(){
   return Math.floor(ms / 60000);
 }
 
+function crearIconoCiclista(en_linea){
+  var color = en_linea ? '#4ade80' : '#ff6b6b';
+  var html = '<div style="width:20px;height:20px;border-radius:50%;background:' + color + ';border:3px solid #fff;box-shadow:0 0 15px ' + color + ',0 0 30px ' + color + ';animation:latido 1.5s infinite;"></div>';
+  return L.divIcon({
+    html: html,
+    className: '',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
+  });
+}
+
 function actualizarMarcador(lat, lng, en_linea) {
   inicializarMapa();
   
   if (marcador) {
     marcador.setLatLng([lat, lng]);
+    marcador.setIcon(crearIconoCiclista(en_linea));
   } else {
     marcador = L.marker([lat, lng], {
-      icon: L.divIcon({
-        className: 'punto-ciclista' + (en_linea ? '' : ' punto-offline'),
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      })
+      icon: crearIconoCiclista(en_linea),
+      zIndexOffset: 1000
     }).addTo(mapa);
   }
   
-  mapa.setView([lat, lng], 15);
+  mapa.setView([lat, lng], 15, {animate: true});
+  setTimeout(function(){ mapa.invalidateSize(); }, 300);
 }
 
 function escucharRideLive(id){
