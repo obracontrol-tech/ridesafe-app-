@@ -4626,13 +4626,21 @@ function calcularRuta(){
   }
 
   var esCyclingProfile=planPerfil.indexOf('cycling')===0;
+  var modoSeguroActivo=safeRouteOn&&esCyclingProfile;
   var body;
   if(planModo==='loop'){
+    /* round_trip devuelve 1 sola ruta — se puede combinar con extra_info sin problema */
     body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true,instructions:true,language:'es',extra_info:['waytype','surface']};
-    if(safeRouteOn&&esCyclingProfile)body.options.avoid_features=['highways','tollways'];
+    if(modoSeguroActivo)body.options.avoid_features=['highways','tollways'];
   }else{
-    body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es',extra_info:['waytype','surface']};
-    if(safeRouteOn&&esCyclingProfile)body.options={avoid_features:['highways','tollways']};
+    /* IMPORTANTE: la API de ORS NO permite combinar alternative_routes con extra_info.
+       Si el Modo Seguro está activo, pedimos 1 sola ruta optimizada por seguridad
+       (sin alternativas). Si está desactivado, mantenemos las 3 alternativas de siempre. */
+    if(modoSeguroActivo){
+      body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],elevation:true,instructions:true,language:'es',extra_info:['waytype','surface'],options:{avoid_features:['highways','tollways']}};
+    }else{
+      body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es'};
+    }
   }
   fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
     method:'POST',
