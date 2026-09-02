@@ -4568,7 +4568,7 @@ function actualizarBotonSafeRoute(){
 
 function initPlanMap(){
   planMap=L.map('plan-mapa',{zoomControl:true}).setView([41.6176,0.62],10);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM &copy; CARTO',subdomains:'abcd',maxZoom:20}).addTo(planMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(planMap);
   setTimeout(function(){planMap.invalidateSize();},200);
 }
 
