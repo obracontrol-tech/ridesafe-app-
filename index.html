@@ -4627,17 +4627,19 @@ function calcularRuta(){
 
   var esCyclingProfile=planPerfil.indexOf('cycling')===0;
   var modoSeguroActivo=safeRouteOn&&esCyclingProfile;
+  /* IMPORTANTE: ORS solo permite 'ferries' y 'steps' como avoid_features válidos
+     para perfiles de ciclismo. 'highways'/'tollways' son solo para coches y dan error 400. */
   var body;
   if(planModo==='loop'){
     /* round_trip devuelve 1 sola ruta — se puede combinar con extra_info sin problema */
     body={coordinates:[[planOrigen.lng,planOrigen.lat]],options:{round_trip:{length:planLoopKm*1000,points:4,seed:Math.floor(Math.random()*100)}},elevation:true,instructions:true,language:'es',extra_info:['waytype','surface']};
-    if(modoSeguroActivo)body.options.avoid_features=['highways','tollways'];
+    if(modoSeguroActivo)body.options.avoid_features=['steps'];
   }else{
     /* IMPORTANTE: la API de ORS NO permite combinar alternative_routes con extra_info.
        Si el Modo Seguro está activo, pedimos 1 sola ruta optimizada por seguridad
        (sin alternativas). Si está desactivado, mantenemos las 3 alternativas de siempre. */
     if(modoSeguroActivo){
-      body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],elevation:true,instructions:true,language:'es',extra_info:['waytype','surface'],options:{avoid_features:['highways','tollways']}};
+      body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],elevation:true,instructions:true,language:'es',extra_info:['waytype','surface'],options:{avoid_features:['steps']}};
     }else{
       body={coordinates:[[planOrigen.lng,planOrigen.lat],[planDestino.lng,planDestino.lat]],alternative_routes:{target_count:3,share_factor:0.6,weight_factor:1.6},elevation:true,instructions:true,language:'es'};
     }
@@ -4647,13 +4649,21 @@ function calcularRuta(){
     headers:{'Authorization':orsKey,'Content-Type':'application/json','Accept':'application/geo+json, application/json'},
     body:JSON.stringify(body)
   })
-  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(r){
+    if(!r.ok){
+      return r.json().catch(function(){return null;}).then(function(errBody){
+        var msg=(errBody&&errBody.error&&errBody.error.message)?errBody.error.message:('HTTP '+r.status);
+        throw new Error(msg);
+      });
+    }
+    return r.json();
+  })
   .then(function(data){
     planRoute=data;planAltIndex=0;
     renderAlternativas(data);
     if(planModo==='loop')toast('Bucle de ~'+planLoopKm+' km listo. ¿No te convence? Pulsa CALCULAR otra vez y sale uno distinto');
   })
-  .catch(function(err){toast('Error: '+err.message+((''+err.message)==='403'?' — revisa tu API key ORS':''));})
+  .catch(function(err){toast('Error ORS: '+err.message);})
   .finally(function(){btn.disabled=false;btn.innerHTML='&#127758; CALCULAR RUTA';});
 }
 
