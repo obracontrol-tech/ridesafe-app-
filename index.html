@@ -2912,11 +2912,11 @@ function closeGrupoMenuNow(){
     </div>
     <div id="layer-menu">
       <div class="layer-list">
-      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#127775; Premium Road</span></div>
-      <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
+      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127775; Premium Road</span></div>
+      <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
       <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
       <div class="layer-opt" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#9968; MTB Terrain</span></div>
-      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.basemaps.cartocdn.com/dark_all/13/4110/3053.png" alt=""><span>&#127773; Dark Pro</span></div>
+      <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127773; Dark Pro</span></div>
       <div class="layer-opt" data-layer="nav" onclick="setMapLayer('nav')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.fr/osmfr/13/4110/3053.png" alt=""><span>&#128250; Navegación</span></div>
       </div>
     </div>
@@ -3772,10 +3772,10 @@ updateQuickStats();
 var MAP_LAYERS={
   free:{url:'https://tiles.openfreemap.org/styles/bright/{z}/{x}/{y}.png',name:'Premium Road',attribution:'&copy; OpenFreeMap &copy; OSM',maxZoom:19},
   cycle:{url:'https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',name:'Ciclismo',attribution:'&copy; OSM &copy; Waymarked Trails',maxZoom:19},
-  standard:{url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',name:'Estándar',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
+  standard:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Estándar',attribution:'&copy; OpenStreetMap contributors',maxZoom:19},
   satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',name:'Satélite',attribution:'&copy; Esri',maxZoom:18},
   topo:{url:'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',name:'MTB Terrain',attribution:'&copy; OSM &copy; OpenTopoMap',maxZoom:17},
-  night:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',name:'Dark Pro',attribution:'&copy; OSM &copy; CARTO',maxZoom:20},
+  night:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',name:'Dark Pro',attribution:'&copy; OpenStreetMap contributors',maxZoom:19},
   nav:{url:'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',name:'Navegación',attribution:'&copy; OSM France',maxZoom:20}
 };
 
@@ -4969,7 +4969,7 @@ function pintarTrackMapa(points, contenedorId, esMini){
   if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
   var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,crossOrigin:'anonymous'}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:'anonymous'}).addTo(map);
   var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
   L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
   L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
@@ -5202,7 +5202,7 @@ function verRutaComunidad(r){
     if(comunidadMap){ comunidadMap.remove(); comunidadMap=null; }
     var latlngs = r.points.map(function(p){return [p[0],p[1]];});
     comunidadMap = L.map('comunidad-map',{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,crossOrigin:'anonymous'}).addTo(comunidadMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:'anonymous'}).addTo(comunidadMap);
     var line = L.polyline(latlngs,{color:'#a8e63d',weight:4}).addTo(comunidadMap);
     L.circleMarker(latlngs[0],{radius:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(comunidadMap);
     L.circleMarker(latlngs[latlngs.length-1],{radius:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(comunidadMap);
@@ -5402,7 +5402,7 @@ function initGrupoMapa(){
   var el = document.getElementById('grupo-mapa');
   if(!el || grupoMapa){ if(grupoMapa){setTimeout(function(){grupoMapa.invalidateSize();},150);} return; }
   grupoMapa = L.map('grupo-mapa',{zoomControl:false,attributionControl:false}).setView([41.6176,0.62],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(grupoMapa);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(grupoMapa);
   setTimeout(function(){grupoMapa.invalidateSize();},200);
 }
 
@@ -7880,7 +7880,7 @@ function qdEsc(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function qdTiles(map){
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,detectRetina:true,attribution:'&copy; OSM &copy; CARTO'}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
 }
 function qdIconoNeon(){
   return L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #080c0a;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]});
