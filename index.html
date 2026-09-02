@@ -3786,6 +3786,31 @@ var MAP_LAYERS={
 var navMap=null,navTileLayer=null,navUserMark=null,navSearchMark=null;
 var navRecOn=false,navPoints=[],navStartTime=null,navTimer=null,navWatch=null,navDist=0;
 var navBikeIcon=null,navGpxLayer=null,navGpxSombra=null,navGpxRoute=null,navElevations=[],navDestino=null;
+var navSeguimientoWatch=null;
+
+/* GPS independiente para navegación por voz — funciona SIEMPRE que haya una ruta cargada,
+   sin depender de si el usuario ha pulsado el botón REC de grabar. Antes, sin pulsar REC,
+   navPoints estaba vacío y el aviso de desvío + recálculo automático nunca se activaba. */
+function iniciarSeguimientoNav(){
+  if(navSeguimientoWatch!==null)return; // ya está activo
+  if(!navigator.geolocation){toast('GPS no disponible en este dispositivo');return;}
+  navSeguimientoWatch=navigator.geolocation.watchPosition(function(pos){
+    var pt=[pos.coords.latitude,pos.coords.longitude];
+    userPos=pt;
+    if(navUserMark){navUserMark.setLatLng(pt);}
+    else if(navMap){navUserMark=L.marker(pt,{icon:navBikeIcon}).addTo(navMap);}
+    if(navMap && !navRecOn){navMap.panTo(pt);}
+  },function(err){
+    toast('\u26A0\uFE0F GPS: '+(err&&err.message?err.message:'no se pudo obtener tu posición'));
+  },{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+}
+
+function detenerSeguimientoNav(){
+  if(navSeguimientoWatch!==null){
+    try{navigator.geolocation.clearWatch(navSeguimientoWatch);}catch(e){}
+    navSeguimientoWatch=null;
+  }
+}
 var navWaypoints=[],navWpMarkers=[],navWpAdding=false;
 var currentLayer='topo',userPos=null;
 
@@ -3883,7 +3908,7 @@ var endIconHtml='<div style="width:14px;height:14px;border-radius:50%;background
 var wpTypeColors={checkpoint:'#a8e63d',water:'#00e5ff',camping:'#ff8833',viewpoint:'#ffcc00',danger:'#ff3355',custom:'#9966ff'};
 
 function openNav(){openPanel('panel-nav');if(!navMap)initNavMap();setTimeout(function(){navMap&&navMap.invalidateSize();},100);}
-function closeNav(){if(flashOn)stopFlash();closePanel('panel-nav');}
+function closeNav(){if(flashOn)stopFlash();if(!navRecOn)detenerSeguimientoNav();closePanel('panel-nav');}
 
 function initNavMap(){
   if(navMap)return;
@@ -3967,6 +3992,7 @@ function parseGPX(gpxText){
   if(navGpxLayer)navMap.removeLayer(navGpxLayer);
   navGpxSombra=L.polyline(points,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);
   navGpxLayer=L.polyline(points,{color:'#a8e63d',weight:6,opacity:1}).addTo(navMap);
+  iniciarSeguimientoNav();
   var si=L.divIcon({className:'',html:startIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
   var ei=L.divIcon({className:'',html:endIconHtml,iconSize:[14,14],iconAnchor:[7,7]});
   L.marker(points[0],{icon:si}).addTo(navMap).bindPopup('Inicio');
@@ -4084,7 +4110,7 @@ function updateLiveStats(){
 }
 
 setInterval(function(){
-  if(!navGpxRoute||!userPos||navPoints.length===0)return;
+  if(!navGpxRoute||!userPos)return;
   var minDist=Infinity;
   for(var i=0;i<navGpxRoute.length;i+=3){
     var d=haversine(userPos[0],userPos[1],navGpxRoute[i][0],navGpxRoute[i][1]);
@@ -4855,9 +4881,10 @@ function startNavFromPlan(){
     navGpxSombra=L.polyline(coords,{color:'#1a2a00',weight:9,opacity:0.5}).addTo(navMap);
     navGpxLayer=L.polyline(coords,{color:'#a8e63d',weight:6,opacity:1,dashArray:'12 4'}).addTo(navMap);
     navMap.fitBounds(navGpxLayer.getBounds(),{padding:[30,30]});
-    document.getElementById('nav-status').textContent='\u25CF Ruta planificada';
+    document.getElementById('nav-status').textContent='\u25CF Navegando';
     document.getElementById('nav-status').className='following';
-    toast('Ruta cargada - pulsa REC para grabar');
+    iniciarSeguimientoNav();
+    toast('\uD83D\uDCCD Ruta cargada — GPS activo, guiándote por voz');
   },500);
 }
 
