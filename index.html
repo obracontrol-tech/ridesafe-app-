@@ -3659,6 +3659,7 @@ function openRideLivePromo(){
   function iniciarEnvio(batVal){
     var livePos=null;
     var liveWatch=null;
+    var liveVel=0;
 
     function enviarPosicion(){
       if(!rideLiveOn)return;
@@ -3666,21 +3667,25 @@ function openRideLivePromo(){
       if(!pos)return;
       db.ref('ride_live/'+rideLiveId).set({
         lat:pos[0],lng:pos[1],
-        vel:navVel||0,
-        dist:navDist?(navDist/1000).toFixed(1):0,
+        vel:liveVel||0,
+        dist:(typeof navDist!=='undefined'&&navDist)?(navDist/1000).toFixed(1):0,
         bat:batVal||'--',
         ts:Date.now(),
         nombre:localStorage.getItem('rs_nombre')||'Ciclista',
         sos:false
       }).then(function(){
         toast('\uD83D\uDCE1 Ride Live: posición enviada');
-      }).catch(function(){});
+      }).catch(function(e){
+        toast('\u274C Error Ride Live: '+(e&&e.message?e.message:'desconocido'));
+      });
     }
 
     /* GPS propio del Ride Live — independiente del mapa */
     if(navigator.geolocation){
       liveWatch=navigator.geolocation.watchPosition(function(p){
         livePos=[p.coords.latitude,p.coords.longitude];
+        /* speed viene en m/s desde el GPS; convertir a km/h */
+        liveVel=(p.coords.speed&&p.coords.speed>0)?(p.coords.speed*3.6):0;
         if(!userPos)userPos=livePos;
         enviarPosicion();
       },function(){
