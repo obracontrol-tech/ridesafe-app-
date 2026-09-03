@@ -3739,9 +3739,9 @@ function enviarSugerenciaTG(){
   btn.disabled=true;btn.style.opacity='.6';
   estado.style.color='var(--muted)';estado.textContent='Enviando...';
   var msg='💬 SUGERENCIA RideSafe IA\n👤 '+nombre+'\n📝 '+texto+'\n🕐 '+new Date().toLocaleString('es-ES');
-  fetch('https://api.telegram.org/bot8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM/sendMessage',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({chat_id:'8601457137',text:msg})
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
+    method:'POST',headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+    body:JSON.stringify({telegram:true,chat_id:'8601457137',text:msg})
   }).then(function(r){return r.json();}).then(function(d){
     btn.disabled=false;btn.style.opacity='1';
     if(d.ok){estado.style.color='var(--lime)';estado.textContent='✅ ¡Enviada! Gracias por mejorar la app';
@@ -6132,15 +6132,15 @@ var _radarInitTO = setTimeout(function() {
    Bot: @rindesafeai_bot
    =========================================*/
 
-var TG_TOKEN = '8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM';
 var TG_CHAT  = '8601457137';
-var TG_URL   = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
+var TG_URL   = 'https://orange-boat-6d42.pedrosaborrego.workers.dev';
 
 function tgSend(msg) {
   fetch(TG_URL, {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
+    headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
     body: JSON.stringify({
+      telegram: true,
       chat_id: TG_CHAT,
       text: msg,
       parse_mode: 'HTML'
@@ -6244,8 +6244,9 @@ tgSend = function(msg) {
   destinos.forEach(function(chatId){
     fetch(TG_URL, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
       body: JSON.stringify({
+        telegram: true,
         chat_id: chatId,
         text: msg,
         parse_mode: 'HTML'
@@ -7668,10 +7669,10 @@ function tgEnviar(msg) {
   try {
     var chatId = localStorage.getItem('tg_chat_id');
     if (!chatId) return;
-    fetch('https://api.telegram.org/bot8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM/sendMessage', {
+    fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({chat_id: chatId, text: msg})
+      headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+      body: JSON.stringify({telegram:true, chat_id: chatId, text: msg})
     });
   } catch(e) {}
 }
