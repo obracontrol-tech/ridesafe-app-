@@ -2476,7 +2476,6 @@ var GRUPOS_MENU = {
     titulo: '👥 Comunidad',
     items: [
       {e:'🚵', n:'Comunidad', d:'Salidas y ciclistas cerca de ti', fn:function(){openComunidadApp();}},
-      {e:'☕', n:'Puntos ciclistas', d:'Fuentes, panaderías, talleres y bares bike-friendly', fn:function(){openPuntosApp();}},
       {e:'📻', n:'Grupo · Pelotón en vivo', d:'GPS del grupo y walkie-talkie', fn:function(){openGrupo();}},
       {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
       {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
@@ -3458,75 +3457,6 @@ function closeGrupoMenuNow(){
 </div>
 
 <!-- ═══════════════════════════════════════════
-     PANEL COMUNIDAD — PUNTOS CICLISTAS (v1)
-     Módulo aditivo. No toca ningún código existente.
-     Fuentes de agua, panaderías/tiendas, talleres y
-     bares/restaurantes bike-friendly, curados por la
-     comunidad. Nodo Firebase nuevo: 'puntos_bici'
-     ═══════════════════════════════════════════ -->
-<div class="panel" id="panel-puntos">
-  <div class="p-header">
-    <button class="p-back" onclick="closePanel('panel-puntos')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">Puntos <span>Ciclistas</span></div>
-    <div class="p-badge" id="pt-badge">0 puntos</div>
-  </div>
-  <div class="p-body">
-
-    <!-- VISTA LISTA -->
-    <div id="pt-vista-lista">
-      <div class="card" style="text-align:center">
-        <div class="card-title">&#9749; Abastecimiento y paradas</div>
-        <div class="card-sub" style="margin-bottom:12px">Fuentes de agua, panader&iacute;as, talleres y bares que acogen bien a los ciclistas. A&ntilde;adidos por la comunidad.</div>
-        <button class="btn-primary" onclick="ptAbrirCrear()">&#10133; A&Ntilde;ADIR PUNTO</button>
-      </div>
-      <div id="pt-chips" class="qd-chips" style="margin-bottom:12px"></div>
-      <div id="pt-mapa-lista" style="width:100%;height:200px;border-radius:14px;overflow:hidden;background:#1a1a1a;margin-bottom:12px"></div>
-      <div id="pt-lista">
-        <div class="card" style="text-align:center;color:var(--muted)">Cargando puntos...</div>
-      </div>
-    </div>
-
-    <!-- VISTA CREAR -->
-    <div id="pt-vista-crear" style="display:none">
-      <div class="card">
-        <div class="card-title">&#128221; Nuevo punto</div>
-        <div class="card-sub" style="margin-bottom:12px">Rellena los datos y publica. Todos los ciclistas de RideSafe lo ver&aacute;n.</div>
-        <input class="input" id="pt-nombre" maxlength="60" placeholder="Nombre: Ej. Fuente del pantano" style="margin-bottom:10px"/>
-        <div class="card-sub" style="margin-bottom:6px">Categor&iacute;a</div>
-        <div id="pt-chips-crear" class="qd-chips" style="margin-bottom:10px"></div>
-        <textarea class="input" id="pt-desc" maxlength="200" rows="2" placeholder="Descripci&oacute;n corta: horario, si hay aparcabicis, etc..." style="resize:none"></textarea>
-      </div>
-      <div class="card">
-        <div class="card-title">&#128506;&#65039; &iquest;D&oacute;nde est&aacute;?</div>
-        <div class="card-sub" style="margin-bottom:10px">Toca el mapa para colocar el punto, o usa tu GPS.</div>
-        <div id="pt-mapa-crear" style="width:100%;height:220px;border-radius:14px;overflow:hidden;background:#1a1a1a;margin-bottom:10px"></div>
-        <button class="btn-primary" style="background:var(--card2);color:var(--lime);border:1px solid rgba(168,230,61,.35)" onclick="ptUsarGPS()">&#128225; USAR MI UBICACI&Oacute;N</button>
-      </div>
-      <button class="btn-primary" onclick="ptPublicar()">&#128640; PUBLICAR PUNTO</button>
-      <button class="btn-primary" style="background:var(--card2);color:var(--muted);border:1px solid var(--border);margin-top:8px" onclick="ptCerrarCrear()">Cancelar</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- MODAL: DETALLE DE PUNTO -->
-<div id="pt-modal">
-  <div class="qd-modal-box">
-    <div id="pt-modal-map" style="width:100%;height:180px;border-radius:14px;overflow:hidden;margin-bottom:12px;background:#1a1a1a"></div>
-    <div id="pt-modal-cat" style="display:inline-block;margin-bottom:8px;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:700;background:var(--lime-dim);color:var(--lime);border:1px solid rgba(168,230,61,.4)"></div>
-    <h3 id="pt-modal-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;margin-bottom:4px;color:var(--text)"></h3>
-    <div id="pt-modal-desc" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
-    <div id="pt-modal-autor" style="font-size:12px;color:var(--text2);margin-bottom:14px"></div>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-primary" style="flex:1;background:#0d3d1e;border:1px solid #25D366;color:#25D366" onclick="ptCompartir()">&#128172; Compartir WhatsApp</button>
-      <a class="btn-primary" id="pt-modal-llegar" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;text-decoration:none;background:var(--card2);color:var(--text2);border:1px solid var(--border)">&#128205; C&oacute;mo llegar</a>
-    </div>
-    <button id="pt-modal-borrar" style="display:none;width:100%;padding:11px;background:transparent;border:1px solid rgba(255,51,85,.4);border-radius:12px;color:#ff3355;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="ptBorrar()">&#128465;&#65039; Borrar mi punto</button>
-    <button style="width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="ptCerrarModal()">Cerrar</button>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
      PANEL E-BIKE PRO
      ═══════════════════════════════════════════ -->
 <div class="panel" id="panel-ebike">
@@ -4406,11 +4336,27 @@ function vozIntentarRecalculo(m){
   fetch('https://api.openrouteservice.org/v2/directions/'+planPerfil+'/geojson',{
     method:'POST',
     headers:{'Authorization':orsKey,'Content-Type':'application/json'},
-    body:JSON.stringify({coordinates:[[userPos[1],userPos[0]],[fin[1],fin[0]]],elevation:true,instructions:true,language:'es'})
+    body:JSON.stringify({
+      coordinates:[[userPos[1],userPos[0]],[fin[1],fin[0]]],
+      elevation:true,instructions:true,language:'es',
+      alternative_routes:{target_count:3,weight_factor:1.6,share_factor:0.6}
+    })
   }).then(function(r){return r.json();}).then(function(data){
     vozRecalcEnCurso=false;
     if(!data||!data.features||!data.features.length)return;
-    var f=data.features[0];
+    /* De entre las alternativas devueltas, elegimos la que pasa MÁS CERCA
+       de donde está el ciclista ahora mismo — no siempre la "oficial" */
+    var mejorF=data.features[0],mejorDist=Infinity;
+    data.features.forEach(function(feat){
+      var pts=feat.geometry.coordinates;
+      var dMin=Infinity;
+      for(var i=0;i<pts.length;i+=3){
+        var d=haversine(userPos[0],userPos[1],pts[i][1],pts[i][0]);
+        if(d<dMin)dMin=d;
+      }
+      if(dMin<mejorDist){mejorDist=dMin;mejorF=feat;}
+    });
+    var f=mejorF;
     var coords=f.geometry.coordinates.map(function(c){return[c[1],c[0]];});
     navGpxRoute=coords;
     if(!navDestino)navDestino=coords[coords.length-1];
@@ -4422,7 +4368,7 @@ function vozIntentarRecalculo(m){
     var alertEl=document.getElementById('offroute-alert');if(alertEl)alertEl.classList.remove('show');
     hablar('Nueva ruta calculada. Sigue las indicaciones.');
     toast('\ud83d\udd04 Ruta recalculada');
-  }).catch(function(e){vozRecalcEnCurso=false;});
+  }).catch(function(e){vozRecalcEnCurso=false;toast('\u26A0 No se pudo recalcular, sigue la ruta anterior');});
 }
 
 /* Bucle principal de voz: cada 4 segundos */
@@ -8198,226 +8144,6 @@ function qdCompartir(){
     }
   }catch(e){}
 })();
-</script>
-
-<style>
-/* ═══ COMUNIDAD: PUNTOS CICLISTAS (aditivo) ═══ */
-#pt-modal{position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
-#pt-modal.show{display:flex}
-.pt-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
-.pt-item:active{border-color:rgba(168,230,61,.5)}
-.pt-icono{flex-shrink:0;width:40px;height:40px;border-radius:12px;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:19px}
-.pt-info{flex:1;min-width:0}
-.pt-info .t{font-size:14.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pt-info .s{font-size:12px;color:var(--muted);margin-top:3px}
-</style>
-<script>
-/* ═══════════════════════════════════════════
-   COMUNIDAD — PUNTOS CICLISTAS v1
-   Bloque 100% aditivo. Define openPuntosApp().
-   Nodo Firebase nuevo: 'puntos_bici'
-   ═══════════════════════════════════════════ */
-var PT_CAT = {agua:'\uD83D\uDCA7 Agua', panaderia:'\uD83E\uDD56 Panader\u00EDa/tienda', taller:'\uD83D\uDD27 Taller bici', bar:'\u2615 Bar/Restaurante', farmacia:'\uD83D\uDC8A Farmacia', alquiler:'\uD83D\uDEB2 Alquiler de bicicletas', interes:'\uD83D\uDCCD Punto de inter\u00E9s'};
-var ptMapaCrear=null, ptMarkerCrear=null, ptMapaModal=null, ptMarkerModal=null, ptMapaLista=null;
-var ptCache={}, ptActual=null, ptFiltro=null;
-
-function ptMiId(){
-  var id = localStorage.getItem('rs_device_id');
-  if(!id){ id = 'dev_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem('rs_device_id', id); }
-  return id;
-}
-function ptMiNombre(){
-  return (typeof perfilUsuario!=='undefined' && perfilUsuario.nombre) ? perfilUsuario.nombre : '';
-}
-function ptEsc(s){
-  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function ptTiles(map){
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-}
-function ptIconoNeon(){
-  return L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #080c0a;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]});
-}
-function ptEmoji(cat){
-  return (PT_CAT[cat]||'\uD83D\uDCCD ').split(' ')[0];
-}
-
-/* ── Abrir módulo ── */
-function openPuntosApp(){
-  openPanel('panel-puntos');
-  ptCerrarCrear();
-  ptFiltro = null;
-  ptRenderChipsFiltro();
-  ptCargarLista();
-}
-
-/* ── Lista + mapa de puntos ── */
-function ptCargarLista(){
-  var cont = document.getElementById('pt-lista');
-  db.ref('puntos_bici').once('value').then(function(snap){
-    ptCache = snap.val() || {};
-    var items = Object.keys(ptCache).map(function(k){ return [k, ptCache[k]]; }).filter(function(it){ return it[1] && it[1].lat; });
-    if(ptFiltro) items = items.filter(function(it){ return it[1].categoria === ptFiltro; });
-    document.getElementById('pt-badge').textContent = items.length + (items.length===1?' punto':' puntos');
-    setTimeout(function(){
-      if(!ptMapaLista){
-        ptMapaLista = L.map('pt-mapa-lista',{zoomControl:false}).setView([41.6176,0.6200],12);
-        ptTiles(ptMapaLista);
-      }
-      ptMapaLista.eachLayer(function(l){ if(l instanceof L.Marker) ptMapaLista.removeLayer(l); });
-      var bounds = [];
-      items.forEach(function(it){
-        var q = it[1];
-        var m = L.marker([q.lat,q.lng]).addTo(ptMapaLista).bindPopup(ptEsc(q.nombre));
-        m.on('click', function(){ ptVer(it[0]); });
-        bounds.push([q.lat,q.lng]);
-      });
-      if(bounds.length) ptMapaLista.fitBounds(bounds,{padding:[24,24],maxZoom:14});
-      ptMapaLista.invalidateSize();
-    },150);
-    if(!items.length){
-      cont.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:34px;margin-bottom:8px">\uD83C\uDF35</div><div class="card-sub">Todav\u00EDa no hay puntos'+(ptFiltro?' de esta categor\u00EDa':'')+'.<br>\u00A1S\u00E9 el primero en a\u00F1adir uno!</div></div>';
-      return;
-    }
-    items.sort(function(a,b){ return (b[1].creado||0)-(a[1].creado||0); });
-    var html = '';
-    items.forEach(function(it){
-      var k = it[0], q = it[1];
-      html += '<div class="pt-item" onclick="ptVer(\''+ptEsc(k)+'\')">'
-        + '<div class="pt-icono">'+ptEmoji(q.categoria)+'</div>'
-        + '<div class="pt-info"><div class="t">'+ptEsc(q.nombre)+'</div>'
-        + '<div class="s">'+ptEsc(PT_CAT[q.categoria]||q.categoria)+'</div></div></div>';
-    });
-    cont.innerHTML = html;
-  }).catch(function(){
-    cont.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">No se pudieron cargar los puntos. Revisa tu conexi\u00F3n.</div>';
-  });
-}
-function ptRenderChipsFiltro(){
-  var c = document.getElementById('pt-chips');
-  c.innerHTML = '';
-  Object.keys(PT_CAT).forEach(function(cat){
-    var el = document.createElement('div');
-    el.className = 'qd-chip'+(ptFiltro===cat?' on':''); el.textContent = PT_CAT[cat];
-    el.onclick = function(){ ptFiltro = (ptFiltro===cat) ? null : cat; ptRenderChipsFiltro(); ptCargarLista(); };
-    c.appendChild(el);
-  });
-}
-
-/* ── Crear punto ── */
-var ptCategoriaSel = null;
-function ptRenderChipsCrear(){
-  var c = document.getElementById('pt-chips-crear');
-  if(c.children.length) return;
-  Object.keys(PT_CAT).forEach(function(cat){
-    var el = document.createElement('div');
-    el.className = 'qd-chip'; el.textContent = PT_CAT[cat]; el.dataset.cat = cat;
-    el.onclick = function(){
-      Array.prototype.forEach.call(c.children, function(x){ x.classList.remove('on'); });
-      el.classList.add('on'); ptCategoriaSel = cat;
-    };
-    c.appendChild(el);
-  });
-}
-function ptAbrirCrear(){
-  if(!ptMiNombre()){ toast('\uD83D\uDC64 Configura primero tu nombre en Mi Perfil'); return; }
-  document.getElementById('pt-vista-lista').style.display='none';
-  document.getElementById('pt-vista-crear').style.display='';
-  ptRenderChipsCrear();
-  setTimeout(function(){
-    if(!ptMapaCrear){
-      ptMapaCrear = L.map('pt-mapa-crear',{zoomControl:false}).setView([41.6176,0.6200],13);
-      ptTiles(ptMapaCrear);
-      ptMapaCrear.on('click', function(e){ ptPonMarker(e.latlng.lat, e.latlng.lng); });
-    }
-    ptMapaCrear.invalidateSize();
-  },150);
-}
-function ptCerrarCrear(){
-  document.getElementById('pt-vista-crear').style.display='none';
-  document.getElementById('pt-vista-lista').style.display='';
-}
-function ptPonMarker(lat,lng){
-  if(ptMarkerCrear) ptMapaCrear.removeLayer(ptMarkerCrear);
-  ptMarkerCrear = L.marker([lat,lng],{icon:ptIconoNeon()}).addTo(ptMapaCrear);
-  ptMapaCrear.panTo([lat,lng]);
-}
-function ptUsarGPS(){
-  if(!navigator.geolocation){ toast('GPS no disponible'); return; }
-  toast('\uD83D\uDCE1 Buscando tu ubicaci\u00F3n...');
-  navigator.geolocation.getCurrentPosition(function(p){
-    ptMapaCrear.setView([p.coords.latitude,p.coords.longitude],16);
-    ptPonMarker(p.coords.latitude,p.coords.longitude);
-  }, function(){ toast('No se pudo obtener el GPS'); }, {enableHighAccuracy:true,timeout:10000});
-}
-function ptPublicar(){
-  var nombre = document.getElementById('pt-nombre').value.trim();
-  if(!nombre){ toast('\u270F\uFE0F Ponle un nombre al punto'); return; }
-  if(!ptCategoriaSel){ toast('\uD83C\uDFF7\uFE0F Elige una categor\u00EDa'); return; }
-  if(!ptMarkerCrear){ toast('\uD83D\uDCCD Marca el punto en el mapa'); return; }
-  var ll = ptMarkerCrear.getLatLng();
-  var q = {
-    nombre: nombre.slice(0,60),
-    categoria: ptCategoriaSel,
-    descripcion: document.getElementById('pt-desc').value.trim().slice(0,200),
-    lat: ll.lat, lng: ll.lng,
-    creadorId: ptMiId(),
-    creadorNombre: ptMiNombre(),
-    creado: firebase.database.ServerValue.TIMESTAMP
-  };
-  db.ref('puntos_bici').push().set(q).then(function(){
-    toast('\uD83D\uDE80 \u00A1Punto publicado!');
-    document.getElementById('pt-nombre').value=''; document.getElementById('pt-desc').value='';
-    ptCategoriaSel = null;
-    Array.prototype.forEach.call(document.getElementById('pt-chips-crear').children, function(x){ x.classList.remove('on'); });
-    ptCerrarCrear();
-    ptCargarLista();
-  }).catch(function(){ toast('\u26A0\uFE0F Error al publicar. Revisa las reglas de Firebase (nodo puntos_bici).'); });
-}
-
-/* ── Detalle ── */
-function ptVer(id){
-  var q = ptCache[id];
-  var p = q ? Promise.resolve(q) : db.ref('puntos_bici/'+id).once('value').then(function(s){ return s.val(); });
-  Promise.resolve(p).then(function(q){
-    if(!q){ toast('Este punto ya no existe'); ptCargarLista(); return; }
-    ptCache[id]=q; ptActual=id;
-    document.getElementById('pt-modal-cat').textContent = PT_CAT[q.categoria]||q.categoria;
-    document.getElementById('pt-modal-titulo').textContent = q.nombre;
-    document.getElementById('pt-modal-desc').textContent = q.descripcion||'';
-    document.getElementById('pt-modal-autor').textContent = '\uD83D\uDC64 A\u00F1adido por '+(q.creadorNombre||'An\u00F3nimo');
-    document.getElementById('pt-modal-llegar').href = 'https://www.google.com/maps/dir/?api=1&destination='+q.lat+','+q.lng;
-    document.getElementById('pt-modal-borrar').style.display = (q.creadorId===ptMiId()) ? '' : 'none';
-    document.getElementById('pt-modal').classList.add('show');
-    setTimeout(function(){
-      if(!ptMapaModal){
-        ptMapaModal = L.map('pt-modal-map',{zoomControl:false,dragging:false}).setView([q.lat,q.lng],15);
-        ptTiles(ptMapaModal);
-      } else { ptMapaModal.setView([q.lat,q.lng],15); }
-      if(ptMarkerModal) ptMapaModal.removeLayer(ptMarkerModal);
-      ptMarkerModal = L.marker([q.lat,q.lng],{icon:ptIconoNeon()}).addTo(ptMapaModal);
-      ptMapaModal.invalidateSize();
-    },150);
-  });
-}
-function ptCerrarModal(){ document.getElementById('pt-modal').classList.remove('show'); ptActual=null; }
-function ptBorrar(){
-  if(!ptActual) return;
-  var q = ptCache[ptActual]||{};
-  if(q.creadorId!==ptMiId()) return;
-  if(!confirm('\u00BFBorrar este punto?')) return;
-  db.ref('puntos_bici/'+ptActual).remove().then(function(){
-    toast('\uD83D\uDDD1\uFE0F Punto borrado');
-    ptCerrarModal(); ptCargarLista();
-  });
-}
-function ptCompartir(){
-  if(!ptActual) return;
-  var q = ptCache[ptActual]||{};
-  var url = 'https://www.google.com/maps/dir/?api=1&destination='+q.lat+','+q.lng;
-  var txt = (ptEmoji(q.categoria))+' '+(PT_CAT[q.categoria]||'')+'\n\n\uD83D\uDCCC '+q.nombre+(q.descripcion?('\n'+q.descripcion):'')+'\n\nC\u00F3mo llegar:\n'+url+'\n\n\uD83D\uDEB4 RideSafe IA \u2014 comunidad ciclista';
-  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
-}
 </script>
 
 </body>
