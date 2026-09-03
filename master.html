@@ -393,6 +393,27 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
         <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="pb-hoy">—</div><div class="stat-lbl">Añadidos hoy</div></div>
         <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="pb-semana">—</div><div class="stat-lbl">Esta semana</div></div>
       </div>
+      <div class="com-form">
+        <h3>➕ Añadir punto (tú, como admin)</h3>
+        <div id="mapa-pb-add" style="width:100%;height:320px;border-radius:14px;overflow:hidden;margin-bottom:14px;z-index:1"></div>
+        <div class="com-grid">
+          <div><span class="com-lbl">Nombre *</span><input class="com-inp" id="pb-add-nombre" placeholder="Fuente del parc de la Mitjana"></div>
+          <div><span class="com-lbl">Categoría *</span><select class="com-inp" id="pb-add-cat">
+            <option value="agua">💧 Agua</option><option value="panaderia">🥖 Panadería/tienda</option>
+            <option value="taller">🔧 Taller bici</option><option value="bar">☕ Bar/Restaurante</option>
+            <option value="farmacia">💊 Farmacia</option><option value="alquiler">🚲 Alquiler de bicicletas</option>
+            <option value="interes">📍 Punto de interés</option>
+          </select></div>
+          <div><span class="com-lbl">Latitud *</span><input class="com-inp" id="pb-add-lat" placeholder="Toca el mapa" readonly></div>
+          <div><span class="com-lbl">Longitud *</span><input class="com-inp" id="pb-add-lng" placeholder="Toca el mapa" readonly></div>
+          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pb-add-desc" placeholder="Horario, si hay aparcabicis, si acepta grupos..."></div>
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button class="mini-btn" onclick="usarGpsPbAdd()" style="flex:1;padding:11px">📡 USAR MI UBICACIÓN</button>
+            <button class="gen-btn" onclick="guardarPuntoBiciAdmin()" style="flex:2">💾 GUARDAR PUNTO</button>
+          </div>
+        </div>
+        <div class="com-hint">💡 Toca el mapa para colocar el punto — las coordenadas se rellenan solas. Estos puntos se guardan igual que los que añade la comunidad desde la app.</div>
+      </div>
       <div class="charts-row" style="grid-template-columns:1.3fr 1fr">
         <div class="chart-card">
           <h3>Puntos por categoría</h3>
@@ -826,8 +847,61 @@ function cargarResumen(){
 
 // ═══ PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) ═══
 var pbCache = {}, pbEditId = null;
+var mapaPbAdd = null, tempMarkerPbAdd = null;
 function pbEmoji(cat){ return (PB_CAT[cat]||'📍').split(' ')[0]; }
+
+function initMapaPbAdd(){
+  if(mapaPbAdd) return;
+  mapaPbAdd = L.map('mapa-pb-add').setView([41.6176, 0.6200], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {attribution:'&copy; OpenStreetMap contributors', maxZoom:19}).addTo(mapaPbAdd);
+  mapaPbAdd.on('click', function(e){
+    ponMarcadorPbAdd(e.latlng.lat, e.latlng.lng);
+  });
+}
+function ponMarcadorPbAdd(lat, lng){
+  document.getElementById('pb-add-lat').value = lat.toFixed(6);
+  document.getElementById('pb-add-lng').value = lng.toFixed(6);
+  if(tempMarkerPbAdd) mapaPbAdd.removeLayer(tempMarkerPbAdd);
+  tempMarkerPbAdd = L.marker([lat, lng], {icon: L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #060a07;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(mapaPbAdd);
+  mapaPbAdd.panTo([lat, lng]);
+}
+function usarGpsPbAdd(){
+  if(!navigator.geolocation){ alert('GPS no disponible en este dispositivo'); return; }
+  navigator.geolocation.getCurrentPosition(function(p){
+    mapaPbAdd.setView([p.coords.latitude, p.coords.longitude], 16);
+    ponMarcadorPbAdd(p.coords.latitude, p.coords.longitude);
+  }, function(){ alert('No se pudo obtener tu ubicación'); }, {enableHighAccuracy:true, timeout:10000});
+}
+function guardarPuntoBiciAdmin(){
+  var nombre = document.getElementById('pb-add-nombre').value.trim();
+  var lat = parseFloat(document.getElementById('pb-add-lat').value);
+  var lng = parseFloat(document.getElementById('pb-add-lng').value);
+  if(!nombre){ alert('Ponle un nombre al punto'); return; }
+  if(isNaN(lat) || isNaN(lng)){ alert('Faltan coordenadas. Toca el mapa para colocarlas.'); return; }
+  var punto = {
+    nombre: nombre.slice(0,60),
+    categoria: document.getElementById('pb-add-cat').value,
+    descripcion: document.getElementById('pb-add-desc').value.trim().slice(0,200),
+    lat: lat, lng: lng,
+    creadorId: 'admin',
+    creadorNombre: 'RideSafe IA (equipo)',
+    creado: firebase.database.ServerValue.TIMESTAMP
+  };
+  db.ref('puntos_bici').push().set(punto).then(function(){
+    document.getElementById('pb-add-nombre').value = '';
+    document.getElementById('pb-add-desc').value = '';
+    document.getElementById('pb-add-lat').value = '';
+    document.getElementById('pb-add-lng').value = '';
+    if(tempMarkerPbAdd){ mapaPbAdd.removeLayer(tempMarkerPbAdd); tempMarkerPbAdd = null; }
+    cargarPuntosBici();
+    alert('✅ Punto guardado: ' + nombre);
+  }).catch(function(e){ alert('Error al guardar: ' + e.message); });
+}
+
 function cargarPuntosBici(){
+  initMapaPbAdd();
+  setTimeout(function(){ mapaPbAdd.invalidateSize(); }, 150);
   db.ref('puntos_bici').once('value', function(snap){
     pbCache = snap.val()||{};
     var items = Object.keys(pbCache).map(function(k){ return [k, pbCache[k]]; }).filter(function(it){return it[1];});
