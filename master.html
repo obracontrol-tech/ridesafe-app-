@@ -12,6 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -111,6 +112,29 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .est-suspendido{background:rgba(255,51,85,.15);color:#ff3355}
 .est-evento{background:rgba(0,229,255,.15);color:#00e5ff}
 @media(max-width:700px){.com-grid{grid-template-columns:1fr}.punto-row{grid-template-columns:32px 1fr;gap:6px}.punto-acc{grid-column:1/-1;justify-content:flex-start}}
+
+/* ═══ LAVADO DE CARA — dashboard v2.5 (aditivo, no rompe estilos anteriores) ═══ */
+.tabs{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:6px;margin:0 24px;gap:4px}
+.tab-btn{border-radius:11px;padding:9px 16px;border:none;display:flex;align-items:center;gap:6px}
+.tab-btn.on{background:var(--lime);color:#060a07;box-shadow:0 2px 12px var(--lime-glow)}
+.stat{border-radius:18px;transition:transform .15s,border-color .15s}
+.stat:hover{transform:translateY(-2px);border-color:var(--border)}
+.stat-icon{position:absolute;top:14px;right:14px;font-size:18px;opacity:.5}
+.chart-card{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px;margin-bottom:16px}
+.chart-card h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.chart-wrap{position:relative;height:220px}
+.charts-row{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:8px}
+@media(min-width:760px){.charts-row{grid-template-columns:1fr 1fr}}
+.cat-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)}
+.cat-row:last-child{border-bottom:none}
+.cat-emoji{width:30px;height:30px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cat-nombre{flex:1;font-size:13px;color:var(--text)}
+.cat-count{font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--lime);font-size:15px}
+.pt-row{display:grid;grid-template-columns:32px 1fr 110px 90px;padding:10px 16px;border-bottom:1px solid var(--border2);align-items:center;gap:8px}
+.pt-row:last-child{border-bottom:none}
+.pt-row:hover{background:var(--card2)}
+.pt-acc{display:flex;gap:6px;justify-content:flex-end}
+@media(max-width:700px){.pt-row{grid-template-columns:32px 1fr}.pt-acc{grid-column:1/-1;justify-content:flex-start}}
 </style>
 </head>
 <body>
@@ -140,18 +164,43 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
   </div>
 
   <div class="tabs">
-    <button class="tab-btn on" onclick="showTab('claves',this)">🔑 Claves</button>
+    <button class="tab-btn on" onclick="showTab('resumen',this)">📊 Resumen</button>
+    <button class="tab-btn" onclick="showTab('claves',this)">🔑 Claves</button>
     <button class="tab-btn" onclick="showTab('radar',this)">📡 Radar</button>
     <button class="tab-btn" onclick="showTab('grupos',this)">👥 Grupos</button>
     <button class="tab-btn" onclick="showTab('canal',this)">📣 Canal</button>
     <button class="tab-btn" onclick="showTab('legal',this)">⚖️ Legal</button>
     <button class="tab-btn" onclick="showTab('comunidad',this)">🗺️ Comunidad</button>
+    <button class="tab-btn" onclick="showTab('puntosbici',this)">☕ Puntos</button>
   </div>
 
   <div class="body">
 
     <!-- CLAVES -->
-    <div class="tab-panel on" id="tab-claves">
+    <!-- RESUMEN — panel nuevo, vista de bienvenida con métricas de toda la app -->
+    <div class="tab-panel on" id="tab-resumen">
+      <button class="refresh-btn" onclick="cargarResumen()">🔄 Actualizar</button>
+      <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat"><span class="stat-icon">🔑</span><div class="stat-val" id="rs-claves">—</div><div class="stat-lbl">Claves activas</div></div>
+        <div class="stat" style="--ac:var(--cyan)"><span class="stat-icon">🚴</span><div class="stat-val" id="rs-radar">—</div><div class="stat-lbl">Ciclistas ahora</div></div>
+        <div class="stat" style="--ac:var(--orange)"><span class="stat-icon">👥</span><div class="stat-val" id="rs-grupos">—</div><div class="stat-lbl">Grupos activos</div></div>
+        <div class="stat" style="--ac:#9966ff"><span class="stat-icon">📅</span><div class="stat-val" id="rs-quedadas">—</div><div class="stat-lbl">Quedadas activas</div></div>
+        <div class="stat" style="--ac:var(--lime)"><span class="stat-icon">☕</span><div class="stat-val" id="rs-puntos">—</div><div class="stat-lbl">Puntos ciclistas</div></div>
+        <div class="stat" style="--ac:var(--red)"><span class="stat-icon">⚖️</span><div class="stat-val" id="rs-legal-hoy">—</div><div class="stat-lbl">Aceptaciones hoy</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Aceptaciones legales · últimos 7 días</h3>
+          <div class="chart-wrap"><canvas id="chart-legal7"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Ciclistas en radar ahora · por tipo de bici</h3>
+          <div class="chart-wrap"><canvas id="chart-radarbici"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-claves">
       <div class="stats-grid">
         <div class="stat"><div class="stat-val" id="st-total">—</div><div class="stat-lbl">Total claves</div></div>
         <div class="stat"><div class="stat-val" id="st-libres">—</div><div class="stat-lbl">Disponibles</div></div>
@@ -336,6 +385,47 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
       </div>
     </div>
 
+    <!-- PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) -->
+    <div class="tab-panel" id="tab-puntosbici">
+      <button class="refresh-btn" onclick="cargarPuntosBici()">🔄 Actualizar</button>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-val" id="pb-total">—</div><div class="stat-lbl">Puntos totales</div></div>
+        <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="pb-hoy">—</div><div class="stat-lbl">Añadidos hoy</div></div>
+        <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="pb-semana">—</div><div class="stat-lbl">Esta semana</div></div>
+      </div>
+      <div class="charts-row" style="grid-template-columns:1.3fr 1fr">
+        <div class="chart-card">
+          <h3>Puntos por categoría</h3>
+          <div class="chart-wrap"><canvas id="chart-pbcat"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Desglose</h3>
+          <div id="pb-desglose"></div>
+        </div>
+      </div>
+      <div class="sec-title">Todos los puntos</div>
+      <div id="pb-form-edit" style="display:none" class="com-form">
+        <h3>✏️ Editar punto</h3>
+        <div class="com-grid">
+          <div><span class="com-lbl">Nombre</span><input class="com-inp" id="pb-e-nombre"></div>
+          <div><span class="com-lbl">Categoría</span><select class="com-inp" id="pb-e-cat">
+            <option value="agua">💧 Agua</option><option value="panaderia">🥖 Panadería/tienda</option>
+            <option value="taller">🔧 Taller bici</option><option value="bar">☕ Bar/Restaurante</option>
+            <option value="farmacia">💊 Farmacia</option><option value="alquiler">🚲 Alquiler de bicicletas</option>
+            <option value="interes">📍 Punto de interés</option>
+          </select></div>
+          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pb-e-desc"></div>
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button class="gen-btn" onclick="guardarEdicionPunto()" style="flex:1">💾 GUARDAR</button>
+            <button class="mini-btn" onclick="cerrarEdicionPunto()" style="padding:12px">✖</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabla">
+        <div id="pb-lista"><div class="empty"><span class="spin"></span> Cargando...</div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -480,7 +570,7 @@ auth.onAuthStateChanged(function(user){
     document.getElementById('login').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     document.getElementById('login-btn').textContent = 'ENTRAR';
-    iniciarReloj(); cargarClaves(); cargarRadar();
+    iniciarReloj(); cargarClaves(); cargarRadar(); cargarResumen();
   } else {
     document.getElementById('login').style.display = 'flex';
     document.getElementById('panel').style.display = 'none';
@@ -503,10 +593,12 @@ function showTab(id, btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('on');});
   document.getElementById('tab-'+id).classList.add('on');
   btn.classList.add('on');
+  if(id==='resumen') cargarResumen();
   if(id==='radar') cargarRadar();
   if(id==='grupos') cargarGrupos();
   if(id==='legal') cargarLegal();
   if(id==='comunidad') cargarComunidad();
+  if(id==='puntosbici') cargarPuntosBici();
 }
 
 // CLAVES
@@ -669,6 +761,146 @@ function cargarLegal(){
   });
 }
 
+
+// ═══ RESUMEN — dashboard general (aditivo) ═══
+var PB_CAT = {agua:'💧 Agua', panaderia:'🥖 Panadería/tienda', taller:'🔧 Taller bici', bar:'☕ Bar/Restaurante', farmacia:'💊 Farmacia', alquiler:'🚲 Alquiler de bicicletas', interes:'📍 Punto de interés'};
+var chartLegal7 = null, chartRadarBici = null, chartPbCat = null;
+
+function cargarResumen(){
+  db.ref('claves_activadas').once('value', function(snap){
+    document.getElementById('rs-claves').textContent = Object.keys(snap.val()||{}).length;
+  });
+  db.ref('grupos').once('value', function(snap){
+    var n = Object.keys(snap.val()||{}).filter(function(k){ var g=snap.val()[k]; return g&&g.miembros&&Object.keys(g.miembros).length>0; }).length;
+    document.getElementById('rs-grupos').textContent = n;
+  });
+  db.ref('puntos_bici').once('value', function(snap){
+    document.getElementById('rs-puntos').textContent = Object.keys(snap.val()||{}).length;
+  });
+  var ahora = Date.now(), INACT = 5*60*1000;
+  db.ref('radar').once('value', function(snap){
+    var datos = snap.val()||{}, activos=[], porBici={};
+    Object.keys(datos).forEach(function(uid){
+      var c = datos[uid]; if(!c||!c.nombre||ahora-c.ts>INACT) return;
+      activos.push(c);
+      var b = c.bici||'otro'; porBici[b] = (porBici[b]||0)+1;
+    });
+    document.getElementById('rs-radar').textContent = activos.length;
+    var labs = {carretera:'🚴 Carretera',mtb:'🚵 MTB',gravel:'🛤️ Gravel',ebike:'⚡ eBike',otro:'🚲 Otro'};
+    var keys = Object.keys(porBici);
+    if(chartRadarBici) chartRadarBici.destroy();
+    chartRadarBici = new Chart(document.getElementById('chart-radarbici'), {
+      type:'doughnut',
+      data:{ labels: keys.length?keys.map(function(k){return labs[k]||k;}):['Sin datos'],
+             datasets:[{ data: keys.length?keys.map(function(k){return porBici[k];}):[1],
+                         backgroundColor:['#a8e63d','#00e5ff','#ff8833','#9966ff','#ff3355'], borderWidth:0 }] },
+      options:{ plugins:{ legend:{ position:'bottom', labels:{ color:'#7a9a7e', font:{size:11} } } }, maintainAspectRatio:false }
+    });
+  });
+  db.ref('quedadas').once('value', function(snap){
+    var datos = snap.val()||{}, activas=0, lim = Date.now()-3*3600*1000;
+    Object.keys(datos).forEach(function(k){ var q=datos[k]; if(q&&q.fechaHora && new Date(q.fechaHora).getTime()>lim) activas++; });
+    document.getElementById('rs-quedadas').textContent = activas;
+  });
+  db.ref('aceptaciones_legales').once('value', function(snap){
+    var datos = snap.val()||{}, hoy = new Date().toDateString();
+    var dias = [], cont = {}, hoyN = 0;
+    for(var i=6;i>=0;i--){ var d=new Date(Date.now()-i*86400000); var k=d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}); dias.push(k); cont[k]=0; }
+    Object.keys(datos).forEach(function(k){
+      var d = datos[k]; if(!d||!d.ts) return;
+      if(new Date(d.ts).toDateString()===hoy) hoyN++;
+      var lk = new Date(d.ts).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
+      if(cont.hasOwnProperty(lk)) cont[lk]++;
+    });
+    document.getElementById('rs-legal-hoy').textContent = hoyN;
+    if(chartLegal7) chartLegal7.destroy();
+    chartLegal7 = new Chart(document.getElementById('chart-legal7'), {
+      type:'bar',
+      data:{ labels: dias, datasets:[{ label:'Aceptaciones', data: dias.map(function(k){return cont[k];}), backgroundColor:'#a8e63d', borderRadius:6 }] },
+      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}},
+                scales:{ x:{ ticks:{color:'#7a9a7e',font:{size:11}}, grid:{display:false} },
+                         y:{ ticks:{color:'#7a9a7e',font:{size:11},stepSize:1}, grid:{color:'rgba(168,230,61,.06)'}, beginAtZero:true } } }
+    });
+  });
+}
+
+// ═══ PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) ═══
+var pbCache = {}, pbEditId = null;
+function pbEmoji(cat){ return (PB_CAT[cat]||'📍').split(' ')[0]; }
+function cargarPuntosBici(){
+  db.ref('puntos_bici').once('value', function(snap){
+    pbCache = snap.val()||{};
+    var items = Object.keys(pbCache).map(function(k){ return [k, pbCache[k]]; }).filter(function(it){return it[1];});
+    var hoy = new Date().toDateString(), semana = Date.now()-7*86400000;
+    var contHoy=0, contSemana=0, porCat={};
+    items.forEach(function(it){
+      var q = it[1];
+      if(q.creado && new Date(q.creado).toDateString()===hoy) contHoy++;
+      if(q.creado && q.creado>semana) contSemana++;
+      porCat[q.categoria] = (porCat[q.categoria]||0)+1;
+    });
+    document.getElementById('pb-total').textContent = items.length;
+    document.getElementById('pb-hoy').textContent = contHoy;
+    document.getElementById('pb-semana').textContent = contSemana;
+
+    var catKeys = Object.keys(PB_CAT);
+    if(chartPbCat) chartPbCat.destroy();
+    chartPbCat = new Chart(document.getElementById('chart-pbcat'), {
+      type:'bar',
+      data:{ labels: catKeys.map(function(c){return pbEmoji(c);}),
+             datasets:[{ data: catKeys.map(function(c){return porCat[c]||0;}), backgroundColor:'#a8e63d', borderRadius:6 }] },
+      options:{ indexAxis:'y', maintainAspectRatio:false, plugins:{legend:{display:false}},
+                scales:{ x:{ ticks:{color:'#7a9a7e',stepSize:1}, grid:{color:'rgba(168,230,61,.06)'}, beginAtZero:true },
+                         y:{ ticks:{color:'#7a9a7e',font:{size:14}}, grid:{display:false} } } }
+    });
+    var desg = document.getElementById('pb-desglose'); var h='';
+    catKeys.forEach(function(c){
+      h += '<div class="cat-row"><div class="cat-emoji">'+pbEmoji(c)+'</div><div class="cat-nombre">'+PB_CAT[c].split(' ').slice(1).join(' ')+'</div><div class="cat-count">'+(porCat[c]||0)+'</div></div>';
+    });
+    desg.innerHTML = h;
+
+    var el = document.getElementById('pb-lista');
+    if(!items.length){ el.innerHTML = '<div class="empty">☕ Todavía no hay puntos añadidos por la comunidad</div>'; return; }
+    items.sort(function(a,b){ return (b[1].creado||0)-(a[1].creado||0); });
+    var html='';
+    items.forEach(function(it){
+      var k=it[0], q=it[1];
+      html += '<div class="pt-row"><div style="font-size:18px">'+pbEmoji(q.categoria)+'</div>'
+        + '<div><div style="font-size:13px;font-weight:600;color:var(--text)">'+(q.nombre||'—')+'</div>'
+        + '<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(q.creadorNombre||'Anónimo')+(q.descripcion?(' · '+q.descripcion.substring(0,40)):'')+'</div></div>'
+        + '<div style="font-size:11px;color:var(--muted)">'+(PB_CAT[q.categoria]||q.categoria||'').split(' ').slice(1).join(' ')+'</div>'
+        + '<div class="pt-acc"><button class="mini-btn" onclick="editarPuntoBici(\''+k+'\')">✏️</button><button class="mini-btn rojo" onclick="borrarPuntoBici(\''+k+'\')">🗑️</button></div></div>';
+    });
+    el.innerHTML = html;
+  });
+}
+function editarPuntoBici(id){
+  var q = pbCache[id]; if(!q) return;
+  pbEditId = id;
+  document.getElementById('pb-e-nombre').value = q.nombre||'';
+  document.getElementById('pb-e-cat').value = q.categoria||'agua';
+  document.getElementById('pb-e-desc').value = q.descripcion||'';
+  document.getElementById('pb-form-edit').style.display = 'block';
+  document.getElementById('pb-form-edit').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cerrarEdicionPunto(){ document.getElementById('pb-form-edit').style.display='none'; pbEditId=null; }
+function guardarEdicionPunto(){
+  if(!pbEditId) return;
+  var nombre = document.getElementById('pb-e-nombre').value.trim();
+  if(!nombre){ alert('Ponle un nombre al punto'); return; }
+  db.ref('puntos_bici/'+pbEditId).update({
+    nombre: nombre.slice(0,60),
+    categoria: document.getElementById('pb-e-cat').value,
+    descripcion: document.getElementById('pb-e-desc').value.trim().slice(0,200)
+  }).then(function(){
+    cerrarEdicionPunto();
+    cargarPuntosBici();
+  }).catch(function(e){ alert('Error al guardar: '+e.message); });
+}
+function borrarPuntoBici(id){
+  if(!confirm('¿Borrar este punto de la comunidad?')) return;
+  db.ref('puntos_bici/'+id).remove().then(function(){ cargarPuntosBici(); });
+}
 
 function revocarClave(clave) {
   if (!confirm('¿Revocar la clave ' + clave + '?\nEl usuario perderá el acceso.')) return;
