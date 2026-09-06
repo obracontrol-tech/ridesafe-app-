@@ -2564,14 +2564,16 @@ function svcPintar(){
   ids.forEach(function(id){
     var p = svcCache[id];
     var emoji = (SVC_CAT[p.categoria]||'📍').split(' ')[0];
+    var urlLlegar = 'https://www.google.com/maps/dir/?api=1&destination='+p.lat+','+p.lng+'&travelmode=bicycling';
     var mk = L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:2px solid #060a07;display:flex;align-items:center;justify-content:center;font-size:10px">'+emoji+'</div>',iconSize:[16,16],iconAnchor:[8,8]})})
       .addTo(svcMap)
-      .bindPopup('<b>'+escHtml(p.nombre||'')+'</b><br>'+(SVC_CAT[p.categoria]||'')+(p.descripcion?'<br/>'+escHtml(p.descripcion):''));
+      .bindPopup('<b>'+escHtml(p.nombre||'')+'</b><br>'+(SVC_CAT[p.categoria]||'')+(p.descripcion?'<br/>'+escHtml(p.descripcion):'')+'<br/><a href="'+urlLlegar+'" target="_blank" rel="noopener" style="color:#a8e63d;font-weight:700;text-decoration:none">🧭 Cómo llegar</a>');
     svcMarkers.push(mk);
-    html += '<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px" onclick="svcMap.setView(['+p.lat+','+p.lng+'],16)">'
-      + '<span style="font-size:18px">'+emoji+'</span>'
-      + '<div style="flex:1"><div style="font-weight:600;color:var(--text);font-size:13px">'+escHtml(p.nombre||'')+'</div>'
+    html += '<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px">'
+      + '<span style="font-size:18px" onclick="svcMap.setView(['+p.lat+','+p.lng+'],16)">'+emoji+'</span>'
+      + '<div style="flex:1" onclick="svcMap.setView(['+p.lat+','+p.lng+'],16)"><div style="font-weight:600;color:var(--text);font-size:13px">'+escHtml(p.nombre||'')+'</div>'
       + '<div style="font-size:11px;color:var(--muted)">'+(SVC_CAT[p.categoria]||'')+(p.descripcion?' · '+escHtml(p.descripcion):'')+'</div></div>'
+      + '<a href="'+urlLlegar+'" target="_blank" rel="noopener" style="flex-shrink:0;background:rgba(168,230,61,.12);color:#a8e63d;border:1px solid rgba(168,230,61,.35);border-radius:10px;padding:7px 10px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap">🧭 Llegar</a>'
       + '</div>';
   });
   lista.innerHTML = html;
