@@ -2476,6 +2476,7 @@ var GRUPOS_MENU = {
     titulo: '👥 Comunidad',
     items: [
       {e:'🚵', n:'Comunidad', d:'Salidas y ciclistas cerca de ti', fn:function(){openComunidadApp();}},
+      {e:'🛠️', n:'Servicios cerca de ti', d:'Talleres, agua, farmacias, alquiler...', fn:function(){openServicios();}},
       {e:'📻', n:'Grupo · Pelotón en vivo', d:'GPS del grupo y walkie-talkie', fn:function(){openGrupo();}},
       {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
       {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
@@ -2512,6 +2513,68 @@ function closeGrupoMenu(ev){
 }
 function closeGrupoMenuNow(){
   document.getElementById('grupo-menu-overlay').classList.remove('show');
+}
+
+// ═══ SERVICIOS — mapa de puntos_bici, solo lectura para el usuario ═══
+var SVC_CAT = {agua:'💧 Agua', panaderia:'🥖 Panadería/tienda', taller:'🔧 Taller bici', bar:'☕ Bar/Restaurante', farmacia:'💊 Farmacia', alquiler:'🚲 Alquiler de bicicletas', interes:'📍 Punto de interés'};
+var svcMap = null, svcMarkers = [], svcCache = {}, svcFiltro = 'todos';
+
+function openServicios(){
+  openPanel('panel-servicios');
+  if(!svcMap){
+    svcMap = L.map('svc-mapa').setView(userPos||[41.6176,0.6200], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(svcMap);
+    var chips = document.getElementById('svc-chips');
+    var htmlChips = '<button class="qd-chip active" data-cat="todos" onclick="svcFiltrar(this,\'todos\')">Todos</button>';
+    Object.keys(SVC_CAT).forEach(function(k){
+      htmlChips += '<button class="qd-chip" data-cat="'+k+'" onclick="svcFiltrar(this,\''+k+'\')">'+SVC_CAT[k]+'</button>';
+    });
+    chips.innerHTML = htmlChips;
+  }
+  setTimeout(function(){ svcMap.invalidateSize(); },150);
+  db.ref('puntos_bici').once('value', function(snap){
+    svcCache = snap.val()||{};
+    svcPintar();
+  });
+}
+function closeServicios(){ closePanel('panel-servicios'); }
+
+function svcFiltrar(btn, cat){
+  svcFiltro = cat;
+  document.querySelectorAll('#svc-chips .qd-chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  svcPintar();
+}
+
+function svcPintar(){
+  svcMarkers.forEach(function(m){ svcMap.removeLayer(m); });
+  svcMarkers = [];
+  var ids = Object.keys(svcCache).filter(function(id){
+    var p = svcCache[id];
+    return p && typeof p.lat==='number' && typeof p.lng==='number' && (svcFiltro==='todos'||p.categoria===svcFiltro);
+  });
+  document.getElementById('svc-badge').textContent = ids.length+' punto'+(ids.length===1?'':'s');
+  var lista = document.getElementById('svc-lista');
+  if(!ids.length){
+    lista.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">Todav\u00eda no hay puntos en esta categor\u00eda por aqu\u00ed.</div>';
+    return;
+  }
+  var html = '';
+  ids.forEach(function(id){
+    var p = svcCache[id];
+    var emoji = (SVC_CAT[p.categoria]||'📍').split(' ')[0];
+    var mk = L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:2px solid #060a07;display:flex;align-items:center;justify-content:center;font-size:10px">'+emoji+'</div>',iconSize:[16,16],iconAnchor:[8,8]})})
+      .addTo(svcMap)
+      .bindPopup('<b>'+escHtml(p.nombre||'')+'</b><br>'+(SVC_CAT[p.categoria]||'')+(p.descripcion?'<br/>'+escHtml(p.descripcion):''));
+    svcMarkers.push(mk);
+    html += '<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px" onclick="svcMap.setView(['+p.lat+','+p.lng+'],16)">'
+      + '<span style="font-size:18px">'+emoji+'</span>'
+      + '<div style="flex:1"><div style="font-weight:600;color:var(--text);font-size:13px">'+escHtml(p.nombre||'')+'</div>'
+      + '<div style="font-size:11px;color:var(--muted)">'+(SVC_CAT[p.categoria]||'')+(p.descripcion?' · '+escHtml(p.descripcion):'')+'</div></div>'
+      + '</div>';
+  });
+  lista.innerHTML = html;
 }
 </script>
 
@@ -3539,7 +3602,24 @@ function closeGrupoMenuNow(){
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     PANEL SERVICIOS — puntos_bici (comunidad, solo lectura)
+     ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-servicios">
+  <div class="p-header">
+    <button class="p-back" onclick="closePanel('panel-servicios')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="p-title">Servicios <span>cerca de ti</span></div>
+    <div class="p-badge" id="svc-badge">0 puntos</div>
+  </div>
+  <div class="p-body" style="padding:0;display:flex;flex-direction:column">
+    <div id="svc-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 14px;flex-shrink:0"></div>
+    <div id="svc-mapa" style="width:100%;flex:1;min-height:260px;background:#1a1a1a"></div>
+    <div id="svc-lista" style="padding:10px 14px 20px"></div>
+  </div>
+</div>
+
 <div class="panel" id="panel-analisis">
+
   <div class="p-header">
     <button class="p-back" onclick="closeAnalisis()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="p-title">Mi <span>Análisis</span></div>
@@ -7898,7 +7978,8 @@ function ebGuia(tema) {
 #qd-modal.show{display:flex}
 .qd-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto}
 .qd-chips{display:flex;flex-wrap:wrap;gap:6px}
-.qd-chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;user-select:none}
+.qd-chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;flex-shrink:0}
+.qd-chip.active{border-color:var(--lime);color:var(--lime);background:rgba(168,230,61,.1)}
 .qd-chip.on{border-color:rgba(168,230,61,.6);color:var(--lime);background:var(--lime-dim);box-shadow:0 0 10px rgba(168,230,61,.15)}
 .qd-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
 .qd-item:active{border-color:rgba(168,230,61,.5)}
