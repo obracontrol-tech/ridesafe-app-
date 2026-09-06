@@ -6330,27 +6330,24 @@ var tgUserChatId = localStorage.getItem('rs_tg_chatid') || '';
 
 // Si hay chat_id guardado, usarlo en lugar del hardcoded
 function tgGetChatId() {
-  return tgUserChatId || TG_CHAT;  // fallback al de JM si no hay
+  return tgUserChatId || '';  // sin chat_id propio, no hay a quién enviar
 }
 
-// tgSend: envía SIEMPRE a 8601457137 (JM) + al usuario si lo ha configurado
+// tgSend: envía SOLO al chat_id que el propio usuario haya configurado (ya no se envía copia a JM)
 var _tgSendOriginal = tgSend;
 tgSend = function(msg) {
-  var destinos = ['8601457137'];
   var userChat = localStorage.getItem('rs_tg_chatid') || '';
-  if(userChat && userChat !== '8601457137') destinos.push(userChat);
-  destinos.forEach(function(chatId){
-    fetch(TG_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
-      body: JSON.stringify({
-        telegram: true,
-        chat_id: chatId,
-        text: msg,
-        parse_mode: 'HTML'
-      })
-    }).catch(function(){});
-  });
+  if (!userChat) return; // el usuario no ha configurado Telegram, no se envía nada
+  fetch(TG_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+    body: JSON.stringify({
+      telegram: true,
+      chat_id: userChat,
+      text: msg,
+      parse_mode: 'HTML'
+    })
+  }).catch(function(){});
 };
 
 function openTelegram() {
