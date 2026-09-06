@@ -451,7 +451,6 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 </div>
 
 <script>
-var TG_TOKEN = '8866468205:AAGASu_wwTYsseLJCU4F-32zQv-v89QprNM';
 var TG_CANAL = '@RideSafeAI';
 var COLORES = ['#a8e63d','#00e5ff','#ff8833','#9966ff','#ffcc00','#ff3355'];
 
@@ -742,9 +741,9 @@ function cargarGrupos(){
 function publicarCanal(){
   var txt=document.getElementById('canal-txt').value.trim();
   if(!txt){ alert('Escribe un mensaje'); return; }
-  fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({chat_id:TG_CANAL,text:txt,parse_mode:'HTML'})
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
+    method:'POST',headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+    body:JSON.stringify({telegram:true,chat_id:TG_CANAL,text:txt,parse_mode:'HTML'})
   }).then(function(r){return r.json();}).then(function(d){
     if(d.ok){ document.getElementById('canal-txt').value=''; alert('Publicado en '+TG_CANAL); }
     else alert('Error: '+(d.description||'desconocido'));
@@ -847,7 +846,7 @@ function cargarResumen(){
 
 // ═══ PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) ═══
 var pbCache = {}, pbEditId = null;
-var mapaPbAdd = null, tempMarkerPbAdd = null;
+var mapaPbAdd = null, tempMarkerPbAdd = null, pbMarkers = [];
 function pbEmoji(cat){ return (PB_CAT[cat]||'📍').split(' ')[0]; }
 
 function initMapaPbAdd(){
@@ -916,6 +915,18 @@ function cargarPuntosBici(){
     document.getElementById('pb-total').textContent = items.length;
     document.getElementById('pb-hoy').textContent = contHoy;
     document.getElementById('pb-semana').textContent = contSemana;
+
+    /* Pintar cada punto guardado como chincheta en el mapa */
+    pbMarkers.forEach(function(mk){ mapaPbAdd.removeLayer(mk); });
+    pbMarkers = [];
+    items.forEach(function(it){
+      var k = it[0], q = it[1];
+      if(typeof q.lat !== 'number' || typeof q.lng !== 'number') return;
+      var mk = L.marker([q.lat, q.lng], {icon: L.divIcon({className:'', html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:2px solid #060a07;display:flex;align-items:center;justify-content:center;font-size:10px">'+pbEmoji(q.categoria)+'</div>', iconSize:[16,16], iconAnchor:[8,8]})})
+        .addTo(mapaPbAdd)
+        .bindPopup('<b>'+(q.nombre||'—')+'</b><br>'+(PB_CAT[q.categoria]||q.categoria||''));
+      pbMarkers.push(mk);
+    });
 
     var catKeys = Object.keys(PB_CAT);
     if(chartPbCat) chartPbCat.destroy();
@@ -1370,9 +1381,9 @@ function anunciarPunto(id){
     + (p.descripcion ? '\n' + p.descripcion + '\n' : '')
     + '\n🧭 https://maps.google.com/?q=' + p.lat + ',' + p.lng;
   if(!confirm('¿Publicar este punto en el canal ' + TG_CANAL + '?')) return;
-  fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({chat_id: TG_CANAL, text: txt, parse_mode:'HTML'})
+  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
+    method:'POST', headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
+    body: JSON.stringify({telegram:true, chat_id: TG_CANAL, text: txt, parse_mode:'HTML'})
   }).then(function(r){ return r.json(); }).then(function(d){
     if(d.ok) alert('✅ Publicado en ' + TG_CANAL);
     else alert('Error: ' + (d.description || 'desconocido'));
