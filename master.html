@@ -393,6 +393,18 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
         <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="pb-hoy">—</div><div class="stat-lbl">Añadidos hoy</div></div>
         <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="pb-semana">—</div><div class="stat-lbl">Esta semana</div></div>
       </div>
+      <div class="com-form" id="osm-import-box">
+        <h3>🌍 Importar desde OpenStreetMap</h3>
+        <div class="com-hint" style="margin-bottom:10px">Busca una zona y te traigo talleres, farmacias, fuentes, cafeterías y tiendas de bici que ya están en OpenStreetMap. Tú eliges cuáles añadir.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input class="com-inp" id="osm-zona" placeholder="Ej: Lleida, Balaguer, Cervera..." style="flex:1">
+          <button class="gen-btn" onclick="osmBuscarZona()" style="flex:0 0 auto;padding:11px 16px">🔍 Buscar</button>
+        </div>
+        <div id="osm-estado" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+        <div id="osm-resultados"></div>
+        <button class="gen-btn" id="osm-importar-btn" style="display:none;margin-top:10px" onclick="osmImportarSeleccionados()">💾 Importar seleccionados</button>
+      </div>
+
       <div class="com-form">
         <h3>➕ Añadir punto (tú, como admin)</h3>
         <div id="mapa-pb-add" style="width:100%;height:320px;border-radius:14px;overflow:hidden;margin-bottom:14px;z-index:1"></div>
@@ -847,6 +859,100 @@ function cargarResumen(){
 // ═══ PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) ═══
 var pbCache = {}, pbEditId = null;
 var mapaPbAdd = null, tempMarkerPbAdd = null, pbMarkers = [];
+
+// ═══ IMPORTAR DESDE OPENSTREETMAP (Overpass API) ═══
+var OSM_TAGS = [
+  {tag:'shop=bicycle', categoria:'taller'},
+  {tag:'amenity=pharmacy', categoria:'farmacia'},
+  {tag:'amenity=drinking_water', categoria:'agua'},
+  {tag:'amenity=cafe', categoria:'bar'},
+  {tag:'shop=bakery', categoria:'panaderia'},
+  {tag:'amenity=bicycle_rental', categoria:'alquiler'}
+];
+var osmResultados = [];
+
+function osmBuscarZona(){
+  var zona = document.getElementById('osm-zona').value.trim();
+  if(!zona){ alert('Escribe una zona para buscar'); return; }
+  var estado = document.getElementById('osm-estado');
+  var resDiv = document.getElementById('osm-resultados');
+  document.getElementById('osm-importar-btn').style.display = 'none';
+  estado.textContent = '🔎 Localizando "'+zona+'"...';
+  resDiv.innerHTML = '';
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(zona)+'&format=json&limit=1&countrycodes=es', {headers:{'Accept-Language':'es'}})
+    .then(function(r){ return r.json(); })
+    .then(function(geo){
+      if(!geo || !geo.length){ estado.textContent = '❌ No he encontrado esa zona.'; return; }
+      var lat = parseFloat(geo[0].lat), lon = parseFloat(geo[0].lon);
+      estado.textContent = '🔎 Buscando servicios cerca de '+geo[0].display_name.split(',').slice(0,2).join(',')+'...';
+      var partes = OSM_TAGS.map(function(t){
+        var kv = t.tag.split('=');
+        return 'node["'+kv[0]+'"="'+kv[1]+'"](around:4000,'+lat+','+lon+');';
+      }).join('\n');
+      var query = '[out:json][timeout:25];('+partes+');out body;';
+      return fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:'data='+encodeURIComponent(query)})
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          osmResultados = (data.elements||[]).filter(function(el){ return el.tags && el.tags.name; }).map(function(el){
+            var catInfo = OSM_TAGS.find(function(t){
+              var kv = t.tag.split('=');
+              return el.tags[kv[0]] === kv[1];
+            });
+            return {
+              id: 'osm_'+el.id,
+              nombre: el.tags.name,
+              categoria: catInfo ? catInfo.categoria : 'interes',
+              lat: el.lat, lng: el.lon,
+              descripcion: [el.tags['opening_hours']?('Horario: '+el.tags['opening_hours']):'', el.tags['addr:street']?(el.tags['addr:street']+' '+(el.tags['addr:housenumber']||'')):''].filter(Boolean).join(' · ')
+            };
+          });
+          if(!osmResultados.length){ estado.textContent = '😕 No he encontrado sitios con nombre cerca de ahí. Prueba con otra zona.'; return; }
+          estado.textContent = '✅ '+osmResultados.length+' sitios encontrados. Marca los que quieras añadir:';
+          var html = '';
+          osmResultados.forEach(function(p, i){
+            var emoji = (PB_CAT[p.categoria]||'📍').split(' ')[0];
+            html += '<label class="pt-row" style="cursor:pointer">'
+              + '<input type="checkbox" class="osm-check" data-i="'+i+'" style="width:18px;height:18px;flex-shrink:0">'
+              + '<span style="font-size:16px">'+emoji+'</span>'
+              + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+p.nombre+'</div>'
+              + '<div style="font-size:10px;color:var(--muted)">'+(PB_CAT[p.categoria]||'').split(' ').slice(1).join(' ')+(p.descripcion?(' · '+p.descripcion):'')+'</div></div>'
+              + '</label>';
+          });
+          resDiv.innerHTML = html;
+          document.getElementById('osm-importar-btn').style.display = 'block';
+        });
+    })
+    .catch(function(e){ estado.textContent = '❌ Error al buscar: '+e.message; });
+}
+
+function osmImportarSeleccionados(){
+  var checks = document.querySelectorAll('.osm-check:checked');
+  if(!checks.length){ alert('Marca al menos uno para importar'); return; }
+  var seleccionados = Array.prototype.map.call(checks, function(c){ return osmResultados[parseInt(c.dataset.i)]; });
+  var pendientes = seleccionados.length, hechos = 0;
+  document.getElementById('osm-estado').textContent = 'Importando '+pendientes+' puntos...';
+  seleccionados.forEach(function(p){
+    var punto = {
+      nombre: p.nombre.slice(0,60),
+      categoria: p.categoria,
+      descripcion: (p.descripcion||'').slice(0,200),
+      lat: p.lat, lng: p.lng,
+      creadorId: 'admin',
+      creadorNombre: 'RideSafe IA (equipo) · OpenStreetMap',
+      creado: firebase.database.ServerValue.TIMESTAMP
+    };
+    db.ref('puntos_bici').push().set(punto).then(function(){
+      hechos++;
+      if(hechos===pendientes){
+        document.getElementById('osm-estado').textContent = '✅ '+hechos+' puntos importados.';
+        document.getElementById('osm-resultados').innerHTML = '';
+        document.getElementById('osm-importar-btn').style.display = 'none';
+        document.getElementById('osm-zona').value = '';
+        cargarPuntosBici();
+      }
+    });
+  });
+}
 function pbEmoji(cat){ return (PB_CAT[cat]||'📍').split(' ')[0]; }
 
 function initMapaPbAdd(){
