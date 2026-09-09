@@ -624,8 +624,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 
 #elevation-bar{flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px;display:none}
 #elevation-bar.show{display:block}
-.elev-title{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
-.elev-chart{display:flex;align-items:end;gap:1px;height:60px}
+.elev-title{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.elev-chart{display:flex;align-items:end;gap:1px;height:60px;position:relative}
+.elev-risk-score{display:flex;align-items:baseline;gap:2px;font-family:'Barlow Condensed',sans-serif}
+.elev-risk-score b{font-size:20px;font-weight:900;color:var(--lime)}
+.elev-risk-score span{font-size:11px;color:var(--muted)}
+.elev-risk-marker{position:absolute;top:-16px;transform:translateX(-50%);font-size:12px;cursor:pointer}
 .elev-bar{flex:1;border-radius:2px;min-height:3px;transition:all .3s}
 
 #nav-live2{
@@ -2994,6 +2998,10 @@ function svcPintar(){
       <span id="elev-range" style="color:var(--lime)"></span>
     </div>
     <div class="elev-chart" id="elev-chart"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <div class="elev-risk-score"><span>Riesgo</span><b id="elev-risk-num">1</b><span>/5</span></div>
+      <div id="elev-risk-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
   </div>
   <div id="nav-live2">
     <div class="nl2-title" style="display:flex;align-items:center;justify-content:space-between">
@@ -4084,7 +4092,7 @@ function parseGPX(gpxText){
   toast('Track: '+(dist/1000).toFixed(1)+' km | Desnivel: '+Math.round(elevGain)+'m');
   document.getElementById('nav-status').textContent='\u25CF Siguiendo track';
   document.getElementById('nav-status').className='following';
-  if(elevs.length>1)showElevationProfile(elevs);
+  if(elevs.length>1)showElevationProfile(elevs,dist);
 }
 
 function haversine(lat1,lng1,lat2,lng2){
@@ -4096,18 +4104,50 @@ function haversine(lat1,lng1,lat2,lng2){
 
 function toggleElevation(){var el=document.getElementById('elevation-bar');el.classList.toggle('show');}
 
-function showElevationProfile(elevData){
+function showElevationProfile(elevData,totalDist){
   if(!elevData||elevData.length<2)return;
   var min=Math.min.apply(null,elevData),max=Math.max.apply(null,elevData);
   var range=max-min||1;
   document.getElementById('elev-range').textContent=Math.round(min)+'m - '+Math.round(max)+'m ('+Math.round(range)+'m+)';
   var step=Math.max(1,Math.floor(elevData.length/60));
+  var bars=[];
+  for(var i=0;i<elevData.length;i+=step)bars.push(i);
+  var stepDist=totalDist?(totalDist/bars.length):0;
+  var maxGrade=0,maxGradeIdx=-1,riskyCount=0;
+  var grades=bars.map(function(idx,bi){
+    var nextIdx=bars[bi+1]!==undefined?bars[bi+1]:elevData.length-1;
+    if(nextIdx===idx||!stepDist)return 0;
+    var g=((elevData[nextIdx]-elevData[idx])/stepDist)*100;
+    var ag=Math.abs(g);
+    if(ag>maxGrade){maxGrade=ag;maxGradeIdx=bi;}
+    if(ag>=7)riskyCount++;
+    return g;
+  });
   var chart=document.getElementById('elev-chart');chart.innerHTML='';
-  for(var i=0;i<elevData.length;i+=step){
-    var h=Math.max(10,((elevData[i]-min)/range)*100);
+  bars.forEach(function(idx,bi){
+    var h=Math.max(10,((elevData[idx]-min)/range)*100);
     var bar=document.createElement('div');bar.className='elev-bar';
-    bar.style.height=h+'%';bar.style.background=i>=elevData.length-step?'#a8e63d':'#3d4a66';
+    bar.style.height=h+'%';
+    var ag=Math.abs(grades[bi]);
+    var color=bi>=bars.length-1?'var(--lime)':'var(--dim)';
+    if(ag>=12)color='var(--red)';else if(ag>=7)color='var(--orange)';
+    bar.style.background=color;
     chart.appendChild(bar);
+  });
+  var riskyRatio=riskyCount/bars.length;
+  var score=1;
+  if(riskyRatio>0)score=2;
+  if(riskyRatio>0.15)score=3;
+  if(riskyRatio>0.3||maxGrade>=15)score=4;
+  if(riskyRatio>0.45&&maxGrade>=15)score=5;
+  document.getElementById('elev-risk-num').textContent=score;
+  var tags=document.getElementById('elev-risk-tags');tags.innerHTML='';
+  if(maxGradeIdx>=0&&maxGrade>=7&&totalDist){
+    var kmAt=((maxGradeIdx*stepDist)/1000).toFixed(1);
+    var tag=document.createElement('span');
+    tag.style.cssText='background:var(--card);color:var(--text);font-size:11px;padding:4px 10px;border-radius:20px';
+    tag.textContent=(maxGrade>=12?'\u26A0\uFE0F Rampa fuerte':'\u26A0\uFE0F Pendiente')+' km '+kmAt+' ('+Math.round(maxGrade)+'%)';
+    tags.appendChild(tag);
   }
   document.getElementById('elevation-bar').classList.add('show');
 }
@@ -4176,7 +4216,7 @@ function toggleRecording(){
     document.getElementById('nav-live2').classList.remove('show');
     document.getElementById('nav-status').textContent='\u25CF Listo';
     document.getElementById('nav-status').className='online';
-    if(navElevations.length>1)showElevationProfile(navElevations);
+    if(navElevations.length>1)showElevationProfile(navElevations,navDist);
   }
 }
 
