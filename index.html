@@ -3517,9 +3517,9 @@ function svcPintar(){
         <div class="card-sub" style="margin:10px 0 6px">Nivel y plazas</div>
         <div style="display:flex;gap:8px">
           <select class="input" id="qd-nivel" style="flex:1">
-            <option value="tranquilo">&#128154; Tranquilo</option>
-            <option value="intermedio" selected>&#128999; Intermedio</option>
-            <option value="avanzado">&#128293; Avanzado</option>
+            <option value="tranquilo">Tranquilo</option>
+            <option value="intermedio" selected>Intermedio</option>
+            <option value="avanzado">Avanzado</option>
           </select>
           <select class="input" id="qd-max" style="flex:1">
             <option value="10">M&aacute;x. 10</option>
@@ -3533,7 +3533,10 @@ function svcPintar(){
       <div class="card qd-card-mapa">
         <div class="card-title">&iquest;D&oacute;nde qued&aacute;is?</div>
         <div class="card-sub" style="margin-bottom:10px">Toca el mapa para colocar el punto, o usa tu GPS.</div>
-        <div id="qd-mapa-crear" style="width:100%;height:220px;border-radius:6px;overflow:hidden;background:#1a1a1a;margin-bottom:10px"></div>
+        <div style="position:relative;margin-bottom:10px">
+          <div id="qd-mapa-crear" style="width:100%;height:220px;overflow:hidden;background:#1a1a1a"></div>
+          <div class="qd-mapa-tag">MAPA</div>
+        </div>
         <button class="btn-primary" style="background:#0a120a;color:#39FF14;border:1px solid #39FF14;border-radius:6px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:8px" onclick="qdUsarGPS()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>USAR MI UBICACI&Oacute;N</button>
       </div>
       <button class="btn-primary" onclick="qdPublicar()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>PUBLICAR QUEDADA</button>
@@ -8095,38 +8098,40 @@ function ebGuia(tema) {
 /* ═══ Punto de Encuentro — piel visual propia (solo dentro de #panel-comunidad) ═══ */
 #panel-comunidad{--qd-neon:#39FF14;--qd-bg:#05070c;--qd-panel:#0a0f1a;--qd-panel2:#0d1424;--qd-border:#232b3d;--qd-text2:#9aa3b8}
 #panel-comunidad.panel{background:var(--qd-bg)}
-#panel-comunidad .p-header{background:#05070a;border-bottom:1px solid rgba(57,255,20,.25);box-shadow:none}
-#panel-comunidad .p-back{background:#0a0f1a;border:1px solid var(--qd-border);border-radius:8px}
+#panel-comunidad .p-header{background:#05070a;border-bottom:1px solid rgba(57,255,20,.3);box-shadow:none}
+#panel-comunidad .p-back{background:#0a0f1a;border:1px solid var(--qd-border);border-radius:0}
 #panel-comunidad .p-back:active{background:#0d1424;border-color:var(--qd-neon)}
 #panel-comunidad .p-back svg{stroke:var(--qd-neon)}
 #panel-comunidad .p-title{color:#fff}
 #panel-comunidad .p-title span{color:var(--qd-neon);text-shadow:none}
-#panel-comunidad .p-badge{background:var(--qd-panel2);border:1px solid var(--qd-border);color:var(--qd-text2);border-radius:6px}
+#panel-comunidad .p-badge{background:var(--qd-panel2);border:1px solid var(--qd-border);color:var(--qd-text2);border-radius:0}
 #panel-comunidad .p-badge.on{background:rgba(57,255,20,.08);border-color:rgba(57,255,20,.35);color:var(--qd-neon)}
 
-#panel-comunidad .card{background:var(--qd-panel);border:1px solid var(--qd-border);border-radius:6px;box-shadow:none}
-#panel-comunidad .card>.card-title{margin:-16px -16px 10px;padding:12px 14px 10px 44px;position:relative;background:var(--qd-panel2);border-bottom:1px solid var(--qd-border);color:#fff}
-#panel-comunidad .card>.card-title::before{content:'';position:absolute;left:12px;top:9px;width:24px;height:24px;border-radius:6px;background:var(--qd-panel);border:1px solid rgba(57,255,20,.35)}
-#panel-comunidad .card>.card-title::after{content:'';position:absolute;left:18px;top:15px;width:12px;height:12px;background:var(--qd-neon);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}
+#panel-comunidad .card{background:var(--qd-panel);border:1px solid var(--qd-border);border-radius:0;box-shadow:none}
+#panel-comunidad .card>.card-title{margin:-16px -16px 10px;padding:14px 16px 14px 52px;position:relative;background:var(--qd-panel2);border-bottom:1px solid var(--qd-border);color:#fff}
+#panel-comunidad .card>.card-title::before{content:'';position:absolute;left:16px;top:12px;width:28px;height:28px;border-radius:0;background:var(--qd-panel);border:1px solid rgba(57,255,20,.4)}
+#panel-comunidad .card>.card-title::after{content:'';position:absolute;left:22px;top:18px;width:16px;height:16px;background:var(--qd-neon);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}
 #panel-comunidad .qd-card-form>.card-title::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E")}
 #panel-comunidad .qd-card-mapa>.card-title::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E")}
 #panel-comunidad .card>.card-sub{color:var(--qd-text2);margin-bottom:2px}
 
 #panel-comunidad .input,#panel-comunidad select.input,#panel-comunidad textarea.input{
-  background:var(--qd-panel2);border:1px solid var(--qd-border);border-radius:6px;color:#fff
+  background:var(--qd-panel2);border:1px solid var(--qd-border);border-radius:0;color:#fff
 }
 #panel-comunidad .input::placeholder{color:#5c6478}
 #panel-comunidad .input:focus{border-color:var(--qd-neon)}
 
-#panel-comunidad #qd-chips{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--qd-border);border-radius:6px;overflow:hidden}
-#panel-comunidad .qd-chip{border-radius:0;border:none;border-right:1px solid var(--qd-border);border-bottom:1px solid var(--qd-border);background:var(--qd-panel2);color:var(--qd-text2);text-align:center;padding:10px 6px;white-space:normal}
+#panel-comunidad #qd-chips{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--qd-border);border-radius:0;overflow:hidden}
+#panel-comunidad .qd-chip{display:flex;align-items:center;gap:10px;border-radius:0;border:none;border-right:1px solid var(--qd-border);border-bottom:1px solid var(--qd-border);background:var(--qd-panel2);color:var(--qd-text2);text-align:left;padding:12px;white-space:normal;font-weight:700}
+#panel-comunidad .qd-chip svg{flex-shrink:0}
 #panel-comunidad .qd-chip:nth-child(2n){border-right:none}
 #panel-comunidad .qd-chip.on{background:var(--qd-neon);color:#04140a;border-color:var(--qd-border);box-shadow:none}
 
-#panel-comunidad #qd-vista-crear>.btn-primary{border-radius:6px;box-shadow:none;letter-spacing:.3px}
-#panel-comunidad #qd-vista-crear>.btn-primary:first-of-type{background:var(--qd-neon);color:#04140a;height:52px}
+#panel-comunidad #qd-vista-crear>.btn-primary{border-radius:0;box-shadow:none;letter-spacing:.5px}
+#panel-comunidad #qd-vista-crear>.btn-primary:first-of-type{background:var(--qd-neon);color:#04140a;height:54px}
 #panel-comunidad #qd-vista-crear>.btn-primary:active{box-shadow:none}
-#panel-comunidad #qd-mapa-crear{border:1px solid var(--qd-border)}
+#panel-comunidad #qd-mapa-crear{border:1px solid var(--qd-border);border-radius:0;position:relative}
+#panel-comunidad .qd-mapa-tag{position:absolute;left:8px;top:8px;z-index:400;background:rgba(0,0,0,.8);border:1px solid var(--qd-border);color:var(--qd-text2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;pointer-events:none}
 
 .qd-item:active{border-color:rgba(168,230,61,.5)}
 .qd-fecha{flex-shrink:0;width:52px;text-align:center;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:8px 4px}
@@ -8144,6 +8149,15 @@ function ebGuia(tema) {
    openComunidadApp() (antes era un placeholder).
    Nodo Firebase nuevo: 'quedadas'
    ═══════════════════════════════════════════ */
+var QD_ICON_SVG = {
+  ruta:'<path d="M4 20 20 4M4 4h4M16 20h4M9 9l1.5 1.5M13.5 13.5 15 15"/>',
+  mtb:'<path d="M3 20 9 8l3 6 2-3 5 9Z"/>',
+  gravel:'<path d="M12 21c0-6 3-7 3-11a3 3 0 0 0-6 0c0 4 3 5 3 11Z"/>',
+  urbana:'<path d="M4 21V9l5-3v15M9 21V6l6-3v18M15 21V11l5 3v7"/>',
+  ciclo:'<circle cx="12" cy="12" r="9"/><path d="m14.5 9.5-2 4.5-4.5 1L10 10.5Z"/>',
+  ebike:'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>'
+};
+var QD_LABEL = {ruta:'Ruta', mtb:'MTB', gravel:'Gravel', urbana:'Urbana', ciclo:'Cicloturismo', ebike:'E-Bike'};
 var QD_DISC = {ruta:'\uD83D\uDEE3\uFE0F Ruta', mtb:'\u26F0\uFE0F MTB', gravel:'\uD83C\uDF3E Gravel', urbana:'\uD83C\uDFD9\uFE0F Urbana', ciclo:'\uD83E\uDDED Cicloturismo', ebike:'\u26A1 E-Bike'};
 var QD_NIVEL = {tranquilo:'\uD83D\uDC9A Tranquilo', intermedio:'\uD83D\uDFE7 Intermedio', avanzado:'\uD83D\uDD25 Avanzado'};
 var qdMapaCrear=null, qdMarkerCrear=null, qdMapaModal=null, qdMarkerModal=null;
@@ -8220,7 +8234,8 @@ function qdRenderChips(){
   if(c.children.length) return;
   Object.keys(QD_DISC).forEach(function(d){
     var el = document.createElement('div');
-    el.className = 'qd-chip'; el.textContent = QD_DISC[d]; el.dataset.disc = d;
+    el.className = 'qd-chip'; el.dataset.disc = d;
+    el.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(QD_ICON_SVG[d]||'')+'</svg><span>'+QD_LABEL[d]+'</span>';
     el.onclick = function(){ el.classList.toggle('on'); };
     c.appendChild(el);
   });
