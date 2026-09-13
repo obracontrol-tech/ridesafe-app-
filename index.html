@@ -4188,17 +4188,12 @@ function rutasAnalizarGPX(input){
 function parseGPX(gpxText){
   var parser=new DOMParser(),doc=parser.parseFromString(gpxText,'text/xml');
   if(doc.querySelector('parsererror')){ toast('El archivo GPX está dañado o no se pudo leer'); return; }
-  var trkpts=doc.querySelectorAll('trkpt');
-  if(!trkpts.length) trkpts=doc.querySelectorAll('rtept'); /* rutas planificadas: Komoot, Wikiloc, etc. */
-  if(!trkpts.length){
-    /* último intento: por si el GPX usa un prefijo de espacio de nombres, ej. <gpx:trkpt> */
-    var all=doc.getElementsByTagName('*'),matched=[];
-    for(var i=0;i<all.length;i++){
-      var ln=all[i].localName||all[i].nodeName;
-      if(ln==='trkpt'||ln==='rtept')matched.push(all[i]);
-    }
-    trkpts=matched;
-  }
+  /* getElementsByTagName busca por nombre local y NO se ve afectado por el
+     xmlns por defecto que declaran RideWithGPS/Komoot/etc. en <gpx> — a
+     diferencia de querySelectorAll, que con ese namespace deja de encontrar
+     nada aunque el archivo sea perfectamente válido. */
+  var trkpts=Array.prototype.slice.call(doc.getElementsByTagName('trkpt'));
+  if(!trkpts.length) trkpts=Array.prototype.slice.call(doc.getElementsByTagName('rtept')); /* rutas planificadas */
   if(trkpts.length<2){ toast('Este GPX no tiene puntos de track o ruta reconocibles'); return; }
   var points=[],elevs=[];
   trkpts.forEach(function(pt){
