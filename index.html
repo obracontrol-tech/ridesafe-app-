@@ -3507,8 +3507,8 @@ function svcPintar(){
 
     <!-- VISTA CREAR -->
     <div id="qd-vista-crear" style="display:none">
-      <div class="card">
-        <div class="card-title">&#128221; Nueva quedada</div>
+      <div class="card qd-card-form">
+        <div class="card-title">Nueva quedada</div>
         <div class="card-sub" style="margin-bottom:12px">Rellena los datos y publica. Todos los ciclistas de RideSafe la ver&aacute;n.</div>
         <input class="input" id="qd-nombre" maxlength="60" placeholder="Nombre: Ej. Ruta del pantano + caf&eacute;" style="margin-bottom:10px"/>
         <input class="input" id="qd-fecha" type="datetime-local" style="margin-bottom:10px"/>
@@ -3530,14 +3530,14 @@ function svcPintar(){
         </div>
         <textarea class="input" id="qd-desc" maxlength="200" rows="2" placeholder="Descripci&oacute;n corta: ritmo, paradas, caf&eacute;..." style="margin-top:10px;resize:none"></textarea>
       </div>
-      <div class="card">
-        <div class="card-title">&#128506;&#65039; &iquest;D&oacute;nde qued&aacute;is?</div>
+      <div class="card qd-card-mapa">
+        <div class="card-title">&iquest;D&oacute;nde qued&aacute;is?</div>
         <div class="card-sub" style="margin-bottom:10px">Toca el mapa para colocar el punto, o usa tu GPS.</div>
-        <div id="qd-mapa-crear" style="width:100%;height:220px;border-radius:14px;overflow:hidden;background:#1a1a1a;margin-bottom:10px"></div>
-        <button class="btn-primary" style="background:var(--card2);color:var(--lime);border:1px solid rgba(168,230,61,.35)" onclick="qdUsarGPS()">&#128225; USAR MI UBICACI&Oacute;N</button>
+        <div id="qd-mapa-crear" style="width:100%;height:220px;border-radius:6px;overflow:hidden;background:#1a1a1a;margin-bottom:10px"></div>
+        <button class="btn-primary" style="background:#0a120a;color:#39FF14;border:1px solid #39FF14;border-radius:6px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:8px" onclick="qdUsarGPS()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>USAR MI UBICACI&Oacute;N</button>
       </div>
-      <button class="btn-primary" onclick="qdPublicar()">&#128640; PUBLICAR QUEDADA</button>
-      <button class="btn-primary" style="background:var(--card2);color:var(--muted);border:1px solid var(--border);margin-top:8px" onclick="qdCerrarCrear()">Cancelar</button>
+      <button class="btn-primary" onclick="qdPublicar()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>PUBLICAR QUEDADA</button>
+      <button class="btn-primary" style="background:#0d1424;color:#9aa3b8;border:1px solid #232b3d;box-shadow:none;border-radius:6px;margin-top:8px" onclick="qdCerrarCrear()">Cancelar</button>
     </div>
 
   </div>
@@ -8091,6 +8091,43 @@ function ebGuia(tema) {
 .qd-chip.active{border-color:var(--lime);color:var(--lime);background:rgba(168,230,61,.1)}
 .qd-chip.on{border-color:rgba(168,230,61,.6);color:var(--lime);background:var(--lime-dim);box-shadow:0 0 10px rgba(168,230,61,.15)}
 .qd-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+
+/* ═══ Punto de Encuentro — piel visual propia (solo dentro de #panel-comunidad) ═══ */
+#panel-comunidad{--qd-neon:#39FF14;--qd-bg:#05070c;--qd-panel:#0a0f1a;--qd-panel2:#0d1424;--qd-border:#232b3d;--qd-text2:#9aa3b8}
+#panel-comunidad.panel{background:var(--qd-bg)}
+#panel-comunidad .p-header{background:#05070a;border-bottom:1px solid rgba(57,255,20,.25);box-shadow:none}
+#panel-comunidad .p-back{background:#0a0f1a;border:1px solid var(--qd-border);border-radius:8px}
+#panel-comunidad .p-back:active{background:#0d1424;border-color:var(--qd-neon)}
+#panel-comunidad .p-back svg{stroke:var(--qd-neon)}
+#panel-comunidad .p-title{color:#fff}
+#panel-comunidad .p-title span{color:var(--qd-neon);text-shadow:none}
+#panel-comunidad .p-badge{background:var(--qd-panel2);border:1px solid var(--qd-border);color:var(--qd-text2);border-radius:6px}
+#panel-comunidad .p-badge.on{background:rgba(57,255,20,.08);border-color:rgba(57,255,20,.35);color:var(--qd-neon)}
+
+#panel-comunidad .card{background:var(--qd-panel);border:1px solid var(--qd-border);border-radius:6px;box-shadow:none}
+#panel-comunidad .card>.card-title{margin:-16px -16px 10px;padding:12px 14px 10px 44px;position:relative;background:var(--qd-panel2);border-bottom:1px solid var(--qd-border);color:#fff}
+#panel-comunidad .card>.card-title::before{content:'';position:absolute;left:12px;top:9px;width:24px;height:24px;border-radius:6px;background:var(--qd-panel);border:1px solid rgba(57,255,20,.35)}
+#panel-comunidad .card>.card-title::after{content:'';position:absolute;left:18px;top:15px;width:12px;height:12px;background:var(--qd-neon);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}
+#panel-comunidad .qd-card-form>.card-title::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E")}
+#panel-comunidad .qd-card-mapa>.card-title::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E")}
+#panel-comunidad .card>.card-sub{color:var(--qd-text2);margin-bottom:2px}
+
+#panel-comunidad .input,#panel-comunidad select.input,#panel-comunidad textarea.input{
+  background:var(--qd-panel2);border:1px solid var(--qd-border);border-radius:6px;color:#fff
+}
+#panel-comunidad .input::placeholder{color:#5c6478}
+#panel-comunidad .input:focus{border-color:var(--qd-neon)}
+
+#panel-comunidad #qd-chips{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--qd-border);border-radius:6px;overflow:hidden}
+#panel-comunidad .qd-chip{border-radius:0;border:none;border-right:1px solid var(--qd-border);border-bottom:1px solid var(--qd-border);background:var(--qd-panel2);color:var(--qd-text2);text-align:center;padding:10px 6px;white-space:normal}
+#panel-comunidad .qd-chip:nth-child(2n){border-right:none}
+#panel-comunidad .qd-chip.on{background:var(--qd-neon);color:#04140a;border-color:var(--qd-border);box-shadow:none}
+
+#panel-comunidad #qd-vista-crear>.btn-primary{border-radius:6px;box-shadow:none;letter-spacing:.3px}
+#panel-comunidad #qd-vista-crear>.btn-primary:first-of-type{background:var(--qd-neon);color:#04140a;height:52px}
+#panel-comunidad #qd-vista-crear>.btn-primary:active{box-shadow:none}
+#panel-comunidad #qd-mapa-crear{border:1px solid var(--qd-border)}
+
 .qd-item:active{border-color:rgba(168,230,61,.5)}
 .qd-fecha{flex-shrink:0;width:52px;text-align:center;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:8px 4px}
 .qd-fecha .d{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--lime);line-height:1}
