@@ -4187,14 +4187,27 @@ function rutasAnalizarGPX(input){
 
 function parseGPX(gpxText){
   var parser=new DOMParser(),doc=parser.parseFromString(gpxText,'text/xml');
+  if(doc.querySelector('parsererror')){ toast('El archivo GPX está dañado o no se pudo leer'); return; }
   var trkpts=doc.querySelectorAll('trkpt');
-  if(trkpts.length<2){toast('GPX inválido');return;}
+  if(!trkpts.length) trkpts=doc.querySelectorAll('rtept'); /* rutas planificadas: Komoot, Wikiloc, etc. */
+  if(!trkpts.length){
+    /* último intento: por si el GPX usa un prefijo de espacio de nombres, ej. <gpx:trkpt> */
+    var all=doc.getElementsByTagName('*'),matched=[];
+    for(var i=0;i<all.length;i++){
+      var ln=all[i].localName||all[i].nodeName;
+      if(ln==='trkpt'||ln==='rtept')matched.push(all[i]);
+    }
+    trkpts=matched;
+  }
+  if(trkpts.length<2){ toast('Este GPX no tiene puntos de track o ruta reconocibles'); return; }
   var points=[],elevs=[];
   trkpts.forEach(function(pt){
     var lat=parseFloat(pt.getAttribute('lat')||'0'),lon=parseFloat(pt.getAttribute('lon')||'0');
-    var ele=parseFloat(pt.querySelector('ele')?.textContent||'0');
+    var eleEl=pt.getElementsByTagName('ele')[0];
+    var ele=parseFloat((eleEl&&eleEl.textContent)||'0');
     if(lat&&lon)points.push([lat,lon]);if(ele)elevs.push(ele);
   });
+  if(points.length<2){ toast('Este GPX no tiene coordenadas v\u00e1lidas'); return; }
   var dist=0;for(var i=1;i<points.length;i++)dist+=haversine(points[i-1][0],points[i-1][1],points[i][0],points[i][1]);
   navGpxRoute=points;navElevations=elevs;vozSteps=[];vozIdx=0;navDestino=points[points.length-1];
   navDrawGpxRoute(points);
