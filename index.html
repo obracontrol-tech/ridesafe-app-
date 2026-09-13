@@ -3548,23 +3548,38 @@ function svcPintar(){
 
 <!-- MODAL: DETALLE DE QUEDADA -->
 <div id="qd-modal">
-  <div class="qd-modal-box">
-    <div id="qd-modal-map" style="width:100%;height:200px;border-radius:14px;overflow:hidden;margin-bottom:12px;background:#1a1a1a"></div>
-    <h3 id="qd-modal-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;margin-bottom:4px;color:var(--text)"></h3>
-    <div id="qd-modal-info" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
-    <div id="qd-modal-desc" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
-    <div class="card-sub" style="margin-bottom:6px">&#128692; Apuntados</div>
-    <div id="qd-modal-asistentes" style="margin-bottom:14px"></div>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-primary" style="flex:1" onclick="qdRsvp('voy')">&#128692; &iexcl;VOY!</button>
-      <button class="btn-primary" style="flex:1;background:var(--card2);color:var(--lime);border:1px solid rgba(168,230,61,.35)" onclick="qdRsvp('quizas')">&#129300; Quiz&aacute;s</button>
+  <div class="qd-modal-box qd-detail-card">
+    <div class="qd-hero">
+      <div id="qd-modal-map"></div>
+      <div class="qd-hero-top">
+        <span class="qd-hero-tag">&#128205; Punto de encuentro</span>
+        <span class="qd-hero-cupo" id="qd-modal-cupo">0/0</span>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-primary" style="flex:1;background:#0d3d1e;border:1px solid #25D366;color:#25D366" onclick="qdCompartir()">&#128172; Compartir WhatsApp</button>
-      <a class="btn-primary" id="qd-modal-llegar" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;text-decoration:none;background:var(--card2);color:var(--text2);border:1px solid var(--border)">&#128205; C&oacute;mo llegar</a>
+    <div class="qd-detail-body">
+      <div class="qd-detail-eyebrow">Lista para comenzar</div>
+      <h3 id="qd-modal-titulo"></h3>
+      <div id="qd-modal-info"></div>
+      <div id="qd-modal-desc"></div>
+
+      <div class="qd-detail-divider"></div>
+
+      <div class="qd-avatares-row">
+        <div id="qd-modal-asistentes" class="qd-avatares"></div>
+        <div class="qd-avatares-txt" id="qd-modal-avatares-txt"></div>
+      </div>
+      <div class="qd-progress"><div class="qd-progress-fill" id="qd-modal-progress"></div></div>
+
+      <button class="qd-btn-voy" onclick="qdRsvp('voy')">&#128692; &iexcl;VOY!</button>
+      <div class="qd-detail-row2">
+        <button class="qd-btn-sec" onclick="qdRsvp('quizas')">&#129300; Quiz&aacute;s</button>
+        <button class="qd-btn-sec" onclick="qdCompartir()">&#128172; Compartir</button>
+      </div>
+      <a class="qd-btn-sec" id="qd-modal-llegar" target="_blank" rel="noopener" style="display:flex;width:100%;margin-top:8px;text-decoration:none;box-sizing:border-box">&#128205; C&oacute;mo llegar</a>
+
+    <button id="qd-modal-borrar" style="display:none;width:100%;padding:11px;background:transparent;border:1px solid rgba(255,51,85,.4);border-radius:12px;color:#ff3355;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px" onclick="qdBorrar()">&#128465;&#65039; Borrar mi quedada</button>
     </div>
-    <button id="qd-modal-borrar" style="display:none;width:100%;padding:11px;background:transparent;border:1px solid rgba(255,51,85,.4);border-radius:12px;color:#ff3355;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="qdBorrar()">&#128465;&#65039; Borrar mi quedada</button>
-    <button style="width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="qdCerrarModal()">Cerrar</button>
+    <button style="width:calc(100% - 32px);margin:0 16px 16px;padding:12px;background:var(--qd-panel2, var(--card2));border:1px solid var(--qd-border, var(--border));border-radius:0;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer" onclick="qdCerrarModal()">Cerrar</button>
   </div>
 </div>
 
@@ -8131,6 +8146,33 @@ function ebGuia(tema) {
 #panel-comunidad #qd-vista-crear>.btn-primary:first-of-type{background:var(--qd-neon);color:#04140a;height:54px}
 #panel-comunidad #qd-vista-crear>.btn-primary:active{box-shadow:none}
 #panel-comunidad #qd-mapa-crear{border:1px solid var(--qd-border);border-radius:0;position:relative}
+
+/* ═══ Detalle de quedada (qd-modal) — tarjeta de evento ═══ */
+.qd-detail-card{--qd-neon:#39FF14;--qd-panel:#0a0f1a;--qd-panel2:#0d1424;--qd-border:#232b3d;--qd-text2:#9aa3b8;
+  background:var(--qd-panel);border:1px solid var(--qd-border);border-radius:0;padding:0;overflow:hidden}
+.qd-hero{position:relative;height:200px;background:#0a0f1a}
+.qd-hero #qd-modal-map{width:100%;height:100%}
+.qd-hero-top{position:absolute;inset:0 0 auto 0;z-index:450;display:flex;justify-content:space-between;align-items:flex-start;padding:12px;pointer-events:none}
+.qd-hero-tag{background:rgba(0,0,0,.75);border:1px solid var(--qd-border);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:5px 10px}
+.qd-hero-cupo{background:rgba(0,0,0,.75);border:1px solid var(--qd-neon);color:var(--qd-neon);font-size:12px;font-weight:800;padding:5px 10px;font-variant-numeric:tabular-nums}
+.qd-detail-body{padding:16px}
+.qd-detail-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--qd-neon);margin-bottom:4px}
+.qd-detail-card #qd-modal-titulo{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:900;color:#fff;margin-bottom:8px}
+.qd-detail-card #qd-modal-info{font-size:13px;color:var(--qd-text2);line-height:1.6;margin-bottom:8px}
+.qd-detail-card #qd-modal-desc{font-size:13px;color:var(--qd-text2);margin-bottom:4px}
+.qd-detail-divider{height:1px;background:var(--qd-border);margin:14px 0}
+.qd-avatares-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.qd-avatares{display:flex}
+.qd-avatares .qd-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#04140a;background:var(--qd-neon);border:2px solid var(--qd-panel);margin-left:-8px;flex-shrink:0}
+.qd-avatares .qd-av:first-child{margin-left:0}
+.qd-avatares .qd-av.quizas{background:var(--qd-panel2);color:var(--qd-text2);border-color:var(--qd-border)}
+.qd-avatares-txt{font-size:12px;color:var(--qd-text2)}
+.qd-avatares-txt b{color:#fff}
+.qd-progress{height:5px;background:var(--qd-panel2);border:1px solid var(--qd-border);margin-bottom:16px;overflow:hidden}
+.qd-progress-fill{height:100%;background:var(--qd-neon);width:0%;transition:width .3s}
+.qd-btn-voy{width:100%;height:52px;background:var(--qd-neon);color:#04140a;border:none;border-radius:0;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;letter-spacing:.5px;cursor:pointer}
+.qd-detail-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.qd-btn-sec{padding:12px;background:var(--qd-panel2);border:1px solid var(--qd-border);border-radius:0;color:var(--qd-text2);font-size:13px;font-weight:700;cursor:pointer;text-align:center;justify-content:center;align-items:center}
 #panel-comunidad .qd-mapa-tag{position:absolute;left:8px;top:8px;z-index:400;background:rgba(0,0,0,.8);border:1px solid var(--qd-border);color:var(--qd-text2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;pointer-events:none}
 
 .qd-item:active{border-color:rgba(168,230,61,.5)}
@@ -8321,14 +8363,22 @@ function qdVer(id){
       '\uD83D\uDCC5 '+DIA[f.getDay()]+' '+f.getDate()+'/'+(f.getMonth()+1)+' \u00B7 '+('0'+f.getHours()).slice(-2)+':'+('0'+f.getMinutes()).slice(-2)+' h<br>'
       + qdEsc(disc)+' \u00B7 '+qdEsc(QD_NIVEL[q.nivel]||'')+'<br>\uD83D\uDC64 Organiza: '+qdEsc(q.creadorNombre||'An\u00F3nimo');
     document.getElementById('qd-modal-desc').textContent = q.descripcion||'';
-    var asis = q.asistentes||{}; var html=''; var nVoy=0;
+    var asis = q.asistentes||{}; var html=''; var nVoy=0; var mostrados=0;
     Object.keys(asis).forEach(function(k){
       var a = asis[k]; if(a.estado==='voy') nVoy++;
-      html += '<span style="display:inline-block;margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:700;'
-        + (a.estado==='voy' ? 'background:var(--lime-dim);color:var(--lime);border:1px solid rgba(168,230,61,.4)' : 'background:var(--card2);color:var(--muted);border:1px solid var(--border)')
-        + '">'+qdEsc(a.nombre)+(a.estado==='quizas'?' \u00B7 quiz\u00E1s':'')+'</span>';
     });
-    document.getElementById('qd-modal-asistentes').innerHTML = html || '<span style="font-size:12px;color:var(--muted)">Nadie apuntado todav\u00EDa. \u00A1S\u00E9 el primero!</span>';
+    Object.keys(asis).forEach(function(k){
+      var a = asis[k]; if(a.estado!=='voy') return; if(mostrados>=6) return; mostrados++;
+      var ini = (a.nombre||'?').trim().charAt(0).toUpperCase();
+      html += '<div class="qd-av" title="'+qdEsc(a.nombre)+'">'+ini+'</div>';
+    });
+    document.getElementById('qd-modal-asistentes').innerHTML = html;
+    var maxRiders = q.maxRiders||15;
+    document.getElementById('qd-modal-avatares-txt').innerHTML = nVoy
+      ? '<b>'+nVoy+'</b> ciclista'+(nVoy===1?'':'s')+' confirmado'+(nVoy===1?'':'s')
+      : 'Nadie apuntado todav\u00EDa. \u00A1S\u00E9 el primero!';
+    document.getElementById('qd-modal-cupo').textContent = nVoy+'/'+maxRiders;
+    document.getElementById('qd-modal-progress').style.width = Math.min(100, Math.round((nVoy/maxRiders)*100))+'%';
     document.getElementById('qd-modal-llegar').href = 'https://www.google.com/maps/dir/?api=1&destination='+q.lat+','+q.lng;
     document.getElementById('qd-modal-borrar').style.display = (q.creadorId===qdMiId()) ? '' : 'none';
     document.getElementById('qd-modal').classList.add('show');
