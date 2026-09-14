@@ -24,7 +24,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 /* ═══════════════════════════════════════
    RESET & BASE
    ═══════════════════════════════════════ */
@@ -5534,6 +5534,14 @@ if (!firebase.apps || !firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 var db = firebase.database();
+
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) {
+    firebase.auth().signInAnonymously().catch(function(error) {
+      console.error('Error de autenticación anónima:', error);
+    });
+  }
+});   
 
 /* ═══════════════════════════════════════
    MODO GRUPO — sincronización Firebase
