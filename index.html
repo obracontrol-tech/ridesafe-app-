@@ -5693,6 +5693,20 @@ function grupoIniciarGPS(){
   }, function(){}, {enableHighAccuracy:true, maximumAge:15000, timeout:20000});
 }
 
+/* Reconexión automática al volver a mirar la pantalla */
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible' && grupoActivo) {
+    if (grupoWatch !== null) {
+      navigator.geolocation.clearWatch(grupoWatch);
+      grupoWatch = null;
+    }
+    grupoIniciarGPS();
+    if (grupoRef && grupoMiId) {
+      grupoRef.child(grupoMiId).update({ nombre: grupoMiNombre, activo: true, ts: Date.now(), estado: grupoMiEstado });
+    }
+  }
+});
+
 function initGrupoMapa(){
   var el = document.getElementById('grupo-mapa');
   if(!el || grupoMapa){ if(grupoMapa){setTimeout(function(){grupoMapa.invalidateSize();},150);} return; }
