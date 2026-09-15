@@ -5636,10 +5636,8 @@ function activateGrupo(){
 
   grupoConectar();
   grupoAudioInit(); /* desbloquear audio con el gesto del usuario */
-  setTimeout(function(){ initGrupoMapa(); }, 300);
-  setWalkieStatus('&#128308; Walkie próximamente — LiveKit pendiente','var(--muted)');
-}
-
+  setTimeout(function(){ initGrupoMapa(); }, 300)
+ }
 /* ═══ PELOTÓN EN VIVO: GPS compartido + rezagados + pinchazos ═══ */
 var grupoMapa=null, grupoMkrs={}, grupoWatch=null, grupoUltEscritura=0, grupoAvisados={}, grupoMiEstado='ok', grupoFitHecho=false, grupoUltNum=0;
 var GRUPO_DIST_REZAGADO = 500;   /* metros para considerar rezagado */
