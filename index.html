@@ -5275,7 +5275,7 @@ function pintarTrackMapa(points, contenedorId, esMini){
   if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
   var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:'anonymous'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:20,crossOrigin:'anonymous',subdomains:'abcd'}).addTo(map);
   var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
   L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
   L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
