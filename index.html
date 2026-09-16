@@ -3114,25 +3114,22 @@ function svcPintar(){
         <input type="file" id="resumen-foto-input" accept="image/*" style="display:none" onchange="onResumenFoto(event)">
       </div>
       <!-- Panel lateral de estadísticas -->
-      <div style="position:absolute;left:14px;top:60px;bottom:54px;width:108px;background:rgba(10,16,12,.72);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;backdrop-filter:blur(3px);z-index:500;display:flex;flex-direction:column;justify-content:space-around">
-        <div style="display:flex;align-items:flex-start;gap:6px">
-          <span style="font-size:14px;line-height:1.4">📏</span>
-          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--lime);line-height:1" id="resumen-km">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km</div></div>
+      <div style="position:absolute;left:16px;top:64px;bottom:58px;display:flex;flex-direction:column;justify-content:space-around;z-index:500">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--lime);line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.85)" id="resumen-km">0</div>
+          <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;text-shadow:0 2px 4px rgba(0,0,0,.85)">km</div>
         </div>
-        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
-        <div style="display:flex;align-items:flex-start;gap:6px">
-          <span style="font-size:14px;line-height:1.4">⏱️</span>
-          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-tiempo">0:00</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">tiempo</div></div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.85)" id="resumen-tiempo">0:00</div>
+          <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;text-shadow:0 2px 4px rgba(0,0,0,.85)">tiempo</div>
         </div>
-        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
-        <div style="display:flex;align-items:flex-start;gap:6px">
-          <span style="font-size:14px;line-height:1.4">⚡</span>
-          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1" id="resumen-vel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">km/h</div></div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.85)" id="resumen-vel">0</div>
+          <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;text-shadow:0 2px 4px rgba(0,0,0,.85)">km/h</div>
         </div>
-        <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 0"></div>
-        <div style="display:flex;align-items:flex-start;gap:6px">
-          <span style="font-size:14px;line-height:1.4">⛰️</span>
-          <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#ffaa00;line-height:1" id="resumen-desnivel">0</div><div style="font-size:9px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px">m desnivel</div></div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#ffaa00;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.85)" id="resumen-desnivel">0</div>
+          <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;text-shadow:0 2px 4px rgba(0,0,0,.85)">m desnivel</div>
         </div>
       </div>
       <!-- Pie: fecha + marca -->
