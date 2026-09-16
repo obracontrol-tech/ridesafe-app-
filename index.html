@@ -3296,7 +3296,7 @@ function svcPintar(){
     <div class="p-title">Planificar <span>Ruta</span></div>
     <button id="safe-route-toggle" onclick="toggleSafeRoute()" style="margin-left:auto;margin-right:12px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">&#128737;&#65039; Modo Seguro: OFF</button>
   </div>
-  <div style="flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 14px">
+  <div id="plan-form" style="flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 14px">
     <div class="plan-field">
       <span class="plan-label">&#128205; Origen</span>
       <input class="input" id="plan-origen" placeholder="Tu ubicación o escribe..." autocomplete="off" style="padding-right:34px"/>
@@ -3331,6 +3331,10 @@ function svcPintar(){
     </div>
     <div id="plan-alts" style="display:none;margin-top:8px"></div>
     <button id="plan-calcular" class="btn-primary" style="margin-top:8px" onclick="calcularRuta()">&#127758; CALCULAR RUTA</button>
+  </div>
+  <div id="plan-form-mini" style="display:none;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;align-items:center;justify-content:space-between;gap:10px">
+    <div id="plan-form-mini-text" style="font-size:12px;color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <button onclick="planExpandForm()" style="flex-shrink:0;font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--lime);cursor:pointer">&#9999;&#65039; Editar</button>
   </div>
   <div id="plan-mapa" style="flex:1"></div>
   <div id="plan-info" style="display:none;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);padding:12px 14px">
@@ -4823,7 +4827,7 @@ var planPerfil='cycling-road',orsKey='',planRoute=null;
 var safeRouteOn=false;
 try{orsKey=localStorage.getItem('rs_ors_key')||'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdkOGFjNDY4Yjc1MzQ3Zjg5M2Q0M2RiMTRhODExYzBmIiwiaCI6Im11cm11cjY0In0=';}catch(e){}
 
-function openPlan(){openPanel('panel-plan');if(!planMap)initPlanMap();if(!orsKey)document.getElementById('ors-key-modal').style.display='flex';setTimeout(function(){planMap&&planMap.invalidateSize();},100);}
+function openPlan(){openPanel('panel-plan');planExpandForm();if(!planMap)initPlanMap();if(!orsKey)document.getElementById('ors-key-modal').style.display='flex';setTimeout(function(){planMap&&planMap.invalidateSize();},100);}
 function closePlan(){closePanel('panel-plan');document.getElementById('ors-key-modal').style.display='none';safeRouteOn=false;actualizarBotonSafeRoute();}
 
 function abrirSafeRouteMode(){
@@ -5054,6 +5058,22 @@ function actualizarStatsPlan(){
   var elev=f.properties.ascent?Math.round(f.properties.ascent):'--';
   document.getElementById('pi-elev').innerHTML=elev+' <span style="font-size:9px;color:#666;font-weight:400">m</span>';
   document.getElementById('plan-info').style.display='block';
+  planCollapseForm();
+}
+
+function planCollapseForm(){
+  var form=document.getElementById('plan-form');
+  var mini=document.getElementById('plan-form-mini');
+  if(!form||!mini)return;
+  var origenTxt=(document.getElementById('plan-origen').value||'Origen').trim();
+  var destinoTxt=planModo==='loop'?('Bucle ~'+planLoopKm+' km'):((document.getElementById('plan-destino').value||'Destino').trim());
+  document.getElementById('plan-form-mini-text').textContent=origenTxt+' \u2192 '+destinoTxt;
+  form.style.display='none';
+  mini.style.display='flex';
+}
+function planExpandForm(){
+  document.getElementById('plan-form').style.display='block';
+  document.getElementById('plan-form-mini').style.display='none';
 }
 
 var planOrigen=null,planDestino=null;
