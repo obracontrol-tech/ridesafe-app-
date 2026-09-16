@@ -5070,10 +5070,12 @@ function planCollapseForm(){
   document.getElementById('plan-form-mini-text').textContent=origenTxt+' \u2192 '+destinoTxt;
   form.style.display='none';
   mini.style.display='flex';
+  setTimeout(function(){planMap&&planMap.invalidateSize();},150);
 }
 function planExpandForm(){
   document.getElementById('plan-form').style.display='block';
   document.getElementById('plan-form-mini').style.display='none';
+  setTimeout(function(){planMap&&planMap.invalidateSize();},150);
 }
 
 var planOrigen=null,planDestino=null;
