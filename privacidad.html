@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidad — RideSafe IA</title>
+<style>
+  :root{
+    --lime:#a8e63d; --bg:#0a0f1e; --bg2:#0d1526; --card:#141d33; --card2:#1a2540;
+    --border:#1f2a45; --border2:#293656; --muted:#7d8aa3; --dim:#3d4a66;
+    --text:#e8ecf3; --text2:#b0b8ca; --cyan:#00e5ff; --orange:#ff8833;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Barlow',Arial,sans-serif;line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+  a{color:var(--lime)}
+  h1{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--lime);margin-bottom:6px}
+  .fecha{color:var(--muted);font-size:13px;margin-bottom:28px}
+  h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#fff;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  p,li{color:var(--text2);font-size:14.5px;margin-bottom:10px}
+  ul{padding-left:20px;margin-bottom:14px}
+  strong{color:var(--text)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:#fff;background:var(--card2)}
+  td{color:var(--text2)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:16px 0}
+  .volver{display:inline-block;margin-bottom:20px;color:var(--muted);text-decoration:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="volver" href="/">← Volver a RideSafe IA</a>
+  <h1>Política de Privacidad</h1>
+  <div class="fecha">Última actualización: 19 de septiembre de 2026</div>
+
+  <div class="card">
+    Esta política explica, en lenguaje claro, qué datos recoge <strong>RideSafe IA</strong>, para qué se usan, dónde se guardan y qué derechos tienes sobre ellos. Si algo no queda claro, puedes escribirnos a <a href="mailto:info@ridesafeai.es">info@ridesafeai.es</a>.
+  </div>
+
+  <h2>1. Quién es el responsable de tus datos</h2>
+  <p><strong>Juan Manuel</strong>, desarrollador y titular de RideSafe IA, con contacto en <a href="mailto:info@ridesafeai.es">info@ridesafeai.es</a>, es quien decide qué datos se recogen y para qué se usan (responsable del tratamiento, según el Reglamento General de Protección de Datos, RGPD).</p>
+
+  <h2>2. Qué datos recogemos y para qué</h2>
+  <table>
+    <tr><th>Dato</th><th>Para qué se usa</th></tr>
+    <tr><td>Ubicación GPS durante una actividad</td><td>Dibujar tu ruta, calcular distancia/velocidad/desnivel, y compartir tu posición en vivo si activas Modo Grupo</td></tr>
+    <tr><td>Nombre de perfil</td><td>Identificarte ante otros ciclistas en grupos y quedadas</td></tr>
+    <tr><td>Fotos que añades (a una actividad o a la ficha de tu bici)</td><td>Guardarlas junto a esa actividad o ficha, y permitirte compartirlas</td></tr>
+    <tr><td>Contactos de emergencia (nombre y teléfono)</td><td>Enviarles un aviso si activas el botón SOS o se detecta una caída</td></tr>
+    <tr><td>Chat ID de Telegram</td><td>Enviarte notificaciones (SOS, caídas, ciclistas cercanos) a tu Telegram</td></tr>
+    <tr><td>Datos de tu bicicleta (marca, modelo, nº de serie, foto)</td><td>Tener una ficha lista para denunciar en caso de robo</td></tr>
+    <tr><td>Mensajes que escribes al Asistente IA</td><td>Generar la respuesta (consejos, rutas); se envían a Anthropic (Claude) para procesarlos, ver sección 4</td></tr>
+    <tr><td>Datos técnicos básicos (tipo de navegador, si tienes GPS activado)</td><td>Que la app funcione correctamente en tu dispositivo</td></tr>
+  </table>
+  <p>No pedimos ni guardamos DNI, dirección postal, ni datos bancarios — RideSafe IA es gratuita y no gestiona pagos.</p>
+
+  <h2>3. Dónde se guardan tus datos</h2>
+  <p>Tus datos se guardan en <strong>Firebase</strong> (un servicio de Google), en servidores ubicados en la <strong>Unión Europea</strong> (Bélgica). Algunos ajustes (tu nombre, tus contactos guardados, tu Chat ID de Telegram) se guardan también <strong>solo en tu propio dispositivo</strong> (en la memoria local del navegador), y nunca salen de tu móvil salvo que actives una función que los comparta expresamente (por ejemplo, unirte a un grupo).</p>
+
+  <h2>4. Con quién compartimos datos</h2>
+  <p>No vendemos tus datos a nadie, ni los usamos con fines publicitarios. Para que la app funcione, algunos datos pasan por estos servicios externos, únicamente con la finalidad indicada:</p>
+  <ul>
+    <li><strong>Google Firebase</strong> — almacenamiento de la base de datos de la app</li>
+    <li><strong>Cloudflare</strong> — intermediario técnico que envía tus mensajes a Telegram y a la IA, sin guardar tu historial</li>
+    <li><strong>Anthropic (Claude)</strong> — procesa los mensajes que escribes al Asistente IA para generar la respuesta</li>
+    <li><strong>OpenRouteService / Mapbox</strong> — calculan y muestran las rutas y mapas</li>
+    <li><strong>Telegram</strong> — entrega las notificaciones a tu cuenta de Telegram, si la vinculas</li>
+    <li><strong>WhatsApp</strong> — solo si tú mismo eliges compartir algo (una ruta, una alerta de robo); nosotros no enviamos nada por WhatsApp sin que tú pulses ese botón</li>
+  </ul>
+  <p>Algunos de estos servicios (Anthropic, Cloudflare) pueden procesar datos en servidores fuera de la Unión Europea (Estados Unidos), bajo sus propias garantías de protección de datos.</p>
+
+  <h2>5. Cuánto tiempo guardamos tus datos</h2>
+  <p>Tus actividades, fotos y ficha de bici se conservan mientras sigas usando la app. Si quieres que borremos todos tus datos de nuestros servidores, escríbenos a <a href="mailto:info@ridesafeai.es">info@ridesafeai.es</a> y lo haremos en un plazo máximo de 30 días. Los datos guardados solo en tu dispositivo (nombre, contactos, Chat ID) desaparecen si desinstalas la app o borras los datos del navegador.</p>
+
+  <h2>6. Tus derechos</h2>
+  <p>Como usuario, en cualquier momento puedes pedirnos, escribiendo a <a href="mailto:info@ridesafeai.es">info@ridesafeai.es</a>:</p>
+  <ul>
+    <li><strong>Acceder</strong> a qué datos tuyos tenemos guardados</li>
+    <li><strong>Corregir</strong> datos que estén equivocados</li>
+    <li><strong>Eliminar</strong> tus datos de nuestros servidores</li>
+    <li><strong>Retirar tu consentimiento</strong> en cualquier momento, dejando de usar la app</li>
+  </ul>
+  <p>También tienes derecho a presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a> si consideras que no hemos tratado bien tus datos.</p>
+
+  <h2>7. Menores de edad</h2>
+  <p>RideSafe IA no está dirigida a menores de 14 años. Si eres menor de edad, necesitas el permiso de tu padre, madre o tutor legal para usar la aplicación.</p>
+
+  <h2>8. Seguridad</h2>
+  <p>Protegemos tus datos con reglas de acceso en nuestra base de datos (nadie puede leer o modificar los datos de otro usuario sin autorización) y conexiones cifradas (HTTPS) en toda la app. Aun así, ningún sistema es 100% infalible; si detectas algo que no debería ser visible, avísanos.</p>
+
+  <h2>9. Cambios en esta política</h2>
+  <p>Si cambiamos algo importante en esta política, lo indicaremos actualizando la fecha de arriba y, si el cambio es relevante, te avisaremos dentro de la propia app.</p>
+
+  <h2>10. Contacto</h2>
+  <p>Para cualquier duda sobre tus datos o esta política: <a href="mailto:info@ridesafeai.es">info@ridesafeai.es</a></p>
+
+</div>
+</body>
+</html>
