@@ -4649,7 +4649,7 @@ setInterval(function(){
    ═══════════════════════════════════════ */
 var shieldOn=false,shieldAlert=false,shieldHighG=false,sensActual=25;
 var countTimer=null,alertCount=0,audioCtx=null;
-var flashOn=false,flashStream=null,flashInterval=null,flashPatron='lento';
+var flashOn=false,flashStream=null,flashInterval=null,flashPatron='lento',flashStarting=false;
 var sens={alta:18,media:25,baja:35};
 
 function openSeg(){openPanel('panel-seg');}
@@ -4727,9 +4727,10 @@ function sendSOS(){
 
 function toggleFlash(){
   try{getAudio().resume();}catch(e){}
-  if(flashOn){stopFlash();}else{startFlash();}
+  if(flashOn){stopFlash();}else if(!flashStarting){startFlash();}
 }
 function startFlash(){
+  flashStarting = true;
   // Intentar con torch directamente
   var constraints = {
     video: {
@@ -4755,10 +4756,12 @@ function startFlash(){
           track.applyConstraints({advanced:[{torch:true}]}).then(function() {
             flashActivado(track);
           }).catch(function() {
+            flashStarting = false;
             stopFlash();
             toast('Este dispositivo no soporta flash desde el navegador');
           });
         } catch(e) {
+          flashStarting = false;
           stopFlash();
           toast('Flash no disponible en este dispositivo');
         }
@@ -4768,11 +4771,13 @@ function startFlash(){
       flashActivado(track);
     })
     .catch(function(err) {
+      flashStarting = false;
       toast('Permiso de cámara denegado');
     });
 }
 
 function flashActivado(track) {
+  flashStarting = false;
   flashOn = true;
   document.getElementById('toggle-flash').classList.add('on');
   document.getElementById('flash-card').classList.add('on');
@@ -4787,16 +4792,21 @@ function flashActivado(track) {
   var pat = patrones[flashPatron] || [200,800];
   var idx = 0, estado = false;
 
-  flashInterval = setInterval(function() {
+  function ciclo() {
+    if (!flashOn) return;
     estado = !estado;
     try { track.applyConstraints({advanced:[{torch:estado}]}); } catch(e) {}
     idx = (idx + 1) % pat.length;
-  }, pat[idx]);
+    flashInterval = setTimeout(ciclo, pat[idx]);
+  }
+  flashInterval = setTimeout(ciclo, pat[idx]);
 
   toast('Flash activado ✅');
 }
 function stopFlash(){
   flashOn = false;
+  flashStarting = false;
+  clearTimeout(flashInterval);
   clearInterval(flashInterval);
   flashInterval = null;
   if(flashStream){
