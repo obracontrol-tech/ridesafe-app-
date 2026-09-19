@@ -2994,6 +2994,10 @@ function svcPintar(){
       <div id="elev-risk-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
   </div>
+  <div id="nav-safety-banner" style="display:none;position:relative;background:rgba(255,51,85,.12);border:1px solid rgba(255,51,85,.4);border-radius:12px;padding:10px 34px 10px 12px;margin-bottom:10px;font-size:11.5px;color:#fff;line-height:1.4">
+    <span style="font-size:14px;margin-right:4px">⚠️</span><b>No manipules el móvil mientras circulas.</b> Detente en un lugar seguro si necesitas usar la app.
+    <span onclick="document.getElementById('nav-safety-banner').style.display='none'" style="position:absolute;right:10px;top:8px;cursor:pointer;color:var(--muted);font-size:14px">✕</span>
+  </div>
   <div id="nav-live2">
     <div class="nl2-title" style="display:flex;align-items:center;justify-content:space-between">
       <span><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;animation:blink 1s infinite"></span> Grabando</span>
@@ -4263,6 +4267,12 @@ function toggleRecording(){
     document.getElementById('nav-status').textContent='\u25CF Grabando';
     document.getElementById('nav-status').className='recording';
     toast('Grabando ruta...');
+    var _safetyB=document.getElementById('nav-safety-banner');
+    if(_safetyB){
+      _safetyB.style.display='block';
+      clearTimeout(window._safetyBT);
+      window._safetyBT=setTimeout(function(){_safetyB.style.display='none';},6000);
+    }
     // Telegram actividad iniciada
     if(userPos){ tgAlertaActividad(userPos[0], userPos[1]); }
     else { tgAlertaActividad(null, null); }
@@ -4284,6 +4294,8 @@ function toggleRecording(){
     document.getElementById('nav-live2').classList.remove('show');
     document.getElementById('nav-status').textContent='\u25CF Listo';
     document.getElementById('nav-status').className='online';
+    var _safetyB2=document.getElementById('nav-safety-banner');
+    if(_safetyB2){_safetyB2.style.display='none';clearTimeout(window._safetyBT);}
     if(navElevations.length>1)showElevationProfile(navElevations,navDist);
   }
 }
