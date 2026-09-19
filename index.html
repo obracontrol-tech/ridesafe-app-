@@ -1878,6 +1878,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 </style>
 </head>
 <body>
+<div id="flash-screen-overlay" style="position:fixed;inset:0;background:#fff;z-index:99999;display:none;pointer-events:none"></div>
 
 <!-- ═══════════════════════════════════════════
      ONBOARDING — PRIMER ARRANQUE
@@ -4649,7 +4650,7 @@ setInterval(function(){
    ═══════════════════════════════════════ */
 var shieldOn=false,shieldAlert=false,shieldHighG=false,sensActual=25;
 var countTimer=null,alertCount=0,audioCtx=null;
-var flashOn=false,flashStream=null,flashInterval=null,flashPatron='lento',flashStarting=false;
+var flashOn=false,flashStream=null,flashInterval=null,flashPatron='lento',flashStarting=false,flashMode=null;
 var sens={alta:18,media:25,baja:35};
 
 function openSeg(){openPanel('panel-seg');}
@@ -4729,6 +4730,32 @@ function toggleFlash(){
   try{getAudio().resume();}catch(e){}
   if(flashOn){stopFlash();}else if(!flashStarting){startFlash();}
 }
+
+function pararStreamCamara(){
+  if (flashStream) {
+    try { flashStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
+    flashStream = null;
+  }
+}
+
+function iniciarPatronFlash(applyFn){
+  var patrones = {
+    lento: [200,800],
+    rapido: [100,200],
+    sos: [100,100,100,100,100,300,300,100,300,100,300,300,100,100,100,700]
+  };
+  var pat = patrones[flashPatron] || [200,800];
+  var idx = 0, estado = false;
+  function ciclo() {
+    if (!flashOn) return;
+    estado = !estado;
+    applyFn(estado);
+    idx = (idx + 1) % pat.length;
+    flashInterval = setTimeout(ciclo, pat[idx]);
+  }
+  flashInterval = setTimeout(ciclo, pat[idx]);
+}
+
 function startFlash(){
   flashStarting = true;
   // Intentar con torch directamente
@@ -4756,14 +4783,12 @@ function startFlash(){
           track.applyConstraints({advanced:[{torch:true}]}).then(function() {
             flashActivado(track);
           }).catch(function() {
-            flashStarting = false;
-            stopFlash();
-            toast('Este dispositivo no soporta flash desde el navegador');
+            pararStreamCamara();
+            startFlashPantalla();
           });
         } catch(e) {
-          flashStarting = false;
-          stopFlash();
-          toast('Flash no disponible en este dispositivo');
+          pararStreamCamara();
+          startFlashPantalla();
         }
         return;
       }
@@ -4771,57 +4796,53 @@ function startFlash(){
       flashActivado(track);
     })
     .catch(function(err) {
-      flashStarting = false;
-      toast('Permiso de cámara denegado');
+      // Sin cámara o sin permiso: usar el flash de pantalla, funciona en cualquier móvil
+      startFlashPantalla();
     });
 }
 
 function flashActivado(track) {
   flashStarting = false;
   flashOn = true;
+  flashMode = 'torch';
   document.getElementById('toggle-flash').classList.add('on');
   document.getElementById('flash-card').classList.add('on');
   document.getElementById('flash-desc').textContent = 'Flash activo - visible a 500m';
   document.getElementById('flash-icon').innerHTML = '&#128161;';
 
-  var patrones = {
-    lento: [200,800],
-    rapido: [100,200],
-    sos: [100,100,100,100,100,300,300,100,300,100,300,300,100,100,100,700]
-  };
-  var pat = patrones[flashPatron] || [200,800];
-  var idx = 0, estado = false;
-
-  function ciclo() {
-    if (!flashOn) return;
-    estado = !estado;
+  iniciarPatronFlash(function(estado){
     try { track.applyConstraints({advanced:[{torch:estado}]}); } catch(e) {}
-    idx = (idx + 1) % pat.length;
-    flashInterval = setTimeout(ciclo, pat[idx]);
-  }
-  flashInterval = setTimeout(ciclo, pat[idx]);
+  });
 
   toast('Flash activado ✅');
 }
+
+function startFlashPantalla(){
+  flashStarting = false;
+  flashOn = true;
+  flashMode = 'pantalla';
+  document.getElementById('toggle-flash').classList.add('on');
+  document.getElementById('flash-card').classList.add('on');
+  document.getElementById('flash-desc').textContent = 'Flash de pantalla activo (este móvil no permite flash real)';
+  document.getElementById('flash-icon').innerHTML = '&#128161;';
+
+  var overlay = document.getElementById('flash-screen-overlay');
+  iniciarPatronFlash(function(estado){
+    overlay.style.display = estado ? 'block' : 'none';
+  });
+
+  toast('Flash de pantalla activado ✅');
+}
+
 function stopFlash(){
   flashOn = false;
   flashStarting = false;
   clearTimeout(flashInterval);
   clearInterval(flashInterval);
   flashInterval = null;
-  if(flashStream){
-    var track = flashStream.getVideoTracks()[0];
-    // Apagar torch primero, luego parar stream con delay
-    try { track.applyConstraints({advanced:[{torch:false}]}); } catch(e){}
-    setTimeout(function(){
-      try {
-        if(flashStream) {
-          flashStream.getTracks().forEach(function(t){ t.stop(); });
-          flashStream = null;
-        }
-      } catch(e){}
-    }, 300);
-  }
+  document.getElementById('flash-screen-overlay').style.display = 'none';
+  pararStreamCamara();
+  flashMode = null;
   document.getElementById('toggle-flash').classList.remove('on');
   document.getElementById('flash-card').classList.remove('on');
   document.getElementById('flash-desc').textContent = 'Activa el flash como luz de emergencia';
