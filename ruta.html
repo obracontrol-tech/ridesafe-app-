@@ -75,8 +75,8 @@ function pintarRuta(datos){
   document.getElementById('p-desnivel').textContent = Math.round(datos.desnivel||0);
 
   var mapa = L.map('mapa', {zoomControl:true});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom:20, subdomains:'abcd', attribution:'© OpenStreetMap, © CARTO'
+  L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg', {
+    maxZoom:20, attribution:'© Mapbox, © OpenStreetMap'
   }).addTo(mapa);
 
   var pts = datos.points || [];

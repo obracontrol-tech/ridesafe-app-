@@ -2518,8 +2518,8 @@ function openServicios(){
   openPanel('panel-servicios');
   if(!svcMap){
     svcMap = L.map('svc-mapa').setView(userPos||[41.6176,0.6200], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(svcMap);
+    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',
+      {attribution:'&copy; Mapbox &copy; OpenStreetMap', maxZoom:19}).addTo(svcMap);
     var chips = document.getElementById('svc-chips');
     var htmlChips = '<button class="qd-chip active" data-cat="todos" onclick="svcFiltrar(this,\'todos\')">Todos</button>';
     Object.keys(SVC_CAT).forEach(function(k){
@@ -5269,7 +5269,7 @@ function pintarTrackMapa(points, contenedorId, esMini){
   if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
   var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:20,crossOrigin:'anonymous',subdomains:'abcd'}).addTo(map);
+  L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',{maxZoom:20,crossOrigin:'anonymous'}).addTo(map);
   var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
   L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
   L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
