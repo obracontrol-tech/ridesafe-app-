@@ -4245,6 +4245,45 @@ function saveWaypoint(){
   closeWpModal();toast('Waypoint guardado');
 }
 
+var navAutoSaveTimer=null;
+
+function guardarBorradorRuta(){
+  if(!navRecOn || navPoints.length<2) return;
+  try{
+    localStorage.setItem('rs_route_draft', JSON.stringify({
+      points:navPoints, distance:navDist, elevations:navElevations,
+      startTime:navStartTime, guardadoEn:Date.now()
+    }));
+  }catch(e){ /* si se llena el almacenamiento, no rompemos la grabación por esto */ }
+}
+
+function comprobarBorradorRuta(){
+  var raw;
+  try{ raw = localStorage.getItem('rs_route_draft'); }catch(e){ return; }
+  if(!raw) return;
+  var d;
+  try{ d = JSON.parse(raw); }catch(e){ localStorage.removeItem('rs_route_draft'); return; }
+  if(!d || !d.points || d.points.length<2) { localStorage.removeItem('rs_route_draft'); return; }
+
+  var km = (d.distance/1000).toFixed(1);
+  setTimeout(function(){
+    if(confirm('📍 Encontramos una ruta sin guardar de una sesión anterior (' + km + ' km). ¿Quieres guardarla en tu historial?')){
+      var elapsed = Math.round(((d.guardadoEn||Date.now()) - d.startTime)/1000);
+      var route = {
+        id: Date.now(), points: d.points, distance: d.distance, duration: elapsed,
+        timestamp: d.startTime,
+        elevationGain: d.elevations && d.elevations.length>1 ? Math.max.apply(null,d.elevations)-Math.min.apply(null,d.elevations) : 0
+      };
+      var routes = JSON.parse(localStorage.getItem('rs_routes')||'[]');
+      routes.unshift(route);
+      localStorage.setItem('rs_routes', JSON.stringify(routes));
+      updateQuickStats();
+      toast('Ruta recuperada: ' + km + ' km');
+    }
+    localStorage.removeItem('rs_route_draft');
+  }, 1500);
+}
+
 function toggleRecording(){
   navRecOn=!navRecOn;
   var btn=document.getElementById('nav-rec-btn2'),lbl=document.getElementById('nav-rec-lbl2');
@@ -4264,6 +4303,8 @@ function toggleRecording(){
       },null,{enableHighAccuracy:true,maximumAge:3000});
     }
     navTimer=setInterval(updateLiveStats,1000);
+    if(navAutoSaveTimer)clearInterval(navAutoSaveTimer);
+    navAutoSaveTimer=setInterval(guardarBorradorRuta,120000); // cada 2 minutos
     document.getElementById('nav-live2').classList.add('show');
     document.getElementById('nav-status').textContent='\u25CF Grabando';
     document.getElementById('nav-status').className='recording';
@@ -4280,6 +4321,8 @@ function toggleRecording(){
   }else{
     btn.classList.remove('rec');lbl.textContent='REC';
     clearInterval(navTimer);if(navWatch!==null){navigator.geolocation.clearWatch(navWatch);navWatch=null;}
+    if(navAutoSaveTimer){clearInterval(navAutoSaveTimer);navAutoSaveTimer=null;}
+    localStorage.removeItem('rs_route_draft');
     var elapsed=Math.round((Date.now()-navStartTime)/1000);
     if(navPoints.length>=2){
       var route={id:Date.now(),points:navPoints,distance:navDist,duration:elapsed,timestamp:navStartTime,elevationGain:navElevations.length>1?Math.max.apply(null,navElevations)-Math.min.apply(null,navElevations):0};
@@ -7243,6 +7286,7 @@ function appInit() {
   // RideSafe IA es 100% GRATUITA para todos
   // (Cambio del 31 de agosto: se eliminó el paywall de suscripción)
   lanzamientoBanner();
+  comprobarBorradorRuta();
   return;
 }
 
