@@ -38,6 +38,7 @@
 <div id="loading">Cargando ruta…</div>
 <div id="mapa"></div>
 <div class="brand">🛡️ RIDESAFE IA</div>
+<button id="btn-play" onclick="reproducirRuta()" style="display:none;position:absolute;top:14px;right:14px;z-index:999;width:46px;height:46px;border-radius:50%;background:rgba(10,15,30,.85);border:1px solid rgba(168,230,61,.45);color:#a8e63d;font-size:19px;cursor:pointer;backdrop-filter:blur(4px)">▶</button>
 <div id="panel" style="display:none">
   <div class="nombre" id="p-nombre">Ciclista</div>
   <div class="fecha" id="p-fecha"></div>
@@ -61,6 +62,42 @@ function formatoTiempo(seg){
   return m+':'+s;
 }
 
+function reproducirRuta(){
+  if (playing || latlngs.length < 2) return;
+  playing = true;
+  var btn = document.getElementById('btn-play');
+  btn.textContent = '⏸'; btn.style.color = '#ff8833';
+
+  var icono = L.divIcon({
+    html: '<div style="width:22px;height:22px;border-radius:50%;background:#a8e63d;border:3px solid #fff;box-shadow:0 0 12px rgba(168,230,61,.9)"></div>',
+    className:'', iconSize:[22,22], iconAnchor:[11,11]
+  });
+  if (playMarker) mapa.removeLayer(playMarker);
+  playMarker = L.marker(latlngs[0], {icon:icono, zIndexOffset:2000}).addTo(mapa);
+  var recorrido = L.polyline([latlngs[0]], {color:'#ff8833', weight:6, opacity:.9}).addTo(mapa);
+
+  var DURACION_TOTAL = Math.min(Math.max(latlngs.length * 40, 6000), 18000); // entre 6 y 18 segundos
+  var pasoMs = DURACION_TOTAL / latlngs.length;
+  var i = 1;
+
+  function paso(){
+    if (!playing) return;
+    if (i >= latlngs.length){
+      playing = false;
+      btn.textContent = '▶'; btn.style.color = '#a8e63d';
+      return;
+    }
+    playMarker.setLatLng(latlngs[i]);
+    recorrido.addLatLng(latlngs[i]);
+    mapa.panTo(latlngs[i], {animate:true, duration:pasoMs/1000});
+    i++;
+    setTimeout(paso, pasoMs);
+  }
+  setTimeout(paso, pasoMs);
+}
+
+var mapa, latlngs = [], playMarker = null, playing = false;
+
 function pintarRuta(datos){
   document.getElementById('loading').style.display = 'none';
   document.getElementById('panel').style.display = 'block';
@@ -74,18 +111,19 @@ function pintarRuta(datos){
   document.getElementById('p-vel').textContent = vel;
   document.getElementById('p-desnivel').textContent = Math.round(datos.desnivel||0);
 
-  var mapa = L.map('mapa', {zoomControl:true});
+  mapa = L.map('mapa', {zoomControl:true});
   L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg', {
     maxZoom:20, attribution:'© Mapbox, © OpenStreetMap'
   }).addTo(mapa);
 
   var pts = datos.points || [];
   if (pts.length >= 2) {
-    var latlngs = pts.map(function(p){ return [p[0], p[1]]; });
+    latlngs = pts.map(function(p){ return [p[0], p[1]]; });
     var linea = L.polyline(latlngs, {color:'#a8e63d', weight:5, opacity:.95}).addTo(mapa);
     L.circleMarker(latlngs[0], {radius:7, color:'#fff', weight:2, fillColor:'#22c55e', fillOpacity:1}).addTo(mapa);
     L.circleMarker(latlngs[latlngs.length-1], {radius:7, color:'#fff', weight:2, fillColor:'#ff3355', fillOpacity:1}).addTo(mapa);
     mapa.fitBounds(linea.getBounds(), {padding:[30,30]});
+    document.getElementById('btn-play').style.display = 'block';
   } else {
     mapa.setView([41.6175,-0.6298], 12);
   }
