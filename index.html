@@ -718,6 +718,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 }
 .sos-btn:active{transform:scale(.97)}
 
+#emergencia-screen{position:fixed;inset:0;z-index:100001;background:#b3001e;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:emgPulso 1.2s ease-in-out infinite}
+#emergencia-screen.show{display:block}
+@keyframes emgPulso{0%,100%{background:#b3001e}50%{background:#e0002a}}
+.emg-inner{max-width:460px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));color:#fff;text-align:center}
+.emg-icono{font-size:64px;line-height:1;margin-bottom:8px}
+.emg-titulo{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;line-height:1.1;margin-bottom:8px;text-transform:uppercase}
+.emg-sub{font-size:15px;margin-bottom:14px;opacity:.95}
+.emg-dato{background:rgba(0,0,0,.25);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:10px;text-align:left}
+.emg-dato a{color:#fff;font-weight:800}
+.emg-btn{display:block;width:100%;padding:18px;margin-bottom:12px;border-radius:16px;border:none;font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:900;text-decoration:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.emg-112{background:#fff;color:#b3001e}
+.emg-wa{background:#25D366;color:#fff}
+.emg-share{background:#111;color:#fff}
+#emg-mensaje{width:100%;min-height:70px;border-radius:10px;border:none;padding:8px;font-size:13px;margin-bottom:10px}
+.emg-cancelar{display:block;width:100%;padding:14px;margin-top:6px;border-radius:14px;background:transparent;border:2px solid rgba(255,255,255,.8);color:#fff;font-size:16px;font-weight:800;cursor:pointer}
+.emg-nota{font-size:11px;opacity:.85;margin-top:16px;line-height:1.5}
+.caida-nota{font-size:10.5px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+.caida-ok-grande{padding:18px!important;font-size:21px!important}
 #caida-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:24px}
 #caida-modal.show{display:flex}
 .caida-box{background:#1a0808;border:2px solid var(--red);border-radius:20px;padding:28px 22px;width:100%;max-width:320px;text-align:center;box-shadow:0 0 40px rgba(255,51,85,.4)}
@@ -1208,6 +1226,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 .tg-chatid-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#29B6F6}
 .tg-chatid-ok{font-size:16px}
 .tg-alertas{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+/* Telegram desactivado: el panel antiguo nunca se muestra */
+html.tg-off #panel-telegram, html.tg-off #tg-dot{display:none!important}
+/* Alertas de seguridad */
+#panel-alertas-seg{position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+#panel-alertas-seg.show{display:flex}
+.as-lista{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.as-btn{display:block;width:100%;padding:14px;border-radius:14px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;text-align:left;text-decoration:none;cursor:pointer}
+.as-btn:active{transform:scale(.98)}
+.as-sos{background:var(--red);border-color:var(--red);color:#fff;text-align:center;font-size:19px}
+.as-112{background:rgba(255,51,85,.1);border-color:rgba(255,51,85,.4);color:#ff6688}
+.as-wa{background:rgba(37,211,102,.08);border-color:rgba(37,211,102,.35);color:#25D366}
+.as-gps{font-size:12px;line-height:1.5;border-radius:12px;padding:9px 11px;margin-bottom:12px}
+.as-gps.ok{color:var(--lime);background:var(--lime-dim);border:1px solid rgba(168,230,61,.3)}
+.as-gps.no{color:#ffb366;background:rgba(255,136,51,.08);border:1px solid rgba(255,136,51,.3)}
+.as-mensaje{width:100%;min-height:70px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:13px;padding:8px}
+.caida-extra{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.caida-extra-btn{display:block;width:100%;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font-size:14px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer}
 .tg-estado{font-size:13px;font-weight:700;color:var(--muted);text-align:center;padding:9px;border:1px solid var(--border);border-radius:12px;margin-bottom:12px}
 .tg-estado.esperando{color:#29B6F6;border-color:rgba(41,182,246,.35)}
 .tg-estado.conectado{color:var(--lime);border-color:rgba(168,230,61,.4);background:var(--lime-dim)}
@@ -2151,7 +2186,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
     <div class="logo">
       <span class="logo-ride">Ride</span><span class="logo-safe">Safe</span><span class="logo-ai">IA</span>
     </div>
-    <button class="hdr-notif" onclick="openTelegram()" title="Configurar Telegram" style="width:42px;height:42px">
+    <button class="hdr-notif" onclick="openTelegram()" title="Alertas de seguridad" style="width:42px;height:42px">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M21.8 2.1L1.4 9.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L8.6 16l-.4 5.2c.6 0 .9-.3 1.2-.6l2.9-2.8 5.1 3.7c.9.5 1.6.2 1.8-.9l3.3-15.6c.3-1.4-.5-2-1.7-1.9z" fill="#29B6F6"/>
       </svg>
@@ -2300,7 +2335,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
       </button>
       <button class="com-btn com-tg" onclick="openSugerenciaTG()">
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M23.91 3.79L20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>
-        Enviar por Telegram
+        Enviar sugerencia
       </button>
     </div>
   </div>
@@ -2493,6 +2528,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 </style>
 
 <script>
+/* ═══ CONFIGURACIÓN GLOBAL ═══
+   TELEGRAM_ENABLED = false → Telegram queda desactivado en toda la app.
+   Para reactivarlo en el futuro basta con poner true (todo el código sigue ahí). */
+const TELEGRAM_ENABLED = false;
+var _rsTgOffAvisado = false;
+function rsTgOff(origen){ if(!_rsTgOffAvisado){ _rsTgOffAvisado = true; console.info('Telegram desactivado (TELEGRAM_ENABLED = false)' + (origen ? ' · ' + origen : '')); } }
+if(!TELEGRAM_ENABLED){ document.documentElement.classList.add('tg-off'); }
 /* ═══ Submenú de grupos (portada simplificada) ═══ */
 /* ═══ Reorganización en 5 apartados: Inicio · Rutas · Seguridad · Mi bici · Comunidad ═══
    Solo cambia el MENÚ (qué botón abre qué). Todas las funciones y paneles originales se mantienen. */
@@ -2551,6 +2593,7 @@ function rsTgPintarEstado(estado){
   else { t.textContent = 'Estado: No conectado'; t.className = 'tg-estado'; if(btn) btn.textContent = '🔗 CONECTAR TELEGRAM'; }
 }
 function rsTgConectar(){
+  if (!TELEGRAM_ENABLED) { rsTgOff('rsTgConectar'); return false; }
   if(typeof db === 'undefined' || !db){ toast('Sin conexión con el servidor. Inténtalo de nuevo en un momento.'); return; }
   var previo = tgUserChatId;
   try{ tgGenerarCodigo(); }catch(e){ console.error(e); toast('No se pudo generar el código. Inténtalo de nuevo.'); return; }
@@ -2578,6 +2621,201 @@ function rsTgCopiarCodigo(){
   try{ navigator.clipboard.writeText(c).then(function(){ toast('Código copiado'); }, function(){ toast('Código: ' + c); }); }
   catch(e){ toast('Código: ' + c); }
 }
+/* ═══ ALERTAS DE SEGURIDAD SIN TELEGRAM: 112, compartir ubicación y WhatsApp ═══ */
+function rsPosActual(){ try{ return (typeof userPos !== 'undefined' && userPos && userPos.length === 2) ? userPos : null; }catch(e){ return null; } }
+function rsEnlaceMapa(pos){ return pos ? ('https://maps.google.com/?q=' + pos[0].toFixed(6) + ',' + pos[1].toFixed(6)) : ''; }
+function rsMensajeSOS(){
+  var pos = rsPosActual();
+  return pos ? ('🆘 SOS RideSafe IA. Necesito ayuda. Mi ubicación actual es: ' + rsEnlaceMapa(pos))
+             : '🆘 SOS RideSafe IA. Necesito ayuda. No tengo ubicación GPS exacta en este momento.';
+}
+function rsActualizarGPSAviso(){
+  var el = document.getElementById('as-gps'); if(!el) return;
+  var pos = rsPosActual();
+  if(pos){ el.className = 'as-gps ok'; el.innerHTML = '📍 Ubicación GPS disponible. Se incluirá un enlace de mapa en el mensaje.'; }
+  else { el.className = 'as-gps no'; el.innerHTML = '⚠️ No tenemos ubicación GPS exacta. Puedes <strong>llamar al 112</strong> o compartir tu ubicación manualmente.'; }
+}
+function rsPedirGPS(){
+  try{
+    if(!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(p){
+      try{ userPos = [p.coords.latitude, p.coords.longitude]; }catch(e){}
+      rsActualizarGPSAviso(); rsPintarContactosAlerta();
+    }, function(){}, {enableHighAccuracy:true, timeout:10000, maximumAge:30000});
+  }catch(e){}
+}
+function rsPintarContactosAlerta(){
+  var cont = document.getElementById('as-contactos'); if(!cont) return;
+  cont.innerHTML = '';
+  var lista = [];
+  try{ lista = cargarContactosEmergencia() || []; }catch(e){}
+  var msg = encodeURIComponent(rsMensajeSOS());
+  lista.forEach(function(c){
+    if(!c || !c.telefono) return;
+    var num = String(c.telefono).replace(/[^0-9]/g, '');
+    if(!num) return;
+    var a = document.createElement('a');
+    a.className = 'as-btn as-wa'; a.target = '_blank'; a.rel = 'noopener';
+    a.href = 'https://wa.me/' + num + '?text=' + msg;
+    a.textContent = '💬 Avisar a ' + (c.nombre || 'contacto') + ' por WhatsApp';
+    cont.appendChild(a);
+  });
+}
+function rsAbrirAlertasSeguridad(modoSOS){
+  var t = document.getElementById('as-titulo'), s = document.getElementById('as-subtitulo'), b = document.getElementById('as-btn-sos');
+  if(modoSOS){
+    if(t) t.textContent = '🆘 SOS activado';
+    if(s) s.textContent = 'Elige cómo pedir ayuda:';
+    if(b) b.style.display = 'none';
+  }else{
+    if(t) t.textContent = 'Alertas de seguridad';
+    if(s) s.textContent = 'RideSafe IA puede ayudarte en caso de emergencia usando funciones del teléfono.';
+    if(b) b.style.display = '';
+  }
+  var mw = document.getElementById('as-mensaje-wrap'); if(mw) mw.style.display = 'none';
+  rsActualizarGPSAviso(); rsPintarContactosAlerta();
+  if(!rsPosActual()) rsPedirGPS();
+  document.getElementById('panel-alertas-seg').classList.add('show');
+}
+function rsCerrarAlertasSeguridad(){ var p = document.getElementById('panel-alertas-seg'); if(p) p.classList.remove('show'); }
+function rsMostrarMensajeManual(msg){
+  var mw = document.getElementById('as-mensaje-wrap'), ta = document.getElementById('as-mensaje');
+  if(!document.getElementById('panel-alertas-seg').classList.contains('show')) rsAbrirAlertasSeguridad();
+  if(ta){ ta.value = msg; } if(mw){ mw.style.display = 'block'; }
+  try{ ta.focus(); ta.select(); }catch(e){}
+}
+function rsCompartirUbicacion(){
+  var msg = rsMensajeSOS(), url = rsEnlaceMapa(rsPosActual());
+  if(!rsPosActual()) toast('No tenemos ubicación GPS exacta. Puedes llamar al 112 o compartir tu ubicación manualmente.');
+  if(navigator.share){
+    var datos = {title:'SOS RideSafe IA', text:msg};
+    if(url) datos.url = url;
+    navigator.share(datos).catch(function(err){ if(err && err.name !== 'AbortError') rsCopiarOMostrar(msg); });
+    return;
+  }
+  rsCopiarOMostrar(msg);
+}
+function rsCopiarOMostrar(msg){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(msg).then(function(){ toast('Mensaje copiado. Pégalo en la app que quieras.'); rsMostrarMensajeManual(msg); },
+                                              function(){ rsMostrarMensajeManual(msg); });
+      return;
+    }
+  }catch(e){}
+  rsMostrarMensajeManual(msg);
+}
+function rsWhatsAppUbicacion(){
+  if(!rsPosActual()) toast('No tenemos ubicación GPS exacta. El mensaje se enviará sin enlace de mapa.');
+  window.open('https://wa.me/?text=' + encodeURIComponent(rsMensajeSOS()), '_blank');
+}
+/* ═══ MODO EMERGENCIA (Fase 1: sin Telegram, sin envíos automáticos por WhatsApp/SMS) ═══ */
+window.rsEmergenciaActiva = false;
+var _rsEmg = {sirena:null, vibra:null, wake:null, alertaRef:null};
+function rsEmgContacto(){
+  try{ var l = cargarContactosEmergencia() || []; for(var i=0;i<l.length;i++){ if(l[i] && l[i].telefono) return l[i]; } }catch(e){}
+  return null;
+}
+function rsEmgMensaje(){
+  var pos = rsPosActual(), nombre = '';
+  try{ nombre = (perfilUsuario && perfilUsuario.nombre) ? perfilUsuario.nombre : ''; }catch(e){}
+  return '🚨 RideSafe IA: posible caída de ' + (nombre || 'un ciclista') + '. Puede necesitar ayuda. '
+    + (pos ? 'Ubicación: ' + rsEnlaceMapa(pos) : 'No hay ubicación GPS exacta.');
+}
+function rsEmgPintar(){
+  var pos = rsPosActual(), g = document.getElementById('emg-gps');
+  if(g){
+    if(pos) g.innerHTML = '📍 Ubicación: <a href="' + rsEnlaceMapa(pos) + '" target="_blank" rel="noopener">' + pos[0].toFixed(5) + ', ' + pos[1].toFixed(5) + '</a>';
+    else g.innerHTML = '⚠️ No tenemos ubicación GPS exacta. Llama al 112 e indica dónde estás.';
+  }
+  var c = rsEmgContacto(), el = document.getElementById('emg-contacto');
+  if(el){
+    if(c){
+      var tel = String(c.telefono).replace(/[^0-9+]/g,'');
+      el.innerHTML = '👤 Contacto de emergencia: <strong>' + escHtml(c.nombre || 'Contacto') + '</strong> · <a href="tel:' + tel + '">' + escHtml(c.telefono) + '</a>';
+      el.style.display = '';
+    } else { el.style.display = 'none'; }
+  }
+}
+function rsEmgGuardarAlerta(){
+  var pos = rsPosActual(), perfil = {};
+  try{ perfil = perfilUsuario || {}; }catch(e){}
+  var datos = {
+    ts: Date.now(), fecha: new Date().toISOString(),
+    lat: pos ? pos[0] : null, lng: pos ? pos[1] : null,
+    estado: 'caída detectada',
+    nombre: perfil.nombre || 'Ciclista', bici: perfil.bici || '',
+    ride_live: (typeof rideLiveOn !== 'undefined' && rideLiveOn && rideLiveId) ? rideLiveId : null
+  };
+  try{
+    if(typeof db !== 'undefined' && db){
+      _rsEmg.alertaRef = db.ref('alertas_caida').push();
+      _rsEmg.alertaRef.set(datos).catch(function(e){ console.warn('[RideSafe] No se pudo guardar la alerta de caída:', e); });
+      if(datos.ride_live){
+        db.ref('ride_live/' + rideLiveId).update({sos:true, estado:'CAÍDA DETECTADA', caida_ts:datos.ts}).catch(function(){});
+      }
+    }
+  }catch(e){ console.warn('[RideSafe] Firebase no disponible; modo emergencia solo local.', e); }
+}
+function rsModoEmergencia(origen){
+  if(window.rsEmergenciaActiva) return;
+  window.rsEmergenciaActiva = true;
+  try{ shieldAlert = true; }catch(e){}
+  document.getElementById('emergencia-screen').classList.add('show');
+  var mw = document.getElementById('emg-mensaje-wrap'); if(mw) mw.style.display = 'none';
+  rsEmgPintar();
+  // Sirena repetida y vibración continua
+  try{ getAudio().resume(); }catch(e){}
+  try{ alarma(); }catch(e){}
+  _rsEmg.sirena = setInterval(function(){ try{ alarma(); }catch(e){} }, 1300);
+  try{ if(navigator.vibrate){ navigator.vibrate([900,300]); _rsEmg.vibra = setInterval(function(){ navigator.vibrate([900,300]); }, 1200); } }catch(e){}
+  // Mantener la pantalla encendida si el navegador lo permite
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(function(w){ _rsEmg.wake = w; }).catch(function(){}); }catch(e){}
+  // Guardar la alerta (si Firebase no está, no pasa nada)
+  rsEmgGuardarAlerta();
+  // Intentar una posición GPS actualizada
+  try{
+    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){
+      try{ userPos = [p.coords.latitude, p.coords.longitude]; }catch(e){}
+      rsEmgPintar();
+      try{ if(_rsEmg.alertaRef) _rsEmg.alertaRef.update({lat:p.coords.latitude, lng:p.coords.longitude}).catch(function(){}); }catch(e){}
+    }, function(){}, {enableHighAccuracy:true, timeout:15000, maximumAge:10000});
+  }catch(e){}
+}
+function rsCancelarEmergencia(){
+  if(!confirm('¿Seguro que estás bien? Se cancelará la emergencia.')) return;
+  window.rsEmergenciaActiva = false;
+  clearInterval(_rsEmg.sirena); clearInterval(_rsEmg.vibra); _rsEmg.sirena = _rsEmg.vibra = null;
+  try{ if(navigator.vibrate) navigator.vibrate(0); }catch(e){}
+  try{ if(_rsEmg.wake){ _rsEmg.wake.release(); _rsEmg.wake = null; } }catch(e){}
+  document.getElementById('emergencia-screen').classList.remove('show');
+  try{ shieldAlert = false; shieldHighG = false; }catch(e){}
+  try{ if(_rsEmg.alertaRef) _rsEmg.alertaRef.update({estado:'cancelada', cancelada_ts:Date.now()}).catch(function(){}); }catch(e){}
+  try{ if(typeof rideLiveOn !== 'undefined' && rideLiveOn && rideLiveId && db) db.ref('ride_live/' + rideLiveId).update({sos:false, estado:'OK'}).catch(function(){}); }catch(e){}
+  _rsEmg.alertaRef = null;
+  toast('Emergencia cancelada');
+}
+function rsEmgWhatsApp(){
+  var c = rsEmgContacto(), txt = encodeURIComponent(rsEmgMensaje());
+  var num = c ? String(c.telefono).replace(/[^0-9]/g,'') : '';
+  window.open(num ? ('https://wa.me/' + num + '?text=' + txt) : ('https://wa.me/?text=' + txt), '_blank');
+}
+function rsEmgCompartir(){
+  var msg = rsEmgMensaje(), url = rsEnlaceMapa(rsPosActual());
+  function manual(){
+    var w = document.getElementById('emg-mensaje-wrap'), t = document.getElementById('emg-mensaje');
+    if(t) t.value = msg; if(w) w.style.display = 'block';
+    try{ t.focus(); t.select(); }catch(e){}
+  }
+  if(navigator.share){
+    var d = {title:'Emergencia RideSafe IA', text:msg}; if(url) d.url = url;
+    navigator.share(d).catch(function(err){ if(!err || err.name !== 'AbortError') manual(); });
+    return;
+  }
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(msg).then(function(){ toast('Mensaje copiado'); manual(); }, manual); return; } }catch(e){}
+  manual();
+}
+function rsCaidaPausar(){ try{ clearInterval(countTimer); }catch(e){} }
 function rsPanelAbierto(id){ var p=document.getElementById(id); return !!(p && p.classList.contains('show')); }
 function rsRutasMarcar(sec){
   document.querySelectorAll('.rs-rutas-nav button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-rsec')===sec); });
@@ -2653,7 +2891,9 @@ var GRUPOS_MENU = {
       {e:'💥', n:'Sensor anticaída', d:'Detecta caídas y avisa automáticamente', fn:function(){rsIr(openSeg,'seg-caida-card');}},
       {e:'📞', n:'Contactos de emergencia', d:'112 y tus personas de confianza', fn:function(){rsIr(openSeg,'seg-contactos-card');}},
       {e:'⚡', n:'Flash de seguridad', d:'Usa el flash como luz de emergencia', fn:function(){rsIr(openSeg,'flash-card');}},
-      {e:'✈️', n:'Alertas Telegram', d:'Recibe SOS, caídas y actividad en tu Telegram', fn:function(){openTelegram();}},
+      (TELEGRAM_ENABLED
+        ? {e:'✈️', n:'Alertas Telegram', d:'Recibe SOS, caídas y actividad en tu Telegram', fn:function(){openTelegram();}}
+        : {e:'🔔', n:'Alertas de seguridad', d:'112, compartir ubicación y WhatsApp', fn:function(){rsAbrirAlertasSeguridad();}}),
       {e:'📡', n:'Ride Live — salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}},
       {note:'⚠️ <strong>No manipules el móvil mientras circulas.</strong> Detente en un lugar seguro si necesitas usar la app.'}
     ]
@@ -2689,7 +2929,9 @@ var GRUPOS_MENU = {
     titulo: '⚙️ Ajustes',
     items: [
       {e:'👤', n:'Mi perfil', d:'Tu nombre, nivel y tipo de bici', fn:function(){openAjustes();}},
-      {e:'✈️', n:'Vincular Telegram', d:'Código de vinculación y canal oficial', fn:function(){openTelegram();}},
+      (TELEGRAM_ENABLED
+        ? {e:'✈️', n:'Vincular Telegram', d:'Código de vinculación y canal oficial', fn:function(){openTelegram();}}
+        : {e:'🔔', n:'Alertas de seguridad', d:'112, compartir ubicación y WhatsApp', fn:function(){rsAbrirAlertasSeguridad();}}),
       {e:'⚖️', n:'Aviso legal', d:'Condiciones de uso aceptadas', fn:function(){openLegalPanel();}},
       {e:'🔐', n:'Política de privacidad', d:'Qué datos recogemos y cómo se tratan', fn:function(){window.open('/privacidad.html','_blank');}},
       {sec:'Ajustes avanzados'},
@@ -2717,7 +2959,18 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   var ft = window.openTelegram;
   if(typeof ft === 'function'){
-    window.openTelegram = function(){ var r = ft.apply(this, arguments); try{ var bn=document.getElementById('tg-bot-nombre'); if(bn) bn.textContent='@'+TG_BOT_USERNAME; var esp=document.getElementById('tg-link-esperando'); rsTgPintarEstado(esp && esp.style.display==='block' ? 'esperando' : undefined); }catch(e){} return r; };
+    window.openTelegram = function(){ if(!TELEGRAM_ENABLED){ rsTgOff('openTelegram'); rsAbrirAlertasSeguridad(); return false; } var r = ft.apply(this, arguments); try{ var bn=document.getElementById('tg-bot-nombre'); if(bn) bn.textContent='@'+TG_BOT_USERNAME; var esp=document.getElementById('tg-link-esperando'); rsTgPintarEstado(esp && esp.style.display==='block' ? 'esperando' : undefined); }catch(e){} return r; };
+  }
+  var fsos = window.sendSOS;
+  if(typeof fsos === 'function' && !TELEGRAM_ENABLED){
+    window.sendSOS = function(){
+      var confirmado = false, oc = window.confirm;
+      window.confirm = function(m){ confirmado = oc.call(window, m); return confirmado; };
+      var r;
+      try{ r = fsos.apply(this, arguments); } finally { window.confirm = oc; }
+      if(confirmado){ try{ rsAbrirAlertasSeguridad(true); }catch(e){ console.error(e); } }
+      return r;
+    };
   }
   var fs = window.abrirSelectorFotos;
   if(typeof fs === 'function'){
@@ -2840,6 +3093,72 @@ function svcPintar(){
 <!-- BARRA INFERIOR -->
 <!-- RADAR CICLISTAS CERCANOS -->
 <!-- PANEL TELEGRAM CONFIG -->
+<!-- Modal de caída y modo emergencia: fuera de los paneles para que se vean desde cualquier pantalla -->
+<!-- MODO EMERGENCIA (caída sin respuesta) -->
+<div id="emergencia-screen" role="alertdialog" aria-live="assertive">
+  <div class="emg-inner">
+    <div class="emg-icono">🚨</div>
+    <div class="emg-titulo">Ciclista caído — puede necesitar ayuda</div>
+    <div class="emg-sub">Si encuentras a esta persona, pulsa un botón para pedir ayuda.</div>
+    <div class="emg-dato" id="emg-gps">📍 Buscando ubicación GPS…</div>
+    <div class="emg-dato" id="emg-contacto" style="display:none"></div>
+    <a class="emg-btn emg-112" href="tel:112">📞 Llamar al 112</a>
+    <button type="button" class="emg-btn emg-wa" onclick="rsEmgWhatsApp()">💬 Avisar por WhatsApp</button>
+    <button type="button" class="emg-btn emg-share" onclick="rsEmgCompartir()">📍 Compartir ubicación</button>
+    <div id="emg-mensaje-wrap" style="display:none">
+      <div style="font-size:12px;margin:8px 0 4px">Copia este mensaje y envíalo:</div>
+      <textarea id="emg-mensaje" readonly></textarea>
+    </div>
+    <button type="button" class="emg-cancelar" onclick="rsCancelarEmergencia()">Estoy bien — cancelar emergencia</button>
+    <div class="emg-nota">La detección de caída funciona solo si la app está abierta, con permisos activos y sensores disponibles. RideSafe IA no sustituye los servicios oficiales de emergencia.</div>
+  </div>
+</div>
+
+<div id="caida-modal">
+    <div class="caida-box">
+      <div class="caida-icon">&#128680;</div>
+      <div class="caida-titulo">¡Caída detectada!</div>
+      <div class="caida-sub">Pulsa <strong style="color:var(--lime)">ESTOY BIEN</strong> para cancelar.</div>
+      <div class="cd-wrap">
+        <svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="33" fill="none" stroke="#2a0808" stroke-width="6"/><circle id="cd-arc" cx="38" cy="38" r="33"/></svg>
+        <div id="cd-num">30</div>
+      </div>
+      <button class="caida-ok caida-ok-grande" onclick="cancelCaida()">&#9989; ESTOY BIEN — Cancelar</button>
+      <button class="caida-sos-btn" onclick="cancelCaida();sendSOS()">&#128680; Enviar alerta ahora</button>
+      <div class="caida-nota">La detección de caída funciona solo si la app está abierta, con permisos activos y sensores disponibles. RideSafe IA no sustituye los servicios oficiales de emergencia.</div>
+      <div class="caida-extra">
+        <a class="caida-extra-btn" href="tel:112" onclick="rsCaidaPausar()">📞 Llamar al 112</a>
+        <button type="button" class="caida-extra-btn" onclick="rsCaidaPausar();rsCompartirUbicacion()">📍 Compartir ubicación</button>
+        <button type="button" class="caida-extra-btn" onclick="rsCaidaPausar();rsWhatsAppUbicacion()">💬 Enviar por WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+<!-- PANEL ALERTAS DE SEGURIDAD (sustituye a Telegram cuando TELEGRAM_ENABLED = false) -->
+<div id="panel-alertas-seg" onclick="if(event.target===this)rsCerrarAlertasSeguridad()">
+  <div class="tg-box">
+    <div class="tg-title">
+      <div class="tg-title-icon" style="background:rgba(255,51,85,.12);border-color:rgba(255,51,85,.35);font-size:22px">🔔</div>
+      <div class="tg-title-txt" id="as-titulo">Alertas de seguridad</div>
+    </div>
+    <div class="tg-subtitle" id="as-subtitulo">RideSafe IA puede ayudarte en caso de emergencia usando funciones del teléfono.</div>
+    <div class="as-gps" id="as-gps"></div>
+    <div class="as-lista">
+      <button type="button" class="as-btn as-sos" id="as-btn-sos" onclick="rsCerrarAlertasSeguridad();sendSOS()">🆘 Enviar SOS</button>
+      <a class="as-btn as-112" href="tel:112">📞 Llamar al 112</a>
+      <button type="button" class="as-btn" onclick="rsCompartirUbicacion()">📍 Compartir mi ubicación</button>
+      <button type="button" class="as-btn as-wa" onclick="rsWhatsAppUbicacion()">💬 Enviar ubicación por WhatsApp</button>
+      <div id="as-contactos"></div>
+      <button type="button" class="as-btn" id="as-btn-contactos" onclick="rsCerrarAlertasSeguridad();rsIr(openSeg,'seg-contactos-card')">👤 Contactos de emergencia</button>
+    </div>
+    <div id="as-mensaje-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--muted);margin:10px 0 6px">Copia este mensaje y envíalo por la app que prefieras:</div>
+      <textarea id="as-mensaje" readonly class="as-mensaje"></textarea>
+    </div>
+    <button class="tg-btn-cerrar" onclick="rsCerrarAlertasSeguridad()">Cerrar</button>
+  </div>
+</div>
+
 <div id="panel-telegram">
   <div class="tg-box">
     <div class="tg-title">
@@ -2935,7 +3254,7 @@ function svcPintar(){
   <div class="p-body" style="overflow-y:auto;padding:20px 16px">
     <div style="background:var(--lime-dim);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
       <span style="font-size:28px">🚴</span>
-      <div style="font-size:13px;color:var(--muted);line-height:1.4">Tu mensaje llega directamente al creador de la app por Telegram. ¡Toda idea cuenta!</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.4">Tu mensaje llega directamente al creador de la app. ¡Toda idea cuenta!</div>
     </div>
     <input type="text" id="sug-nombre" placeholder="Tu nombre (opcional)" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
     <textarea id="sug-texto" rows="5" placeholder="Escribe aquí tu sugerencia, idea o problema..." style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;resize:vertical;box-sizing:border-box"></textarea>
@@ -3423,6 +3742,7 @@ function svcPintar(){
         <div class="ld-item"><span class="ld-label">Estado</span><span class="ld-val" id="ld-estado">OK</span></div>
         <div class="ld-item"><span class="ld-label">Alertas</span><span class="ld-val" id="ld-alerts">0</span></div>
       </div>
+      <div class="caida-nota" style="text-align:left;margin-top:10px">ℹ️ La detección de caída funciona solo si la app está abierta, con permisos activos y sensores disponibles. RideSafe IA no sustituye los servicios oficiales de emergencia.</div>
     </div>
     <div class="sos-card" id="seg-sos-card">
       <div class="seg-card-top">
@@ -3480,19 +3800,7 @@ function svcPintar(){
   </div>
 </div>
 
-<div id="caida-modal">
-    <div class="caida-box">
-      <div class="caida-icon">&#128680;</div>
-      <div class="caida-titulo">¡Caída detectada!</div>
-      <div class="caida-sub">Pulsa <strong style="color:var(--lime)">ESTOY BIEN</strong> para cancelar.</div>
-      <div class="cd-wrap">
-        <svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="33" fill="none" stroke="#2a0808" stroke-width="6"/><circle id="cd-arc" cx="38" cy="38" r="33"/></svg>
-        <div id="cd-num">10</div>
-      </div>
-      <button class="caida-ok" onclick="cancelCaida()">&#9989; ESTOY BIEN — Cancelar</button>
-      <button class="caida-sos-btn" onclick="cancelCaida();sendSOS()">&#128680; Enviar alerta ahora</button>
-    </div>
-  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -4064,7 +4372,8 @@ function openRideLivePromo(){
         bat:batVal||'--',
         ts:Date.now(),
         nombre:localStorage.getItem('rs_nombre')||'Ciclista',
-        sos:false
+        sos:!!window.rsEmergenciaActiva,
+        estado:window.rsEmergenciaActiva?'CAÍDA DETECTADA':'OK'
       }).then(function(){
         toast('\uD83D\uDCE1 Ride Live: posición enviada');
       }).catch(function(e){
@@ -5081,6 +5390,7 @@ function onMotion(e){
   else if(shieldHighG&&g<5){shieldHighG=false;triggerCaida();}
 }
 
+var RS_CAIDA_SEGUNDOS = 30;   // segundos para pulsar "Estoy bien" antes del modo emergencia
 function triggerCaida(){
   if(shieldAlert)return;shieldAlert=true;
   alarma();if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
@@ -5088,11 +5398,14 @@ function triggerCaida(){
   if(userPos){ tgAlertaCaida(userPos[0], userPos[1]); }
   else { tgAlertaCaida(null, null); }
   document.getElementById('caida-modal').classList.add('show');
-  var s=10;document.getElementById('cd-num').textContent=s;
+  var s=RS_CAIDA_SEGUNDOS;document.getElementById('cd-num').textContent=s;
+  document.getElementById('cd-arc').style.strokeDashoffset=0;
   countTimer=setInterval(function(){
     s--;document.getElementById('cd-num').textContent=s;
-    document.getElementById('cd-arc').style.strokeDashoffset=((10-s)/10)*208;
-    beep(660,.05);if(s<=0){clearInterval(countTimer);document.getElementById('caida-modal').classList.remove('show');sendSOS();}
+    document.getElementById('cd-arc').style.strokeDashoffset=((RS_CAIDA_SEGUNDOS-s)/RS_CAIDA_SEGUNDOS)*208;
+    beep(660,.05);try{if(navigator.vibrate)navigator.vibrate(150);}catch(e){}
+    /* Al llegar a 0 ya NO se pide confirmación: se activa el modo emergencia */
+    if(s<=0){clearInterval(countTimer);document.getElementById('caida-modal').classList.remove('show');rsModoEmergencia('caida');}
   },1000);
 }
 function cancelCaida(){clearInterval(countTimer);document.getElementById('caida-modal').classList.remove('show');shieldAlert=false;shieldHighG=false;beep(1100,.12);toast('Falsa alarma cancelada');}
@@ -5102,7 +5415,7 @@ function sendSOS(){
   if(!confirm('\uD83C\uDD98 Enviar ALERTA SOS?'))return;
   alarma();
   if(navigator.vibrate)navigator.vibrate([300,100,300,100,600]);
-  toast('SOS enviado a tus contactos');
+  toast(TELEGRAM_ENABLED ? 'SOS enviado a tus contactos' : 'SOS activado: elige cómo avisar');
   // Telegram SOS con posicion GPS
   if(userPos){ tgAlertaSOS(userPos[0], userPos[1]); }
   else { tgAlertaSOS(null, null); }
@@ -6883,6 +7196,7 @@ var TG_CHAT  = '8601457137';
 var TG_URL   = 'https://orange-boat-6d42.pedrosaborrego.workers.dev';
 
 function tgSend(msg) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgSend'); return false; }
   fetch(TG_URL, {
     method: 'POST',
     headers: {'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
@@ -6911,6 +7225,7 @@ function tgNivel() {
 
 /* Alerta ACTIVIDAD INICIADA */
 function tgAlertaActividad(lat, lng) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgAlertaActividad'); return false; }
   var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
   var msg = '🚴 <b>Actividad iniciada</b>\n'
     + '👤 ' + tgNombre() + ' · ' + tgBici() + ' · ' + tgNivel() + '\n'
@@ -6922,6 +7237,7 @@ function tgAlertaActividad(lat, lng) {
 
 /* Alerta ACTIVIDAD FINALIZADA */
 function tgAlertaFinActividad(km, tiempo, velMedia) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgAlertaFinActividad'); return false; }
   var msg = '🏁 <b>Actividad finalizada</b>\n'
     + '👤 ' + tgNombre() + '\n'
     + '📏 ' + km + ' km · ⏱ ' + tiempo + ' · ⚡ ' + velMedia + ' km/h\n'
@@ -6931,6 +7247,7 @@ function tgAlertaFinActividad(km, tiempo, velMedia) {
 
 /* Alerta SOS */
 function tgAlertaSOS(lat, lng) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgAlertaSOS'); return false; }
   var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
   var msg = '🆘 <b>ALERTA SOS</b>\n'
     + '👤 ' + tgNombre() + ' necesita ayuda\n'
@@ -6942,6 +7259,7 @@ function tgAlertaSOS(lat, lng) {
 
 /* Alerta CAÍDA DETECTADA */
 function tgAlertaCaida(lat, lng) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgAlertaCaida'); return false; }
   var mapsUrl = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : '';
   var msg = '💥 <b>CAÍDA DETECTADA</b>\n'
     + '👤 ' + tgNombre() + '\n'
@@ -6954,6 +7272,7 @@ function tgAlertaCaida(lat, lng) {
 
 /* Alerta CICLISTA CERCANO detectado por radar */
 function tgAlertaRadar(lista) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgAlertaRadar'); return false; }
   if (!lista || lista.length === 0) return;
   var nombres = lista.map(function(c) {
     return tgNivelIcon(c.nivel) + ' ' + c.nombre + ' (' + c.distKm.toFixed(1) + ' km)';
@@ -6985,6 +7304,7 @@ function tgGetChatId() {
 // tgSend: envía SOLO al chat_id que el propio usuario haya configurado (ya no se envía copia a JM)
 var _tgSendOriginal = tgSend;
 tgSend = function(msg) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgSend'); return false; }
   var userChat = localStorage.getItem('rs_tg_chatid') || '';
   if (!userChat) return; // el usuario no ha configurado Telegram, no se envía nada
   fetch(TG_URL, {
@@ -7023,6 +7343,7 @@ function closeTelegram() {
 }
 
 function tgGuardarConfig() {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgGuardarConfig'); return false; }
   var val = document.getElementById('tg-chatid-input').value.trim();
   if (!val || val.length < 5) {
     toast('Introduce un Chat ID válido');
@@ -7045,6 +7366,7 @@ function tgGuardarConfig() {
 var tgLinkPoll = null;
 
 function tgGenerarCodigo() {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgGenerarCodigo'); return false; }
   var codigo = String(Math.floor(100000 + Math.random() * 900000));
   document.getElementById('tg-link-codigo').textContent = codigo;
   document.getElementById('tg-link-idle').style.display = 'none';
@@ -7114,11 +7436,13 @@ var TG_CANAL_USERNAME = '@RideSafeAI';
 
 /* Abrir canal en Telegram */
 function abrirCanalTelegram() {
+  if (!TELEGRAM_ENABLED) { rsTgOff('abrirCanalTelegram'); return false; }
   window.open(TG_CANAL, '_blank');
 }
 
 /* Mensaje de bienvenida mejorado al guardar chat_id */
 function tgMensajeBienvenida(nombre) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgMensajeBienvenida'); return false; }
   tgSend(
     '🚴 <b>¡Bienvenido a RideSafe IA, ' + nombre + '!</b>\n\n'
     + '✅ Tus alertas están activas:\n'
@@ -7373,6 +7697,7 @@ function trialActivar() {
 
 
 function abrirSalaVoz() {
+  if (!TELEGRAM_ENABLED) { rsTgOff('abrirSalaVoz'); toast('La sala de voz no está disponible en esta versión'); return false; }
   if (!grupoCodigo) {
     toast('Únete a un grupo primero');
     return;
@@ -7526,7 +7851,7 @@ sendSOS = function() {
   if (!confirm('\uD83C\uDD98 Enviar ALERTA SOS?')) return;
   alarma();
   if (navigator.vibrate) navigator.vibrate([300,100,300,100,600]);
-  toast('SOS enviado a tus contactos');
+  toast(TELEGRAM_ENABLED ? 'SOS enviado a tus contactos' : 'SOS activado: elige cómo avisar');
 
   // Telegram SOS
   if (userPos) { tgAlertaSOS(userPos[0], userPos[1]); }
@@ -8454,6 +8779,7 @@ function antiVerMapa() {
 }
 
 function tgEnviar(msg) {
+  if (!TELEGRAM_ENABLED) { rsTgOff('tgEnviar'); return false; }
   try {
     var chatId = localStorage.getItem('tg_chat_id');
     if (!chatId) return;

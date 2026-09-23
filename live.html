@@ -44,9 +44,14 @@
       50%{ transform:scale(1.2); }
     }
     .info-nombre{ font-size:16px; font-weight:700; color:#a8e63d; margin-bottom:8px; }
+    /* Aviso de caída (RideSafe IA) */
+    #alerta-caida{display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#d0021b;color:#fff;text-align:center;padding:14px 12px;font-family:sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.5);animation:parpadeo 1s infinite}
+    #alerta-caida b{font-size:20px;display:block;margin-bottom:4px}
+    #alerta-caida a{color:#fff;font-weight:700;margin:0 6px}
   </style>
 </head>
 <body>
+<div id="alerta-caida"><b>🚨 CAÍDA DETECTADA</b><span id="alerta-caida-txt">Puede necesitar ayuda.</span><br><a href="tel:112">📞 Llamar al 112</a><a id="alerta-caida-mapa" href="#" target="_blank" rel="noopener">📍 Ver ubicación</a></div>
 <div id="mapa"></div>
 <div id="panel-info">
   <div class="info-nombre" id="nombre-ciclista">Esperando datos...</div>
@@ -160,8 +165,8 @@ function escucharRideLive(id){
     
     var lat = datos.lat || 0;
     var lng = datos.lng || 0;
-    var vel = datos.vel || 0;
-    var dist = datos.dist || 0;
+    var vel = Number(datos.vel) || 0;
+    var dist = Number(datos.dist) || 0;
     var bat = datos.bat || '--';
     var nombre = datos.nombre || 'Ciclista';
     var ts = datos.ts || Date.now();
@@ -182,6 +187,19 @@ function escucharRideLive(id){
       document.getElementById('estado').className = 'info-valor estado-offline';
     }
     
+    // Aviso de caída enviado por la app (sos:true / estado "CAÍDA DETECTADA")
+    var alertaEl = document.getElementById('alerta-caida');
+    if (datos.sos || datos.estado === 'CAÍDA DETECTADA') {
+      alertaEl.style.display = 'block';
+      var hora = new Date(datos.caida_ts || ts).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+      document.getElementById('alerta-caida-txt').textContent = nombre + ' puede necesitar ayuda (' + hora + ').';
+      document.getElementById('alerta-caida-mapa').href = 'https://maps.google.com/?q=' + lat + ',' + lng;
+      document.getElementById('estado').innerHTML = '🚨 CAÍDA DETECTADA';
+      document.getElementById('estado').className = 'info-valor estado-offline';
+    } else {
+      alertaEl.style.display = 'none';
+    }
+
     actualizarMarcador(lat, lng, senal.online);
   }, function(error){
     console.error('Error Firebase:', error);
