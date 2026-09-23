@@ -2359,6 +2359,7 @@ html.tg-off #panel-telegram, html.tg-off #tg-dot{display:none!important}
 <div class="grupo-menu-overlay" id="grupo-menu-overlay" onclick="closeGrupoMenu(event)">
   <div class="grupo-menu-sheet" id="grupo-menu-sheet">
     <div class="grupo-menu-handle"></div>
+    <button class="grupo-menu-x" onclick="closeGrupoMenuNow()" aria-label="Cerrar">&#10005;</button>
     <div class="grupo-menu-title" id="grupo-menu-title"></div>
     <div id="grupo-menu-items"></div>
   </div>
@@ -2468,6 +2469,10 @@ html.tg-off #panel-telegram, html.tg-off #tg-dot{display:none!important}
   display:none;align-items:flex-end;
 }
 .grupo-menu-overlay.show{display:flex}
+body.gm-open #tabbar{z-index:9600}
+.grupo-menu-overlay{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+.grupo-menu-sheet{position:relative;touch-action:pan-y}
+.grupo-menu-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:16px;cursor:pointer;z-index:2}
 .grupo-menu-sheet{
   width:100%;background:#10160f;
   border-radius:24px 24px 0 0;
@@ -3015,13 +3020,52 @@ function openGrupoMenu(key){
     cont.appendChild(b);
   });
   document.getElementById('grupo-menu-overlay').classList.add('show');
+  document.body.classList.add('gm-open');
+  try{ document.getElementById('grupo-menu-sheet').scrollTop = 0; }catch(e){}
+  try{
+    document.querySelectorAll('#tabbar .tab').forEach(function(t){
+      var oc = t.getAttribute('onclick')||'';
+      t.classList.toggle('active', oc.indexOf("'"+key+"'")>-1);
+    });
+  }catch(e){}
+  if(!window._gmHist){ try{ history.pushState({gm:1},''); window._gmHist = true; }catch(e){} }
 }
+// Botón "atrás" de Android: cierra el menú en vez de salir de la app
+window.addEventListener('popstate', function(){
+  if(window._gmHist){
+    window._gmHist = false;
+    document.getElementById('grupo-menu-overlay').classList.remove('show');
+    document.body.classList.remove('gm-open');
+    rsMarcarTabInicio();
+  }
+});
+function rsMarcarTabInicio(){
+  try{ document.querySelectorAll('#tabbar .tab').forEach(function(t){
+    t.classList.toggle('active', (t.getAttribute('onclick')||'').indexOf('rsIrInicio')>-1);
+  }); }catch(e){}
+}
+// Deslizar hacia abajo para cerrar
+(function(){
+  var y0 = null;
+  document.addEventListener('touchstart', function(e){
+    var s = document.getElementById('grupo-menu-sheet');
+    if(s && s.contains(e.target) && s.scrollTop <= 0) y0 = e.touches[0].clientY; else y0 = null;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if(y0 === null) return;
+    var dy = e.changedTouches[0].clientY - y0; y0 = null;
+    if(dy > 90) closeGrupoMenuNow();
+  }, {passive:true});
+})();
 function closeGrupoMenu(ev){
   if(ev && ev.target !== document.getElementById('grupo-menu-overlay')) return;
   closeGrupoMenuNow();
 }
 function closeGrupoMenuNow(){
   document.getElementById('grupo-menu-overlay').classList.remove('show');
+  document.body.classList.remove('gm-open');
+  rsMarcarTabInicio();
+  if(window._gmHist){ window._gmHist = false; try{ history.back(); }catch(e){} }
 }
 
 // ═══ SERVICIOS — mapa de puntos_bici, solo lectura para el usuario ═══
