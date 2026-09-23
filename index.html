@@ -2558,12 +2558,23 @@ function rsVerCercanos(){
   radarMenuActivo(); return;
 }
 function rsVerCercanosBuscar(){
-  if(typeof userPos === 'undefined' || !userPos){ toast('📡 Activando GPS… inténtalo de nuevo en unos segundos'); return; }
-  toast('📡 Buscando ciclistas a menos de 2 km…');
-  try{ radarEscanear(); }catch(e){ console.error(e); }
-  setTimeout(function(){
-    try{ if(!radarCiclistasCercanos || !radarCiclistasCercanos.length) toast('Ahora mismo no hay ciclistas cerca'); }catch(e){}
-  }, 3500);
+  function buscar(){
+    toast('📡 Buscando ciclistas a menos de 2 km…');
+    try{ radarPublicarPos(); }catch(e){}
+    try{
+      radarEscanear(function(lista, err){
+        if(err){ toast('No se pudo consultar el radar. Revisa tu conexión.'); return; }
+        if(!lista || !lista.length) toast('Ahora no hay ciclistas cerca con el radar activado');
+      });
+    }catch(e){ console.error(e); }
+  }
+  if(typeof userPos !== 'undefined' && userPos){ buscar(); return; }
+  if(!navigator.geolocation){ toast('Tu móvil no tiene GPS disponible'); return; }
+  toast('📡 Obteniendo tu posición…');
+  navigator.geolocation.getCurrentPosition(function(p){
+    userPos = [p.coords.latitude, p.coords.longitude];
+    buscar();
+  }, function(){ toast('Activa la ubicación del móvil para usar el radar'); }, {enableHighAccuracy:false, timeout:12000, maximumAge:60000});
 }
 function rsAbrirClaveRutas(){
   openPlan();
@@ -7166,14 +7177,15 @@ function radarPublicarPos() {
       bici: perfilUsuario.bici || 'carretera',
       lat: aprox[0],
       lng: aprox[1],
+      grupo: (radarGrupoPermitido() && typeof grupoCodigo !== 'undefined' && grupoCodigo) ? String(grupoCodigo) : null,
       ts: Date.now()
     });
   }, null, {enableHighAccuracy:false, timeout:8000, maximumAge:30000});
 }
 
 /* Escanear ciclistas cercanos */
-function radarEscanear() {
-  if (!userPos) return;  // necesitamos posicion propia
+function radarEscanear(cb) {
+  if (!userPos) { if (typeof cb === 'function') cb(null); return; }
 
   db.ref('radar').once('value', function(snap) {
     var datos = snap.val() || {};
@@ -7221,6 +7233,10 @@ function radarEscanear() {
         window._tgRadarUltimoEnvio = ahora2;
       }
     }
+    if (typeof cb === 'function') cb(cercanos);
+  }, function(err) {
+    console.error('[radar]', err);
+    if (typeof cb === 'function') cb(null, err);
   });
 }
 
@@ -7246,7 +7262,7 @@ function radarMostrarTarjeta(lista) {
     var nivelLabel = NIVEL_LABELS[c.nivel] || c.nivel;
     var nivelEmoji = NIVEL_EMOJIS[c.nivel] || '';
     var biciIcon = BICI_ICONOS[c.bici] || '&#128690;';
-    var grupoTxt = '';
+    var grupoTxt = c.grupo ? ' &middot; Grupo abierto' : '';
 
     var div = document.createElement('div');
     div.className = 'radar-ciclista';
@@ -7324,6 +7340,14 @@ var RADAR_DURACION_MS = 3 * 60 * 60 * 1000;
 function radarPermitido(){
   try{ var h = parseInt(localStorage.getItem('rs_radar_hasta')||'0',10); return h > Date.now(); }catch(e){ return false; }
 }
+function radarGrupoPermitido(){ try{ return localStorage.getItem('rs_radar_grupo') === '1'; }catch(e){ return false; } }
+function radarCambiarGrupo(){
+  var on = !radarGrupoPermitido();
+  try{ localStorage.setItem('rs_radar_grupo', on ? '1' : '0'); }catch(e){}
+  try{ radarPublicarPos(); }catch(e){}
+  toast(on ? 'Los ciclistas cercanos podrán unirse a tu grupo' : 'Tu grupo ya no se muestra en el radar');
+  radarMenuActivo();
+}
 function radarAproximar(lat, lng){
   var pl = 0.005, pg = 0.0065;             // ≈ 550 m en España
   return [Math.round(lat/pl)*pl, Math.round(lng/pg)*pg];
@@ -7355,6 +7379,7 @@ function radarPedirPermiso(){
    +'<li>Tu posición es <b>aproximada</b> (unos 500 m), nunca la exacta.</li>'
    +'<li>Se <b>borra</b> al cerrar la app o dejarla en segundo plano.</li>'
    +'<li>Se <b>apaga solo a las 3 horas</b>. Puedes desactivarlo cuando quieras.</li></ul>'
+   +'<label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:10px;border:1px solid #2a3350;border-radius:12px;color:#c9d1e0;font-size:13px"><input type="checkbox" id="radar-chk-grupo" style="width:20px;height:20px;margin-top:1px;accent-color:#a8e63d"'+(radarGrupoPermitido()?' checked':'')+'><span>Si estoy en un grupo, dejar que los ciclistas cercanos <b>se unan a mi grupo</b></span></label>'
    +'<button style="'+_rbtn+'background:#a8e63d;color:#0a0f1e;border:none" onclick="radarActivar()">Activar durante 3 horas</button>'
    +'<button style="'+_rbtn+'background:transparent;color:#9aa4b8;border:1px solid #2a3350" onclick="radarCerrarModal()">No, gracias</button>');
 }
@@ -7365,10 +7390,12 @@ function radarMenuActivo(){
   radarModal('<div style="font-size:18px;font-weight:800;margin-bottom:8px">📡 Radar activo</div>'
    +'<div style="color:#c9d1e0">Se apagará solo en <b>'+t+'</b>. Los demás ven tu nombre de pila y una posición aproximada.</div>'
    +'<button style="'+_rbtn+'background:#a8e63d;color:#0a0f1e;border:none" onclick="radarCerrarModal();rsVerCercanosBuscar()">Buscar ciclistas ahora</button>'
+   +'<button style="'+_rbtn+'background:transparent;color:#a8e63d;border:1px solid #2a3350;font-size:13px" onclick="radarCambiarGrupo()">'+(radarGrupoPermitido()?'✅ Se pueden unir a mi grupo — cambiar':'🔒 No se pueden unir a mi grupo — cambiar')+'</button>'
    +'<button style="'+_rbtn+'background:transparent;color:#ff6b6b;border:1px solid #ff6b6b" onclick="radarCerrarModal();radarDesactivar()">Desactivar el radar</button>'
    +'<button style="'+_rbtn+'background:transparent;color:#9aa4b8;border:none" onclick="radarCerrarModal()">Cerrar</button>');
 }
 function radarActivar(){
+  try{ var chk=document.getElementById('radar-chk-grupo'); if(chk) localStorage.setItem('rs_radar_grupo', chk.checked ? '1' : '0'); }catch(e){}
   radarCerrarModal();
   if(!perfilUsuario.nombre){ toast('Primero crea tu perfil'); return; }
   try{ localStorage.setItem('rs_radar_hasta', String(Date.now()+RADAR_DURACION_MS)); }catch(e){}
