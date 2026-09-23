@@ -2656,6 +2656,16 @@ document.addEventListener('DOMContentLoaded', function(){
     var f = window[p[0]]; if(typeof f !== 'function') return;
     window[p[0]] = function(){ try{ rsRutasMontar(p[2]); }catch(e){} var r = f.apply(this, arguments); try{ rsRutasMarcar(p[1]); }catch(e){} return r; };
   });
+  var fl = window.setMapLayer;
+  if(typeof fl === 'function'){
+    window.setMapLayer = function(key){
+      if(typeof navMap === 'undefined' || !navMap){ rsAvisoMapa(); var lm=document.getElementById('layer-menu'); if(lm) lm.classList.remove('show'); return; }
+      navMap._rsRespaldoActivo = false;
+      var r = fl.apply(this, arguments);
+      try{ rsVigilarEstilo(navMap); }catch(e){}
+      return r;
+    };
+  }
   var fs = window.abrirSelectorFotos;
   if(typeof fs === 'function'){
     window.abrirSelectorFotos = function(){ rsFotoModo = 'resumen'; var t = document.getElementById('foto-selector-titulo'); if(t) t.textContent = '📷 Foto de la actividad'; return fs.apply(this, arguments); };
@@ -2716,8 +2726,8 @@ function openServicios(){
   openPanel('panel-servicios');
   if(!svcMap){
     svcMap = L.map('svc-mapa').setView(userPos||[41.6176,0.6200], 13);
-    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',
-      {attribution:'&copy; Mapbox &copy; OpenStreetMap', maxZoom:19}).addTo(svcMap);
+    rsLeafletRespaldo(L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',
+      {attribution:'&copy; Mapbox &copy; OpenStreetMap', maxZoom:19}).addTo(svcMap), svcMap);
     var chips = document.getElementById('svc-chips');
     var htmlChips = '<button class="qd-chip active" data-cat="todos" onclick="svcFiltrar(this,\'todos\')">Todos</button>';
     Object.keys(SVC_CAT).forEach(function(k){
@@ -4122,7 +4132,62 @@ var MAP_LAYERS={
   night:{style:'mapbox://styles/mapbox/dark-v11',name:'Dark Pro'},
   nav:{style:'mapbox://styles/mapbox/navigation-day-v1',name:'Navegación'}
 };
-mapboxgl.accessToken='pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg';
+/* ═══ PROTECCIÓN DE ESTABILIDAD DEL MAPA ═══
+   Si Mapbox, Leaflet o una capa externa no cargan, el resto de la app sigue funcionando. */
+try{ if(window.mapboxgl){ mapboxgl.accessToken='pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg'; } else { console.warn('[RideSafe] Mapbox no ha cargado: el mapa de actividad no estará disponible.'); } }
+catch(e){ console.warn('[RideSafe] Error configurando Mapbox:', e); }
+
+/* Estilo alternativo sin Mapbox: teselas raster de OpenStreetMap */
+var RS_OSM_STYLE = {version:8,sources:{osm:{type:'raster',tiles:['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png','https://b.tile.openstreetmap.org/{z}/{x}/{y}.png','https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'&copy; OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]};
+var _rsAvisoMapaTs = 0;
+function rsAvisoMapa(msg){
+  var ahora = Date.now(); if(ahora - _rsAvisoMapaTs < 8000) return; _rsAvisoMapaTs = ahora;
+  try{ toast(msg || 'El mapa no está disponible ahora. El resto de la app funciona con normalidad.'); }catch(e){}
+}
+function rsMapaNoDisponible(containerId){
+  var c = document.getElementById(containerId);
+  if(c && !c.querySelector('.rs-mapa-aviso')){
+    var d = document.createElement('div');
+    d.className = 'rs-mapa-aviso';
+    d.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:13px;line-height:1.6;background:var(--bg2)';
+    d.innerHTML = '🗺️ El mapa no se ha podido cargar.<br>Comprueba tu conexión. SOS, fotos, antirrobo y el resto de la app siguen funcionando.';
+    c.appendChild(d);
+  }
+  rsAvisoMapa();
+}
+/* Vigila que un estilo de Mapbox cargue; si falla o tarda demasiado, usa OpenStreetMap */
+function rsVigilarEstilo(map){
+  if(!map || map._rsVigilando) return;
+  map._rsVigilando = true;
+  var cargado = false;
+  function respaldo(){
+    if(cargado || map._rsRespaldoActivo) return;
+    map._rsRespaldoActivo = true;
+    try{ map.setStyle(RS_OSM_STYLE); rsAvisoMapa('Capa de mapa no disponible: usando OpenStreetMap'); }catch(e){ console.warn(e); }
+  }
+  var t = setTimeout(respaldo, 12000);
+  map.once('style.load', function(){ cargado = true; clearTimeout(t); map._rsVigilando = false; });
+  map.once('error', function(){ if(!cargado){ clearTimeout(t); respaldo(); } });
+}
+/* Leaflet: si una capa de teselas falla, se cambia una sola vez a OpenStreetMap */
+function rsLeafletRespaldo(capa, mapa){
+  try{
+    if(!capa || !mapa) return capa;
+    capa.once('tileerror', function(){
+      try{
+        mapa.removeLayer(capa);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:'anonymous',attribution:'&copy; OpenStreetMap contributors'}).addTo(mapa);
+      }catch(e){ console.warn(e); }
+    });
+  }catch(e){ console.warn(e); }
+  return capa;
+}
+/* Aviso suave si algún botón intenta usar el mapa sin que esté disponible */
+window.addEventListener('error', function(ev){
+  var m = (ev && ev.message) || '';
+  if(/mapboxgl is not defined|\bL is not defined|navMap|planMap|svcMap|grupoMapa/.test(m)) rsAvisoMapa();
+  else if(/reading 'ref'|db is not defined|firebase is not defined/.test(m)) rsAvisoMapa('Sin conexión con el servidor: esta función se cargará cuando vuelva internet');
+});
 
 /* ═══════════════════════════════════════
    NAVEGACION OFF-ROAD (CORE)
@@ -4260,8 +4325,16 @@ function initNavMap(){
   if(!MAP_LAYERS[savedLayer])savedLayer='topo';
   navBikeIcon=true; /* ya no es un L.divIcon; navBikeMarkerEl() crea el elemento por marcador */
   currentLayer=savedLayer;
-  navMap=new mapboxgl.Map({container:'nav-mapa',style:MAP_LAYERS[savedLayer].style,center:[0.62,41.6176],zoom:13});
-  navMap.addControl(new mapboxgl.NavigationControl({showCompass:false}),'top-right');
+  if(!window.mapboxgl){ rsMapaNoDisponible('nav-mapa-wrap'); return; }
+  try{
+    navMap=new mapboxgl.Map({container:'nav-mapa',style:MAP_LAYERS[savedLayer].style,center:[0.62,41.6176],zoom:13});
+    navMap.addControl(new mapboxgl.NavigationControl({showCompass:false}),'top-right');
+  }catch(e){
+    console.warn('[RideSafe] No se pudo crear el mapa de actividad:', e);
+    try{ if(navMap) navMap.remove(); }catch(_){}
+    navMap=null; rsMapaNoDisponible('nav-mapa-wrap'); return;
+  }
+  rsVigilarEstilo(navMap);
   navMap.on('load',function(){
     document.querySelectorAll('.layer-opt').forEach(function(el){el.classList.toggle('active',el.dataset.layer===savedLayer);});
     tryGetGPS();
@@ -5581,7 +5654,7 @@ function pintarTrackMapa(points, contenedorId, esMini){
   if(window[mapVar]){ window[mapVar].remove(); window[mapVar]=null; }
   var latlngs = points.map(function(p){return [p[0],p[1]];});
   var map = L.map(contenedorId,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,touchZoom:false,keyboard:false});
-  L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',{maxZoom:20,crossOrigin:'anonymous'}).addTo(map);
+  rsLeafletRespaldo(L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}{r}?access_token=pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXR6b3c3cWkwYnBiMnlyMXFxZGw2ZWw0In0.45Z-ttQ0sbTc2K0crw6wZg',{maxZoom:20,crossOrigin:'anonymous'}).addTo(map), map);
   var line = L.polyline(latlngs,{color:'#a8e63d',weight:esMini?3:5}).addTo(map);
   L.circleMarker(latlngs[0],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#a8e63d',fillOpacity:1}).addTo(map);
   L.circleMarker(latlngs[latlngs.length-1],{radius:esMini?4:6,color:'#fff',weight:2,fillColor:'#ff5577',fillOpacity:1}).addTo(map);
@@ -5844,7 +5917,11 @@ function verRutaComunidad(r){
     cont.innerHTML='';
     if(comunidadMap){ comunidadMap.remove(); comunidadMap=null; }
     var coords = r.points.map(function(p){return [p[1],p[0]];});
-    comunidadMap = new mapboxgl.Map({container:'comunidad-map',style:'mapbox://styles/mapbox/outdoors-v12',interactive:false,attributionControl:false});
+    if(!window.mapboxgl){ rsMapaNoDisponible('comunidad-map'); return; }
+    try{
+      comunidadMap = new mapboxgl.Map({container:'comunidad-map',style:'mapbox://styles/mapbox/outdoors-v12',interactive:false,attributionControl:false});
+    }catch(e){ console.warn(e); comunidadMap=null; rsMapaNoDisponible('comunidad-map'); return; }
+    rsVigilarEstilo(comunidadMap);
     comunidadMap.on('load',function(){
       comunidadMap.resize();
       comunidadMap.addSource('ruta-com',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:coords}}});
@@ -5881,10 +5958,12 @@ var firebaseConfig = {
   appId: '1:322135466974:web:28b4586375bfd6211bf34f'
 };
 
+var db;
+try{
 if (!firebase.apps || !firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-var db = firebase.database();
+db = firebase.database();
 
 firebase.auth().onAuthStateChanged(function(user) {
   if (!user) {
@@ -5892,7 +5971,8 @@ firebase.auth().onAuthStateChanged(function(user) {
       console.error('Error de autenticación anónima:', error);
     });
   }
-});   
+});
+}catch(e){ console.warn('[RideSafe] Firebase no ha cargado (sin conexión). Las funciones en la nube no estarán disponibles hasta recargar.', e); }   
 
 /* ═══════════════════════════════════════
    MODO GRUPO — sincronización Firebase
@@ -6893,11 +6973,11 @@ function openTelegram() {
   if (tgUserChatId) {
     display.textContent = tgUserChatId;
     dot.textContent = '✅';
-    input.value = tgUserChatId;
+    if (input) input.value = tgUserChatId;
   } else {
     display.textContent = 'No configurado';
     dot.textContent = '⚠️';
-    input.value = '';
+    if (input) input.value = '';
   }
 
   document.getElementById('panel-telegram').classList.add('show');
@@ -7550,7 +7630,7 @@ function guardarPerfil(){
   toast('✅ Perfil guardado');
   closePerfil();
 }
- YA
+/* (Se quitó un texto suelto 'YA' que provocaba un error y detenía el resto de este script) */
 function appInit() {
   var claveActiva = localStorage.getItem('rs_clave_activa') === '1';
 
