@@ -7122,10 +7122,18 @@ function radarInit() {
   if (!perfilUsuario.nombre) return;
   if (radarActivo) return;
   if (!radarPermitido()) return;          // PRIVACIDAD: desactivado por defecto
+  // El ID es el de la sesión anónima de Firebase: las reglas solo dejan escribir en el propio
+  var _u = null;
+  try { _u = firebase.auth().currentUser; } catch(e) {}
+  if (!_u) {
+    if (!window._radarEsperaAuth) {
+      window._radarEsperaAuth = true;
+      try { firebase.auth().onAuthStateChanged(function(u){ if (u && window._radarEsperaAuth) { window._radarEsperaAuth = false; radarInit(); } }); } catch(e) {}
+    }
+    return;
+  }
   radarActivo = true;
-
-  // ID aleatorio, sin el nombre del ciclista
-  radarUserId = 'r_' + Math.random().toString(36).substr(2,10) + Date.now().toString(36);
+  radarUserId = _u.uid;
   radarRef = db.ref('radar/' + radarUserId);
 
   // Limpiar al cerrar
