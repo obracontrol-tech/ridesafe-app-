@@ -2205,7 +2205,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
         </svg>
       </div>
       <div class="grupo-title">Rutas</div>
-      <div class="grupo-sub">Salir en bici, grabar<br>y planificar</div>
+      <div class="grupo-sub">Actividad, planificar<br>e historial</div>
       <div class="grupo-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
@@ -2470,6 +2470,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 .layer-more-btn{grid-column:1 / -1;width:100%;padding:8px;margin-top:4px;background:none;border:1px dashed var(--border2);border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer}
 #layer-more{display:none}
 #layer-more.show{display:grid}
+/* Pestañas internas de RUTAS */
+.rs-rutas-nav{display:flex;gap:4px;padding:6px 8px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1100}
+.rs-rutas-nav button{flex:1 0 auto;min-width:62px;padding:7px 8px;background:none;border:1px solid transparent;border-radius:20px;color:var(--dim);font-family:'Barlow Condensed',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.3px;cursor:pointer;white-space:nowrap}
+.rs-rutas-nav button.on{color:var(--lime);background:var(--lime-dim);border-color:rgba(168,230,61,.3)}
+.elev-risk-score #elev-risk-num{font-size:20px;font-weight:900;color:var(--lime);margin-left:2px}
 /* Barra inferior con 5 apartados */
 #tabbar .tab span{font-size:9.5px}
 </style>
@@ -2499,6 +2504,49 @@ function rsAbrirClaveRutas(){
   openPlan();
   setTimeout(function(){ var m = document.getElementById('ors-key-modal'); if(m) m.style.display = 'flex'; }, 250);
 }
+function rsPanelAbierto(id){ var p=document.getElementById(id); return !!(p && p.classList.contains('show')); }
+function rsRutasMarcar(sec){
+  document.querySelectorAll('.rs-rutas-nav button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-rsec')===sec); });
+}
+function rsRutasVista(v){
+  var tabs = document.querySelectorAll('#rutas-tabs-old .tabx');
+  var imp = document.getElementById('rutas-importar-body');
+  var tit = document.getElementById('rutas-titulo');
+  var nav = document.getElementById('rs-rutas-nav-historial');
+  var borrar = document.getElementById('rutas-borrar');
+  if(v === 'compartidas'){
+    try{ if(tabs[1]) rutasTab('comunidad', tabs[1]); }catch(e){ console.error(e); }
+    if(imp) imp.style.display = 'none';
+    if(tit) tit.innerHTML = 'Rutas <span>compartidas</span>';
+    if(nav) nav.style.display = 'none';
+    return;
+  }
+  try{ if(tabs[0]) rutasTab('mias', tabs[0]); }catch(e){ console.error(e); }
+  if(nav) nav.style.display = '';
+  if(v === 'importar'){
+    document.getElementById('rutas-body').style.display = 'none';
+    if(imp) imp.style.display = '';
+    if(borrar) borrar.style.display = 'none';
+    if(tit) tit.innerHTML = '<span>Importar</span>';
+  }else{
+    if(imp) imp.style.display = 'none';
+    if(tit) tit.innerHTML = '<span>Historial</span>';
+  }
+  rsRutasMarcar(v);
+}
+function rsRutasIr(sec){
+  if(sec !== 'actividad' && rsPanelAbierto('panel-nav')) closeNav();
+  if(sec !== 'planificar' && rsPanelAbierto('panel-plan')) closePlan();
+  if(sec !== 'historial' && sec !== 'importar' && rsPanelAbierto('panel-rutas')) closeRutas();
+  if(sec !== 'progreso' && rsPanelAbierto('panel-analisis')) closeAnalisis();
+  try{
+    if(sec === 'actividad'){ if(!rsPanelAbierto('panel-nav')) openNav(); }
+    else if(sec === 'planificar'){ if(!rsPanelAbierto('panel-plan')) openPlan(); }
+    else if(sec === 'historial' || sec === 'importar'){ if(!rsPanelAbierto('panel-rutas')) openRutas(); rsRutasVista(sec); }
+    else if(sec === 'progreso'){ if(!rsPanelAbierto('panel-analisis')) openAnalisis(); }
+  }catch(err){ console.error(err); }
+  rsRutasMarcar(sec);
+}
 function rsIrInicio(){
   try{ closeGrupoMenuNow(); }catch(e){}
   var ini = document.getElementById('inicio');
@@ -2509,20 +2557,17 @@ var GRUPOS_MENU = {
   rutas: {
     titulo: '🗺️ Rutas',
     items: [
-      {e:'🧭', n:'Mapa y navegación', d:'Tu posición, capas de mapa y guía por voz', fn:function(){openNav();}},
-      {e:'⏺️', n:'Grabar ruta', d:'Abre el mapa y pulsa REC para empezar', fn:function(){openNav(); setTimeout(function(){toast('Pulsa REC para empezar a grabar');},400);}},
-      {e:'🗺️', n:'Planificar ruta', d:'Rutas por carretera, pistas y senderos', fn:function(){openPlan();}},
-      {e:'📂', n:'Mis rutas', d:'Historial de tus recorridos', fn:function(){openRutas();}},
-      {e:'📥', n:'Importar GPX / TCX', d:'Carga un track de tu reloj o ciclocomputador', fn:function(){openNav(); var gi=document.getElementById('gpx-input'); if(gi) gi.click();}},
-      {e:'📶', n:'Mapas offline', d:'Descarga el mapa de tu zona sin conexión', fn:function(){openOffline();}},
-      {e:'📍', n:'Waypoints', d:'Marca puntos en el mapa (botón 📍 del mapa)', fn:function(){openNav(); setTimeout(function(){toast('Usa el botón de waypoint del mapa y toca donde quieras marcar');},400);}},
-      {e:'📸', n:'Fotos del recorrido', d:'Abre una ruta guardada para ver o añadir fotos', fn:function(){openRutas(); setTimeout(function(){toast('Abre una ruta para ver o añadir sus fotos');},400);}},
-      {e:'📤', n:'Compartir actividad', d:'Abre una ruta guardada y pulsa Compartir', fn:function(){openRutas(); setTimeout(function(){toast('Abre una ruta y pulsa Compartir');},400);}},
-      {sec:'Más opciones'},
-      {e:'📊', n:'Mi análisis', d:'Resumen, gráficas y récords', fn:function(){openAnalisis();}},
-      {e:'🛡️', n:'Modo Ruta Segura', d:'Prioriza tu seguridad frente a velocidad o distancia', fn:function(){abrirSafeRouteMode();}},
-      {e:'🤖', n:'Asistente IA', d:'Consejos, mecánica y rutas personalizadas', fn:function(){openAI();}},
-      {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}}
+      {e:'⏺️', n:'Actividad', d:'Mapa, REC, datos en vivo, waypoints y fotos', fn:function(){rsRutasIr('actividad');}},
+      {e:'🧭', n:'Planificar', d:'Origen, destino, tipo de ruta y bucle', fn:function(){rsRutasIr('planificar');}},
+      {e:'📂', n:'Historial', d:'Tus rutas grabadas: ver, compartir o borrar', fn:function(){rsRutasIr('historial');}},
+      {e:'📥', n:'Importar', d:'Sube un GPX / TCX de tu reloj o ciclocomputador', fn:function(){rsRutasIr('importar');}},
+      {e:'📊', n:'Progreso', d:'Resumen, gráficas y récords', fn:function(){rsRutasIr('progreso');}},
+      {sec:'Herramientas'},
+      {small:true, e:'📶', n:'Mapas offline', d:'Descarga el mapa de tu zona sin conexión', fn:function(){openOffline();}},
+      {small:true, e:'🛡️', n:'Modo Ruta Segura', d:'Prioriza tu seguridad frente a velocidad o distancia', fn:function(){abrirSafeRouteMode();}},
+      {small:true, e:'🛠️', n:'Servicios en ruta', d:'Agua, talleres, farmacias, alquiler...', fn:function(){openServicios();}},
+      {small:true, e:'🤖', n:'Asistente IA', d:'Consejos, mecánica y rutas personalizadas', fn:function(){openAI();}},
+      {small:true, e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}}
     ]
   },
   seguridad: {
@@ -2560,8 +2605,9 @@ var GRUPOS_MENU = {
       {e:'🛰️', n:'Pelotón en vivo', d:'GPS en vivo de tu grupo', fn:function(){openGrupo(); try{ if(!grupoActivo) setTimeout(function(){toast('Crea o únete a un grupo para ver el pelotón en vivo');},400); }catch(e){}}},
       {e:'📍', n:'Punto de encuentro', d:'Dónde quedar para salir juntos', fn:function(){openComunidadApp();}},
       {e:'📅', n:'Quedadas', d:'Crea una quedada o únete a una', fn:function(){openComunidadApp();}},
-      {e:'🛠️', n:'Servicios cerca de ti', d:'Talleres, agua, farmacias, alquiler...', fn:function(){openServicios();}},
-      {e:'💡', n:'Sugerencias', d:'Cuéntanos tu idea para mejorar la app', fn:function(){openSugerenciaTG();}}
+      {e:'💡', n:'Sugerencias', d:'Cuéntanos tu idea para mejorar la app', fn:function(){openSugerenciaTG();}},
+      {sec:'Más'},
+      {small:true, e:'🌍', n:'Rutas compartidas', d:'Rutas públicas de otros ciclistas', fn:function(){openRutas(); rsRutasVista('compartidas');}}
     ]
   },
   avanzado: {
@@ -2578,6 +2624,17 @@ var GRUPOS_MENU = {
 };
 // Alias por compatibilidad con la versión anterior del menú
 GRUPOS_MENU.salir = GRUPOS_MENU.rutas;
+// Marcar la pestaña activa de RUTAS cuando se abre un panel desde cualquier botón (no cambia lo que hacen)
+document.addEventListener('DOMContentLoaded', function(){
+  [['openNav','actividad'],['openPlan','planificar'],['openAnalisis','progreso']].forEach(function(p){
+    var f = window[p[0]]; if(typeof f !== 'function') return;
+    window[p[0]] = function(){ var r = f.apply(this, arguments); try{ rsRutasMarcar(p[1]); }catch(e){} return r; };
+  });
+  var fr = window.openRutas;
+  if(typeof fr === 'function'){
+    window.openRutas = function(){ var r = fr.apply(this, arguments); try{ rsRutasVista('historial'); }catch(e){} return r; };
+  }
+});
 
 function openGrupoMenu(key){
   var g = GRUPOS_MENU[key];
@@ -3061,10 +3118,12 @@ function svcPintar(){
       <button id="nav-search-btn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--lime);cursor:pointer" onclick="navBuscar()">&#128269;</button>
       <div id="nav-sugs" style="position:absolute;top:42px;left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:10px;z-index:1300;max-height:160px;overflow-y:auto;display:none"></div>
     </div>
-    <button class="p-back" style="width:36px;height:36px" onclick="toggleLayerMenu()">
+    <button class="p-back" style="width:36px;height:36px" onclick="toggleLayerMenu()" title="Capas de mapa">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
     </button>
   </div>
+  <!-- Pestañas internas de RUTAS: solo navegan entre paneles existentes -->
+  <div class="rs-rutas-nav" id="rs-rutas-nav-actividad"><button type="button" data-rsec="actividad" onclick="rsRutasIr('actividad')">Actividad</button><button type="button" data-rsec="planificar" onclick="rsRutasIr('planificar')">Planificar</button><button type="button" data-rsec="historial" onclick="rsRutasIr('historial')">Historial</button><button type="button" data-rsec="importar" onclick="rsRutasIr('importar')">Importar</button><button type="button" data-rsec="progreso" onclick="rsRutasIr('progreso')">Progreso</button></div>
   <div class="map-wrap" id="nav-mapa-wrap">
     <div id="nav-mapa" style="width:100%;height:100%"></div>
     <div id="offroute-alert">&#9888; Desviado de la ruta</div>
@@ -3105,7 +3164,7 @@ function svcPintar(){
     </div>
     <div class="elev-chart" id="elev-chart"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-      <div class="elev-risk-score"><span>Riesgo</span><b id="elev-risk-num">1</b><span>/5</span></div>
+      <div class="elev-risk-score"><span>Riesgo</span> <span id="elev-risk-num">1</span><span>/5</span></div>
       <div id="elev-risk-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
   </div>
@@ -3117,7 +3176,7 @@ function svcPintar(){
     <div class="nl2-title" style="display:flex;align-items:center;justify-content:space-between">
       <span><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;animation:blink 1s infinite"></span> Grabando</span>
       <button id="btn-foto-ruta" onclick="tomarFotoRuta()" style="display:flex;align-items:center;gap:5px;background:rgba(168,230,61,.12);border:1px solid rgba(168,230,61,.3);border-radius:20px;padding:5px 12px;color:var(--lime);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.5px">
-        📷 <span id="btn-foto-ruta-count"></span> FOTO
+        📷 <span id="btn-foto-ruta-count"></span> Añadir foto
       </button>
       <input type="file" id="nav-foto-input" accept="image/*" capture="environment" style="display:none" onchange="onNavFoto(event)">
     </div>
@@ -3182,7 +3241,7 @@ function svcPintar(){
           <span style="color:var(--lime)">📍</span><span id="resumen-lugar-txt">RideSafe IA</span>
         </div>
         <button id="resumen-foto-btn" onclick="abrirSelectorFotos()" style="background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);white-space:nowrap">
-          📷 Foto
+          📷 Foto de la actividad
         </button>
         <input type="file" id="resumen-foto-input" accept="image/*" style="display:none" onchange="onResumenFoto(event)">
       </div>
@@ -3364,9 +3423,11 @@ function svcPintar(){
 <div class="panel" id="panel-plan">
   <div class="p-header" style="height:52px">
     <button class="p-back" onclick="closePlan()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">Planificar <span>Ruta</span></div>
+    <div class="p-title">Planificar <span>ruta</span></div>
     <button id="safe-route-toggle" onclick="toggleSafeRoute()" style="margin-left:auto;margin-right:12px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">&#128737;&#65039; Modo Seguro: OFF</button>
   </div>
+  <!-- Pestañas internas de RUTAS: solo navegan entre paneles existentes -->
+  <div class="rs-rutas-nav" id="rs-rutas-nav-planificar"><button type="button" data-rsec="actividad" onclick="rsRutasIr('actividad')">Actividad</button><button type="button" data-rsec="planificar" onclick="rsRutasIr('planificar')">Planificar</button><button type="button" data-rsec="historial" onclick="rsRutasIr('historial')">Historial</button><button type="button" data-rsec="importar" onclick="rsRutasIr('importar')">Importar</button><button type="button" data-rsec="progreso" onclick="rsRutasIr('progreso')">Progreso</button></div>
   <div id="plan-form" style="flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 14px">
     <div class="plan-field">
       <span class="plan-label">&#128205; Origen</span>
@@ -3466,16 +3527,20 @@ function svcPintar(){
 <div class="panel" id="panel-rutas">
   <div class="p-header">
     <button class="p-back" onclick="closeRutas()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">Mis <span>Rutas</span></div>
+    <div class="p-title" id="rutas-titulo"><span>Historial</span></div>
     <button id="rutas-borrar" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:16px;padding:5px 12px;cursor:pointer" onclick="deleteAllRoutes()">&#128465; Borrar</button>
   </div>
-  <div class="tabs">
-    <div class="tabx on" onclick="rutasTab('mias',this)">Mis rutas</div>
-    <div class="tabx" onclick="rutasTab('comunidad',this)">Comunidad</div>
+
+  <!-- Pestañas internas de RUTAS: solo navegan entre paneles existentes -->
+  <div class="rs-rutas-nav" id="rs-rutas-nav-historial"><button type="button" data-rsec="actividad" onclick="rsRutasIr('actividad')">Actividad</button><button type="button" data-rsec="planificar" onclick="rsRutasIr('planificar')">Planificar</button><button type="button" data-rsec="historial" onclick="rsRutasIr('historial')">Historial</button><button type="button" data-rsec="importar" onclick="rsRutasIr('importar')">Importar</button><button type="button" data-rsec="progreso" onclick="rsRutasIr('progreso')">Progreso</button></div>
+  <!-- Pestañas antiguas: se conservan (las usa rutasTab) pero ocultas; ahora se navega con la barra de arriba -->
+  <div class="tabs" id="rutas-tabs-old" style="display:none">
+    <div class="tabx on" onclick="rutasTab('mias',this)">Historial</div>
+    <div class="tabx" onclick="rutasTab('comunidad',this)">Rutas compartidas</div>
   </div>
-  <div class="p-body" id="rutas-body">
-    <div class="card" style="border-color:rgba(168,230,61,.25)">
-      <div class="card-title">&#128242; Sincroniza tu reloj o ciclocomputador</div>
+  <div class="p-body" id="rutas-importar-body" style="display:none">
+    <div class="card" id="rutas-importar-card" style="border-color:rgba(168,230,61,.25)">
+      <div class="card-title">&#128229; Subir actividad GPX / TCX</div>
       <div class="card-sub" style="margin-bottom:12px">Exporta la actividad desde tu Garmin, Wahoo, Suunto, Polar, COROS o Strava (formato GPX o TCX) y s&uacute;bela aqu&iacute; &mdash; calculamos el perfil de elevaci&oacute;n y el score de riesgo igual que con tus rutas grabadas.</div>
       <button class="btn-primary" onclick="document.getElementById('rutas-gpx-input').click()" style="display:flex;align-items:center;justify-content:center;gap:8px">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -3483,8 +3548,11 @@ function svcPintar(){
       </button>
       <input type="file" id="rutas-gpx-input" accept=".gpx,.tcx" style="display:none" onchange="rutasAnalizarGPX(this)"/>
     </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.6;padding:4px 4px 0">Al subir el archivo se abre en <strong style="color:var(--text)">Actividad</strong> con su perfil de elevaci&oacute;n y el score de riesgo (1 a 5).</div>
+  </div>
+  <div class="p-body" id="rutas-body">
     <div class="stat-grid">
-      <div class="stat-box"><span class="sl">Rutas</span><span class="sv" id="rs-count">0</span></div>
+      <div class="stat-box"><span class="sl">Nº de rutas</span><span class="sv" id="rs-count">0</span></div>
       <div class="stat-box"><span class="sl">Total km</span><span class="sv" id="rs-km">0</span></div>
       <div class="stat-box"><span class="sl">Tiempo</span><span class="sv" id="rs-time">0</span></div>
     </div>
@@ -3763,8 +3831,10 @@ function svcPintar(){
 
   <div class="p-header">
     <button class="p-back" onclick="closeAnalisis()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="p-title">Mi <span>Análisis</span></div>
+    <div class="p-title"><span>Progreso</span></div>
   </div>
+  <!-- Pestañas internas de RUTAS: solo navegan entre paneles existentes -->
+  <div class="rs-rutas-nav" id="rs-rutas-nav-progreso"><button type="button" data-rsec="actividad" onclick="rsRutasIr('actividad')">Actividad</button><button type="button" data-rsec="planificar" onclick="rsRutasIr('planificar')">Planificar</button><button type="button" data-rsec="historial" onclick="rsRutasIr('historial')">Historial</button><button type="button" data-rsec="importar" onclick="rsRutasIr('importar')">Importar</button><button type="button" data-rsec="progreso" onclick="rsRutasIr('progreso')">Progreso</button></div>
   <div class="tabs">
     <div class="tabx on" onclick="analisisTab('resumen',this)">Resumen</div>
     <div class="tabx" onclick="analisisTab('graficas',this)">Gráficas</div>
@@ -5424,7 +5494,7 @@ function renderRutas(){
   document.getElementById('rs-km').textContent=totalKm.toFixed(1);
   document.getElementById('rs-time').textContent=Math.round(totalMin);
   var lista=document.getElementById('rutas-lista');lista.innerHTML='';
-  if(!rutas.length){lista.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--dim)"><div style="font-size:48px;margin-bottom:14px;opacity:.4">&#128692;</div><div style="font-size:13px;line-height:1.6;color:var(--muted)">Todavía no tienes rutas.<br><strong style="color:var(--text)">Ve a Navegación y pulsa REC.</strong></div></div>';return;}
+  if(!rutas.length){lista.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--dim)"><div style="font-size:48px;margin-bottom:14px;opacity:.4">&#128692;</div><div style="font-size:13px;line-height:1.6;color:var(--muted)">Todavía no tienes rutas.<br><strong style="color:var(--text)">Ve a Actividad y pulsa REC.</strong></div></div>';return;}
   rutas.forEach(function(r,i){
     var dt=new Date(r.timestamp);var fecha=dt.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});var hora=dt.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
     var km=(r.distance/1000).toFixed(2),mins=Math.floor(r.duration/60),secs=String(r.duration%60).padStart(2,'0');
@@ -5488,7 +5558,7 @@ function volverAlMapa(){
   document.getElementById('resumen-foto-wrap').style.display = 'none';
   document.getElementById('resumen-mini-track').style.display = 'none';
   var n = navFotosRuta.length;
-  document.getElementById('resumen-foto-btn').textContent = n > 0 ? '📷 ' + n + ' foto' + (n>1?'s':'') : '📷 Foto';
+  document.getElementById('resumen-foto-btn').textContent = n > 0 ? '📷 ' + n + ' foto' + (n>1?'s':'') : '📷 Foto de la actividad';
   document.getElementById('resumen-foto-btn').onclick = abrirSelectorFotos;
   if(resumenMiniMap){ resumenMiniMap.remove(); resumenMiniMap=null; }
   document.getElementById('resumen-mini-track').innerHTML='';
@@ -5520,7 +5590,7 @@ function mostrarResumenRuta(route){
   document.getElementById('resumen-mini-track').style.display = 'none';
   document.getElementById('resumen-foto-img').src = '';
   var n = navFotosRuta.length;
-  document.getElementById('resumen-foto-btn').textContent = n > 0 ? '📷 ' + n + ' foto' + (n>1?'s':'') : '📷 Foto';
+  document.getElementById('resumen-foto-btn').textContent = n > 0 ? '📷 ' + n + ' foto' + (n>1?'s':'') : '📷 Foto de la actividad';
   document.getElementById('resumen-foto-btn').onclick = abrirSelectorFotos;
   document.getElementById('resumen-foto-input').value = '';
   var km=(route.distance/1000).toFixed(1);
@@ -6128,7 +6198,7 @@ function stopWalkie() { walkieConnected = false; }
 /* ═══════════════════════════════════════
    ANÁLISIS
    ═══════════════════════════════════════ */
-function openAnalisis(){openPanel('panel-analisis');analisisTab('resumen',document.querySelector('.tabx'));}
+function openAnalisis(){openPanel('panel-analisis');analisisTab('resumen',document.querySelector('#panel-analisis .tabx'));}
 function closeAnalisis(){closePanel('panel-analisis');}
 
 function analisisTab(tab,btn){
