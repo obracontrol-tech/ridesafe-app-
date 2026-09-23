@@ -1208,6 +1208,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 .tg-chatid-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#29B6F6}
 .tg-chatid-ok{font-size:16px}
 .tg-alertas{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.tg-estado{font-size:13px;font-weight:700;color:var(--muted);text-align:center;padding:9px;border:1px solid var(--border);border-radius:12px;margin-bottom:12px}
+.tg-estado.esperando{color:#29B6F6;border-color:rgba(41,182,246,.35)}
+.tg-estado.conectado{color:var(--lime);border-color:rgba(168,230,61,.4);background:var(--lime-dim)}
+.tg-ayuda{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:14px}
+.tg-manual{background:rgba(41,182,246,.06);border:1px dashed rgba(41,182,246,.3);border-radius:12px;padding:10px}
+.tg-copiar{background:none;border:1px solid rgba(41,182,246,.4);border-radius:10px;color:#29B6F6;font-size:12px;padding:6px 10px;cursor:pointer}
+.tg-avanzado{margin-bottom:12px;font-size:12px;color:var(--muted)}
+.tg-avanzado summary{cursor:pointer;padding:6px 0}
 .tg-alerta-row{
   display:flex;align-items:center;gap:12px;
   padding:10px 12px;background:var(--bg);
@@ -2529,6 +2537,47 @@ function rsFotoElegir(tipo){
   if(inp) inp.click();
   if(rsFotoModo === 'actividad') cerrarSelectorFotos();
 }
+/* ═══ TELEGRAM — conexión con un solo botón ═══
+   ⚠️ VERIFICAR el nombre del bot. Es el mismo que usaba la app hasta ahora.
+   Si el bot real es otro (p. ej. ridesafeai_bot), cambia SOLO esta línea. */
+var TG_BOT_USERNAME = 'rindesafeai_bot';
+var _rsTgEspera = null;
+function rsTgEnlace(codigo){ return 'https://t.me/' + TG_BOT_USERNAME + '?start=' + encodeURIComponent(codigo); }
+function rsTgPintarEstado(estado){
+  var t = document.getElementById('tg-estado-txt'), btn = document.getElementById('tg-btn-conectar');
+  if(!t) return;
+  if(estado === 'esperando'){ t.textContent = 'Estado: Esperando confirmación'; t.className = 'tg-estado esperando'; }
+  else if(estado === 'conectado' || (!estado && tgUserChatId)){ t.textContent = 'Telegram conectado ✅'; t.className = 'tg-estado conectado'; if(btn) btn.textContent = '🔄 VOLVER A CONECTAR'; }
+  else { t.textContent = 'Estado: No conectado'; t.className = 'tg-estado'; if(btn) btn.textContent = '🔗 CONECTAR TELEGRAM'; }
+}
+function rsTgConectar(){
+  if(typeof db === 'undefined' || !db){ toast('Sin conexión con el servidor. Inténtalo de nuevo en un momento.'); return; }
+  var previo = tgUserChatId;
+  try{ tgGenerarCodigo(); }catch(e){ console.error(e); toast('No se pudo generar el código. Inténtalo de nuevo.'); return; }
+  var codigo = (document.getElementById('tg-link-codigo').textContent || '').trim();
+  var url = rsTgEnlace(codigo);
+  var link = document.getElementById('tg-abrir-link'); if(link) link.href = url;
+  var bn = document.getElementById('tg-bot-nombre'); if(bn) bn.textContent = '@' + TG_BOT_USERNAME;
+  var est = document.getElementById('tg-link-estado'); if(est) est.textContent = '⏳ Esperando que pulses Iniciar en Telegram…';
+  rsTgPintarEstado('esperando');
+  try{ window.open(url, '_blank'); }catch(e){}
+  // Vigilar el resultado de tgGenerarCodigo (que sigue haciendo la vinculación con Firebase)
+  if(_rsTgEspera) clearInterval(_rsTgEspera);
+  var vueltas = 0;
+  _rsTgEspera = setInterval(function(){
+    vueltas++;
+    if(tgUserChatId && (tgUserChatId !== previo || vueltas > 2 && document.getElementById('tg-link-estado').textContent.indexOf('✅') >= 0)){
+      clearInterval(_rsTgEspera); rsTgPintarEstado('conectado'); return;
+    }
+    var txt = (document.getElementById('tg-link-estado') || {}).textContent || '';
+    if(txt.indexOf('caduc') >= 0 || vueltas > 320){ clearInterval(_rsTgEspera); rsTgPintarEstado(); var idle=document.getElementById('tg-link-idle'); if(idle) idle.style.display='block'; }
+  }, 1000);
+}
+function rsTgCopiarCodigo(){
+  var c = (document.getElementById('tg-link-codigo').textContent || '').trim();
+  try{ navigator.clipboard.writeText(c).then(function(){ toast('Código copiado'); }, function(){ toast('Código: ' + c); }); }
+  catch(e){ toast('Código: ' + c); }
+}
 function rsPanelAbierto(id){ var p=document.getElementById(id); return !!(p && p.classList.contains('show')); }
 function rsRutasMarcar(sec){
   document.querySelectorAll('.rs-rutas-nav button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-rsec')===sec); });
@@ -2666,6 +2715,10 @@ document.addEventListener('DOMContentLoaded', function(){
       return r;
     };
   }
+  var ft = window.openTelegram;
+  if(typeof ft === 'function'){
+    window.openTelegram = function(){ var r = ft.apply(this, arguments); try{ var bn=document.getElementById('tg-bot-nombre'); if(bn) bn.textContent='@'+TG_BOT_USERNAME; var esp=document.getElementById('tg-link-esperando'); rsTgPintarEstado(esp && esp.style.display==='block' ? 'esperando' : undefined); }catch(e){} return r; };
+  }
   var fs = window.abrirSelectorFotos;
   if(typeof fs === 'function'){
     window.abrirSelectorFotos = function(){ rsFotoModo = 'resumen'; var t = document.getElementById('foto-selector-titulo'); if(t) t.textContent = '📷 Foto de la actividad'; return fs.apply(this, arguments); };
@@ -2797,68 +2850,50 @@ function svcPintar(){
       </div>
       <div class="tg-title-txt">Alertas Telegram</div>
     </div>
-    <div class="tg-subtitle">Recibe notificaciones en tu Telegram cuando salgas a pedalear, detectes ciclistas cercanos o necesites ayuda.</div>
+    <div class="tg-subtitle">Recibe avisos de seguridad de RideSafe IA en Telegram, aunque no estés mirando la app.</div>
 
-    <!-- Chat ID actual -->
-    <div class="tg-chatid-wrap" id="tg-config-wrap">
-      <div style="flex:1">
-        <span class="tg-chatid-label">Tu Chat ID</span>
-        <div class="tg-chatid-val" id="tg-chatid-display">No configurado</div>
-      </div>
-      <span class="tg-chatid-ok" id="tg-chatid-ok"></span>
-    </div>
-
-    <!-- Vinculación por código (automática) -->
-    <div id="tg-link-idle">
-      <button class="tg-btn-guardar" style="margin-bottom:14px" onclick="tgGenerarCodigo()">🔗 GENERAR CÓDIGO DE VINCULACIÓN</button>
-    </div>
-    <div id="tg-link-esperando" style="display:none;text-align:center;margin-bottom:14px">
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tu código</div>
-      <div id="tg-link-codigo" style="font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;color:#29B6F6;letter-spacing:4px;margin-bottom:8px">------</div>
-      <!-- ⚠️ VERIFICAR: comprobar si el bot correcto es @ridesafeai_bot o @rindesafeai_bot antes de publicar. No se ha cambiado automáticamente. -->
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Abre Telegram, busca <b>@rindesafeai_bot</b>, y envíale este código tal cual, como un mensaje normal.</div>
-      <div id="tg-link-estado" style="font-size:12px;color:var(--lime);font-weight:700">⏳ Esperando a que lo envíes...</div>
-    </div>
-
-    <!-- Alertas activas -->
+    <!-- Avisos que se reciben -->
     <div class="tg-alertas">
-      <div class="tg-alerta-row">
-        <span class="tg-alerta-icon">🚴</span>
-        <div class="tg-alerta-info">
-          <div class="tg-alerta-name">Actividad iniciada / finalizada</div>
-          <div class="tg-alerta-desc">Al pulsar REC y al terminar la ruta</div>
+      <div class="tg-alerta-row"><span class="tg-alerta-icon">🆘</span><div class="tg-alerta-info"><div class="tg-alerta-name">SOS</div></div></div>
+      <div class="tg-alerta-row"><span class="tg-alerta-icon">💥</span><div class="tg-alerta-info"><div class="tg-alerta-name">Caída detectada</div></div></div>
+      <div class="tg-alerta-row"><span class="tg-alerta-icon">🚴</span><div class="tg-alerta-info"><div class="tg-alerta-name">Inicio y fin de ruta</div></div></div>
+      <div class="tg-alerta-row"><span class="tg-alerta-icon">📡</span><div class="tg-alerta-info"><div class="tg-alerta-name">Ciclistas cercanos</div></div></div>
+    </div>
+
+    <!-- Estado de la conexión -->
+    <div class="tg-estado" id="tg-estado-txt">Estado: No conectado</div>
+
+    <!-- Botón principal (antes: generar código). Usa la misma función tgGenerarCodigo() -->
+    <div id="tg-link-idle">
+      <button class="tg-btn-guardar" id="tg-btn-conectar" style="margin-bottom:8px" onclick="rsTgConectar()">🔗 CONECTAR TELEGRAM</button>
+      <div class="tg-ayuda">Se abrirá Telegram. Solo tienes que pulsar <strong>Iniciar</strong> para conectar RideSafe IA.</div>
+    </div>
+
+    <!-- Esperando confirmación -->
+    <div id="tg-link-esperando" style="display:none;text-align:center;margin-bottom:14px">
+      <div id="tg-link-estado" style="font-size:14px;color:var(--lime);font-weight:700;margin-bottom:10px">⏳ Esperando que pulses Iniciar en Telegram…</div>
+      <a id="tg-abrir-link" class="tg-btn-guardar" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none;margin-bottom:12px">📲 ABRIR TELEGRAM</a>
+      <div class="tg-manual">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">¿No se abre Telegram? Copia este código y envíalo al bot <b id="tg-bot-nombre">@bot</b></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+          <div id="tg-link-codigo" style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:#29B6F6;letter-spacing:4px">------</div>
+          <button type="button" class="tg-copiar" onclick="rsTgCopiarCodigo()">📋 Copiar</button>
         </div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
-      </div>
-      <div class="tg-alerta-row">
-        <span class="tg-alerta-icon">🆘</span>
-        <div class="tg-alerta-info">
-          <div class="tg-alerta-name">Alerta SOS</div>
-          <div class="tg-alerta-desc">Con ubicación GPS exacta</div>
-        </div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
-      </div>
-      <div class="tg-alerta-row">
-        <span class="tg-alerta-icon">💥</span>
-        <div class="tg-alerta-info">
-          <div class="tg-alerta-name">Caída detectada</div>
-          <div class="tg-alerta-desc">Alerta automática del sensor</div>
-        </div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
-      </div>
-      <div class="tg-alerta-row">
-        <span class="tg-alerta-icon">📡</span>
-        <div class="tg-alerta-info">
-          <div class="tg-alerta-name">Ciclistas cercanos</div>
-          <div class="tg-alerta-desc">Radar detecta alguien a menos de 2 km</div>
-        </div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--lime)"></div>
       </div>
     </div>
 
-    <!-- (pasos técnicos eliminados: ahora la vinculación es automática con el código de arriba) -->
+    <!-- Opciones avanzadas: Chat ID (mismos IDs que antes) -->
+    <details class="tg-avanzado">
+      <summary>Opciones avanzadas</summary>
+      <div class="tg-chatid-wrap" id="tg-config-wrap" style="margin-top:10px">
+        <div style="flex:1">
+          <span class="tg-chatid-label">Tu Chat ID</span>
+          <div class="tg-chatid-val" id="tg-chatid-display">No configurado</div>
+        </div>
+        <span class="tg-chatid-ok" id="tg-chatid-ok"></span>
+      </div>
+    </details>
 
-    <!-- (botón manual eliminado: la vinculación se confirma sola en cuanto llega el código) -->
     <div style="height:1px;background:var(--border);margin:4px 0 12px"></div>
     <button onclick="abrirCanalTelegram()" style="width:100%;padding:11px;background:rgba(41,182,246,.1);border:1px solid rgba(41,182,246,.3);border-radius:12px;color:#29B6F6;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M21.8 2.1L1.4 9.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L8.6 16l-.4 5.2c.6 0 .9-.3 1.2-.6l2.9-2.8 5.1 3.7c.9.5 1.6.2 1.8-.9l3.3-15.6c.3-1.4-.5-2-1.7-1.9z" fill="#29B6F6"/></svg>
