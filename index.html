@@ -4975,14 +4975,14 @@ function toggleRecording(){
   var btn=document.getElementById('nav-rec-btn2'),lbl=document.getElementById('nav-rec-lbl2');
   if(navRecOn){
     btn.classList.add('rec');lbl.textContent='STOP';
-    navPoints=[];navDist=0;navElevations=[];navStartTime=Date.now();
+    navPoints=[];navDist=0;navElevations=[];navStartTime=Date.now();window._navT=[];window._navE=[];
     navFotosRuta=[];  // resetear galería de fotos del recorrido
     var countEl=document.getElementById('btn-foto-ruta-count');if(countEl)countEl.textContent='';
     if(navigator.geolocation){
       navWatch=navigator.geolocation.watchPosition(function(pos){
         var pt=[pos.coords.latitude,pos.coords.longitude];
         if(navPoints.length>0)navDist+=haversine(navPoints[navPoints.length-1][0],navPoints[navPoints.length-1][1],pt[0],pt[1]);
-        navPoints.push(pt);userPos=pt;
+        navPoints.push(pt);userPos=pt;try{window._navT.push(pos.timestamp||Date.now());window._navE.push(pos.coords.altitude!=null?pos.coords.altitude:null);}catch(e){}
         if(pos.coords.altitude)navElevations.push(pos.coords.altitude);
         if(navUserMark)navUserMark.setLngLat([pt[1],pt[0]]);else{navUserMark=new mapboxgl.Marker({element:navBikeMarkerEl()}).setLngLat([pt[1],pt[0]]).addTo(navMap);}
         navMap.panTo([pt[1],pt[0]]);
@@ -5011,7 +5011,7 @@ function toggleRecording(){
     localStorage.removeItem('rs_route_draft');
     var elapsed=Math.round((Date.now()-navStartTime)/1000);
     if(navPoints.length>=2){
-      var route={id:Date.now(),points:navPoints,distance:navDist,duration:elapsed,timestamp:navStartTime,elevationGain:navElevations.length>1?Math.max.apply(null,navElevations)-Math.min.apply(null,navElevations):0};
+      var route={id:Date.now(),points:navPoints,times:(window._navT&&window._navT.length===navPoints.length)?window._navT:undefined,ele:(window._navE&&window._navE.length===navPoints.length)?window._navE:undefined,distance:navDist,duration:elapsed,timestamp:navStartTime,elevationGain:navElevations.length>1?Math.max.apply(null,navElevations)-Math.min.apply(null,navElevations):0};
       var routes=JSON.parse(localStorage.getItem('rs_routes')||'[]');routes.unshift(route);localStorage.setItem('rs_routes',JSON.stringify(routes));
       updateQuickStats();
       var _km = (navDist/1000).toFixed(1);
@@ -5973,7 +5973,7 @@ function renderRutas(){
     var km=(r.distance/1000).toFixed(2),mins=Math.floor(r.duration/60),secs=String(r.duration%60).padStart(2,'0');
     var spd=r.duration>0?((r.distance/1000)/(r.duration/3600)).toFixed(1):'--';
     var card=document.createElement('div');card.className='ruta-card';
-    card.innerHTML='<div class="ruta-info"><div class="ruta-top"><div><div class="ruta-num">Ruta #'+(rutas.length-i)+'</div><div class="ruta-fecha">'+fecha+' - '+hora+'</div>'+(r.elevationGain?'<div style="font-size:10px;color:#ffaa00;margin-top:2px">Desnivel: '+Math.round(r.elevationGain)+'m</div>':'')+'</div><div style="display:flex;gap:6px"><button class="ruta-del" style="color:var(--lime);border-color:var(--border)" onclick="verResumenRuta('+r.id+')" title="Compartir">&#128228;</button><button class="ruta-del" onclick="deleteRoute('+r.id+')">&#10005;</button></div></div><div class="ruta-stats2"><div><span class="rs-label">Dist</span><span class="rs-val">'+km+' <span>km</span></span></div><div><span class="rs-label">Tiempo</span><span class="rs-val">'+mins+':'+secs+'</span></div><div><span class="rs-label">Vel</span><span class="rs-val">'+spd+' <span>km/h</span></span></div></div></div>';
+    card.innerHTML='<div class="ruta-info"><div class="ruta-top"><div><div class="ruta-num">Ruta #'+(rutas.length-i)+'</div><div class="ruta-fecha">'+fecha+' - '+hora+'</div>'+(r.elevationGain?'<div style="font-size:10px;color:#ffaa00;margin-top:2px">Desnivel: '+Math.round(r.elevationGain)+'m</div>':'')+'</div><div style="display:flex;gap:6px"><button class="ruta-del" style="color:var(--lime);border-color:var(--border)" onclick="verResumenRuta('+r.id+')" title="Compartir">&#128228;</button><button class="ruta-del" style="color:var(--lime);border-color:var(--border)" onclick="exportarRuta('+r.id+')" title="Exportar GPX/TCX">&#11015;</button><button class="ruta-del" onclick="deleteRoute('+r.id+')">&#10005;</button></div></div><div class="ruta-stats2"><div><span class="rs-label">Dist</span><span class="rs-val">'+km+' <span>km</span></span></div><div><span class="rs-label">Tiempo</span><span class="rs-val">'+mins+':'+secs+'</span></div><div><span class="rs-label">Vel</span><span class="rs-val">'+spd+' <span>km/h</span></span></div></div></div>';
     if(r.points&&r.points.length>1){
       var svgWrap=document.createElement('div');svgWrap.className='ruta-track';
       var lats=r.points.map(function(p){return p[0];}),lngs=r.points.map(function(p){return p[1];});
@@ -5986,6 +5986,79 @@ function renderRutas(){
     lista.appendChild(card);
   });
 }
+/* ═══ EXPORTAR RUTA GPX / TCX ═══ */
+function _rsXml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _rsTiempos(r){
+  var n=r.points.length;
+  if(r.times&&r.times.length===n)return r.times;
+  var t0=r.timestamp||Date.now(),dur=(r.duration||0)*1000,out=[];
+  for(var i=0;i<n;i++)out.push(t0+(n>1?Math.round(dur*i/(n-1)):0));
+  return out;
+}
+function _rsEle(r,i){var e=r.ele&&r.ele[i];return (e!=null&&!isNaN(e))?Number(e).toFixed(1):null;}
+function rutaAGPX(r){
+  var t=_rsTiempos(r),nombre='RideSafe IA - '+new Date(r.timestamp).toLocaleDateString('es-ES');
+  var x='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n';
+  x+='<metadata><name>'+_rsXml(nombre)+'</name><time>'+new Date(t[0]).toISOString()+'</time></metadata>\n';
+  x+='<trk><name>'+_rsXml(nombre)+'</name><type>cycling</type><trkseg>\n';
+  r.points.forEach(function(p,i){
+    var e=_rsEle(r,i);
+    x+='<trkpt lat="'+Number(p[0]).toFixed(7)+'" lon="'+Number(p[1]).toFixed(7)+'">'+(e?'<ele>'+e+'</ele>':'')+'<time>'+new Date(t[i]).toISOString()+'</time></trkpt>\n';
+  });
+  return x+'</trkseg></trk>\n</gpx>\n';
+}
+function rutaATCX(r){
+  var t=_rsTiempos(r),inicio=new Date(t[0]).toISOString(),dist=0;
+  var x='<?xml version="1.0" encoding="UTF-8"?>\n<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">\n<Activities><Activity Sport="Biking">\n<Id>'+inicio+'</Id>\n';
+  x+='<Lap StartTime="'+inicio+'"><TotalTimeSeconds>'+(r.duration||0)+'</TotalTimeSeconds><DistanceMeters>'+Number(r.distance||0).toFixed(1)+'</DistanceMeters><Intensity>Active</Intensity><TriggerMethod>Manual</TriggerMethod>\n<Track>\n';
+  r.points.forEach(function(p,i){
+    if(i>0)dist+=haversine(r.points[i-1][0],r.points[i-1][1],p[0],p[1]);
+    var e=_rsEle(r,i);
+    x+='<Trackpoint><Time>'+new Date(t[i]).toISOString()+'</Time><Position><LatitudeDegrees>'+Number(p[0]).toFixed(7)+'</LatitudeDegrees><LongitudeDegrees>'+Number(p[1]).toFixed(7)+'</LongitudeDegrees></Position>'+(e?'<AltitudeMeters>'+e+'</AltitudeMeters>':'')+'<DistanceMeters>'+dist.toFixed(1)+'</DistanceMeters></Trackpoint>\n';
+  });
+  return x+'</Track></Lap>\n<Creator xsi:type="Device_t" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Name>RideSafe IA</Name></Creator>\n</Activity></Activities>\n</TrainingCenterDatabase>\n';
+}
+function descargarRutaArchivo(id,formato,compartir){
+  var r=JSON.parse(localStorage.getItem('rs_routes')||'[]').filter(function(x){return x.id===id;})[0];
+  if(!r||!r.points||r.points.length<2){toast('Esta ruta no tiene recorrido GPS');return;}
+  var d=new Date(r.timestamp),f=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var nombre='ridesafe-'+f+'-'+(r.distance/1000).toFixed(1)+'km.'+formato;
+  var txt=formato==='tcx'?rutaATCX(r):rutaAGPX(r);
+  var mime=formato==='tcx'?'application/vnd.garmin.tcx+xml':'application/gpx+xml';
+  var blob=new Blob([txt],{type:mime});
+  cerrarExportarRuta();
+  if(compartir){
+    try{
+      var file=new File([blob],nombre,{type:'application/octet-stream'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'Ruta RideSafe IA'}).catch(function(){});
+        return;
+      }
+    }catch(e){}
+    toast('Tu móvil no permite compartir archivos. Se descarga.');
+  }
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=nombre;document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
+  toast('Descargado: '+nombre);
+}
+function exportarRuta(id){
+  cerrarExportarRuta();
+  var puedeCompartir=!!(navigator.canShare);
+  var ov=document.createElement('div');ov.id='rs-export-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:flex-end;justify-content:center';
+  ov.onclick=function(e){if(e.target===ov)cerrarExportarRuta();};
+  var b='width:100%;padding:14px;margin-top:10px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;';
+  var h='<div style="background:#0a0f1e;border:1px solid #a8e63d;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:480px;color:#fff;font-family:inherit">';
+  h+='<div style="font-size:17px;font-weight:800;margin-bottom:4px">&#11015; Exportar ruta</div>';
+  h+='<div style="font-size:12px;color:#9aa4b8;line-height:1.5">Para Strava, Garmin Connect, Komoot, Wikiloc, Suunto, Wahoo, Polar o COROS.</div>';
+  h+='<button style="'+b+'background:#a8e63d;color:#0a0f1e;border:none" onclick="descargarRutaArchivo('+id+',\'gpx\','+puedeCompartir+')">GPX '+(puedeCompartir?'— enviar / guardar':'— descargar')+'</button>';
+  h+='<button style="'+b+'background:transparent;color:#a8e63d;border:1px solid #a8e63d" onclick="descargarRutaArchivo('+id+',\'tcx\','+puedeCompartir+')">TCX '+(puedeCompartir?'— enviar / guardar':'— descargar')+'</button>';
+  if(puedeCompartir)h+='<button style="'+b+'background:transparent;color:#9aa4b8;border:1px solid #2a3350;font-size:13px" onclick="descargarRutaArchivo('+id+',\'gpx\',false)">Solo descargar GPX al móvil</button>';
+  h+='<button style="'+b+'background:transparent;color:#9aa4b8;border:none;font-size:13px" onclick="cerrarExportarRuta()">Cancelar</button></div>';
+  ov.innerHTML=h;document.body.appendChild(ov);
+}
+function cerrarExportarRuta(){var o=document.getElementById('rs-export-ov');if(o)o.remove();}
 function deleteRoute(id){if(!confirm('¿Eliminar esta ruta?'))return;var rs=JSON.parse(localStorage.getItem('rs_routes')||'[]').filter(function(r){return r.id!==id;});localStorage.setItem('rs_routes',JSON.stringify(rs));renderRutas();updateQuickStats();toast('Ruta eliminada');}
 
 /* ═══ RESUMEN DE RUTA + COMPARTIR ═══ */
