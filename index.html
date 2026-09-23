@@ -1891,7 +1891,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
       <span class="ob-logo-ride">Ride</span><span class="ob-logo-safe">Safe</span><span class="ob-logo-ai">IA</span>
     </div>
     <div class="ob-subtitle">Bienvenido · Configura tu perfil ciclista</div>
-    <div style="display:inline-block;margin-top:10px;padding:6px 14px;background:rgba(168,230,61,.12);border:1px solid rgba(168,230,61,.4);border-radius:20px;font-size:11px;font-weight:800;color:var(--lime);letter-spacing:.5px;text-transform:uppercase">🎉 App 100% gratuita</div>
+    <div style="display:inline-block;margin-top:10px;padding:6px 14px;background:rgba(168,230,61,.12);border:1px solid rgba(168,230,61,.4);border-radius:20px;font-size:11px;font-weight:800;color:var(--lime);letter-spacing:.5px;text-transform:uppercase">🎉 App gratuita</div>
   </div>
 
   <div class="ob-step">
@@ -2188,11 +2188,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
   <!-- GRID MÓDULOS -->
   <div class="section-label">¿Qué necesitas?</div>
 
-  <!-- ═══ 4 GRUPOS (portada simplificada) ═══ -->
+  <!-- ═══ 4 APARTADOS (Rutas · Seguridad · Mi bici · Comunidad) ═══ -->
   <div class="grupos-grid">
 
-    <div class="grupo-card" style="--card-accent:#A3E635" onclick="openGrupoMenu('salir')">
-      <span class="grupo-badge">GPS · VOZ</span>
+    <div class="grupo-card" style="--card-accent:#A3E635" onclick="openGrupoMenu('rutas')">
+      <span class="grupo-badge">GPS · MAPA</span>
       <div class="grupo-icon">
         <svg viewBox="0 0 220 145" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <path d="M24 89 106 42l90 50-82 48Z" fill="#07100b" stroke="#28372e" stroke-width="2"/>
@@ -2204,8 +2204,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
           <path d="M160 25c-10 0-18 8-18 18 0 14 18 32 18 32s18-18 18-32c0-10-8-18-18-18Z" fill="#A3E635" stroke="#d9f99d" stroke-width="2"/><ellipse cx="160" cy="43" rx="6" ry="7" fill="#07100b"/>
         </svg>
       </div>
-      <div class="grupo-title">Salir en bici</div>
-      <div class="grupo-sub">Navegación, planificar<br>y mapas</div>
+      <div class="grupo-title">Rutas</div>
+      <div class="grupo-sub">Salir en bici, grabar<br>y planificar</div>
       <div class="grupo-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
@@ -2223,12 +2223,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
         </svg>
       </div>
       <div class="grupo-title">Seguridad</div>
-      <div class="grupo-sub">SOS, antirrobo<br>y detección</div>
+      <div class="grupo-sub">SOS, caídas<br>y contactos</div>
       <div class="grupo-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
-    <div class="grupo-card" style="--card-accent:#A3E635" onclick="openEbike()">
-      <span class="grupo-badge">GUÍA · PRO</span>
+    <div class="grupo-card" style="--card-accent:#A3E635" onclick="openGrupoMenu('mibici')">
+      <span class="grupo-badge">ANTIRROBO</span>
       <div class="grupo-icon">
         <svg viewBox="0 0 220 145" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <path d="M24 89 106 42l90 50-82 48Z" fill="#07100b" stroke="#28372e" stroke-width="2"/>
@@ -2242,12 +2242,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
         </svg>
       </div>
       <div class="grupo-title">Mi bici</div>
-      <div class="grupo-sub">E-bike, batería<br>y diagnóstico</div>
+      <div class="grupo-sub">Antirrobo, ficha<br>y e-bike</div>
       <div class="grupo-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
     <div class="grupo-card" style="--card-accent:#A3E635" onclick="openGrupoMenu('comunidad')">
-      <span class="grupo-badge">IA · SOCIAL</span>
+      <span class="grupo-badge">GRUPO · SOCIAL</span>
       <div class="grupo-icon">
         <svg viewBox="0 0 220 145" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <path d="M24 89 106 42l90 50-82 48Z" fill="#07100b" stroke="#28372e" stroke-width="2"/>
@@ -2260,7 +2260,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
         </svg>
       </div>
       <div class="grupo-title">Comunidad</div>
-      <div class="grupo-sub">Asistente IA, grupo<br>y perfil</div>
+      <div class="grupo-sub">Grupos, quedadas<br>y ciclistas cerca</div>
       <div class="grupo-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
@@ -2295,6 +2295,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
         Enviar por Telegram
       </button>
     </div>
+  </div>
+
+  <!-- ENLACES DISCRETOS: perfil, legal, privacidad y ajustes avanzados -->
+  <div class="rs-footer-links">
+    <button onclick="openAjustes()">👤 Mi perfil</button>
+    <button onclick="openAI()">🤖 Asistente IA</button>
+    <button onclick="openLegalPanel()">⚖️ Legal</button>
+    <a href="/privacidad.html" target="_blank" rel="noopener">🔐 Privacidad</a>
+    <button onclick="openGrupoMenu('avanzado')">⚙️ Ajustes</button>
   </div>
 
   <!-- Espacio extra abajo -->
@@ -2446,41 +2455,129 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;color:#fff;f
 .grupo-menu-item .gmi-desc{font-size:11px;color:var(--muted);margin-top:2px}
 .grupo-menu-item .gmi-arrow{color:var(--lime);width:14px;height:14px;flex-shrink:0}
 .grupo-menu-item .gmi-arrow svg{width:14px;height:14px}
+.grupo-menu-sec{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:14px 4px 8px}
+.grupo-menu-note{font-size:11.5px;line-height:1.5;color:#ffd0d8;background:rgba(255,51,85,.08);border:1px solid rgba(255,51,85,.25);border-radius:12px;padding:10px 12px;margin-top:6px}
+.grupo-menu-item.gmi-small{padding:10px 12px;opacity:.75;background:transparent;border-style:dashed}
+.grupo-menu-item.gmi-small .gmi-name{font-size:13px}
+.grupo-menu-item.gmi-small .gmi-emoji{font-size:18px}
+/* Enlaces discretos al pie de la portada */
+.rs-footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;padding:10px 16px 4px;font-size:11px}
+.rs-footer-links button,.rs-footer-links a{background:none;border:none;color:var(--muted);font-family:inherit;font-size:11px;cursor:pointer;text-decoration:none;padding:4px 2px}
+.rs-footer-links button:active,.rs-footer-links a:active{color:var(--lime)}
+/* Riesgo 1/5 con espacio legible */
+.elev-risk-score span:first-child{margin-right:4px}
+/* "Más mapas" en el selector de capas */
+.layer-more-btn{grid-column:1 / -1;width:100%;padding:8px;margin-top:4px;background:none;border:1px dashed var(--border2);border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer}
+#layer-more{display:none}
+#layer-more.show{display:grid}
+/* Barra inferior con 5 apartados */
+#tabbar .tab span{font-size:9.5px}
 </style>
 
 <script>
 /* ═══ Submenú de grupos (portada simplificada) ═══ */
+/* ═══ Reorganización en 5 apartados: Inicio · Rutas · Seguridad · Mi bici · Comunidad ═══
+   Solo cambia el MENÚ (qué botón abre qué). Todas las funciones y paneles originales se mantienen. */
+function rsIr(fn, targetId){
+  try{ fn(); }catch(err){ console.error(err); }
+  if(targetId){
+    setTimeout(function(){
+      var el = document.getElementById(targetId);
+      if(el && el.offsetParent !== null){ try{ el.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){ el.scrollIntoView(); } }
+    }, 380);
+  }
+}
+function rsVerCercanos(){
+  if(typeof userPos === 'undefined' || !userPos){ toast('📡 Activando GPS… inténtalo de nuevo en unos segundos'); return; }
+  toast('📡 Buscando ciclistas a menos de 2 km…');
+  try{ radarEscanear(); }catch(e){ console.error(e); }
+  setTimeout(function(){
+    try{ if(!radarCiclistasCercanos || !radarCiclistasCercanos.length) toast('Ahora mismo no hay ciclistas cerca'); }catch(e){}
+  }, 3500);
+}
+function rsAbrirClaveRutas(){
+  openPlan();
+  setTimeout(function(){ var m = document.getElementById('ors-key-modal'); if(m) m.style.display = 'flex'; }, 250);
+}
+function rsIrInicio(){
+  try{ closeGrupoMenuNow(); }catch(e){}
+  var ini = document.getElementById('inicio');
+  if(ini){ try{ ini.scrollTo({top:0, behavior:'smooth'}); }catch(e){ ini.scrollTop = 0; } }
+}
+
 var GRUPOS_MENU = {
-  salir: {
-    titulo: '🚴 Salir en bici',
+  rutas: {
+    titulo: '🗺️ Rutas',
     items: [
-      {e:'🧭', n:'Navegación GPS', d:'Mapas off-road, grabar ruta, tracks GPX', fn:function(){openNav();}},
-      {e:'🗺️', n:'Planificar ruta', d:'Rutas por senderos y pistas', fn:function(){openPlan();}},
-      {e:'📂', n:'Mis rutas', d:'Historial de recorridos', fn:function(){openRutas();}},
-      {e:'📶', n:'Mapas offline', d:'Descarga mapas sin conexión', fn:function(){openOffline();}}
+      {e:'🧭', n:'Mapa y navegación', d:'Tu posición, capas de mapa y guía por voz', fn:function(){openNav();}},
+      {e:'⏺️', n:'Grabar ruta', d:'Abre el mapa y pulsa REC para empezar', fn:function(){openNav(); setTimeout(function(){toast('Pulsa REC para empezar a grabar');},400);}},
+      {e:'🗺️', n:'Planificar ruta', d:'Rutas por carretera, pistas y senderos', fn:function(){openPlan();}},
+      {e:'📂', n:'Mis rutas', d:'Historial de tus recorridos', fn:function(){openRutas();}},
+      {e:'📥', n:'Importar GPX / TCX', d:'Carga un track de tu reloj o ciclocomputador', fn:function(){openNav(); var gi=document.getElementById('gpx-input'); if(gi) gi.click();}},
+      {e:'📶', n:'Mapas offline', d:'Descarga el mapa de tu zona sin conexión', fn:function(){openOffline();}},
+      {e:'📍', n:'Waypoints', d:'Marca puntos en el mapa (botón 📍 del mapa)', fn:function(){openNav(); setTimeout(function(){toast('Usa el botón de waypoint del mapa y toca donde quieras marcar');},400);}},
+      {e:'📸', n:'Fotos del recorrido', d:'Abre una ruta guardada para ver o añadir fotos', fn:function(){openRutas(); setTimeout(function(){toast('Abre una ruta para ver o añadir sus fotos');},400);}},
+      {e:'📤', n:'Compartir actividad', d:'Abre una ruta guardada y pulsa Compartir', fn:function(){openRutas(); setTimeout(function(){toast('Abre una ruta y pulsa Compartir');},400);}},
+      {sec:'Más opciones'},
+      {e:'📊', n:'Mi análisis', d:'Resumen, gráficas y récords', fn:function(){openAnalisis();}},
+      {e:'🛡️', n:'Modo Ruta Segura', d:'Prioriza tu seguridad frente a velocidad o distancia', fn:function(){abrirSafeRouteMode();}},
+      {e:'🤖', n:'Asistente IA', d:'Consejos, mecánica y rutas personalizadas', fn:function(){openAI();}},
+      {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}}
     ]
   },
   seguridad: {
     titulo: '🛡️ Seguridad',
     items: [
-      {e:'🚨', n:'SOS y detección de caídas', d:'Alertas y aviso de emergencia', fn:function(){openSeg();}},
-      {e:'🔒', n:'Antirrobo', d:'Alarma, aparcamiento, DNI de tu bici', fn:function(){openAntiRobo();}}
+      {e:'🚨', n:'Botón SOS', d:'Envía tu posición GPS a tus contactos', fn:function(){rsIr(openSeg,'seg-sos-card');}},
+      {e:'💥', n:'Sensor anticaída', d:'Detecta caídas y avisa automáticamente', fn:function(){rsIr(openSeg,'seg-caida-card');}},
+      {e:'📞', n:'Contactos de emergencia', d:'112 y tus personas de confianza', fn:function(){rsIr(openSeg,'seg-contactos-card');}},
+      {e:'⚡', n:'Flash de seguridad', d:'Usa el flash como luz de emergencia', fn:function(){rsIr(openSeg,'flash-card');}},
+      {e:'✈️', n:'Alertas Telegram', d:'Recibe SOS, caídas y actividad en tu Telegram', fn:function(){openTelegram();}},
+      {e:'📡', n:'Ride Live — salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}},
+      {note:'⚠️ <strong>No manipules el móvil mientras circulas.</strong> Detente en un lugar seguro si necesitas usar la app.'}
+    ]
+  },
+  mibici: {
+    titulo: '🚲 Mi bici',
+    items: [
+      {e:'🔒', n:'AntiRobo', d:'Todas las herramientas antirrobo', fn:function(){openAntiRobo();}},
+      {e:'🅿️', n:'Modo aparcamiento', d:'Guarda dónde dejas la bici y vuelve a ella', fn:function(){rsIr(openAntiRobo,'ar-park');}},
+      {e:'🚨', n:'Alarma de movimiento', d:'Sirena si alguien mueve la bici', fn:function(){rsIr(openAntiRobo,'ar-alarm');}},
+      {e:'🪪', n:'DNI de la bici', d:'Marca, modelo, nº de serie y foto', fn:function(){rsIr(openAntiRobo,'ar-dni');}},
+      {e:'📄', n:'Kit de robo', d:'Difunde la alerta en segundos', fn:function(){rsIr(openAntiRobo,'ar-kit');}},
+      {e:'⚡', n:'E-Bike Pro', d:'Batería, autonomía y consejos', fn:function(){openEbike();}},
+      {e:'🤖', n:'Diagnóstico IA e-bike', d:'Describe el problema y recibe un diagnóstico', fn:function(){rsIr(openEbike,'ebike-diag');}},
+      {small:true, e:'🛰️', n:'Rastreo GPS real — próximamente', d:'Chip GPS/GSM para localizar tu bici', fn:function(){rsIr(openAntiRobo,'ar-gps');}}
     ]
   },
   comunidad: {
     titulo: '👥 Comunidad',
     items: [
-      {e:'🚵', n:'Comunidad', d:'Salidas y ciclistas cerca de ti', fn:function(){openComunidadApp();}},
+      {e:'📡', n:'Ciclistas cercanos', d:'Quién está rodando a menos de 2 km', fn:function(){rsVerCercanos();}},
+      {e:'👥', n:'Modo grupo', d:'Rueda en grupo con código compartido', fn:function(){openGrupo();}},
+      {e:'➕', n:'Crear grupo', d:'Crea un grupo y comparte el código', fn:function(){rsIr(openGrupo,'grupo-crear-card');}},
+      {e:'🔗', n:'Unirse a grupo', d:'Introduce el código de tu grupo', fn:function(){rsIr(openGrupo,'grupo-unirse-card');}},
+      {e:'🛰️', n:'Pelotón en vivo', d:'GPS en vivo de tu grupo', fn:function(){openGrupo(); try{ if(!grupoActivo) setTimeout(function(){toast('Crea o únete a un grupo para ver el pelotón en vivo');},400); }catch(e){}}},
+      {e:'📍', n:'Punto de encuentro', d:'Dónde quedar para salir juntos', fn:function(){openComunidadApp();}},
+      {e:'📅', n:'Quedadas', d:'Crea una quedada o únete a una', fn:function(){openComunidadApp();}},
       {e:'🛠️', n:'Servicios cerca de ti', d:'Talleres, agua, farmacias, alquiler...', fn:function(){openServicios();}},
-      {e:'🛰️', n:'Grupo · Pelotón en vivo', d:'GPS en vivo de tu grupo', fn:function(){openGrupo();}},
-      {e:'🤖', n:'Asistente IA', d:'Consejos y rutas personalizadas', fn:function(){openAI();}},
-      {e:'👤', n:'Mi perfil', d:'Configura tu nivel y tus datos', fn:function(){openAjustes();}},
-      {e:'🏔️', n:'Guía BTT & Gravel Val d\u0027Aran 2026', d:'Rutas oficiales del Valle de Ar\u00e1n (PDF)', fn:function(){window.open('https://www.visitvaldaran.com/wp-content/uploads/2026/02/BTT-GRAVEL-2026_web.pdf','_blank');}},
-      {e:'📡', n:'Ride Live — Salida en directo', d:'Comparte tu posición en tiempo real con familia o amigos', fn:function(){openRideLivePromo();}},
-      {e:'🛡️', n:'Safe Route Mode', d:'Navegación inteligente que prioriza tu seguridad por encima de la velocidad o la distancia', fn:function(){abrirSafeRouteMode();}}
+      {e:'💡', n:'Sugerencias', d:'Cuéntanos tu idea para mejorar la app', fn:function(){openSugerenciaTG();}}
+    ]
+  },
+  avanzado: {
+    titulo: '⚙️ Ajustes',
+    items: [
+      {e:'👤', n:'Mi perfil', d:'Tu nombre, nivel y tipo de bici', fn:function(){openAjustes();}},
+      {e:'✈️', n:'Vincular Telegram', d:'Código de vinculación y canal oficial', fn:function(){openTelegram();}},
+      {e:'⚖️', n:'Aviso legal', d:'Condiciones de uso aceptadas', fn:function(){openLegalPanel();}},
+      {e:'🔐', n:'Política de privacidad', d:'Qué datos recogemos y cómo se tratan', fn:function(){window.open('/privacidad.html','_blank');}},
+      {sec:'Ajustes avanzados'},
+      {small:true, e:'🌍', n:'Clave del planificador de rutas', d:'Solo usuarios avanzados. La app ya trae una clave por defecto.', fn:function(){rsAbrirClaveRutas();}}
     ]
   }
 };
+// Alias por compatibilidad con la versión anterior del menú
+GRUPOS_MENU.salir = GRUPOS_MENU.rutas;
 
 function openGrupoMenu(key){
   var g = GRUPOS_MENU[key];
@@ -2489,8 +2586,22 @@ function openGrupoMenu(key){
   var cont = document.getElementById('grupo-menu-items');
   cont.innerHTML = '';
   g.items.forEach(function(it, i){
+    if(it.sec){
+      var s = document.createElement('div');
+      s.className = 'grupo-menu-sec';
+      s.textContent = it.sec;
+      cont.appendChild(s);
+      return;
+    }
+    if(it.note){
+      var nt = document.createElement('div');
+      nt.className = 'grupo-menu-note';
+      nt.innerHTML = it.note;
+      cont.appendChild(nt);
+      return;
+    }
     var b = document.createElement('button');
-    b.className = 'grupo-menu-item';
+    b.className = 'grupo-menu-item' + (it.small ? ' gmi-small' : '');
     b.innerHTML = '<span class="gmi-emoji">'+it.e+'</span>'+
       '<span class="gmi-txt"><div class="gmi-name">'+it.n+'</div><div class="gmi-desc">'+it.d+'</div></span>'+
       '<span class="gmi-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>';
@@ -2607,6 +2718,7 @@ function svcPintar(){
     <div id="tg-link-esperando" style="display:none;text-align:center;margin-bottom:14px">
       <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tu código</div>
       <div id="tg-link-codigo" style="font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;color:#29B6F6;letter-spacing:4px;margin-bottom:8px">------</div>
+      <!-- ⚠️ VERIFICAR: comprobar si el bot correcto es @ridesafeai_bot o @rindesafeai_bot antes de publicar. No se ha cambiado automáticamente. -->
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Abre Telegram, busca <b>@rindesafeai_bot</b>, y envíale este código tal cual, como un mensaje normal.</div>
       <div id="tg-link-estado" style="font-size:12px;color:var(--lime);font-weight:700">⏳ Esperando a que lo envíes...</div>
     </div>
@@ -2837,7 +2949,7 @@ function svcPintar(){
   <div class="p-body" style="overflow-y:auto;padding:20px 16px">
 
 <!-- ═══ 1. MODO APARCAMIENTO ═══ -->
-    <div class="card">
+    <div class="card" id="ar-park">
       <div class="card-title">🅿️ Modo Aparcamiento</div>
       <div class="card-sub" style="margin-bottom:12px">Guarda dónde dejas la bici y vuelve a ella sin perderte</div>
       <div id="park-empty">
@@ -2856,7 +2968,7 @@ function svcPintar(){
     </div>
 
     <!-- ═══ 2. ALARMA DE MOVIMIENTO ═══ -->
-    <div class="card">
+    <div class="card" id="ar-alarm">
       <div class="card-title">🚨 Alarma de movimiento</div>
       <div class="card-sub" style="margin-bottom:12px">Deja el móvil en la bolsa del sillín. Si alguien mueve la bici: sirena a todo volumen</div>
       <div id="alarm-off">
@@ -2877,7 +2989,7 @@ function svcPintar(){
     </div>
 
     <!-- ═══ 3. DNI DE LA BICI ═══ -->
-    <div class="card">
+    <div class="card" id="ar-dni">
       <div class="card-title">🪪 DNI de tu bici</div>
       <div class="card-sub" style="margin-bottom:12px">Tenlo todo a mano si algún día tienes que denunciar</div>
       <input class="input" id="dni-marca" placeholder="Marca (Orbea, Trek, Specialized...)" style="margin-bottom:8px"/>
@@ -2893,7 +3005,7 @@ function svcPintar(){
     </div>
 
     <!-- ═══ 4. KIT DE ROBO ═══ -->
-    <div class="card" style="border-color:rgba(255,51,85,.3)">
+    <div class="card" id="ar-kit" style="border-color:rgba(255,51,85,.3)">
       <div class="card-title" style="color:var(--red)">📄 Kit de robo</div>
       <div class="card-sub" style="margin-bottom:12px">Si pasa lo peor: difunde la alerta en segundos por WhatsApp y grupos ciclistas</div>
       <button class="anti-btn-lock" style="margin-bottom:0" onclick="roboKit()">🔴 ME HAN ROBADO LA BICI</button>
@@ -2901,8 +3013,8 @@ function svcPintar(){
     </div>
 
     <!-- ═══ PRO: CHIP GPS (próximamente) ═══ -->
-    <div style="background:rgba(255,136,51,.06);border:1px solid rgba(255,136,51,.3);border-radius:14px;padding:14px;text-align:center">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--orange)">🛰️ RASTREO GPS REAL — PRÓXIMAMENTE</div>
+    <div id="ar-gps" style="background:transparent;border:1px dashed rgba(255,136,51,.3);border-radius:14px;padding:10px 12px;text-align:center;opacity:.8">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--orange)">🛰️ Rastreo GPS real — próximamente</div>
       <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px">Chip GPS/GSM instalado en la bici con localización en tiempo real aunque te la roben.</div>
       <a href="https://wa.me/34643223301?text=Hola!%20Me%20interesa%20el%20chip%20GPS%20antirrobo%20de%20RideSafe%20IA" target="_blank" style="display:inline-block;margin-top:10px;padding:8px 18px;background:#25D366;color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;text-decoration:none">Quiero ser el primero</a>
     </div>
@@ -2912,27 +3024,27 @@ function svcPintar(){
 </div>
 
 <div id="tabbar">
-  <button class="tab active" onclick="toast('Inicio')">
+  <!-- 5 apartados. "Actividad" se inicia desde el botón grande de Inicio o desde Rutas.
+       "Análisis" está en Rutas y "Legal" en el pie de Inicio / Ajustes. -->
+  <button class="tab active" onclick="rsIrInicio()">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
     <span>Inicio</span>
   </button>
-  <button class="tab" onclick="openRutas()">
-    <svg viewBox="0 0 24 24"><polyline points="12,8 12,12 14,14"/><path d="M3.05 11a9 9 0 1 1 .5 4"/><polyline points="3,21 3,15 9,15"/></svg>
+  <button class="tab" onclick="openGrupoMenu('rutas')">
+    <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
     <span>Rutas</span>
   </button>
-  <button class="tab" id="tab-act" onclick="openNav()">
-    <div class="tab-circle">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/></svg>
-    </div>
-    <span>Actividad</span>
+  <button class="tab" onclick="openGrupoMenu('seguridad')">
+    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span>Seguridad</span>
   </button>
-  <button class="tab" onclick="openAnalisis()">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <span>Análisis</span>
+  <button class="tab" onclick="openGrupoMenu('mibici')">
+    <svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>
+    <span>Mi bici</span>
   </button>
-  <button class="tab" onclick="openLegalPanel()">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-    <span>Legal</span>
+  <button class="tab" onclick="openGrupoMenu('comunidad')">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Comunidad</span>
   </button>
 </div>
 
@@ -2972,12 +3084,15 @@ function svcPintar(){
     </div>
     <div id="layer-menu">
       <div class="layer-list">
-      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127775; Premium Road</span></div>
       <div class="layer-opt" data-layer="standard" onclick="setMapLayer('standard')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#128506; Estándar</span></div>
-      <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
       <div class="layer-opt" data-layer="topo" onclick="setMapLayer('topo')"><img class="layer-thumb" loading="lazy" src="https://a.tile.opentopomap.org/13/4110/3053.png" alt=""><span>&#9968; MTB Terrain</span></div>
-      <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')"><img class="layer-thumb" loading="lazy" src="https://tile.waymarkedtrails.org/cycling/13/4110/3053.png" alt=""><span>&#128694; Rutas Ciclistas</span></div>
       <div class="layer-opt" data-layer="night" onclick="setMapLayer('night')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#127773; Dark Pro</span></div>
+      <button type="button" class="layer-more-btn" id="layer-more-btn" onclick="event.stopPropagation();rsMasMapas()">➕ Más mapas</button>
+      </div>
+      <div class="layer-list" id="layer-more">
+      <div class="layer-opt active" data-layer="free" onclick="setMapLayer('free')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.org/13/4110/3053.png" alt=""><span>&#128739;&#65039; Carretera Pro</span></div>
+      <div class="layer-opt" data-layer="satellite" onclick="setMapLayer('satellite')"><img class="layer-thumb" loading="lazy" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3053/4110" alt=""><span>&#127759; Satélite</span></div>
+      <div class="layer-opt" data-layer="cycle" onclick="setMapLayer('cycle')"><img class="layer-thumb" loading="lazy" src="https://tile.waymarkedtrails.org/cycling/13/4110/3053.png" alt=""><span>&#128694; Rutas Ciclistas</span></div>
       <div class="layer-opt" data-layer="nav" onclick="setMapLayer('nav')"><img class="layer-thumb" loading="lazy" src="https://a.tile.openstreetmap.fr/osmfr/13/4110/3053.png" alt=""><span>&#128250; Navegación</span></div>
       </div>
     </div>
@@ -3172,7 +3287,7 @@ function svcPintar(){
         <div class="ld-item"><span class="ld-label">Alertas</span><span class="ld-val" id="ld-alerts">0</span></div>
       </div>
     </div>
-    <div class="sos-card">
+    <div class="sos-card" id="seg-sos-card">
       <div class="seg-card-top">
         <div style="font-size:36px">&#128680;</div>
         <div class="seg-info"><div class="seg-name">Botón SOS</div><div class="seg-desc">Envía tu posición GPS y alerta a contactos</div></div>
@@ -3194,8 +3309,8 @@ function svcPintar(){
         <div class="btn-chip" onclick="setFlashPattern('sos',this)">&#128680; SOS</div>
       </div>
     </div>
-    <div class="card">
-      <div class="seg-name" style="margin-bottom:12px">&#128222; Contactos emergencia</div>
+    <div class="card" id="seg-contactos-card">
+      <div class="seg-name" style="margin-bottom:12px">&#128222; Contactos de emergencia</div>
 
       <!-- Emergencias 112 fijo -->
       <div class="contacto-row">
@@ -3303,10 +3418,11 @@ function svcPintar(){
   </div>
   <div id="ors-key-modal" style="display:none;position:absolute;inset:0;background:rgba(10,15,30,.96);z-index:100;align-items:center;justify-content:center;padding:20px">
     <div style="background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:24px;width:100%;max-width:340px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px;color:var(--text)">&#127758; <span style="color:var(--lime)">OpenRouteService</span></div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5">Introduce tu API key gratuita para calcular rutas ciclistas por senderos y pistas forestales.</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px;color:var(--text)">&#9881;&#65039; <span style="color:var(--lime)">Ajustes avanzados</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5">Clave del planificador de rutas (opcional). Solo para usuarios avanzados: la app ya funciona con la clave por defecto.</div>
       <input id="ors-key-input" class="input" style="margin-bottom:10px;font-family:monospace;font-size:12px" placeholder="eyJvcm..." type="password"/>
       <button class="btn-primary" onclick="saveORSKey()">&#9989; GUARDAR Y ACTIVAR</button>
+      <button type="button" onclick="document.getElementById('ors-key-modal').style.display='none'" style="width:100%;margin-top:8px;padding:10px;background:none;border:1px solid var(--border2);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer">Cancelar</button>
     </div>
   </div>
 </div>
@@ -3321,7 +3437,7 @@ function svcPintar(){
     <span style="font-size:10px;color:var(--lime);font-weight:700;font-family:'Barlow Condensed',sans-serif">&#128690; Ciclista</span>
   </div>
   <div id="ai-key-setup">
-    <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">Introduce tu API key de Anthropic. Se guarda solo en tu dispositivo.</p>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">Ajuste avanzado (opcional): clave propia del asistente. Se guarda solo en tu dispositivo.</p>
     <input id="ai-key-input" class="input" type="password" placeholder="sk-ant-api03-..." style="margin-bottom:8px;font-family:monospace"/>
     <button class="btn-primary" style="font-size:13px" onclick="saveAIKey()">&#9989; GUARDAR Y ACTIVAR</button>
   </div>
@@ -3398,12 +3514,12 @@ function svcPintar(){
         <div class="card-sub" style="margin-bottom:12px">Como te verán los demás ciclistas</div>
         <input class="input" id="grupo-nombre" placeholder="Ej: JM, Pedro, Ana..."/>
       </div>
-      <div class="card">
+      <div class="card" id="grupo-crear-card">
         <div class="card-title">&#127381; Crear grupo nuevo</div>
         <div class="card-sub" style="margin-bottom:12px">Crea un grupo y comparte el código</div>
         <button class="btn-primary" onclick="crearGrupo()">&#128690; CREAR GRUPO</button>
       </div>
-      <div class="card">
+      <div class="card" id="grupo-unirse-card">
         <div class="card-title">&#128279; Unirse a un grupo</div>
         <div class="card-sub" style="margin-bottom:12px">Introduce el código del grupo</div>
         <input class="input" id="grupo-codigo-input" placeholder="ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;text-align:center;margin-bottom:10px"/>
@@ -3470,7 +3586,7 @@ function svcPintar(){
     <div id="qd-vista-crear" style="display:none">
       <div class="card qd-card-form">
         <div class="card-title">Nueva quedada</div>
-        <div class="card-sub" style="margin-bottom:12px">Rellena los datos y publica. Todos los ciclistas de RideSafe la ver&aacute;n.</div>
+        <div class="card-sub" style="margin-bottom:12px">Rellena los datos y publica. Todos los ciclistas de RideSafe IA la ver&aacute;n.</div>
         <input class="input" id="qd-nombre" maxlength="60" placeholder="Nombre: Ej. Ruta del pantano + caf&eacute;" style="margin-bottom:10px"/>
         <input class="input" id="qd-fecha" type="datetime-local" style="margin-bottom:10px"/>
         <div class="card-sub" style="margin-bottom:6px">Disciplina</div>
@@ -3594,7 +3710,7 @@ function svcPintar(){
     </div>
 
     <!-- Diagnóstico IA -->
-    <div style="background:var(--card);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:16px;margin-bottom:16px">
+    <div id="ebike-diag" style="background:var(--card);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:16px;margin-bottom:16px">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--cyan);margin-bottom:4px">🤖 Diagnóstico IA del motor</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Describe el problema y la IA te da un diagnóstico inmediato</div>
 
@@ -3721,7 +3837,7 @@ function checkSalgo(){
       var rest=lines.slice(1).join('\n').trim();
       var hora=new Date();var hs=('0'+hora.getHours()).slice(-2)+':'+('0'+hora.getMinutes()).slice(-2);
       res.innerHTML='<div class="salgo-verdict '+(v?'si':'no')+'">'+(v?'✅ ¡A RODAR!':'🛑 MEJOR HOY NO')+'</div>'
-        +'<div class="salgo-text">'+escHtml(rest)+'</div>'
+        +'<div class="salgo-text">'+mdLite(rest)+'</div>'
         +'<div class="salgo-meta">Actualizado a las '+hs+' · RideSafe IA</div>';
       btn.disabled=false;btn.textContent='CONSULTAR';
     })
@@ -3876,7 +3992,7 @@ updateQuickStats();
    MAPA Y CAPAS
    ═══════════════════════════════════════ */
 var MAP_LAYERS={
-  free:{style:'mapbox://styles/mapbox/streets-v12',name:'Premium Road'},
+  free:{style:'mapbox://styles/mapbox/streets-v12',name:'Carretera Pro'},
   cycle:{style:'mapbox://styles/mapbox/outdoors-v12',name:'Ciclismo'},
   standard:{style:'mapbox://styles/mapbox/streets-v12',name:'Estándar'},
   satellite:{style:'mapbox://styles/mapbox/satellite-streets-v12',name:'Satélite'},
@@ -4084,7 +4200,8 @@ function setMapLayer(key){
   document.getElementById('layer-menu').classList.remove('show');
 }
 
-function toggleLayerMenu(){var m=document.getElementById('layer-menu');m.classList.toggle('show');}
+function toggleLayerMenu(){var m=document.getElementById('layer-menu');m.classList.toggle('show');try{if(m.querySelector('#layer-more .layer-opt.active'))rsMasMapas(true);}catch(e){}}
+function rsMasMapas(forzar){var mm=document.getElementById('layer-more'),b=document.getElementById('layer-more-btn');if(!mm)return;var abrir=forzar===true?true:!mm.classList.contains('show');mm.classList.toggle('show',abrir);if(b)b.textContent=abrir?'➖ Menos mapas':'➕ Más mapas';}
 
 function tryGetGPS(){
   if(!navigator.geolocation){toast('Activa el GPS');return;}
@@ -5275,7 +5392,7 @@ function askAI(msg){
   history.push({role:'user',content:msg});
   fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:buildSystem(),messages:history})})
   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
-  .then(function(d){var reply=d.content&&d.content[0]?d.content[0].text:'Sin respuesta';aiHistory.push({role:'user',content:msg});aiHistory.push({role:'bot',content:reply});msgsDiv.removeChild(thinkDiv);var botDiv=document.createElement('div');botDiv.className='ai-msg bot';botDiv.innerHTML='<div class="ai-msg-name">RideSafe IA &#10022;</div>'+reply.replace(/\n/g,'<br>');msgsDiv.appendChild(botDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
+  .then(function(d){var reply=d.content&&d.content[0]?d.content[0].text:'Sin respuesta';aiHistory.push({role:'user',content:msg});aiHistory.push({role:'bot',content:reply});msgsDiv.removeChild(thinkDiv);var botDiv=document.createElement('div');botDiv.className='ai-msg bot';botDiv.innerHTML='<div class="ai-msg-name">RideSafe IA &#10022;</div>'+mdLite(reply).replace(/\n/g,'<br>');msgsDiv.appendChild(botDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
   .catch(function(err){msgsDiv.removeChild(thinkDiv);var errDiv=document.createElement('div');errDiv.className='ai-msg bot';errDiv.innerHTML='<div class="ai-msg-name">RideSafe IA</div>Error de conexión ('+err.message+'). Inténtalo de nuevo en unos segundos.';msgsDiv.appendChild(errDiv);msgsDiv.scrollTop=msgsDiv.scrollHeight;})
   .finally(function(){aiThinking=false;document.getElementById('ai-send-btn').disabled=false;});
 }
@@ -6267,6 +6384,8 @@ function renderAjustes(){
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* Convierte **texto** de las respuestas de IA en <strong>texto</strong> (escapando antes el HTML) */
+function mdLite(s){ return escHtml(s).replace(/\*\*([^*]+?)\*\*/g,'<strong>$1</strong>').replace(/(^|\n)#{1,4}\s*/g,'$1'); }
 
 function ajSelBici(el){ document.querySelectorAll('#ajustes-body .ob-bike').forEach(function(b){b.classList.remove('sel');}); el.classList.add('sel'); }
 function ajSelNivel(el){ document.querySelectorAll('#ajustes-body .ob-nivel').forEach(function(n){n.classList.remove('sel');}); el.classList.add('sel'); }
@@ -7509,7 +7628,7 @@ function diagnosticoMotor(problema) {
     }
     resultEl.innerHTML =
       '<div style="font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Diagnóstico: ' + problema + '</div>'
-      + '<div style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">' + escHtml(txt) + '</div>';
+      + '<div style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">' + mdLite(txt) + '</div>';
   })
   .catch(function(err) {
     resultEl.innerHTML = '<div style="color:var(--red);font-size:12px">Error de conexión. Comprueba internet e inténtalo de nuevo.</div>';
