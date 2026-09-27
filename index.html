@@ -622,7 +622,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -755,6 +755,20 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 </div>
 
 <!-- Foto con tus datos -->
+<div class="sheet" id="sh-card">
+  <div class="grab"></div>
+  <h2>Tarjeta de la salida <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+  <p style="color:var(--txt2);margin:-8px 0 12px">Compártela en tus grupos de WhatsApp. Va con el enlace para apuntarse.</p>
+  <div id="cdWait" class="empty">Preparando la tarjeta…</div>
+  <img id="cdPrev" alt="Tarjeta de la salida" style="width:100%;border-radius:18px;border:1px solid var(--line);display:none;margin-bottom:12px">
+  <canvas id="cdCanvas" style="display:none"></canvas>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <button class="btn btn-lime" style="grid-column:1/-1" onclick="cardShare()">📤 Compartir en WhatsApp</button>
+    <button class="btn btn-line" onclick="cardDownload()">⬇️ Guardar</button>
+    <button class="btn btn-line" onclick="cardText()">💬 Solo texto</button>
+    <button class="btn" style="grid-column:1/-1;color:var(--txt2)" onclick="openRide(cardRide.id)">← Volver a la salida</button>
+  </div>
+</div>
 <div class="sheet" id="sh-photo">
   <div class="grab"></div>
   <h2><span id="phTitle">Foto con tus datos</span> <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
@@ -969,6 +983,101 @@ function shareText(r){
   return `🚴 ${r.title||'Salida en grupo'} — RideSafe IA\n📅 ${fmtDate(r.date)} · 🕘 ${r.hour}\n🚩 Salida: ${r.start}${meet}${r.km?'\n📏 '+r.km+' km':''}${r.type?' · '+r.type:''}${r.pace?' · '+r.pace:''}${r.note?'\n💬 '+r.note:''}\n\n¿Te apuntas? ${appUrl()}#salida=${r.id}`;
 }
 function shareRide(id){const r=rides.find(x=>x.id===id);if(r)window.open('https://wa.me/?text='+encodeURIComponent(shareText(r)),'_blank')}
+/* ===== v1.9 — Tarjeta de la salida para WhatsApp ===== */
+let cardRide=null,cardBlob=null,cardSeq=0;
+function openCard(id){
+  const r=rides.find(x=>x.id===id);if(!r)return;cardRide=r;cardBlob=null;
+  $('cdPrev').style.display='none';$('cdWait').style.display='block';openSheet('sh-card');
+  cardRender(r).catch(e=>{console.warn('card',e);$('cdWait').textContent='No se pudo crear la tarjeta. Usa "Solo texto".'});
+}
+function cardText(){if(cardRide)shareRide(cardRide.id)}
+const cardName=r=>'ridesafe-salida-'+(r?.date||'')+'.jpg';
+function loadImg(src){return new Promise(res=>{const i=new Image();i.crossOrigin='anonymous';const t=setTimeout(()=>res(null),7000);i.onload=()=>{clearTimeout(t);res(i)};i.onerror=()=>{clearTimeout(t);res(null)};i.src=src})}
+async function cardRender(r){
+  const seq=++cardSeq;
+  try{await document.fonts.load('800 60px "Plus Jakarta Sans"');await document.fonts.load('600 30px "Plus Jakarta Sans"')}catch(e){}
+  const pts=[];if(r.startLL)pts.push(['#22C55E',r.startLL]);if(r.meetLL&&(!r.startLL||r.meetLL.lat!==r.startLL.lat||r.meetLL.lng!==r.startLL.lng))pts.push(['#EF4444',r.meetLL]);
+  const rc=r.route&&r.route.poly?decodePoly(r.route.poly):null;
+  const hasMap=pts.length||(rc&&rc.length>1);
+  const W=1080,H=hasMap?1350:1080,M=60;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const F=(w,sz)=>`${w} ${sz}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  const LIME='#C8DC3C',NAVY='#0E1A2B';
+  const rr=(x,y,w,h,rad)=>{g.beginPath();g.roundRect?g.roundRect(x,y,w,h,rad):g.rect(x,y,w,h)};
+  const fit=(t,max)=>{t=String(t||'');if(g.measureText(t).width<=max)return t;while(t.length>2&&g.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'};
+  const wrap=(t,max,lines)=>{const w=String(t||'').split(/\s+/);const out=[];let cur='';for(const x of w){const n=cur?cur+' '+x:x;if(g.measureText(n).width>max&&cur){out.push(cur);cur=x}else cur=n}if(cur)out.push(cur);if(out.length>lines){const k=out.slice(0,lines);k[lines-1]=fit(out.slice(lines-1).join(' '),max);return k}return out.map(l=>fit(l,max))};
+  // Fondo
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#16263D');bg.addColorStop(1,'#0B1422');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  // Cabecera: marca + etiqueta
+  g.textBaseline='alphabetic';g.textAlign='left';g.font=F(800,50);g.fillStyle='#fff';g.fillText('RideSafe',M,105);
+  const bw=g.measureText('RideSafe ').width;g.fillStyle=LIME;g.fillText('IA',M+bw,105);
+  g.font=F(800,26);const tag='SALIDA EN GRUPO';const tw=g.measureText(tag).width+44;rr(W-M-tw,62,tw,56,28);g.fillStyle=LIME;g.fill();g.fillStyle=NAVY;g.textAlign='center';g.fillText(tag,W-M-tw/2,100);g.textAlign='left';
+  // Título
+  g.font=F(800,72);g.fillStyle='#fff';const tl=wrap(r.title||'Salida en grupo',W-2*M,2);tl.forEach((l,i)=>g.fillText(l,M,215+i*84));
+  let y=215+(tl.length-1)*84+40;
+  // Día y hora
+  const d=new Date(r.date+'T12:00');
+  const dia=d.toLocaleDateString('es-ES',{weekday:'long'});const fecha=d.toLocaleDateString('es-ES',{day:'numeric',month:'long'});
+  rr(M,y,W-2*M,170,28);g.fillStyle='rgba(255,255,255,.07)';g.fill();
+  g.font=F(700,34);g.fillStyle='rgba(255,255,255,.75)';g.fillText(dia.charAt(0).toUpperCase()+dia.slice(1),M+36,y+62);
+  g.font=F(800,84);const hw=g.measureText(r.hour||'').width;
+  let fs=64;g.font=F(800,fs);while(fs>40&&g.measureText(fecha).width>W-2*M-108-hw){fs-=2;g.font=F(800,fs)}
+  g.fillStyle='#fff';g.fillText(fit(fecha,W-2*M-108-hw),M+36,y+136);
+  g.textAlign='right';g.font=F(700,30);g.fillStyle='rgba(255,255,255,.75)';g.fillText('Hora de salida',W-M-36,y+62);
+  g.font=F(800,84);g.fillStyle=LIME;g.fillText(r.hour||'',W-M-36,y+140);g.textAlign='left';
+  y+=200;
+  // Mapa (Mapbox Outdoors estático + recorrido dibujado aquí)
+  const mh=hasMap?430:0;
+  if(hasMap){
+    const mx=M,my=y,mw=W-2*M;
+    const all=[...(rc||[]).map(p=>[p[0],p[1]]),...pts.map(([,ll])=>[ll.lat,ll.lng])];
+    let a=1e9,b=-1e9,c=1e9,e=-1e9;all.forEach(([la,lg])=>{a=Math.min(a,la);b=Math.max(b,la);c=Math.min(c,lg);e=Math.max(e,lg)});
+    const wx=lg=>(lg+180)/360,wy=la=>{const s=Math.sin(la*Math.PI/180);return .5-Math.log((1+s)/(1-s))/(4*Math.PI)};
+    const cx=(wx(c)+wx(e))/2,cy=(wy(a)+wy(b))/2;
+    const iw=Math.round(mw/2),ih=Math.round(mh/2);   // tamaño pedido a 1x (se sirve @2x)
+    let z=16;const spanX=Math.abs(wx(e)-wx(c)),spanY=Math.abs(wy(b)-wy(a));
+    if(spanX>0||spanY>0)z=Math.min(16,Math.log2(Math.min((iw-60)/(512*Math.max(spanX,1e-9)),(ih-60)/(512*Math.max(spanY,1e-9)))));
+    z=Math.max(1,Math.floor(z*4)/4);
+    const cLng=cx*360-180,cLat=Math.atan(Math.sinh(Math.PI*(1-2*cy)))*180/Math.PI;
+    g.save();rr(mx,my,mw,mh,28);g.clip();
+    g.fillStyle='#223350';g.fillRect(mx,my,mw,mh);
+    const img=navigator.onLine?await loadImg(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/${cLng.toFixed(5)},${cLat.toFixed(5)},${z}/${iw}x${ih}@2x?attribution=false&logo=false&access_token=${MAPBOX_TOKEN}`):null;
+    if(seq!==cardSeq){g.restore();return}
+    if(img)g.drawImage(img,mx,my,mw,mh);
+    const k=512*Math.pow(2,z)*2;   // píxeles del mundo a @2x
+    const X=lg=>mx+mw/2+(wx(lg)-cx)*k,Y=la=>my+mh/2+(wy(la)-cy)*k;
+    if(rc&&rc.length>1){g.lineJoin='round';g.lineCap='round';g.beginPath();rc.forEach((p,i)=>i?g.lineTo(X(p[1]),Y(p[0])):g.moveTo(X(p[1]),Y(p[0])));g.strokeStyle=NAVY;g.lineWidth=16;g.stroke();g.strokeStyle=LIME;g.lineWidth=9;g.stroke()}
+    pts.forEach(([col,ll])=>{const px=X(ll.lng),py=Y(ll.lat);g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(px,py+4,14,6,0,0,7);g.fill();
+      g.fillStyle=col;g.beginPath();g.moveTo(px,py);g.bezierCurveTo(px-30,py-40,px-24,py-78,px,py-78);g.bezierCurveTo(px+24,py-78,px+30,py-40,px,py);g.fill();
+      g.fillStyle='#fff';g.beginPath();g.arc(px,py-52,10,0,7);g.fill()});
+    if(img){g.font=F(600,18);const at='© Mapbox © OpenStreetMap',aw=g.measureText(at).width;g.fillStyle='rgba(14,26,43,.7)';g.fillRect(mx+mw-aw-28,my+mh-40,aw+28,40);g.fillStyle='#fff';g.textAlign='right';g.fillText(at,mx+mw-14,my+mh-14);g.textAlign='left'}
+    g.restore();y+=mh+36;
+  }else y+=10;
+  // Datos: salida, encuentro, detalles
+  const meet=r.meet&&r.meet!==r.start?r.meet:'';
+  const rows=[['#22C55E','Salida',r.start]];
+  if(meet)rows.push(['#EF4444','Encuentro'+(r.meetHour?' · '+r.meetHour:''),meet]);
+  const det=[r.km?r.km+' km':'',r.type||'',r.pace?'Ritmo '+String(r.pace).toLowerCase():'',(()=>{const n=Object.keys(r.people||{}).length;return r.seats?n+'/'+r.seats+' plazas':n+(n===1?' apuntado':' apuntados')})()].filter(Boolean).join('  ·  ');
+  const rowH=hasMap?92:130;
+  rows.forEach(([col,lab,val])=>{g.fillStyle=col;g.beginPath();g.arc(M+14,y+26,14,0,7);g.fill();
+    g.font=F(600,28);g.fillStyle='rgba(255,255,255,.7)';g.fillText(lab,M+46,y+16);
+    g.font=F(800,40);g.fillStyle='#fff';g.fillText(fit(val,W-2*M-46),M+46,y+64);y+=rowH});
+  if(det){g.font=F(700,32);g.fillStyle=LIME;g.fillText(fit(det,W-2*M),M,y+30)}
+  if(!hasMap){g.save();g.globalAlpha=.16;g.translate(W-M-360,H-110-380);g.scale(15,15);g.strokeStyle=LIME;g.lineWidth=1.3;g.lineCap='round';g.lineJoin='round';g.stroke(new Path2D('M5.5 20.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3'));g.restore()}
+  // Pie
+  const fh=110;g.fillStyle=LIME;g.fillRect(0,H-fh,W,fh);
+  g.fillStyle=NAVY;g.font=F(800,40);g.fillText('¿Te apuntas?',M,H-fh+68);
+  g.textAlign='right';g.font=F(700,32);g.fillText(location.host||'app.ridesafeia.es',W-M,H-fh+66);g.textAlign='left';
+  await new Promise(res=>{const done=b=>{if(seq!==cardSeq)return res();cardBlob=b;$('cdPrev').src=URL.createObjectURL(b);$('cdPrev').style.display='block';$('cdWait').style.display='none';res()};
+    try{cv.toBlob(b=>b?done(b):res(),'image/jpeg',0.9)}catch(e){ // si el mapa bloquea la imagen, la repetimos sin mapa
+      res(cardRender(Object.assign({},r,{startLL:null,meetLL:null,route:null})))}});
+}
+async function cardShare(){
+  if(!cardBlob){toast('Espera un momento…');return}
+  const file=new File([cardBlob],cardName(cardRide),{type:'image/jpeg'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:shareText(cardRide)});return}}catch(e){if(e.name==='AbortError')return}
+  cardDownload();toast('Tarjeta guardada. Te abro WhatsApp con el texto');setTimeout(()=>shareRide(cardRide.id),900);
+}
+function cardDownload(){if(!cardBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(cardBlob);a.download=cardName(cardRide);document.body.appendChild(a);a.click();a.remove()}
 async function openRide(id,keep){
   let r=rides.find(x=>x.id===id);
   if(!r&&db){try{const s=await db.collection('rides').doc(id).get();if(s.exists){r={id:s.id,...s.data()};if(!rides.some(x=>x.id===r.id))rides.push(r)}}catch(e){}}
@@ -998,7 +1107,7 @@ async function openRide(id,keep){
    <div style="display:flex;flex-direction:column;gap:10px">
      ${isToday&&inR?`<button class="btn btn-lime" onclick="startRide('${r.id}')">🛰️ Empezar salida</button>`:''}
      ${isOwner(r)?'':`<button class="btn ${inR?'btn-line':'btn-lime'}" onclick="toggleJoin('${r.id}')">${inR?'Ya no voy':'✋ Me apunto'}</button>`}
-     <button class="btn btn-line" onclick="shareRide('${r.id}')">💬 Compartir por WhatsApp</button>
+     <button class="btn btn-line" onclick="openCard('${r.id}')">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar('${r.id}')">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal('${r.id}')">📆 Google Calendar</button></div>`:''}
      ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id==='${r.id}').route.poly),rides.find(x=>x.id==='${r.id}').title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="gpxRide('${r.id}')">⬇️ GPX</button></div>`:''}
      ${isOwner(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide('${r.id}')">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange('${r.id}')">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide('${r.id}')">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides','${r.id}','${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
