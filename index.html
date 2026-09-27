@@ -300,6 +300,20 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .dlbar{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:95;background:var(--bg);border:1px solid var(--lime);border-radius:18px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .dlbar b{display:block;margin-bottom:8px;font-size:15px}.dlbar small{color:var(--txt2)}
 .offpill{position:absolute;left:16px;top:calc(140px + env(safe-area-inset-top));pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:94;background:var(--bronze);color:#0E1A2B;font-weight:800;font-size:13px;padding:6px 14px;border-radius:20px;white-space:nowrap}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin-bottom:20px}
+.chatlist{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px}
+.msg{display:flex;gap:8px;align-items:flex-end}
+.msg.me{justify-content:flex-end}
+.bub{background:var(--card2);border-radius:16px 16px 16px 4px;padding:8px 12px;max-width:80%}
+.msg.me .bub{background:rgba(200,220,60,.18);border-radius:16px 16px 4px 16px}
+.mh{display:flex;gap:8px;align-items:baseline}
+.mh b{font-size:13px}.mh small{color:var(--txt2);font-size:11px;flex:1}
+.mh button{color:var(--txt2);font-size:12px;padding:0 2px}
+.bub p{font-size:15px;margin-top:2px;word-wrap:break-word}
+.chips.qr{flex-wrap:nowrap;overflow-x:auto;margin:8px 0;padding-bottom:4px}
+.chips.qr .chip{white-space:nowrap;min-height:38px;font-size:14px;padding:0 12px}
+.chips.qr::-webkit-scrollbar{display:none}
+.chatin{display:flex;gap:8px}
 .sres{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--line)}
 .sres span{font-size:22px}.sres b{display:block;font-size:16px}.sres small{color:var(--txt2);font-size:13px}
 .sopt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
@@ -597,7 +611,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.5.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -870,7 +884,7 @@ function go(tab){
 }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{closeSheets();go(t.dataset.tab)});
 function openSheet(id){closeSheets(true);$('scrim').classList.add('show');$(id).classList.add('show');$(id).scrollTop=0;if(id==='sh-plus')$('plusBtn').classList.add('open')}
-function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null}}
+function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null;if(typeof stopChat==='function')stopChat()}}
 function togglePlus(){$('sh-plus').classList.contains('show')?closeSheets():openSheet('sh-plus')}
 
 /* ===== Chips ===== */
@@ -896,7 +910,7 @@ function rideCard(r,full){
   const meet=r.meet&&r.meet!==r.start?`<div class="pt"><span class="ico">📍</span><span>Encuentro: <b>${esc(r.meet)}</b>${r.meetHour?' · '+esc(r.meetHour):''}</span></div>`:`<div class="pt"><span class="ico">📍</span><span>Encuentro en el mismo punto</span></div>`;
   return `<div class="ride${full?' full':''}" onclick="openRide('${r.id}')">
     <div class="when"><div><div class="date">${fmtDate(r.date)}</div><div class="hour num">${esc(r.hour)}</div></div>
-    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
     ${rideLL(r)?`<span class="tag wx" data-wx="${r.id}" style="display:none;margin-top:4px"></span>`:''}
@@ -947,6 +961,7 @@ async function openRide(id,keep){
   let r=rides.find(x=>x.id===id);
   if(!r&&db){try{const s=await db.collection('rides').doc(id).get();if(s.exists){r={id:s.id,...s.data()};if(!rides.some(x=>x.id===r.id))rides.push(r)}}catch(e){}}
   if(!r){if(!keep)toast('Esta salida ya no existe o ha terminado');return}
+  const _ci=$('chatIn'),draft=_ci?_ci.value:'',focused=document.activeElement===_ci,_sh=$('sh-ride').scrollTop;
   openRideId=id;const inR=joined(r);const meetPt=r.meet||r.start;const isToday=r.date===iso(new Date());const p=names(r);
   $('rideBody').innerHTML=`
    <h2>${esc(r.title||'Salida en grupo')} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
@@ -964,6 +979,10 @@ async function openRide(id,keep){
    ${r.note?`<div class="li" style="margin-bottom:16px;cursor:default"><span class="em">💬</span><div><small>Nota de ${esc(r.by)}</small><b style="font-weight:500">${esc(r.note)}</b></div></div>`:''}
    <div class="sec"><h3 style="font-size:18px">Apuntados (${p.length})</h3></div>
    <div class="chips" style="margin-bottom:20px">${p.map(n=>`<span class="tag" style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}</span>`).join('')}</div>
+   <div class="sec"><h3 style="font-size:18px">💬 Comentarios <span id="chatCount" style="color:var(--txt2);font-weight:600"></span></h3></div>
+   <div class="chat"><div class="chatlist" id="chatList"><div class="empty" style="padding:12px">Cargando…</div></div>
+     <div class="chips qr">${QUICK.map(q=>`<button class="chip" onclick="sendMsg('${q.replace(/'/g,'')}')">${q}</button>`).join('')}</div>
+     <div class="chatin"><input class="inp" id="chatIn" maxlength="300" placeholder="Escribe un comentario…" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-lime" style="width:auto;min-height:52px;padding:0 18px" onclick="sendMsg()" aria-label="Enviar">➤</button></div></div>
    <div style="display:flex;flex-direction:column;gap:10px">
      ${isToday&&inR?`<button class="btn btn-lime" onclick="startRide('${r.id}')">🛰️ Empezar salida</button>`:''}
      ${isOwner(r)?'':`<button class="btn ${inR?'btn-line':'btn-lime'}" onclick="toggleJoin('${r.id}')">${inR?'Ya no voy':'✋ Me apunto'}</button>`}
@@ -973,7 +992,8 @@ async function openRide(id,keep){
      ${isOwner(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide('${r.id}')">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange('${r.id}')">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide('${r.id}')">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides','${r.id}','${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
    </div>`;
   if(!keep)openSheet('sh-ride');
-  drawRideMap(r);fillWxDetail(r);
+  else{const ci=$('chatIn');if(ci&&draft){ci.value=draft}if(ci&&focused)ci.focus({preventScroll:true});$('sh-ride').scrollTop=_sh}
+  drawRideMap(r);fillWxDetail(r);watchChat(r.id);
 }
 let rideMap=null;
 function drawRideMap(r){
@@ -1919,6 +1939,43 @@ function renderOffmaps(){
 async function clearOffmaps(){if(!confirm('¿Borrar todos los mapas guardados?'))return;try{await caches.delete(MAPCACHE)}catch(e){}store.set('offmaps',[]);renderOffmaps();toast('Mapas borrados')}
 function netState(){const off=!navigator.onLine;const el=$('offPill');if(el)el.style.display=off?'block':'none'}
 window.addEventListener('online',netState);window.addEventListener('offline',netState);
+
+
+/* ===================================================================
+   v1.6 — COMENTARIOS EN CADA SALIDA
+   =================================================================== */
+let chat={id:null,unsub:null,msgs:[]};
+const QUICK=['Llego 5 min tarde','Voy de camino 🚴','Ya estoy en el punto 📍','¿Alguien lleva bomba?','Hoy no puedo 😔','¡Qué buena salida! 🙌'];
+function chatSeen(){return store.get('chatSeen',{})}
+function markSeen(id){const s=chatSeen();s[id]=Date.now();store.set('chatSeen',s)}
+function hasNewMsg(r){return !!(r.lastMsg&&r.lastMsg.uid!==uid&&r.lastMsg.t>(chatSeen()[r.id]||0))}
+function stopChat(){if(chat.unsub)chat.unsub();chat={id:null,unsub:null,msgs:[]}}
+function watchChat(id){
+  if(!db)return;
+  if(chat.id===id&&chat.unsub){renderChat();return}
+  stopChat();chat.id=id;
+  chat.unsub=db.collection('rides').doc(id).collection('msgs').orderBy('ts').limit(150).onSnapshot(s=>{
+    chat.msgs=s.docs.map(d=>({id:d.id,...d.data()}));renderChat();markSeen(id);
+  },e=>{console.warn('chat',e);const l=$('chatList');if(l)l.innerHTML='<div class="empty" style="padding:12px">No se pudieron cargar los comentarios</div>'});
+}
+function msgTime(ts){const d=new Date(ts);const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');return iso(d)===iso(new Date())?t:fmtDate(iso(d))+' '+t}
+function renderChat(){
+  const l=$('chatList');if(!l)return;const r=rides.find(x=>x.id===chat.id);
+  $('chatCount').textContent=chat.msgs.length?'('+chat.msgs.length+')':'';
+  l.innerHTML=chat.msgs.length?chat.msgs.map(m=>{const mine=m.uid===uid;const canDel=mine||(r&&isOwner(r))||isAdmin;
+    return `<div class="msg${mine?' me':''}">${mine?'':`<span class="face" style="width:30px;height:30px;margin:0;flex-shrink:0;background:${colorOf(m.name)}">${ini(m.name)}</span>`}<div class="bub"><div class="mh"><b>${mine?'Tú':esc(m.name)}</b><small>${msgTime(m.ts)}</small>${canDel?`<button aria-label="Borrar mensaje" onclick="delMsg('${m.id}')">✕</button>`:''}</div><p>${esc(m.text)}</p></div></div>`}).join('')
+   :'<div class="empty" style="padding:12px">Aún no hay comentarios. ¡Escribe el primero!</div>';
+  l.scrollTop=l.scrollHeight;
+}
+async function sendMsg(txt){
+  if(!ready()||!chat.id)return;
+  const inp=$('chatIn');const text=String(txt??inp.value).trim().slice(0,300);if(!text)return;
+  if(txt==null)inp.value='';
+  const now=Date.now();
+  db.collection('rides').doc(chat.id).collection('msgs').add({uid,name:myName(),text,ts:now}).catch(netErr);
+  db.collection('rides').doc(chat.id).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
+}
+function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collection('rides').doc(chat.id).collection('msgs').doc(mid).delete().catch(netErr)}
 
 /* ===== Más funciones ===== */
 const FEATURES=[
