@@ -314,6 +314,11 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .chips.qr .chip{white-space:nowrap;min-height:38px;font-size:14px;padding:0 12px}
 .chips.qr::-webkit-scrollbar{display:none}
 .chatin{display:flex;gap:8px}
+.admtabs{flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
+.admtabs .chip{white-space:nowrap}
+.admtabs::-webkit-scrollbar{display:none}
+.ann{display:flex;gap:10px;align-items:center;background:linear-gradient(90deg,rgba(224,145,58,.22),rgba(200,220,60,.12));border:1px solid var(--bronze);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.ann p{flex:1;font-weight:700;font-size:15px}
 .sres{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--line)}
 .sres span{font-size:22px}.sres b{display:block;font-size:16px}.sres small{color:var(--txt2);font-size:13px}
 .sopt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
@@ -501,6 +506,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <button class="round" aria-label="Avisos" onclick="toast('No tienes avisos nuevos')"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></button>
   </div>
 
+  <div id="annBox"></div>
   <div id="installBox"></div>
   <div class="hero">
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><circle cx="45" cy="100" r="32"/><circle cx="155" cy="100" r="32"/><path d="M45 100 80 45h55l20 55M80 45l30 55h45M110 100 135 45M70 32h24M128 32h18l-11 13"/></g></svg>
@@ -611,7 +617,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.7</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -898,6 +904,7 @@ chipGroup('fltChips',()=>renderAll());
 function ready(){
   if(!db||!uid){toast('Conectando… inténtalo en unos segundos');return false}
   if(!me){toast('Primero pon tu nombre');return false}
+  if(me.banned){alert('Tu cuenta está bloqueada por no respetar las normas de la comunidad. Si crees que es un error escribe a info@ridesafeia.es');return false}
   return true;
 }
 function netErr(e){console.error(e);toast(navigator.onLine?'No se pudo guardar. Inténtalo de nuevo':'Sin conexión. Se guardará al recuperar cobertura')}
@@ -1539,6 +1546,7 @@ function gpxRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)downloadGPX(
 function renderAccount(){
   const u=firebase?.auth?.().currentUser;const el=$('acctBox');if(!el)return;
   if(u&&!u.isAnonymous){
+    if(db&&uid&&me&&!me.google){me.google=true;db.collection('users').doc(uid).set({google:true},{merge:true}).catch(()=>{})}
     el.innerHTML=`<div class="li" style="cursor:default;border-color:var(--lime)"><span class="em">✅</span><div><b>Cuenta guardada con Google</b><small>${esc(u.email||u.displayName||'')}</small></div></div>
      <p style="color:var(--txt2);font-size:13px;margin:8px 4px 0">Si cambias de móvil, entra con esta misma cuenta y recuperarás tus puntos y actividades.</p>`;
   }else{
@@ -1718,36 +1726,144 @@ async function checkAdmin(){
   $('adminBox').style.display=isAdmin?'block':'none';
 }
 const COL={feed:'Publicación',pois:'Punto ciclista',routes:'Ruta de la comunidad',rides:'Salida',groups:'Grupo'};
-async function openAdmin(){
-  if(!isAdmin)return;
-  $('rideBody').innerHTML=sheetHead('🛡️ Administración')+`<div class="stats" id="admStats" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px"><div class="stat"><b>…</b><span>cargando</span></div></div>
-   <div class="sec"><h3 style="font-size:18px">Reportes</h3></div><div id="admReports"><div class="empty">Cargando…</div></div>
-   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Últimos puntos y rutas</h3></div><div id="admLatest"></div>`;
-  openRideId=null;openSheet('sh-ride');
-  const cnt=async c=>{try{return(await db.collection(c).limit(2000).get()).docs.length}catch(e){return'—'}};
-  const since=Date.now()-86400000;
-  const [u,r,f,p,ro,g,n]=await Promise.all(['users','rides','feed','pois','routes','groups'].map(cnt).concat([db.collection('nearby').where('t','>',since).get().then(s=>s.docs.length).catch(()=>'—')]));
-  $('admStats').innerHTML=[['👥',u,'ciclistas'],['📅',r,'salidas'],['📰',f,'publicaciones'],['☕',p,'puntos'],['🗺️',ro,'rutas'],['🟢',n,'activos 24 h']].map(([e,v,l])=>`<div class="stat"><span style="font-size:20px">${e}</span><b class="num">${v}</b><span>${l}</span></div>`).join('');
-  loadReports();
-  try{
-    const ps=(await db.collection('pois').orderBy('createdAt','desc').limit(8).get()).docs.map(d=>({c:'pois',id:d.id,t:(POI_CAT[d.data().cat]||['📍'])[0]+' '+d.data().name,by:d.data().by}));
-    const rs=(await db.collection('routes').orderBy('createdAt','desc').limit(8).get()).docs.map(d=>({c:'routes',id:d.id,t:'🗺️ '+d.data().name,by:d.data().by}));
-    $('admLatest').innerHTML=[...ps,...rs].map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(x.t)}</b><small>${COL[x.c]} · por ${esc(x.by)}</small></div><button class="mini" style="color:var(--red)" onclick="admDelete('${x.c}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
-  }catch(e){$('admLatest').innerHTML='<div class="empty">No se pudo cargar</div>'}
+let admTab='res',admUsers=[],admQ='';
+const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:(v&&v.seconds?v.seconds*1000:0);
+function admShell(){
+  const tabs=[['res','📊 Resumen'],['users','👥 Ciclistas'],['rides','📅 Salidas'],['cont','🗂️ Contenido'],['rep','⚠️ Reportes'],['ann','📣 Aviso']];
+  $('rideBody').innerHTML=sheetHead('🛡️ Administración')+`<div class="chips admtabs">${tabs.map(([k,t])=>`<button class="chip${admTab===k?' on':''}" onclick="admGo('${k}')">${t}</button>`).join('')}</div><div id="admBody"><div class="empty">Cargando…</div></div>`;
 }
+async function openAdmin(tab){if(!isAdmin)return;admTab=tab||admTab||'res';admShell();openRideId=null;openSheet('sh-ride');admGo(admTab)}
+function admGo(k){admTab=k;document.querySelectorAll('.admtabs .chip').forEach((c,i)=>c.classList.toggle('on',['res','users','rides','cont','rep','ann'][i]===k));$('admBody').innerHTML='<div class="empty">Cargando…</div>';({res:admRes,users:admUsersTab,rides:admRides,cont:admCont,rep:loadReports,ann:admAnn}[k])()}
+
+/* Resumen + actividad de 14 días */
+async function admRes(){
+  const get=async(c,lim=3000)=>{try{return(await db.collection(c).limit(lim).get()).docs.map(d=>({id:d.id,...d.data()}))}catch(e){return null}};
+  const [us,rs,fs,ps,ros,gs]=await Promise.all(['users','rides','feed','pois','routes','groups'].map(c=>get(c)));
+  const act=await db.collection('nearby').where('t','>',Date.now()-86400000).get().then(s=>s.docs.length).catch(()=>'—');
+  const n=a=>a?a.length:'—';const today=iso(new Date());
+  const up=rs?rs.filter(r=>r.date>=today).length:'—';
+  const google=us?us.filter(u=>u.google).length:0;
+  const days=[...Array(14)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return iso(d)});
+  const byDay=(arr,f)=>days.map(d=>(arr||[]).filter(x=>{const t=tsMs(x[f]);return t&&iso(new Date(t))===d}).length);
+  const nu=byDay(us,'since'),nr=byDay(rs,'createdAt');const mx=Math.max(1,...nu,...nr);
+  const bars=(vals,col)=>`<div class="bars" style="height:120px;padding:10px 8px 6px">${vals.map((v,i)=>`<div class="bar"><span class="bv" style="font-size:10px">${v||''}</span><i style="height:${Math.max(2,Math.round(v/mx*70))}px;background:${col}"></i><span class="bl" style="font-size:9px">${days[i].slice(8)}</span></div>`).join('')}</div>`;
+  $('admBody').innerHTML=`<div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">${[['👥',n(us),'ciclistas'],['🟢',act,'activos 24 h'],['📅',up,'salidas próximas'],['📰',n(fs),'publicaciones'],['☕',n(ps),'puntos'],['🗺️',n(ros),'rutas'],['👥',n(gs),'grupos'],['🗓️',n(rs),'salidas totales'],['⚠️','…','reportes']].map(([e,v,l],i)=>`<div class="stat"${i===8?' id="admRepCount"':''}><span style="font-size:18px">${e}</span><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
+   <div class="sec"><h3 style="font-size:16px">Ciclistas nuevos · últimos 14 días</h3></div>${bars(nu,'var(--lime)')}
+   <div class="sec" style="margin-top:12px"><h3 style="font-size:16px">Salidas creadas · últimos 14 días</h3></div>${bars(nr,'#60A5FA')}`;
+  db.collection('reports').limit(200).get().then(s=>{const el=$('admRepCount');if(el)el.querySelector('b').textContent=s.docs.length}).catch(()=>{});
+}
+
+/* Ciclistas */
+async function admUsersTab(){
+  try{admUsers=(await db.collection('users').orderBy('pts','desc').limit(1000).get()).docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.name)}catch(e){$('admBody').innerHTML='<div class="empty">No se pudo cargar</div>';return}
+  $('admBody').innerHTML=`<div class="search" style="background:var(--card);margin-bottom:10px"><svg class="i" viewBox="0 0 24 24" style="color:var(--txt2)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="admQ" placeholder="Buscar ciclista…" value="${esc(admQ)}" oninput="admQ=this.value;admUserList()"></div>
+   <button class="mini" style="width:100%;justify-content:center;margin-bottom:10px" onclick="admCSV()">⬇️ Descargar lista (Excel/CSV)</button><div id="admUL"></div>`;
+  admUserList();
+}
+function admUserList(){
+  const q=admQ.trim().toLowerCase();const l=admUsers.filter(u=>!q||u.name.toLowerCase().includes(q));
+  $('admUL').innerHTML=`<small style="color:var(--txt2);display:block;margin:0 4px 8px">${l.length} ciclistas</small>`+l.slice(0,150).map(u=>`<button class="li" style="margin-bottom:8px" onclick="admUser('${u.id}')"><span class="face" style="margin:0;width:38px;height:38px;flex-shrink:0;background:${colorOf(u.name)}">${ini(u.name)}</span><div><b>${esc(u.name)}${u.banned?' 🚫':''}${u.id===uid?' (tú)':''}</b><small>${u.pts||0} pts · ${level(u.pts||0)}${u.group?' · grupo '+esc(u.group):''}${tsMs(u.since)?' · desde '+fmtDate(iso(new Date(tsMs(u.since)))):''}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`).join('');
+}
+async function admUser(id){
+  const u=admUsers.find(x=>x.id===id);if(!u)return;
+  const cnt=async c=>{try{return(await db.collection(c).where('uid','==',id).get()).docs.filter(d=>d.data().uid===id).length}catch(e){return'—'}};
+  $('admBody').innerHTML=`<button class="mini" style="margin-bottom:10px" onclick="admGo('users')">← Volver</button>
+   <div class="prof" style="padding:0 0 10px;text-align:center;display:flex;flex-direction:column;align-items:center"><span class="avatar" style="width:70px;height:70px;font-size:30px;margin:0 auto 8px;display:grid;background:var(--card)">${ini(u.name)}</span><h2 style="font-size:20px">${esc(u.name)}${u.banned?' 🚫':''}</h2><p>${u.pts||0} puntos · ${level(u.pts||0)}</p></div>
+   <div class="stats" id="admUStats" style="margin-bottom:12px"><div class="stat"><b>…</b><span>publicaciones</span></div><div class="stat"><b>…</b><span>puntos ciclistas</span></div><div class="stat"><b>…</b><span>rutas</span></div></div>
+   <div class="li" style="cursor:default;margin-bottom:12px"><span class="em">ℹ️</span><div><small>Salidas creadas: ${u.created||0} · en grupo: ${u.done||0}${u.group?' · grupo '+esc(u.group):''}</small></div></div>
+   ${id===uid?'<div class="empty">Esta es tu cuenta</div>':`<div style="display:flex;flex-direction:column;gap:10px">
+     <button class="btn btn-line" onclick="admPts('${id}')">✏️ Ajustar puntos</button>
+     <button class="btn btn-line" onclick="admBan('${id}',${!u.banned})">${u.banned?'✅ Desbloquear':'🚫 Bloquear (no podrá publicar)'}</button>
+     <button class="btn" style="color:var(--red)" onclick="admWipe('${id}')">🗑️ Borrar todo su contenido</button></div>`}`;
+  const [f,p,r]=await Promise.all(['feed','pois','routes'].map(cnt));
+  const el=$('admUStats');if(el)el.innerHTML=[[f,'publicaciones'],[p,'puntos ciclistas'],[r,'rutas']].map(([v,l])=>`<div class="stat"><b class="num">${v}</b><span>${l}</span></div>`).join('');
+}
+async function admPts(id){
+  const u=admUsers.find(x=>x.id===id);const v=parseInt(prompt('Puntos de '+u.name,u.pts||0),10);if(isNaN(v)||v<0)return;
+  try{await db.collection('users').doc(id).set({pts:v},{merge:true});u.pts=v;toast('Puntos actualizados');admUser(id)}catch(e){toast('No se pudo (¿reglas publicadas?)')}
+}
+async function admBan(id,on){
+  const u=admUsers.find(x=>x.id===id);
+  if(!confirm(on?`¿Bloquear a ${u.name}? No podrá crear salidas, publicar, comentar ni añadir puntos o rutas.`:`¿Desbloquear a ${u.name}?`))return;
+  try{await db.collection('users').doc(id).set({banned:on},{merge:true});u.banned=on;toast(on?'Ciclista bloqueado':'Ciclista desbloqueado');admUser(id)}catch(e){toast('No se pudo (¿reglas publicadas?)')}
+}
+async function admWipe(id){
+  const u=admUsers.find(x=>x.id===id);
+  if(!confirm(`¿Borrar TODAS las publicaciones, puntos ciclistas y rutas de ${u.name}? No se puede deshacer.`))return;
+  let n=0;
+  for(const c of ['feed','pois','routes']){try{const s=await db.collection(c).where('uid','==',id).get();for(const d of s.docs){if(d.data().uid===id){await d.ref.delete();n++}}}catch(e){}}
+  try{const s=await db.collection('rides').where('byUid','==',id).get();for(const d of s.docs){if(d.data().byUid===id){await d.ref.delete();n++}}}catch(e){}
+  toast(`Borrados ${n} elementos`);admUser(id);
+}
+function admCSV(){
+  const rows=[['Nombre','Puntos','Nivel','Salidas creadas','Salidas en grupo','Grupo','Bloqueado','Alta']].concat(admUsers.map(u=>[u.name,u.pts||0,level(u.pts||0),u.created||0,u.done||0,u.group||'',u.banned?'sí':'no',tsMs(u.since)?iso(new Date(tsMs(u.since))):'']));
+  const csv='﻿'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ciclistas-'+iso(new Date())+'.csv';document.body.appendChild(a);a.click();a.remove();
+}
+
+/* Salidas */
+async function admRides(){
+  try{
+    const l=(await db.collection('rides').where('date','>=',iso(new Date())).orderBy('date').limit(200).get()).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour));
+    $('admBody').innerHTML=`<small style="color:var(--txt2);display:block;margin:0 4px 8px">${l.length} salidas próximas</small>`+(l.map(r=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${fmtDate(r.date)} · ${esc(r.hour)} — ${esc(r.title||'Salida en grupo')}</b><small>${esc(r.start)} · organiza ${esc(r.by)} · ${Object.keys(r.people||{}).length} apuntados${r.vis==='group'?' · 👥 grupo':''}</small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="mini" onclick="closeSheets();setTimeout(()=>openRide('${r.id}'),250)">Ver</button><button class="mini" style="color:var(--red)" onclick="admDel('rides','${r.id}')">🗑️</button></div></div>`).join('')||'<div class="empty">No hay salidas próximas</div>');
+  }catch(e){$('admBody').innerHTML='<div class="empty">No se pudo cargar</div>'}
+}
+
+/* Contenido */
+let admCol='feed';
+async function admCont(){
+  const tabs=[['feed','📰 Publicaciones'],['pois','☕ Puntos'],['routes','🗺️ Rutas'],['groups','👥 Grupos']];
+  $('admBody').innerHTML=`<div class="chips" style="margin-bottom:10px">${tabs.map(([k,t])=>`<button class="chip${admCol===k?' on':''}" onclick="admCol='${k}';admCont()">${t}</button>`).join('')}</div><div id="admCL"><div class="empty">Cargando…</div></div>`;
+  try{
+    const s=await db.collection(admCol).orderBy('createdAt','desc').limit(60).get();
+    const l=s.docs.map(d=>({id:d.id,...d.data()}));
+    const title=x=>admCol==='feed'?`${x.title} · ${fmtNum(x.km||0,1)} km`:admCol==='pois'?`${(POI_CAT[x.cat]||['📍'])[0]} ${x.name}`:admCol==='routes'?`${x.name} · ${x.km} km`:`${x.name} · código ${x.id} · ${Object.keys(x.members||{}).length} miembros`;
+    const who=x=>x.by||x.name||'';
+    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div><button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
+  }catch(e){$('admCL').innerHTML='<div class="empty">No se pudo cargar</div>'}
+}
+async function admDel(col,id){
+  if(!confirm('¿Borrar para todos?'))return;
+  try{await db.collection(col).doc(id).delete();toast('Borrado');admGo(admTab)}catch(e){toast('No se pudo borrar (¿reglas publicadas?)')}
+}
+
+/* Reportes */
 async function loadReports(){
   try{
     const s=await db.collection('reports').orderBy('createdAt','desc').limit(50).get();
     const l=s.docs.map(d=>({id:d.id,...d.data()}));
-    $('admReports').innerHTML=l.length?l.map(r=>`<div class="feed"><b>${COL[r.type]||r.type}: ${esc(r.title)}</b><small style="display:block;color:var(--txt2);margin:4px 0 10px">Reportado por ${esc(r.byName)}${r.reason?' · «'+esc(r.reason)+'»':''}</small>
+    $('admBody').innerHTML=l.length?l.map(r=>`<div class="feed"><b>${COL[r.type]||r.type}: ${esc(r.title)}</b><small style="display:block;color:var(--txt2);margin:4px 0 10px">Reportado por ${esc(r.byName)}${r.reason?' · «'+esc(r.reason)+'»':''}</small>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="mini" style="justify-content:center;color:var(--red)" onclick="admDelete('${r.type}','${r.refId}','${r.id}')">🗑️ Borrar contenido</button><button class="mini" style="justify-content:center" onclick="admDismiss('${r.id}')">✓ Descartar</button></div></div>`).join(''):'<div class="empty">✅ No hay reportes pendientes</div>';
-  }catch(e){$('admReports').innerHTML='<div class="empty">No se pudo cargar</div>'}
+  }catch(e){$('admBody').innerHTML='<div class="empty">No se pudo cargar</div>'}
 }
 async function admDelete(col,id,rep){
   if(!confirm('¿Borrar este contenido para todos?'))return;
-  try{await db.collection(col).doc(id).delete();if(rep)await db.collection('reports').doc(rep).delete();toast('Borrado');openAdmin()}catch(e){toast('No se pudo borrar (¿reglas publicadas?)')}
+  try{await db.collection(col).doc(id).delete();if(rep)await db.collection('reports').doc(rep).delete();toast('Borrado');admGo('rep')}catch(e){toast('No se pudo borrar (¿reglas publicadas?)')}
 }
 async function admDismiss(rep){try{await db.collection('reports').doc(rep).delete();loadReports()}catch(e){netErr(e)}}
+
+/* Aviso general para todos */
+async function admAnn(){
+  let a={};try{const s=await db.collection('config').doc('announce').get();a=s.exists?s.data():{}}catch(e){}
+  $('admBody').innerHTML=`<p style="color:var(--txt2);margin-bottom:10px">Este mensaje aparece arriba en Comunidad para todos los ciclistas.</p>
+   <textarea class="inp" id="annText" maxlength="200" placeholder="Ej. 🚴 Domingo 12: salida solidaria desde la Plaza Mayor a las 9:00">${esc(a.active?a.text:'')}</textarea>
+   <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <button class="btn btn-lime" onclick="admAnnSave(true)">📣 Publicar aviso</button>
+    ${a.active?'<button class="btn btn-line" onclick="admAnnSave(false)">Quitar aviso</button>':''}</div>
+   ${a.active?`<p style="color:var(--txt2);font-size:13px;margin-top:10px">Aviso activo desde ${fmtDate(iso(new Date(a.t||Date.now())))}</p>`:''}`;
+}
+async function admAnnSave(on){
+  const text=$('annText').value.trim().slice(0,200);if(on&&!text){toast('Escribe el aviso');return}
+  try{await db.collection('config').doc('announce').set({text:on?text:'',active:on,t:Date.now()});toast(on?'📣 Aviso publicado':'Aviso quitado');admAnn()}catch(e){toast('No se pudo (¿reglas publicadas?)')}
+}
+/* Mostrar el aviso a todos */
+let annData=null;
+function watchAnnounce(){if(!db)return;db.collection('config').doc('announce').onSnapshot(s=>{annData=s.exists?s.data():null;renderAnn()},()=>{})}
+function renderAnn(){
+  const el=$('annBox');if(!el)return;const a=annData;
+  if(!a||!a.active||!a.text||store.get('annHide',0)===a.t){el.innerHTML='';return}
+  el.innerHTML=`<div class="ann"><span style="font-size:22px">📣</span><p>${esc(a.text)}</p><button class="x" style="width:30px;height:30px;flex-shrink:0" aria-label="Cerrar aviso" onclick="store.set('annHide',${a.t});renderAnn()"><svg class="i" viewBox="0 0 24 24" style="width:15px"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`;
+}
 
 
 /* ===================================================================
@@ -2898,7 +3014,7 @@ function startFirebase(){
       if((me?.group||null)!==(myGroup?.id||null)||!groupUnsub)watchGroup();
       checkBadges();
     },e=>console.error(e));
-    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();
+    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();
     // Salidas próximas (en vivo)
     db.collection('rides').where('date','>=',iso(new Date())).orderBy('date').limit(150).onSnapshot(s=>{
       rides=s.docs.map(d=>({id:d.id,...d.data()}));ridesLoaded=true;renderRides();drawRideMarkers();
