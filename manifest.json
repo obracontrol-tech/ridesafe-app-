@@ -1,6 +1,6 @@
 {
-  "name": "RideSafe IA",
-  "short_name": "RideSafe",
+  "name": "VeloGo",
+  "short_name": "VeloGo",
   "description": "Organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.",
   "start_url": "./index.html",
   "scope": "./",
