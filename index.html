@@ -622,8 +622,10 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
   <div class="head">
     <div class="avatar" data-ini>V</div>
     <h1>Actividades</h1>
+    <button class="mini" id="actUpBtn" style="margin-left:auto;display:none" onclick="pickFile()">⬆️ Subir</button>
   </div>
-  <div class="hero" style="min-height:200px">
+  <div class="hero" id="actHero" style="min-height:200px">
+    <button class="x" aria-label="Cerrar" onclick="hideActHero(true)" style="position:absolute;top:12px;right:12px;z-index:3;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><path d="M20 120 60 60l30 30 40-60 50 90"/><circle cx="130" cy="30" r="8"/></g></svg>
     <h2>Sube tu salida</h2>
     <p>Importa el archivo GPX o TCX de tu reloj o ciclocomputador.</p>
@@ -677,7 +679,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -991,6 +993,8 @@ function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.clas
   });
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.sheet.show'))closeSheets()});
 })();
+function hideActHero(save){$('actHero').style.display='none';$('actUpBtn').style.display='inline-flex';if(save)store.set('hideActHero',1)}
+if(store.get('hideActHero',0))hideActHero(false);
 function togglePlus(){$('sh-plus').classList.contains('show')?closeSheets():openSheet('sh-plus')}
 
 /* ===== Chips ===== */
