@@ -251,6 +251,11 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 @keyframes alPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 .mbr.alert b{animation:mbrAl 1s infinite;border-color:#EF4444}
 @keyframes mbrAl{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.9)}50%{box-shadow:0 0 0 16px rgba(239,68,68,0)}}
+.clogo{width:44px;height:44px;border-radius:12px;object-fit:contain;background:#fff;padding:3px;flex-shrink:0;border:1px solid var(--line)}
+.clogo.sm{width:28px;height:28px;border-radius:8px;padding:2px}
+.clubhead{display:flex;flex-direction:column;align-items:center;text-align:center;margin:-6px 0 14px}
+.clubhead img{width:120px;height:120px;border-radius:26px;object-fit:contain;background:#fff;padding:8px;border:2px solid var(--lime);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.clubbadge{display:inline-block;margin-top:10px;background:var(--lime);color:#0E1A2B;font-weight:800;font-size:12px;letter-spacing:.06em;padding:4px 12px;border-radius:20px}
 .mbr{display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
 .mbr b{width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;color:#0E1A2B;font-weight:800}
 .mbr span{font-size:11px;font-weight:800;background:#0E1A2B;color:#fff;padding:1px 6px;border-radius:8px;margin-top:2px}
@@ -637,7 +642,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -952,7 +957,7 @@ function rideCard(r,full){
   const meet=r.meet&&r.meet!==r.start?`<div class="pt"><span class="ico">📍</span><span>Encuentro: <b>${esc(r.meet)}</b>${r.meetHour?' · '+esc(r.meetHour):''}</span></div>`:`<div class="pt"><span class="ico">📍</span><span>Encuentro en el mismo punto</span></div>`;
   return `<div class="ride${full?' full':''}" onclick="openRide('${r.id}')">
     <div class="when"><div><div class="date">${fmtDate(r.date)}</div><div class="hour num">${esc(r.hour)}</div></div>
-    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
     ${rideLL(r)?`<span class="tag wx" data-wx="${r.id}" style="display:none;margin-top:4px"></span>`:''}
@@ -1026,7 +1031,9 @@ async function cardRender(r){
   // Cabecera: marca + etiqueta
   g.textBaseline='alphabetic';g.textAlign='left';g.font=F(800,50);g.fillStyle='#fff';g.fillText('RideSafe',M,105);
   const bw=g.measureText('RideSafe ').width;g.fillStyle=LIME;g.fillText('IA',M+bw,105);
-  g.font=F(800,26);const tag='SALIDA EN GRUPO';const tw=g.measureText(tag).width+44;rr(W-M-tw,62,tw,56,28);g.fillStyle=LIME;g.fill();g.fillStyle=NAVY;g.textAlign='center';g.fillText(tag,W-M-tw/2,100);g.textAlign='left';
+  const lg=rideLogo(r);const lgi=lg?await loadImg(lg):null;
+  g.font=F(800,26);const tag=lgi?'SALIDA DEL CLUB':'SALIDA EN GRUPO';const tw=g.measureText(tag).width+44;rr(W-M-tw,62,tw,56,28);g.fillStyle=LIME;g.fill();g.fillStyle=NAVY;g.textAlign='center';g.fillText(tag,W-M-tw/2,100);g.textAlign='left';
+  if(lgi){const L=110,lx=W-M-tw-L-20,ly=35;rr(lx,ly,L,L,22);g.fillStyle='#fff';g.fill();const k=Math.min((L-14)/lgi.naturalWidth,(L-14)/lgi.naturalHeight);g.drawImage(lgi,lx+(L-lgi.naturalWidth*k)/2,ly+(L-lgi.naturalHeight*k)/2,lgi.naturalWidth*k,lgi.naturalHeight*k)}
   // Título
   g.font=F(800,72);g.fillStyle='#fff';const tl=wrap(r.title||'Salida en grupo',W-2*M,2);tl.forEach((l,i)=>g.fillText(l,M,215+i*84));
   let y=215+(tl.length-1)*84+40;
@@ -1102,6 +1109,7 @@ async function openRide(id,keep){
   openRideId=id;const inR=joined(r);const meetPt=r.meet||r.start;const isToday=r.date===iso(new Date());const p=names(r);
   $('rideBody').innerHTML=`
    <h2>${esc(r.title||'Salida en grupo')} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+   ${rideLogo(r)?`<div class="li" style="cursor:default;margin:-4px 0 12px"><img class="clogo" src="${rideLogo(r)}" alt=""><div><small>Salida del club</small><b>${esc(myGroup.name)}</b></div></div>`:''}
    <div class="stats" style="margin-bottom:16px">
      <div class="stat"><b style="font-size:18px">${fmtDate(r.date)}</b><span>día</span></div>
      <div class="stat"><b class="num">${esc(r.hour)}</b><span>hora de salida</span></div>
@@ -1235,6 +1243,29 @@ const CODE_CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const newCode=()=>Array.from({length:6},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
 const gNames=g=>Object.values(g?.members||{});
 
+/* ===== v2.1 — Club oficial con escudo (solo los grupos que el administrador marca como club) ===== */
+const clubLogo=g=>g&&g.club&&g.logo?g.logo:null;
+const rideLogo=r=>r&&r.group&&myGroup&&r.group===myGroup.id?clubLogo(myGroup):null;
+function pickLogo(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>res(i.files[0]||null);i.click()})}
+async function makeLogo(file){
+  const url=URL.createObjectURL(file);const img=await new Promise((ok,ko)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=ko;m.src=url});
+  for(const S of [256,200,160]){
+    const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+    const r=Math.min(S/img.naturalWidth,S/img.naturalHeight),w=img.naturalWidth*r,h=img.naturalHeight*r;g.drawImage(img,(S-w)/2,(S-h)/2,w,h);
+    let d=c.toDataURL('image/webp',0.85);if(!d.startsWith('data:image/webp'))d=c.toDataURL('image/png');
+    if(d.length<140000)return d;
+  }
+  throw new Error('grande');
+}
+async function setClubLogo(gid){
+  const f=await pickLogo();if(!f)return;
+  let d;try{d=await makeLogo(f)}catch(e){toast('No se pudo usar esa imagen. Prueba con otra (PNG o JPG)');return}
+  try{await db.collection('groups').doc(gid).update({logo:d});toast('✅ Escudo guardado');if(admTab==='cont'&&$('admCL'))admCont()}catch(e){toast('No se pudo guardar (¿reglas publicadas?)')}
+}
+async function delClubLogo(gid){if(!confirm('¿Quitar el escudo del club?'))return;try{await db.collection('groups').doc(gid).update({logo:FV.delete()});toast('Escudo quitado');if($('admCL'))admCont()}catch(e){netErr(e)}}
+async function admClub(gid,on){
+  try{await db.collection('groups').doc(gid).update({club:on});toast(on?'🏅 Ahora es club oficial: ya puede poner su escudo':'Ya no es club oficial');if($('admCL'))admCont()}catch(e){toast('No se pudo cambiar (¿reglas publicadas?)')}
+}
 /* ---- Mi grupo ---- */
 function watchGroup(){
   if(groupUnsub){groupUnsub();groupUnsub=null}
@@ -1248,7 +1279,7 @@ function watchGroup(){
 }
 function renderGroup(){
   const g=myGroup;
-  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)"><span class="em">👥</span><div><b>${esc(g.name)}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b></small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
+  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b></small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún grupo
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="createGroup()">➕ Crear grupo</button><button class="btn btn-line" onclick="joinGroupAsk()">🔗 Unirme</button></div></div>`;
   $('visRow').style.display=g?'block':'none';
@@ -1302,7 +1333,10 @@ function shareGroup(){
 function openGroup(){
   const g=myGroup;if(!g){renderGroup();toast('Crea un grupo o únete con un código');go('comunidad');return}
   const gr=upcoming().filter(r=>r.group===g.id||(r.byUid&&g.members[r.byUid]));
+  const canLogo=g.club&&(isAdmin||g.byUid===uid);
   $('rideBody').innerHTML=`<h2>${esc(g.name)} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+   ${g.club?`<div class="clubhead">${clubLogo(g)?`<img src="${clubLogo(g)}" alt="Escudo de ${esc(g.name)}">`:'<div class="empty" style="padding:10px">Este club aún no tiene escudo</div>'}<span class="clubbadge">🏅 CLUB OFICIAL · ${gNames(g).length} ${gNames(g).length===1?"CICLISTA":"CICLISTAS"}</span></div>`:''}
+   ${canLogo?`<div style="display:grid;grid-template-columns:${clubLogo(g)?'1fr 1fr':'1fr'};gap:10px;margin-bottom:14px"><button class="btn btn-line" onclick="setClubLogo('${g.id}')">🖼️ ${clubLogo(g)?'Cambiar escudo':'Poner escudo del club'}</button>${clubLogo(g)?`<button class="btn btn-line" onclick="delClubLogo('${g.id}')">Quitar escudo</button>`:''}</div>`:''}
    <div class="codebox"><small>Código del grupo</small><b>${g.id}</b></div>
    <button class="btn btn-lime" style="margin-bottom:10px" onclick="shareGroup()">💬 Invitar por WhatsApp</button>
    <button class="btn btn-line" style="margin-bottom:18px" onclick="closeSheets();openCreate();setTimeout(()=>{const c=document.querySelectorAll('#visChips .chip')[1];c&&c.click()},300)">📅 Crear salida para el grupo</button>
@@ -1949,7 +1983,7 @@ async function admCont(){
     const l=s.docs.map(d=>({id:d.id,...d.data()}));
     const title=x=>admCol==='feed'?`${x.title} · ${fmtNum(x.km||0,1)} km`:admCol==='pois'?`${(POI_CAT[x.cat]||['📍'])[0]} ${x.name}`:admCol==='routes'?`${x.name} · ${x.km} km`:`${x.name} · código ${x.id} · ${Object.keys(x.members||{}).length} miembros`;
     const who=x=>x.by||x.name||'';
-    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div><button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
+    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div>${admCol==='groups'?`<div style="display:flex;gap:6px;flex-shrink:0">${x.club?`<button class="mini" onclick="setClubLogo('${x.id}')" title="Escudo">${x.logo?`<img src="${x.logo}" style="width:22px;height:22px;object-fit:contain;background:#fff;border-radius:5px">`:'🖼️'}</button>`:''}<button class="mini" style="${x.club?'background:var(--lime);color:#0E1A2B':''}" onclick="admClub('${x.id}',${!x.club})">🏅${x.club?' Club':''}</button></div>`:''}<button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
   }catch(e){$('admCL').innerHTML='<div class="empty">No se pudo cargar</div>'}
 }
 async function admDel(col,id){
