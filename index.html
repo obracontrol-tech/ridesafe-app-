@@ -478,6 +478,8 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvbanner.off{background:rgba(127,29,29,.8)!important}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.78)!important}}
 body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;bottom:auto!important}
+.xauto{position:sticky;top:0;float:right;margin:-2px -4px 0 8px;z-index:3;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px solid var(--line)}
+.sheet .x{flex-shrink:0}
 </style>
 </head>
 <body>
@@ -674,7 +676,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -963,6 +965,31 @@ function go(tab){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{closeSheets();go(t.dataset.tab)});
 function openSheet(id){closeSheets(true);$('scrim').classList.add('show');$(id).classList.add('show');$(id).scrollTop=0;if(id==='sh-plus')$('plusBtn').classList.add('open')}
 function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null;if(typeof stopChat==='function')stopChat()}}
+/* v2.3 — Cerrar cualquier ventana: botón ✕ siempre visible, botón "atrás" del móvil y deslizar hacia abajo */
+(function(){
+  const X='<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+  const fix=sh=>{const own=[...sh.querySelectorAll('.x')].some(b=>!b.classList.contains('xauto'));sh.querySelector('.xauto').style.display=own?'none':'grid'};
+  document.querySelectorAll('.sheet').forEach(sh=>{
+    const b=document.createElement('button');b.className='x xauto';b.setAttribute('aria-label','Cerrar');b.innerHTML=X;b.onclick=e=>{e.stopPropagation();closeSheets()};
+    sh.prepend(b);fix(sh);new MutationObserver(()=>fix(sh)).observe(sh,{childList:true,subtree:true});
+    // deslizar hacia abajo desde la parte de arriba para cerrar
+    let y0=null;
+    sh.addEventListener('touchstart',e=>{y0=(sh.scrollTop<=0&&e.touches[0].clientY-sh.getBoundingClientRect().top<90)?e.touches[0].clientY:null},{passive:true});
+    sh.addEventListener('touchmove',e=>{if(y0==null)return;const d=e.touches[0].clientY-y0;if(d>0)sh.style.transform=`translateY(${d}px)`},{passive:true});
+    sh.addEventListener('touchend',e=>{if(y0==null)return;const d=(e.changedTouches[0].clientY-y0);sh.style.transform='';y0=null;if(d>90)closeSheets()});
+  });
+  // Botón "atrás" de Android: cierra la ventana en vez de salir de la app
+  let pushed=false;
+  const _open=openSheet,_close=closeSheets;
+  openSheet=function(id){_open(id);if(!pushed){try{history.pushState({sheet:1},'');pushed=true}catch(e){}}};
+  window.addEventListener('popstate',()=>{
+    pushed=false;
+    const al=document.getElementById('alarmBox');
+    if(al&&al.classList.contains('show')){if(typeof alarmClose==='function')alarmClose();try{history.pushState({sheet:1},'');pushed=true}catch(e){}return}
+    if(document.querySelector('.sheet.show')){pushed=false;_close()}
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.sheet.show'))closeSheets()});
+})();
 function togglePlus(){$('sh-plus').classList.contains('show')?closeSheets():openSheet('sh-plus')}
 
 /* ===== Chips ===== */
