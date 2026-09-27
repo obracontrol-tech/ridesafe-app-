@@ -642,7 +642,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.1.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -947,6 +947,10 @@ function ready(){
   if(me.banned){alert('Tu cuenta está bloqueada por no respetar las normas de la comunidad. Si crees que es un error escribe a info@ridesafeia.es');return false}
   return true;
 }
+function fbErr(e,what){console.error(e);const c=e&&e.code||'';
+  if(/permission/.test(c))alert('Firebase no deja '+what+'.\n\nCausa más probable: las reglas nuevas no están publicadas o tienen un error.\nFirebase → Firestore Database → Reglas → pegar firestore.rules → Publicar.\n\n(Código: '+c+')');
+  else if(!navigator.onLine)toast('Sin conexión. Inténtalo con cobertura');
+  else alert('No se pudo '+what+'.\n(Código: '+(c||e&&e.message||'desconocido')+')');}
 function netErr(e){console.error(e);toast(navigator.onLine?'No se pudo guardar. Inténtalo de nuevo':'Sin conexión. Se guardará al recuperar cobertura')}
 
 /* ===== Salidas ===== */
@@ -1260,11 +1264,11 @@ async function makeLogo(file){
 async function setClubLogo(gid){
   const f=await pickLogo();if(!f)return;
   let d;try{d=await makeLogo(f)}catch(e){toast('No se pudo usar esa imagen. Prueba con otra (PNG o JPG)');return}
-  try{await db.collection('groups').doc(gid).update({logo:d});toast('✅ Escudo guardado');if(admTab==='cont'&&$('admCL'))admCont()}catch(e){toast('No se pudo guardar (¿reglas publicadas?)')}
+  try{await db.collection('groups').doc(gid).update(isAdmin?{logo:d,club:true}:{logo:d});toast('✅ Escudo guardado');if($('admCL'))admCont()}catch(e){fbErr(e,'guardar el escudo')}
 }
 async function delClubLogo(gid){if(!confirm('¿Quitar el escudo del club?'))return;try{await db.collection('groups').doc(gid).update({logo:FV.delete()});toast('Escudo quitado');if($('admCL'))admCont()}catch(e){netErr(e)}}
 async function admClub(gid,on){
-  try{await db.collection('groups').doc(gid).update({club:on});toast(on?'🏅 Ahora es club oficial: ya puede poner su escudo':'Ya no es club oficial');if($('admCL'))admCont()}catch(e){toast('No se pudo cambiar (¿reglas publicadas?)')}
+  try{await db.collection('groups').doc(gid).update({club:on});toast(on?'🏅 Ahora es club oficial: ya puede poner su escudo':'Ya no es club oficial');if($('admCL'))admCont()}catch(e){fbErr(e,'cambiar el club')}
 }
 /* ---- Mi grupo ---- */
 function watchGroup(){
@@ -1295,7 +1299,7 @@ async function createGroup(){
     await db.collection('users').doc(uid).set({group:code},{merge:true});
     me.group=code;store.set('me',me);watchGroup();
     toast('¡Grupo creado! Comparte el código '+code);setTimeout(openGroup,400);
-  }catch(e){netErr(e)}
+  }catch(e){fbErr(e,'crear el grupo')}
 }
 function joinGroupAsk(){const c=(prompt('Escribe el código del grupo (6 letras/números)','')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c)joinGroup(c)}
 async function joinGroup(code){
@@ -1333,10 +1337,10 @@ function shareGroup(){
 function openGroup(){
   const g=myGroup;if(!g){renderGroup();toast('Crea un grupo o únete con un código');go('comunidad');return}
   const gr=upcoming().filter(r=>r.group===g.id||(r.byUid&&g.members[r.byUid]));
-  const canLogo=g.club&&(isAdmin||g.byUid===uid);
+  const canLogo=isAdmin||(g.club&&g.byUid===uid);
   $('rideBody').innerHTML=`<h2>${esc(g.name)} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
    ${g.club?`<div class="clubhead">${clubLogo(g)?`<img src="${clubLogo(g)}" alt="Escudo de ${esc(g.name)}">`:'<div class="empty" style="padding:10px">Este club aún no tiene escudo</div>'}<span class="clubbadge">🏅 CLUB OFICIAL · ${gNames(g).length} ${gNames(g).length===1?"CICLISTA":"CICLISTAS"}</span></div>`:''}
-   ${canLogo?`<div style="display:grid;grid-template-columns:${clubLogo(g)?'1fr 1fr':'1fr'};gap:10px;margin-bottom:14px"><button class="btn btn-line" onclick="setClubLogo('${g.id}')">🖼️ ${clubLogo(g)?'Cambiar escudo':'Poner escudo del club'}</button>${clubLogo(g)?`<button class="btn btn-line" onclick="delClubLogo('${g.id}')">Quitar escudo</button>`:''}</div>`:''}
+   ${canLogo?`<div style="display:grid;grid-template-columns:${clubLogo(g)?'1fr 1fr':'1fr'};gap:10px;margin-bottom:14px"><button class="btn btn-line" onclick="setClubLogo('${g.id}')">${clubLogo(g)?'🖼️ Cambiar escudo':g.club?'🖼️ Poner escudo del club':'🏅 Hacer club oficial y poner escudo'}</button>${clubLogo(g)?`<button class="btn btn-line" onclick="delClubLogo('${g.id}')">Quitar escudo</button>`:''}</div>`:''}
    <div class="codebox"><small>Código del grupo</small><b>${g.id}</b></div>
    <button class="btn btn-lime" style="margin-bottom:10px" onclick="shareGroup()">💬 Invitar por WhatsApp</button>
    <button class="btn btn-line" style="margin-bottom:18px" onclick="closeSheets();openCreate();setTimeout(()=>{const c=document.querySelectorAll('#visChips .chip')[1];c&&c.click()},300)">📅 Crear salida para el grupo</button>
