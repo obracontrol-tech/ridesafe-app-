@@ -424,6 +424,11 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .dots i{width:10px;height:10px;border-radius:5px;background:var(--line);transition:.2s}
 .dots i.on{width:28px;background:var(--lime)}
 #onb input{margin-top:6px;text-align:center;max-width:320px}
+#layMenu{position:fixed;left:50%;bottom:calc(118px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;background:var(--card,#fff);color:var(--txt);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:10px;width:min(92vw,340px)}
+#layMenu .lm-t{font-weight:800;font-size:13px;opacity:.75;padding:4px 8px 8px}
+#layMenu button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:2px solid transparent;border-radius:12px;padding:10px;color:inherit;font:inherit;cursor:pointer}
+#layMenu button span{font-size:24px}#layMenu button b{display:block;font-size:15px}#layMenu button small{font-size:12px;opacity:.7}
+#layMenu button.on{border-color:#c6f432;background:rgba(198,244,50,.15)}
 </style>
 </head>
 <body>
@@ -617,7 +622,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -810,7 +815,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
   <div class="cdot"></div>
   <div class="cpin" id="cpin"><svg viewBox="0 0 40 52" width="40" height="52"><path d="M20 51s17-17.5 17-30A17 17 0 0 0 3 21c0 12.5 17 30 17 30z" fill="#22C55E" stroke="#fff" stroke-width="3"/><circle cx="20" cy="20" r="6.5" fill="#fff"/></svg></div>
   <div class="pside">
-    <button aria-label="Satélite" onclick="pickSat()"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button>
+    <button aria-label="Tipo de mapa" onclick="pickSat()"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button>
     <button aria-label="Mi ubicación" onclick="pickLocate()"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button>
   </div>
   <div class="pbottom">
@@ -1946,8 +1951,37 @@ function addSat(m){
   m.addSource('sat',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'© Esri'});
   m.addLayer({id:'sat',type:'raster',source:'sat',layout:{visibility:'none'}},first?first.id:undefined);
 }
-function newMap(opt){const m=new maplibregl.Map({style:BASE_STYLE,...opt});m.on('load',()=>addSat(m));return m}
-function satToggle(m,on){if(!m)return;if(!m.getLayer('sat'))addSat(m);if(m.getLayer('sat'))m.setLayoutProperty('sat','visibility',on?'visible':'none')}
+/* v1.8 — Selector de mapa: Normal (OpenFreeMap) · Outdoors (Mapbox) · Satélite (Esri) */
+let LAYER=(()=>{try{return localStorage.getItem('velogo_layer')||'normal'}catch(e){return 'normal'}})();
+function addMbo(m){
+  if(!m||m.getSource('mbo'))return;
+  m.addSource('mbo',{type:'raster',tiles:['https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/512/{z}/{x}/{y}@2x?access_token='+MAPBOX_TOKEN],tileSize:512,maxzoom:22,attribution:'© <a href="https://www.mapbox.com/about/maps/" target="_blank">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'});
+  m.addLayer({id:'mbo',type:'raster',source:'mbo',layout:{visibility:'none'}});
+}
+function setLayer(m,k){
+  if(!m||!m.isStyleLoaded||!m.getStyle())return;
+  if(k==='outdoors'&&(m.__noMbo||!navigator.onLine))k='normal';
+  if(!m.getLayer('sat'))addSat(m);
+  if(k==='outdoors'&&!m.getLayer('mbo'))addMbo(m);
+  if(m.getLayer('sat'))m.setLayoutProperty('sat','visibility',k==='sat'?'visible':'none');
+  if(m.getLayer('mbo'))m.setLayoutProperty('mbo','visibility',k==='outdoors'?'visible':'none');
+  m.__layer=k;
+}
+function newMap(opt){const m=new maplibregl.Map({style:BASE_STYLE,...opt});m.__noMbo=opt&&opt.attributionControl===false;m.on('load',()=>{addSat(m);if(LAYER!=='normal')setLayer(m,LAYER)});return m}
+function satToggle(m,on){setLayer(m,on?'sat':'normal')}
+const LAYER_NAMES={normal:'Mapa normal',outdoors:'Outdoors (ciclismo)',sat:'Satélite'};
+function layerMenu(m){
+  if(!m)return;let d=$('layMenu');if(d){d.remove();return}
+  d=document.createElement('div');d.id='layMenu';
+  const cur=m.__layer||'normal';
+  d.innerHTML='<div class="lm-t">Tipo de mapa</div>'+[['normal','🗺️','Normal','Funciona sin conexión'],['outdoors','⛰️','Outdoors','Relieve, senderos y caminos'],['sat','🛰️','Satélite','Foto aérea']].map(([k,e,t,sub])=>`<button class="${k===cur?'on':''}" data-k="${k}"><span>${e}</span><div><b>${t}</b><small>${sub}</small></div></button>`).join('');
+  d.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const k=b.dataset.k;
+    if(k==='outdoors'&&!navigator.onLine){toast('Outdoors necesita conexión');return}
+    LAYER=k;try{localStorage.setItem('velogo_layer',k)}catch(e){}
+    setLayer(m,k);d.remove();toast(LAYER_NAMES[k])};
+  document.body.appendChild(d);
+  setTimeout(()=>document.addEventListener('pointerdown',function f(ev){if(!d.contains(ev.target)){d.remove();document.removeEventListener('pointerdown',f,true)}},true),0);
+}
 
 /* Cálculo de teselas */
 const lon2x=(lon,z)=>Math.floor((lon+180)/360*2**z);
@@ -2547,7 +2581,7 @@ function pickLocate(silent){
   if(!navigator.geolocation)return;
   navigator.geolocation.getCurrentPosition(p=>{pmap&&pmap.flyTo({center:[p.coords.longitude,p.coords.latitude],zoom:17})},()=>{if(silent!==true)toast('Activa la ubicación del móvil')},{enableHighAccuracy:true,timeout:10000});
 }
-function pickSat(){if(!pmap)return;pSat=!pSat;satToggle(pmap,pSat)}
+function pickSat(){if(!pmap)return;layerMenu(pmap)}
 function closePicker(){$('picker').classList.remove('show');if(pickCb){pickCb=null}}
 async function confirmPick(){
   if(!pCur)return;
@@ -2568,7 +2602,7 @@ $('pQ').addEventListener('keydown',async e=>{
   }catch(_){toast('Sin conexión')}
 });
 
-function toggleLayer(){if(!map)return;sat=!sat;satToggle(map,sat);toast(sat?'Vista satélite':'Vista mapa')}
+function toggleLayer(){if(!map)return;layerMenu(map)}
 function segBike(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(plan.active&&plan.route){plan.route.mins=estMins(plan.route.km,plan.route.up||0);renderPlan()}}
 $('placeQ').addEventListener('keydown',async e=>{
   if(e.key!=='Enter'||!e.target.value.trim())return;
