@@ -448,6 +448,36 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #layMenu button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:2px solid transparent;border-radius:12px;padding:10px;color:inherit;font:inherit;cursor:pointer}
 #layMenu button span{font-size:24px}#layMenu button b{display:block;font-size:15px}#layMenu button small{font-size:12px;opacity:.7}
 #layMenu button.on{border-color:#c6f432;background:rgba(198,244,50,.15)}
+
+/* v2.2 — Pantalla de grabación: controles flotantes y translúcidos, el mapa se ve detrás */
+.lvpanel{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0 10px calc(10px + env(safe-area-inset-bottom))!important;gap:8px!important;max-height:none!important;overflow:visible!important;pointer-events:none}
+.lvpanel>*{pointer-events:auto}
+.lvglass,.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.52)!important;-webkit-backdrop-filter:blur(12px) saturate(150%);backdrop-filter:blur(12px) saturate(150%);border:1px solid rgba(255,255,255,.16)!important;color:#fff!important;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.lvstate{font-size:12px;padding:4px 12px;box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:.95}
+.lvstats{display:flex;align-items:center;gap:6px;border-radius:22px;padding:8px 10px}
+.lvstats .lvbig{flex:0 0 auto;padding:0 8px 0 4px;text-align:left;border-right:1px solid rgba(255,255,255,.18)}
+.lvstats .lvbig b{font-size:44px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.lvstats .lvbig span{display:block;margin:0;font-size:11px;color:rgba(255,255,255,.8)}
+.lvstats .lvgrid{flex:1;gap:2px}
+.lvgrid div{background:transparent!important;border:0!important;padding:4px 2px!important}
+.lvgrid b{font-size:19px!important;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35)}
+.lvgrid span{font-size:11px!important;color:rgba(255,255,255,.78)!important}
+.lvgrid.nav{border-radius:18px;padding:4px 6px;background:rgba(20,83,45,.55);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(200,220,60,.5)}
+.lvgroup{border-radius:18px!important;padding:8px 12px!important;font-size:13px!important;max-height:84px;overflow-y:auto}
+.lvgroup .gm{color:#fff}
+.lvalert{margin-bottom:0!important;gap:6px!important}
+.lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
+.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
+.lvbtns{gap:6px!important}
+.lvbtns button{min-height:50px!important;font-size:16px!important;border-radius:25px!important}
+.lvbtns .lvs{background:rgba(239,68,68,.88)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.lvbtns .lvsos{width:50px!important;background:rgba(127,29,29,.85)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.lvside button{width:48px!important;height:48px!important;font-size:20px!important}
+.lvside button.on{background:rgba(239,68,68,.85)!important}
+.lvbanner{background:rgba(20,83,45,.78)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.18)}
+.lvbanner.off{background:rgba(127,29,29,.8)!important}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.78)!important}}
+body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;bottom:auto!important}
 </style>
 </head>
 <body>
@@ -485,8 +515,10 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
   <div class="lv lvside"><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
   <div class="lv lvpanel">
     <span class="lvstate" id="lvState">● GRABANDO</span>
+    <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
+    </div>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
     <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button></div>
@@ -642,7 +674,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.1.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
