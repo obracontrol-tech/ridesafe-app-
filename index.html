@@ -55,7 +55,8 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .hero{position:relative;border-radius:26px;overflow:hidden;padding:26px 22px;min-height:250px;background:
   linear-gradient(90deg,rgba(14,26,43,.96) 40%,rgba(14,26,43,.35)),
   radial-gradient(circle at 85% 30%,#3b5a3a 0,#1a2d44 45%,#0E1A2B 80%);margin-bottom:22px}
-.hero .deco{position:absolute;right:-14px;bottom:-10px;width:190px;opacity:.9}
+.hero .deco{position:absolute;right:-18px;top:4px;bottom:auto;width:240px;opacity:.28;z-index:0;pointer-events:none}
+.hero h2,.hero p{z-index:1}.hero .btn{z-index:2}
 .hero h2{font-size:28px;line-height:1.15;font-weight:800;max-width:230px;position:relative;color:#fff}
 .hero p{color:#C9D3E0;margin:10px 0 18px;max-width:240px;font-size:15px;position:relative}
 .btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:40px;font-weight:700;font-size:17px;padding:0 22px;width:100%}
@@ -676,7 +677,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
