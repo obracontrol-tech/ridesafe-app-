@@ -237,6 +237,20 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgroup b{display:block;margin-bottom:6px}
 .gm{display:inline-flex;align-items:center;gap:6px;margin:3px 10px 3px 0;color:var(--txt2)}
 .gm i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:11px;color:#0E1A2B}
+.lvalert{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.lvalert button{min-height:50px;border-radius:16px;font-weight:800;font-size:15px;background:var(--card2);color:var(--txt);border:2px solid var(--line)}
+.lvalert .a-flat{border-color:#F59E0B}.lvalert .a-wait{border-color:#60A5FA}.lvalert .a-help{border-color:#EF4444;background:#7F1D1D;color:#fff}
+#alarmBox{position:fixed;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;color:#fff;animation:alFlash 1s infinite}
+#alarmBox.show{display:flex}
+#alarmBox .al-ico{font-size:110px;line-height:1;margin-bottom:10px;animation:alPulse .8s infinite}
+#alarmBox h2{font-size:38px;line-height:1.1;margin:0 0 10px;font-weight:800}
+#alarmBox p{font-size:22px;font-weight:700;margin:0 0 26px;opacity:.95}
+#alarmBox button{width:100%;max-width:360px;min-height:64px;border-radius:32px;font-size:20px;font-weight:800;margin-top:10px;border:0}
+#alarmBox .al-main{background:#fff;color:#0E1A2B}#alarmBox .al-sec{background:rgba(0,0,0,.35);color:#fff;border:2px solid rgba(255,255,255,.6)}
+@keyframes alFlash{0%,100%{background:var(--alc,#B45309)}50%{background:var(--alc2,#7C2D12)}}
+@keyframes alPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.mbr.alert b{animation:mbrAl 1s infinite;border-color:#EF4444}
+@keyframes mbrAl{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.9)}50%{box-shadow:0 0 0 16px rgba(239,68,68,0)}}
 .mbr{display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
 .mbr b{width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;color:#0E1A2B;font-weight:800}
 .mbr span{font-size:11px;font-weight:800;background:#0E1A2B;color:#fff;padding:1px 6px;border-radius:8px;margin-top:2px}
@@ -470,6 +484,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <div class="lvgrid"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
+    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button></div>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
@@ -622,7 +637,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 1.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -755,6 +770,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 </div>
 
 <!-- Foto con tus datos -->
+<div id="alarmBox" role="alertdialog" aria-live="assertive"><div class="al-ico" id="alIco">🔧</div><h2 id="alTitle"></h2><p id="alSub"></p><div id="alBtns" style="width:100%;display:flex;flex-direction:column;align-items:center"></div></div>
 <div class="sheet" id="sh-card">
   <div class="grab"></div>
   <h2>Tarjeta de la salida <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
@@ -2015,6 +2031,7 @@ function inviteFriends(){
 const HELP=[
  ['📅','¿Cómo organizo una salida?','Pulsa el botón verde ＋ → "Crear salida". Pon día, hora, punto de salida y de encuentro (puedes marcarlos en el mapa). Publica y compártela por WhatsApp.'],
  ['✋','¿Cómo me apunto?','Abre la salida (desde Comunidad o desde el enlace de WhatsApp) y pulsa "Me apunto". Puedes añadirla a tu calendario con avisos.'],
+ ['🔧','¿Y si pincho en la salida?','Mientras grabas la salida en grupo pulsa 🔧 Pinchazo, ✋ Esperad o 🆘 Ayuda. A todo el pelotón le suena una sirena fuerte, vibra el móvil y ve en pantalla quién es y dónde está. Cuando lo arregles pulsa ✅ Solucionado. Pruébalo en Comunidad → Probar aviso de pinchazo (sube el volumen).'],
  ['🛰️','¿Qué es el Pelotón en vivo?','El día de la salida pulsa "Empezar salida": todos los apuntados os veis en el mapa y la app avisa si alguien se queda atrás más de 1 km.'],
  ['🗺️','¿Cómo planifico una ruta?','Rutas → Planificar: de A a B, por etapas o circular. Verás km, desnivel y el perfil. Pulsa "▲ Iniciar" para navegar con voz.'],
  ['⏺️','¿Cómo grabo una salida?','Rutas → "Rec · INICIAR". Mantén la pantalla encendida. Al terminar, pulsa ⏹ Terminar y se guarda con sus puntos y su foto.'],
@@ -2226,6 +2243,75 @@ function renderChat(){
    :'<div class="empty" style="padding:12px">Aún no hay comentarios. ¡Escribe el primero!</div>';
   l.scrollTop=l.scrollHeight;
 }
+/* ===== v2.0 — Avisos al pelotón: pinchazo, esperad, ayuda (pantalla + sirena) ===== */
+const ALERTS={
+  flat:{ico:'🔧',t:'ha pinchado',say:'pinchazo',msg:'🔧 He pinchado / avería. ¡Esperadme!',c1:'#D97706',c2:'#7C2D12'},
+  wait:{ico:'✋',t:'pide que esperéis',say:'esperad',msg:'✋ ¡Esperadme, por favor!',c1:'#2563EB',c2:'#1E3A8A'},
+  help:{ico:'🆘',t:'NECESITA AYUDA',say:'necesita ayuda',msg:'🆘 ¡Necesito ayuda!',c1:'#DC2626',c2:'#450A0A'},
+  ok:{ico:'✅',t:'ya está solucionado',say:'solucionado, seguimos',msg:'✅ Solucionado, seguimos',c1:'#15803D',c2:'#14532D'}
+};
+let AC=null,alarmT=null;
+function alarmUnlock(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain();g.gain.value=0.0001;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+0.05)}catch(e){}}
+function alarmStop(){clearTimeout(alarmT);alarmT=null;try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}}
+/* Sirena fuerte: dos tonos agudos alternos (como una alarma), varias tandas */
+function alarmSound(kind,rounds){
+  alarmStop();alarmUnlock();if(!AC)return;
+  const soft=kind==='ok';rounds=rounds||(soft?1:4);
+  const play=()=>{
+    const t0=AC.currentTime+0.02;const master=AC.createGain();master.gain.value=1;
+    const comp=AC.createDynamicsCompressor();master.connect(comp);comp.connect(AC.destination);
+    const seq=soft?[[660,.18],[880,.18],[1320,.35]]:[[1400,.22],[950,.22],[1400,.22],[950,.22],[1400,.22],[950,.22],[1400,.22],[950,.22]];
+    let t=t0;seq.forEach(([f,d])=>{
+      [1,2.01].forEach((h,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=soft?'sine':(i?'square':'sawtooth');o.frequency.value=f*h;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(soft?.5:(i?.25:.9),t+0.01);g.gain.setValueAtTime(soft?.5:(i?.25:.9),t+d-0.02);g.gain.linearRampToValueAtTime(0,t+d);
+        o.connect(g);g.connect(master);o.start(t);o.stop(t+d+0.02)});
+      t+=d});
+    return (t-t0)*1000;
+  };
+  let n=0;const loop=()=>{if(n++>=rounds)return;const ms=play();alarmT=setTimeout(loop,ms+450)};
+  try{if(AC.state==='suspended')AC.resume()}catch(e){}loop();
+  vib(soft?[150,80,150]:[700,200,700,200,700,200,700,200,700]);
+}
+function alarmShow(kind,title,sub,btns){
+  const A=ALERTS[kind];const b=$('alarmBox');b.style.setProperty('--alc',A.c1);b.style.setProperty('--alc2',A.c2);
+  $('alIco').textContent=A.ico;$('alTitle').textContent=title;$('alSub').textContent=sub||'';
+  $('alBtns').innerHTML=btns.map(([t,cls,fn])=>`<button class="${cls}" onclick="${fn}">${t}</button>`).join('');
+  b.classList.add('show');
+}
+function alarmClose(){alarmStop();$('alarmBox').classList.remove('show')}
+async function sendAlert(kind){
+  if(!live.on||!live.rideId||!db||!uid){toast('Solo funciona en una salida en grupo');return}
+  const me=live.pts.at(-1);const prev=live.lastPushLL;
+  const p=me||prev;if(!p){toast('Esperando señal GPS… inténtalo en unos segundos');return}
+  const now=Date.now();const al={type:kind,t:now,id:uid+'_'+now};
+  live.myAlert=kind==='ok'?null:al;alarmUnlock();
+  db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2),alert:al}).catch(netErr);
+  const text=ALERTS[kind].msg+' 📍 https://maps.google.com/?q='+p[0].toFixed(5)+','+p[1].toFixed(5);
+  db.collection('rides').doc(live.rideId).collection('msgs').add({uid,name:myName(),text,ts:now}).catch(()=>{});
+  db.collection('rides').doc(live.rideId).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
+  vib(200);
+  if(kind==='ok'){alarmClose();toast('✅ Aviso enviado: seguimos');return}
+  alarmShow(kind,'Aviso enviado al grupo',`Todos los que ruedan contigo han recibido: "${ALERTS[kind].msg}"`,[['✅ Solucionado, seguimos','al-main',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
+}
+function checkAlerts(){
+  if(!live.on)return;const now=Date.now();const me=live.pts.at(-1);live.alSeen=live.alSeen||{};
+  Object.entries(live.members||{}).forEach(([id,v])=>{
+    const a=v.alert;if(!a||!a.id||live.alSeen[a.id])return;live.alSeen[a.id]=1;
+    if(now-a.t>600000||!ALERTS[a.type])return;           // avisos de hace más de 10 min: no suenan
+    const A=ALERTS[a.type];const name=String(v.name||'Un ciclista').split(' ')[0];
+    const dist=me?hav(me,[v.lat,v.lng]):null;const dtx=dist==null?'':dist<1?`a ${Math.round(dist*1000)} m de ti`:`a ${dist.toFixed(1).replace('.',',')} km de ti`;
+    live.alertFocus=id;
+    if(a.type==='ok'){alarmSound('ok');alarmShow('ok',`${name} ${A.t}`,'Podéis seguir rodando',[['👍 Vale','al-main','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},6000)}
+    else{
+      alarmSound(a.type);
+      alarmShow(a.type,`${name} ${A.t}`,dtx,[['📍 Ver en el mapa','al-main',`alarmClose();alertGo('${id}')`],['🧭 Cómo llegar','al-sec',`window.open(mapsLink('',{lat:${v.lat},lng:${v.lng}}),'_blank')`],['Entendido','al-sec','alarmClose()']]);
+    }
+    setTimeout(()=>speak(`Atención. ${name} ${A.say}.${dist!=null&&a.type!=='ok'?' Está '+dtx+'.':''}`),a.type==='ok'?900:2200);
+    toast(`${A.ico} ${name} ${A.t}`);
+  });
+}
+function alertGo(id){const v=(live.members||{})[id];if(!v)return;live.follow=false;map.easeTo({center:[v.lng,v.lat],zoom:16})}
+function alarmTest(){alarmUnlock();alarmSound('flat',2);alarmShow('flat','Prueba de aviso','Así sonará cuando alguien del grupo pinche. Sube el volumen del móvil.',[['Parar','al-main','alarmClose()']])}
 async function sendMsg(txt){
   if(!ready()||!chat.id)return;
   const inp=$('chatIn');const text=String(txt??inp.value).trim().slice(0,300);if(!text)return;
@@ -2238,7 +2324,7 @@ function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collecti
 
 /* ===== Más funciones ===== */
 const FEATURES=[
-  ['Rodar en grupo',[['📡','Ciclistas cercanos','Quién rueda a menos de 2 km','fn:openNearby()'],['👥','Mi grupo','Tu grupo habitual de salida','fn:openGroup()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
+  ['Rodar en grupo',[['📡','Ciclistas cercanos','Quién rueda a menos de 2 km','fn:openNearby()'],['👥','Mi grupo','Tu grupo habitual de salida','fn:openGroup()'],['🔔','Probar aviso de pinchazo','Escucha la sirena del pelotón','fn:alarmTest()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
   ['Compartir y descubrir',[['🗺️','Rutas de la comunidad','Rutas compartidas por otros ciclistas','fn:openCommRoutes()'],['☕','Puntos ciclistas','Fuentes, cafés, talleres y más','fn:openPois()'],['📰','Actividad de la comunidad','Últimas salidas','fn:openFeed()'],['🎖️','Logros','Tus medallas','fn:openBadges()']]],
   ['Seguridad',[['🔴','Compartir salida en vivo','Que tu familia vea dónde estás','fn:shareLive()'],['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
 ];
@@ -2767,6 +2853,7 @@ async function startLive(opt){
   rideMarkers.forEach(m=>m.remove());
   $('lvVoice').textContent=live.voice?'🔊':'🔇';
   $('lvGroup').style.display=live.rideId?'block':'none';
+  $('lvAlert').style.display=live.rideId?'grid':'none';alarmUnlock();live.alSeen={};
   $('lvBanner').style.display='none';
   setLine(map,null,'track','#60A5FA');
   if(opt.route){
@@ -2843,7 +2930,7 @@ function pushPos(p,now){
 }
 function listenGroup(){
   live.unsub=db.collection('rides').doc(live.rideId).collection('live').onSnapshot(s=>{
-    const m={};s.docs.forEach(d=>{if(d.id!==uid)m[d.id]=d.data()});live.members=m;drawMembers();checkStragglers();renderLive();
+    const m={};s.docs.forEach(d=>{if(d.id!==uid)m[d.id]=d.data()});live.members=m;drawMembers();checkStragglers();renderLive();checkAlerts();
   },e=>console.warn('grupo',e));
 }
 function drawMembers(){
@@ -2854,6 +2941,7 @@ function drawMembers(){
     if(!live.mMarkers[k]){const el=document.createElement('div');el.className='mbr';el.innerHTML=`<b style="background:${colorOf(v.name)}">${ini(v.name)}</b><span>${esc(String(v.name).split(' ')[0])}</span>`;live.mMarkers[k]=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([v.lng,v.lat]).addTo(map)}
     else live.mMarkers[k].setLngLat([v.lng,v.lat]);
     live.mMarkers[k].getElement().style.opacity=now-v.t>120000?.45:1;
+    live.mMarkers[k].getElement().classList.toggle('alert',!!(v.alert&&v.alert.type!=='ok'&&now-v.alert.t<1800000));
   });
 }
 function checkStragglers(){
@@ -2915,7 +3003,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  const L=live;live={on:false};
+  const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}
