@@ -541,6 +541,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .plus{width:60px!important;height:60px!important;margin-top:-36px!important;border-width:4px!important}
 .plus svg{width:28px!important;height:28px!important}
 @media (max-width:330px){.tab svg{width:20px;height:20px}.nav{left:4px!important;right:4px!important;grid-template-columns:1fr 1.25fr 56px 1.25fr 1fr!important}.plus{width:54px!important;height:54px!important}}
+#famBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(6px + env(safe-area-inset-top));z-index:9000;display:flex;align-items:center;gap:6px;background:rgba(21,128,61,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;border-radius:22px;padding:5px 6px 5px 12px;font-size:12.5px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.3);max-width:calc(100vw - 16px)}
+#famBar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#famBar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:14px;padding:5px 10px;font-weight:800;font-size:12px;flex-shrink:0}
+.famcard{display:flex;align-items:center;gap:12px;border:1.5px solid #22C55E!important}
 </style>
 </head>
 <body>
@@ -635,6 +639,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button class="btn btn-lime" onclick="openCreate()"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4m-4 7v5m-2.5-2.5h5"/></svg>Crear salida</button>
     <button class="btn btn-line" onclick="openAllRides()"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Ver salidas</button>
   </div>
+  <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
   <div class="block">
     <div class="sec"><h3>Próximas salidas</h3><a onclick="openAllRides()">Ver todas <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
@@ -740,7 +745,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1762,20 +1767,57 @@ async function openNearby(){
 }
 
 /* ---------- Compartir salida en vivo (familia) ---------- */
-function shareLive(){
-  if(!live.on){toast('Empieza a grabar (Rec) y pulsa 📡 para compartir');return}
-  if(!live.shareId){live.shareId=Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);live.lastShare=0;pushShare(true)}
-  const t=`🚴 Estoy en bici. Sígueme en directo con RideSafe IA:\n${appUrl()}#vivo=${live.shareId}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
-  $('lvShare').classList.add('on');toast('Compartiendo tu posición en vivo');
+/* ===== v3.4 — Ubicación para la familia (ellos NO necesitan instalar nada: abren un enlace de WhatsApp) ===== */
+let fam={on:false};
+const famUrl=id=>location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?v='+id;
+async function shareLive(){famShare()}
+async function famShare(){
+  if(!ready())return;
+  if(fam.on){famSend();return}
+  let hours=0;
+  if(!live.on){
+    const i=await askChoice('📍 Compartir mi ubicación con la familia',[['Durante 1 hora','','1'],['Durante 3 horas','','3'],['Durante 8 horas','','8']]);if(i<0)return;hours=[1,3,8][i];
+  }
+  if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
+  fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on};
+  if(!live.on){
+    fam.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(c.accuracy>80)return;famPush([c.latitude,c.longitude],c.speed!=null?c.speed*3.6:0,false)},e=>{if(e.code===1)toast('Activa el permiso de ubicación')},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+    fam.timer=setInterval(()=>{if(fam.until&&Date.now()>fam.until)famStop(true)},30000);
+  }
+  await famPush(live.pts&&live.pts.at(-1)||null,live.speed||0,true);
+  famBar();famSend();
+  if(live.on&&$('lvShare'))$('lvShare').classList.add('on');
 }
-function pushShare(force){
-  if(!live.shareId||!db||!uid)return;const p=live.pts.at(-1);const now=Date.now();
-  if(!force&&now-live.lastShare<10000)return;if(!p&&!force)return;
-  live.lastShare=now;
-  db.collection('share').doc(live.shareId).set({uid,name:myName(),lat:p?+p[0].toFixed(6):null,lng:p?+p[1].toFixed(6):null,speed:Math.round(live.speed||0),km:+live.km.toFixed(2),t:now,active:true,started:live.startT},{merge:true}).catch(e=>console.warn('share',e));
+function famSend(){
+  const t=`📍 ${myName()} te comparte su ubicación en directo${live.on?' mientras rueda en bici 🚴':''}.\n\nToca el enlace para verla en el mapa (no hace falta instalar nada):\n${famUrl(fam.id)}`;
+  if(navigator.share)navigator.share({title:'Mi ubicación en directo',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
-function endShare(L){if(L&&L.shareId&&db)db.collection('share').doc(L.shareId).set({active:false,t:Date.now()},{merge:true}).catch(()=>{})}
+async function famPush(p,speed,force){
+  if(!fam.on||!db||!uid)return;const now=Date.now();
+  if(!force&&now-fam.last<10000&&!(p&&!fam.hasPos))return;if(p)fam.hasPos=true;
+  if(p){const lp=fam.trail.at(-1);if(!lp||hav(lp,p)>0.02){fam.trail.push([+p[0].toFixed(5),+p[1].toFixed(5)]);if(fam.trail.length>300)fam.trail.shift()}}
+  fam.last=now;
+  const d={uid,name:myName(),t:now,active:true,started:fam.started,until:fam.until||null,speed:Math.round(speed||0),km:live.on?+live.km.toFixed(2):null,riding:!!live.on,trail:fam.trail.map(x=>({a:x[0],o:x[1]}))};
+  if(p){d.lat=+p[0].toFixed(6);d.lng=+p[1].toFixed(6)}
+  return db.collection('share').doc(fam.id).set(d,{merge:true}).catch(e=>console.warn('fam',e));
+}
+function pushShare(){if(fam.on&&live.on)famPush(live.pts.at(-1),live.speed,false)}
+function famStop(auto){
+  if(!fam.on)return;
+  if(fam.watch!=null)navigator.geolocation.clearWatch(fam.watch);clearInterval(fam.timer);
+  if(db&&fam.id)db.collection('share').doc(fam.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});
+  fam={on:false};famBar();if($('lvShare'))$('lvShare').classList.remove('on');
+  toast(auto?'⏱️ Se acabó el tiempo: ya no compartes tu ubicación':'Has dejado de compartir tu ubicación');
+}
+function famBar(){
+  let b=$('famBar');
+  if(!fam.on){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='famBar';document.body.appendChild(b)}
+  const left=fam.until?Math.max(0,Math.round((fam.until-Date.now())/60000)):null;
+  b.innerHTML=`<span>📍 Compartiendo${left!=null?` · ${left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'}`:''}</span><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
+}
+setInterval(()=>{if(fam.on)famBar()},60000);
+function endShare(L){if(fam.on&&fam.fromLive)famStop()}
 /* Vista para la familia: #vivo=ID */
 let viewer=null;
 function openViewer(id){
@@ -2623,7 +2665,7 @@ function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collecti
 const FEATURES=[
   ['Rodar en grupo',[['📡','Ciclistas cercanos','Quién rueda a menos de 2 km','fn:openNearby()'],['👥','Mi grupo','Tu grupo habitual de salida','fn:openGroup()'],['🔔','Probar aviso de pinchazo','Escucha la sirena del pelotón','fn:alarmTest()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
   ['Compartir y descubrir',[['🗺️','Rutas de la comunidad','Rutas compartidas por otros ciclistas','fn:openCommRoutes()'],['☕','Puntos ciclistas','Fuentes, cafés, talleres y más','fn:openPois()'],['📰','Actividad de la comunidad','Últimas salidas','fn:openFeed()'],['🎖️','Logros','Tus medallas','fn:openBadges()']]],
-  ['Seguridad',[['🔴','Compartir salida en vivo','Que tu familia vea dónde estás','fn:shareLive()'],['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
+  ['Seguridad',[['📍','Ubicación para la familia','Por WhatsApp, sin instalar nada','fn:famShare()'],['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
 ];
 $('features').innerHTML=FEATURES.map(([g,items])=>`<div class="grp-t">${g}</div>`+items.map(([e,t,s,p])=>`<button class="li" onclick="${p.startsWith('fn:')?p.slice(3):p==='sos'?'sos()':p==='peloton'?`toast('Se activa al pulsar «Empezar salida» el día de la salida')`:`toast('${t}: próximamente')`}"><span class="em">${e}</span><div><b>${t}</b><small>${s}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`).join('')).join('');
 function sos(){
@@ -3559,7 +3601,7 @@ function startFirebase(){
     const hm=location.hash.match(/salida=([\w-]+)/);
     if(hm){setTimeout(()=>{go('comunidad');openRide(hm[1])},600);history.replaceState(null,'',location.pathname)}
     const hv=location.hash.match(/vivo=([a-z0-9]{8,20})/i);
-    if(hv){history.replaceState(null,'',location.pathname);openViewer(hv[1])}
+    if(hv){location.replace(famUrl(hv[1]));return}
     const hg=location.hash.match(/grupo=([A-Z0-9]{6})/i);
     if(hg){history.replaceState(null,'',location.pathname);const code=hg[1].toUpperCase();setTimeout(()=>{go('comunidad');if(!me){toast('Pon tu nombre y vuelve a abrir el enlace del grupo');return}if(confirm('¿Unirte al grupo con código '+code+'?'))joinGroup(code)},1500)}
   });
