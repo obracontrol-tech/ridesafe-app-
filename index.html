@@ -514,6 +514,22 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 #s-rutas .mbottom{left:12px;right:12px;bottom:calc(var(--nav-h) + 30px);gap:8px;grid-template-columns:1fr 1fr}
 #s-rutas .mbottom button{height:40px;border-radius:20px;font-size:14px;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 #s-rutas .mbottom .i{width:18px;height:18px}
+.join{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.join.on{background:rgba(200,220,60,.16)!important;border:1.5px solid var(--lime)!important;color:var(--lime)!important;padding:4px 16px}
+.join small{font-size:10px;font-weight:600;opacity:.8;margin-top:2px;white-space:nowrap}
+.join.org{background:transparent;border:1px dashed var(--line);color:var(--txt2);font-size:13px;cursor:default}
+.joinbig{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(200,220,60,.16);border:1.5px solid var(--lime);color:var(--lime)}
+.joinbig small{font-size:12px;font-weight:600;opacity:.85}
+.joinnote{text-align:center;color:var(--txt2);font-weight:600;padding:6px}
+.cfm{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px;animation:lmIn2 .15s ease-out}
+@keyframes lmIn2{from{opacity:0}to{opacity:1}}
+.cfm-b{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.cfm-b h3{font-size:19px;font-weight:800;margin:0 0 8px;color:var(--txt)}
+.cfm-b p{color:var(--txt2);font-size:15px;margin:0 0 18px;line-height:1.4}
+.cfm-r{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cfm-r button{min-height:46px;border-radius:23px;font-weight:800;font-size:15px}
+.cfm-no{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.cfm-ok{background:var(--red);color:#fff}
 </style>
 </head>
 <body>
@@ -712,7 +728,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1062,7 +1078,7 @@ function rideCard(r,full){
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
     ${rideLL(r)?`<span class="tag wx" data-wx="${r.id}" style="display:none;margin-top:4px"></span>`:''}
-    <div class="foot">${faces(r)}<button class="join${inR?' on':''}" onclick="event.stopPropagation();toggleJoin('${r.id}')">${inR?'Ya voy ✓':'Me apunto'}</button></div>
+    <div class="foot">${faces(r)}${isOwner(r)?'<span class="join org">👑 Organizas tú</span>':inR?`<button class="join on" onclick="event.stopPropagation();toggleJoin('${r.id}')">Apuntado ✓<small>Toca para cancelar</small></button>`:`<button class="join" onclick="event.stopPropagation();toggleJoin('${r.id}')">✋ Voy</button>`}</div>
   </div>`;
 }
 function renderRides(){
@@ -1085,16 +1101,25 @@ function renderAll(){
 }
 function openAllRides(){openSheet('sh-all');renderAll()}
 
+/* v2.8 — Ventana de confirmación propia (más clara que la del navegador) */
+function askConfirm(title,text,okTxt){return new Promise(res=>{
+  const d=document.createElement('div');d.className='cfm';
+  d.innerHTML=`<div class="cfm-b" role="dialog" aria-modal="true"><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="cfm-r"><button class="cfm-no">Cancelar</button><button class="cfm-ok">${esc(okTxt||'Aceptar')}</button></div></div>`;
+  const end=v=>{d.remove();res(v)};
+  d.onclick=e=>{if(e.target===d||e.target.closest('.cfm-no'))end(false);else if(e.target.closest('.cfm-ok'))end(true)};
+  document.body.appendChild(d);
+})}
 async function toggleJoin(id){
   if(!ready())return;
   const r=rides.find(x=>x.id===id);if(!r)return;
   const ref=db.collection('rides').doc(id);
   if(joined(r)){
     if(isOwner(r)){toast('Eres quien organiza. Si no vas, cancela la salida');return}
-    ref.update({['people.'+uid]:FV.delete()}).catch(netErr);toast('Te has borrado de la salida');
+    const ok=await askConfirm('¿Quieres desapuntarte?','Dejarás de aparecer como asistente a esta salida.','Desapuntarme');if(!ok)return;
+    ref.update({['people.'+uid]:FV.delete()}).catch(netErr);toast('Te has desapuntado de la salida');
   }else{
     if(r.seats&&names(r).length>=r.seats){toast('No quedan plazas');return}
-    ref.update({['people.'+uid]:myName()}).catch(netErr);toast('¡Apuntado! Nos vemos en el punto de encuentro');
+    ref.update({['people.'+uid]:myName()}).catch(netErr);toast('✅ ¡Apuntado! Nos vemos en el punto de encuentro');vib(40);
   }
 }
 const mapsLink=(p,ll)=>ll?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+ll.lat+','+ll.lng:/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(p)?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+encodeURIComponent(p):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p);
@@ -1231,7 +1256,7 @@ async function openRide(id,keep){
      <div class="chatin"><input class="inp" id="chatIn" maxlength="300" placeholder="Escribe un comentario…" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-lime" style="width:auto;min-height:52px;padding:0 18px" onclick="sendMsg()" aria-label="Enviar">➤</button></div></div>
    <div style="display:flex;flex-direction:column;gap:10px">
      ${isToday&&inR?`<button class="btn btn-lime" onclick="startRide('${r.id}')">🛰️ Empezar salida</button>`:''}
-     ${isOwner(r)?'':`<button class="btn ${inR?'btn-line':'btn-lime'}" onclick="toggleJoin('${r.id}')">${inR?'Ya no voy':'✋ Me apunto'}</button>`}
+     ${isOwner(r)?'<div class="joinnote">👑 Organizas esta salida</div>':inR?`<button class="btn joinbig on" onclick="toggleJoin('${r.id}')">Apuntado ✓<small>Toca para cancelar tu asistencia</small></button>`:`<button class="btn btn-lime" onclick="toggleJoin('${r.id}')">✋ Voy a esta salida</button>`}
      <button class="btn btn-line" onclick="openCard('${r.id}')">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar('${r.id}')">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal('${r.id}')">📆 Google Calendar</button></div>`:''}
      ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id==='${r.id}').route.poly),rides.find(x=>x.id==='${r.id}').title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="gpxRide('${r.id}')">⬇️ GPX</button></div>`:''}
