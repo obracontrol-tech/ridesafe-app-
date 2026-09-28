@@ -784,7 +784,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1375,7 +1375,7 @@ async function openRide(id,keep){
      <button class="btn btn-line" onclick="openCard('${r.id}')">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar('${r.id}')">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal('${r.id}')">📆 Google Calendar</button></div>`:''}
      ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id==='${r.id}').route.poly),rides.find(x=>x.id==='${r.id}').title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="gpxRide('${r.id}')">⬇️ GPX</button></div>`:''}
-     ${canManage(r)&&!isOwner(r)?'<div class="joinnote" style="color:var(--bronze)">⭐ Puedes gestionar esta salida como jefe de pelotón</div>':''}
+     ${canManage(r)&&!isOwner(r)?`<div class="joinnote" style="color:var(--bronze)">${isClubAdm()?'🛡️ Puedes gestionar esta salida como administrador del club':isGpResp(r)&&!(myGroup.captains||{})[uid]?'🎯 Puedes gestionar esta salida como responsable de «'+esc(gpName(r.gp))+'»':'⭐ Puedes gestionar esta salida como jefe de pelotón'}</div>`:''}
      ${canManage(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide('${r.id}')">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange('${r.id}')">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide('${r.id}')">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides','${r.id}','${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
    </div>`;
   if(!keep)openSheet('sh-ride');
@@ -2675,7 +2675,7 @@ let admTab='res',admUsers=[],admQ='';
 const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:(v&&v.seconds?v.seconds*1000:0);
 function admShell(){
   const tabs=[['res','📊 Resumen'],['users','👥 Ciclistas'],['rides','📅 Salidas'],['cont','🗂️ Contenido'],['rep','⚠️ Reportes'],['ann','📣 Aviso']];
-  $('rideBody').innerHTML=sheetHead('🛡️ Administración')+`<div class="chips admtabs">${tabs.map(([k,t])=>`<button class="chip${admTab===k?' on':''}" onclick="admGo('${k}')">${t}</button>`).join('')}</div><div id="admBody"><div class="empty">Cargando…</div></div>`;
+  $('rideBody').innerHTML=sheetHead('🛡️ Administración')+`<a class="btn btn-line" href="master.html" target="_blank" rel="noopener" style="text-decoration:none;margin:-4px 0 12px;display:flex;align-items:center;justify-content:center">🖥️ Abrir Consola Master</a><div class="chips admtabs">${tabs.map(([k,t])=>`<button class="chip${admTab===k?' on':''}" onclick="admGo('${k}')">${t}</button>`).join('')}</div><div id="admBody"><div class="empty">Cargando…</div></div>`;
 }
 async function openAdmin(tab){if(!isAdmin)return;admTab=tab||admTab||'res';admShell();openRideId=null;openSheet('sh-ride');admGo(admTab)}
 function admGo(k){admTab=k;document.querySelectorAll('.admtabs .chip').forEach((c,i)=>c.classList.toggle('on',['res','users','rides','cont','rep','ann'][i]===k));$('admBody').innerHTML='<div class="empty">Cargando…</div>';({res:admRes,users:admUsersTab,rides:admRides,cont:admCont,rep:loadReports,ann:admAnn}[k])()}

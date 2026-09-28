@@ -1,1502 +1,474 @@
-<!DOCTYPE html>
-<html lang="es">
-<!-- v2.4 Comunidad - creador de rutas ORS -->
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RideSafe IA — Master Console</title>
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#070D17">
+<title>RideSafe IA · Consola Master</title>
+<link rel="icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#060a07;--bg2:#0a0f0b;--card:#0f1810;--card2:#141f15;
-  --lime:#a8e63d;--lime-dim:rgba(168,230,61,.1);--lime-glow:rgba(168,230,61,.25);
-  --text:#e8f0e9;--muted:#7a9a7e;--dim:#3a4a3e;
-  --border:rgba(168,230,61,.12);--border2:rgba(168,230,61,.06);
-  --red:#ff3355;--orange:#ff8833;--cyan:#00e5ff;
+  --bg:#070D17;--bg2:#0B1422;--panel:#0E1A2B;--card:#122238;--card2:#16294A;--line:#1F3350;--line2:#2A4468;
+  --txt:#EEF3F8;--txt2:#A7B4C6;--txt3:#6F8199;--lime:#C8DC3C;--lime2:#A9BD2E;--on-lime:#0E1A2B;--blue:#60A5FA;
+  --ok:#4ADE80;--warn:#FBBF24;--bad:#F87171;--r:18px;
 }
-html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif}
-#login{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
-.login-box{width:100%;max-width:340px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:40px 28px;text-align:center}
-.login-logo{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;line-height:1;margin-bottom:6px}
-.login-logo span{color:var(--lime)}
-.login-badge{display:inline-block;background:var(--lime);color:#060a07;font-size:10px;font-weight:900;padding:2px 10px;border-radius:6px;letter-spacing:1px;margin-bottom:20px;font-family:'Barlow Condensed',sans-serif}
-.login-input{width:100%;padding:13px 16px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-size:18px;text-align:center;letter-spacing:4px;outline:none;transition:border-color .2s;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif}
-.login-input:focus{border-color:var(--lime)}
-.login-btn{width:100%;padding:13px;background:var(--lime);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#060a07;cursor:pointer;box-shadow:0 4px 20px var(--lime-glow)}
-.login-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
-.hdr{background:linear-gradient(135deg,var(--bg2),#0d1a0e);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.hdr-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900}
-.hdr-logo span{color:var(--lime)}
-.hdr-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:1px}
-.hdr-time{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--lime)}
-.hdr-out{padding:6px 14px;background:none;border:1px solid rgba(255,51,85,.3);border-radius:8px;color:var(--red);font-size:12px;cursor:pointer;font-family:'Barlow',sans-serif}
-.tabs{display:flex;gap:8px;padding:20px 24px 0;overflow-x:auto}
-.tab-btn{padding:10px 20px;background:var(--card);border:1px solid var(--border2);border-radius:12px 12px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
-.tab-btn.on{background:var(--lime-dim);border-color:var(--lime);color:var(--lime)}
-.body{padding:0 24px 40px;max-width:960px;margin:0 auto}
-.tab-panel{display:none;padding-top:20px}
-.tab-panel.on{display:block}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
-@media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
-.stat{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px;position:relative;overflow:hidden}
-.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--lime))}
-.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;color:var(--ac,var(--lime));line-height:1;margin-bottom:4px}
-.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:2px;margin:20px 0 12px;display:flex;align-items:center;gap:8px}
-.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.tabla{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:16px;overflow:hidden}
-.tabla-hdr{display:grid;grid-template-columns:1fr 100px 90px 130px;padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--border2)}
-.tabla-th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.tabla-row{display:grid;grid-template-columns:1fr 100px 90px 130px;padding:10px 16px;border-bottom:1px solid var(--border2);align-items:center;transition:background .15s}
-.tabla-row:last-child{border-bottom:none}
-.tabla-row:hover{background:var(--card2)}
-.clave-code{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);letter-spacing:.5px}
-.clave-tipo{font-size:10px;color:var(--muted);margin-top:2px}
-.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;display:inline-block}
-.badge-libre{background:var(--lime-dim);color:var(--lime);border:1px solid var(--border)}
-.badge-usada{background:rgba(255,51,85,.1);color:var(--red);border:1px solid rgba(255,51,85,.2)}
-.gen-box{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:20px;margin-bottom:16px}
-.gen-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.gen-select{padding:11px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;outline:none;cursor:pointer}
-.gen-btn{padding:11px 20px;background:var(--lime);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:#060a07;cursor:pointer}
-.gen-result{margin-top:14px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;display:none}
-.gen-result-clave{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--lime);letter-spacing:2px;text-align:center}
-.gen-result-copy{width:100%;margin-top:10px;padding:9px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Barlow',sans-serif}
-.radar-lista{display:flex;flex-direction:column;gap:8px}
-.radar-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px}
-.radar-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:#060a07;flex-shrink:0}
-.radar-info{flex:1}
-.radar-nombre{font-size:13px;font-weight:600;color:var(--text)}
-.radar-det{font-size:10px;color:var(--muted);margin-top:2px}
-.radar-time{font-size:11px;color:var(--lime);font-family:'Barlow Condensed',sans-serif;font-weight:700}
-.canal-box{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:20px}
-.canal-textarea{width:100%;padding:12px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;outline:none;resize:none;min-height:90px;margin-bottom:12px}
-.canal-textarea:focus{border-color:var(--lime)}
-.canal-btn{padding:11px 24px;background:var(--lime);border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:#060a07;cursor:pointer}
-.empty{padding:32px;text-align:center;color:var(--dim);font-size:13px}
-.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
-.refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--lime-dim);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--lime);cursor:pointer;font-family:'Barlow',sans-serif;margin-bottom:16px}
-.legal-tabla{width:100%;border-collapse:collapse}
-.legal-tabla th{background:var(--card2);padding:8px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--border)}
-.legal-tabla td{padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border2)}
-.legal-tabla tr:last-child td{border-bottom:none}
-.legal-tabla tr:hover td{background:var(--card2)}
-/* COMUNIDAD */
-#mapa-com{height:420px;border-radius:16px;border:1px solid var(--border2);margin-bottom:16px;z-index:1}
-.com-form{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-bottom:16px}
-.com-form h3{font-family:'Barlow Condensed',sans-serif;font-size:16px;color:var(--lime);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
-.com-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.com-grid .full{grid-column:1/-1}
-.com-inp{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px}
-.com-inp:focus{outline:none;border-color:var(--lime)}
-.com-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
-.com-hint{font-size:11px;color:var(--dim);margin-top:8px}
-.punto-row{display:grid;grid-template-columns:32px 1fr 110px 200px;padding:10px 16px;border-bottom:1px solid var(--border2);align-items:center;gap:8px}
-.punto-row:last-child{border-bottom:none}
-.punto-row:hover{background:var(--card2)}
-.punto-acc{display:flex;gap:6px;justify-content:flex-end}
-.mini-btn{padding:5px 10px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s}
-.mini-btn:hover{border-color:var(--lime);color:var(--lime)}
-.mini-btn.rojo:hover{border-color:#ff3355;color:#ff3355}
-.est-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.est-activo{background:rgba(168,230,61,.15);color:var(--lime)}
-.est-suspendido{background:rgba(255,51,85,.15);color:#ff3355}
-.est-evento{background:rgba(0,229,255,.15);color:#00e5ff}
-@media(max-width:700px){.com-grid{grid-template-columns:1fr}.punto-row{grid-template-columns:32px 1fr;gap:6px}.punto-acc{grid-column:1/-1;justify-content:flex-start}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(1200px 600px at 85% -10%,rgba(200,220,60,.07),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(96,165,250,.06),transparent 60%),var(--bg);background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--lime)}
+.num{font-variant-numeric:tabular-nums}
+/* Acceso */
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gbox{width:100%;max-width:420px;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:28px;padding:34px 28px;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.gbox .bike{position:absolute;right:-60px;top:-40px;width:260px;opacity:.07}
+.gbox img{width:78px;height:78px;border-radius:20px;margin-bottom:14px}
+.gbox h1{font-size:26px;font-weight:800;letter-spacing:-.01em}.gbox h1 span{color:var(--lime)}
+.gbox .tag{display:inline-block;margin:8px 0 18px;font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);border:1px solid rgba(200,220,60,.35);border-radius:20px;padding:4px 12px}
+.gbox p{color:var(--txt2);font-size:14.5px;line-height:1.5;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:23px;border:1px solid var(--line2);background:var(--card);font-weight:700;font-size:14.5px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--card2);border-color:var(--txt3)}
+.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}.btn.lime:hover{background:#D6E85A}
+.btn.red{color:var(--bad);border-color:rgba(248,113,113,.45)}.btn.red:hover{background:rgba(248,113,113,.1)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13px;border-radius:17px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+/* Estructura */
+#app{display:none;min-height:100vh}
+.side{position:fixed;left:0;top:0;bottom:0;width:236px;background:rgba(9,17,29,.92);backdrop-filter:blur(10px);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
+.brand img{width:40px;height:40px;border-radius:11px}
+.brand b{font-size:17px;font-weight:800;display:block;line-height:1.1}.brand b span{color:var(--lime)}
+.brand small{font-size:10.5px;font-weight:800;letter-spacing:.16em;color:var(--lime)}
+.nav{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:0;background:none;color:var(--txt2);font-weight:700;font-size:14.5px;text-align:left;width:100%}
+.nav:hover{background:var(--card);color:var(--txt)}
+.nav.on{background:rgba(200,220,60,.12);color:var(--lime)}
+.nav .ct{margin-left:auto;font-size:11.5px;background:var(--card2);color:var(--txt2);border-radius:10px;padding:1px 8px}
+.nav .ct.alert{background:rgba(248,113,113,.18);color:var(--bad)}
+.side .me{margin-top:auto;border-top:1px solid var(--line);padding:14px 8px 0;font-size:12.5px;color:var(--txt3)}
+.side .me b{display:block;color:var(--txt2);font-size:13px;word-break:break-all}
+main{margin-left:236px;padding:26px 30px 60px;max-width:1320px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.top h2{font-size:25px;font-weight:800;letter-spacing:-.01em}
+.top .sub{color:var(--txt3);font-size:13px}
+.top .sp{flex:1}
+/* Tarjetas */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpi .l{color:var(--txt2);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:32px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
+.kpi .h{color:var(--txt3);font-size:12px;margin-top:2px}
+.kpi.alert{border-color:rgba(248,113,113,.45)}.kpi.alert .v{color:var(--bad)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;min-width:0}
+.box h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.box .d{color:var(--txt3);font-size:12.5px;margin-bottom:12px}
+/* Tablas */
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.search{flex:1;min-width:200px;background:var(--card);border:1px solid var(--line2);border-radius:23px;padding:11px 16px;outline:none}
+.search:focus,.inp:focus{border-color:var(--lime)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line2);background:var(--card);border-radius:17px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--txt2)}
+.chip.on{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:10px 12px;outline:none}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.tbl th{text-align:left;color:var(--txt3);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.tw{overflow-x:auto}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0E1A2B;flex-shrink:0}
+.logo{width:34px;height:34px;border-radius:9px;object-fit:cover;background:#fff;flex-shrink:0}
+.who b{display:block;font-weight:700}.who small{color:var(--txt3);font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:10px;padding:2px 8px;white-space:nowrap}
+.pill.lime{background:rgba(200,220,60,.15);color:var(--lime)}.pill.ok{background:rgba(74,222,128,.14);color:var(--ok)}
+.pill.bad{background:rgba(248,113,113,.15);color:var(--bad)}.pill.mut{background:var(--card2);color:var(--txt2)}.pill.warn{background:rgba(251,191,36,.15);color:var(--warn)}
+.empty{color:var(--txt3);text-align:center;padding:26px 10px;font-size:14px}
+/* Gráficas */
+.chart{position:relative;height:200px;margin-top:6px}
+.chart svg{width:100%;height:100%;display:block;overflow:visible}
+.tip{position:fixed;pointer-events:none;background:#0A1320;border:1px solid var(--line2);border-radius:10px;padding:7px 10px;font-size:12.5px;z-index:50;display:none;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.tip b{font-size:15px}
+.rank{display:flex;flex-direction:column;gap:8px}
+.rank .row{display:flex;align-items:center;gap:10px}
+.rank .row .bw{flex:1;height:8px;background:var(--card2);border-radius:4px;overflow:hidden}
+.rank .row .bw i{display:block;height:100%;background:var(--lime);border-radius:4px}
+.rank .row .n{width:40%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:13.5px}
+.rank .row .c{width:44px;text-align:right;color:var(--txt2);font-size:13px}
+/* Ventanas */
+.ov{position:fixed;inset:0;background:rgba(3,7,13,.72);backdrop-filter:blur(4px);z-index:40;display:none;align-items:center;justify-content:center;padding:18px}
+.ov.show{display:flex}
+.dlg{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);border-radius:24px;padding:22px}
+.dlg h3{font-size:19px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dlg h3 .x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:var(--card)}
+.dlg p{color:var(--txt2);font-size:14px;line-height:1.5;margin-bottom:12px}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line2);border-radius:14px;margin-bottom:8px;background:var(--card);width:100%;text-align:left;font-weight:600}
+.opt:hover{border-color:var(--lime)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--lime);color:var(--on-lime);font-weight:800;border-radius:22px;padding:11px 18px;opacity:0;transition:.25s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.prog{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;width:0;background:var(--lime);transition:width .2s}
+.list li{margin:0 0 6px 18px;color:var(--txt2);font-size:14px;line-height:1.45}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}.kv span{color:var(--txt3)}
+@media (max-width:980px){
+  .side{position:sticky;top:0;bottom:auto;width:auto;height:auto;flex-direction:row;overflow-x:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line);gap:6px;align-items:center}
+  .brand{padding:0 8px 0 0;flex-shrink:0}.brand div{display:none}
+  .nav{width:auto;white-space:nowrap;padding:9px 12px;flex-shrink:0}.nav .ct{display:none}
+  .side .me{display:none}
+  main{margin-left:0;padding:18px 16px 60px}
+  .kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
+  .kpi .v{font-size:26px}
+  .tbl .hide-m{display:none}
+}
+</style></head><body>
 
-/* ═══ LAVADO DE CARA — dashboard v2.5 (aditivo, no rompe estilos anteriores) ═══ */
-.tabs{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:6px;margin:0 24px;gap:4px}
-.tab-btn{border-radius:11px;padding:9px 16px;border:none;display:flex;align-items:center;gap:6px}
-.tab-btn.on{background:var(--lime);color:#060a07;box-shadow:0 2px 12px var(--lime-glow)}
-.stat{border-radius:18px;transition:transform .15s,border-color .15s}
-.stat:hover{transform:translateY(-2px);border-color:var(--border)}
-.stat-icon{position:absolute;top:14px;right:14px;font-size:18px;opacity:.5}
-.chart-card{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px;margin-bottom:16px}
-.chart-card h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
-.chart-wrap{position:relative;height:220px}
-.charts-row{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:8px}
-@media(min-width:760px){.charts-row{grid-template-columns:1fr 1fr}}
-.cat-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)}
-.cat-row:last-child{border-bottom:none}
-.cat-emoji{width:30px;height:30px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.cat-nombre{flex:1;font-size:13px;color:var(--text)}
-.cat-count{font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--lime);font-size:15px}
-.pt-row{display:grid;grid-template-columns:32px 1fr 110px 90px;padding:10px 16px;border-bottom:1px solid var(--border2);align-items:center;gap:8px}
-.pt-row:last-child{border-bottom:none}
-.pt-row:hover{background:var(--card2)}
-.pt-acc{display:flex;gap:6px;justify-content:flex-end}
-@media(max-width:700px){.pt-row{grid-template-columns:32px 1fr}.pt-acc{grid-column:1/-1;justify-content:flex-start}}
-</style>
-</head>
-<body>
+<!-- ===== Acceso ===== -->
+<div id="gate"><div class="gbox">
+  <svg class="bike" viewBox="0 0 24 24" fill="none" stroke="#C8DC3C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3"/></svg>
+  <img src="icons/icon-512.png" alt="RideSafe IA">
+  <h1>RideSafe <span>IA</span></h1>
+  <div class="tag">CONSOLA MASTER</div>
+  <p id="gMsg">Acceso exclusivo del creador y desarrollador de la app.</p>
+  <button class="btn lime wide" id="gBtn" onclick="signIn()" style="display:none">Entrar con Google</button>
+  <button class="btn wide" id="gOut" onclick="signOut()" style="display:none;margin-top:10px">Cambiar de cuenta</button>
+</div></div>
 
-<div id="login">
-  <div class="login-box">
-    <div class="login-logo">Ride<span>Safe</span></div>
-    <div><span class="login-badge">MASTER CONSOLE</span></div>
-    <br>
-    <input class="login-input" id="email-input" type="email" placeholder="Email desarrollador" autocomplete="username" style="letter-spacing:0;font-size:15px"/>
-    <input class="login-input" id="pass-input" type="password" placeholder="Contraseña" autocomplete="current-password" style="letter-spacing:2px;font-size:15px"/>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">ENTRAR</button>
-    <div class="login-err" id="login-err">Acceso denegado</div>
-  </div>
+<!-- ===== Consola ===== -->
+<div id="app">
+  <nav class="side" id="side">
+    <div class="brand"><img src="icons/icon-192.png" alt=""><div><b>RideSafe <span>IA</span></b><small>MASTER</small></div></div>
+    <button class="nav on" data-v="res" onclick="go('res')">📊 Resumen</button>
+    <button class="nav" data-v="clubs" onclick="go('clubs')">🏅 Clubes <span class="ct" id="nClubs"></span></button>
+    <button class="nav" data-v="users" onclick="go('users')">👥 Ciclistas <span class="ct" id="nUsers"></span></button>
+    <button class="nav" data-v="rides" onclick="go('rides')">📅 Salidas <span class="ct" id="nRides"></span></button>
+    <button class="nav" data-v="cont" onclick="go('cont')">🗂️ Contenido</button>
+    <button class="nav" data-v="rep" onclick="go('rep')">⚠️ Reportes <span class="ct" id="nRep"></span></button>
+    <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
+    <button class="nav" data-v="mnt" onclick="go('mnt')">🛠️ Copias y restaurar</button>
+    <div class="me">Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
+  </nav>
+  <main>
+    <div class="top"><div><h2 id="vTitle">Resumen</h2><div class="sub" id="vSub"></div></div><div class="sp"></div>
+      <button class="btn sm" onclick="loadAll(true)">🔄 Actualizar</button><a class="btn sm" href="./" target="_blank" rel="noopener" style="text-decoration:none">📱 Abrir la app</a></div>
+    <div id="view"><div class="empty">Cargando datos de la app…</div></div>
+  </main>
 </div>
 
-<div id="panel" style="display:none">
-  <div class="hdr">
-    <div>
-      <div class="hdr-logo">Ride<span>Safe</span> <span style="font-size:13px;color:var(--muted)">Master</span></div>
-      <div class="hdr-sub">JM Prestige AI Solutions</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px">
-      <div class="hdr-time" id="reloj">--:--:--</div>
-      <button class="hdr-out" onclick="doLogout()">Salir</button>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn on" onclick="showTab('resumen',this)">📊 Resumen</button>
-    <button class="tab-btn" onclick="showTab('claves',this)">🔑 Claves</button>
-    <button class="tab-btn" onclick="showTab('radar',this)">📡 Radar</button>
-    <button class="tab-btn" onclick="showTab('grupos',this)">👥 Grupos</button>
-    <button class="tab-btn" onclick="showTab('canal',this)">📣 Canal</button>
-    <button class="tab-btn" onclick="showTab('legal',this)">⚖️ Legal</button>
-    <button class="tab-btn" onclick="showTab('comunidad',this)">🗺️ Comunidad</button>
-    <button class="tab-btn" onclick="showTab('puntosbici',this)">☕ Puntos</button>
-  </div>
-
-  <div class="body">
-
-    <!-- CLAVES -->
-    <!-- RESUMEN — panel nuevo, vista de bienvenida con métricas de toda la app -->
-    <div class="tab-panel on" id="tab-resumen">
-      <button class="refresh-btn" onclick="cargarResumen()">🔄 Actualizar</button>
-      <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
-        <div class="stat"><span class="stat-icon">🔑</span><div class="stat-val" id="rs-claves">—</div><div class="stat-lbl">Claves activas</div></div>
-        <div class="stat" style="--ac:var(--cyan)"><span class="stat-icon">🚴</span><div class="stat-val" id="rs-radar">—</div><div class="stat-lbl">Ciclistas ahora</div></div>
-        <div class="stat" style="--ac:var(--orange)"><span class="stat-icon">👥</span><div class="stat-val" id="rs-grupos">—</div><div class="stat-lbl">Grupos activos</div></div>
-        <div class="stat" style="--ac:#9966ff"><span class="stat-icon">📅</span><div class="stat-val" id="rs-quedadas">—</div><div class="stat-lbl">Quedadas activas</div></div>
-        <div class="stat" style="--ac:var(--lime)"><span class="stat-icon">☕</span><div class="stat-val" id="rs-puntos">—</div><div class="stat-lbl">Puntos ciclistas</div></div>
-        <div class="stat" style="--ac:var(--red)"><span class="stat-icon">⚖️</span><div class="stat-val" id="rs-legal-hoy">—</div><div class="stat-lbl">Aceptaciones hoy</div></div>
-      </div>
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3>Aceptaciones legales · últimos 7 días</h3>
-          <div class="chart-wrap"><canvas id="chart-legal7"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <h3>Ciclistas en radar ahora · por tipo de bici</h3>
-          <div class="chart-wrap"><canvas id="chart-radarbici"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="tab-claves">
-      <div class="stats-grid">
-        <div class="stat"><div class="stat-val" id="st-total">—</div><div class="stat-lbl">Total claves</div></div>
-        <div class="stat"><div class="stat-val" id="st-libres">—</div><div class="stat-lbl">Disponibles</div></div>
-        <div class="stat" style="--ac:var(--red)"><div class="stat-val" id="st-usadas">—</div><div class="stat-lbl">Usadas</div></div>
-        <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="st-pct">—</div><div class="stat-lbl">% Activación</div></div>
-      </div>
-      <div class="sec-title">Generar nueva clave</div>
-      <div class="gen-box">
-        <div class="gen-row">
-          <select class="gen-select" id="gen-tipo">
-            <option value="RIDE-PRO">Promo 30 días</option>
-            <option value="RSAI-INV">Invitación 30 días</option>
-            <option value="RIDE-VIP">VIP 60 días</option>
-            <option value="RIDE-CLUB">Club anual</option>
-          </select>
-          <button class="gen-btn" onclick="generarClave()">+ GENERAR CLAVE</button>
-        </div>
-        <div class="gen-result" id="gen-result">
-          <div class="gen-result-clave" id="gen-clave-txt"></div>
-          <button class="gen-result-copy" onclick="copiarClave()">📋 Copiar clave</button>
-        </div>
-      </div>
-      <div class="sec-title">Todas las claves</div>
-      <div class="tabla">
-        <div class="tabla-hdr" style="grid-template-columns:1fr 80px 160px 130px">
-          <span class="tabla-th">Clave</span>
-          <span class="tabla-th">Días</span>
-          <span class="tabla-th">Estado</span>
-          <span class="tabla-th">Activada</span>
-        </div>
-        <div id="lista-claves"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-      </div>
-    </div>
-
-    <!-- RADAR -->
-    <div class="tab-panel" id="tab-radar">
-      <button class="refresh-btn" onclick="cargarRadar()">🔄 Actualizar</button>
-      <div class="stats-grid">
-        <div class="stat"><div class="stat-val" id="st-ciclistas">—</div><div class="stat-lbl">Ciclistas activos</div></div>
-        <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="st-grupos-r">—</div><div class="stat-lbl">Grupos activos</div></div>
-        <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="st-radar-n">—</div><div class="stat-lbl">En radar</div></div>
-        <div class="stat" style="--ac:#9966ff"><div class="stat-val" id="st-hora">—</div><div class="stat-lbl">Actualizado</div></div>
-      </div>
-      <div class="sec-title">Ciclistas en radar ahora</div>
-      <div id="radar-container"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-    </div>
-
-    <!-- GRUPOS -->
-    <div class="tab-panel" id="tab-grupos">
-      <button class="refresh-btn" onclick="cargarGrupos()">🔄 Actualizar</button>
-      <div class="sec-title">Grupos activos ahora</div>
-      <div id="grupos-container"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-    </div>
-
-    <!-- CANAL -->
-    <div class="tab-panel" id="tab-canal">
-      <div class="sec-title">Publicar en canal @RideSafeAI</div>
-      <div class="canal-box">
-        <textarea class="canal-textarea" id="canal-txt" placeholder="Escribe el mensaje para publicar en @RideSafeAI..."></textarea>
-        <button class="canal-btn" onclick="publicarCanal()">📤 PUBLICAR EN CANAL</button>
-        <div style="font-size:11px;color:var(--dim);margin-top:8px">Se publicará en @RideSafeAI · Todos los suscriptores lo verán</div>
-      </div>
-      <div class="sec-title" style="margin-top:20px">Mensajes rápidos</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="msgRapido('🚴 RideSafe IA funcionando al 100%. ¡A pedalear! tinyurl.com/ridesafeIA')" style="padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);text-align:left;cursor:pointer;font-size:13px;font-family:Barlow,sans-serif">🚴 App funcionando — aviso general</button>
-        <button onclick="msgRapido('🎁 Nueva promoción disponible. Contacta por WhatsApp: +34 643 223 301')" style="padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);text-align:left;cursor:pointer;font-size:13px;font-family:Barlow,sans-serif">🎁 Nueva promoción disponible</button>
-        <button onclick="msgRapido('🔔 Nueva actualización disponible en RideSafe IA: tinyurl.com/ridesafeIA')" style="padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);text-align:left;cursor:pointer;font-size:13px;font-family:Barlow,sans-serif">🔔 Nueva actualización</button>
-      </div>
-    </div>
-
-    <!-- LEGAL -->
-    <!-- COMUNIDAD -->
-    <div class="tab-panel" id="tab-comunidad">
-      <div class="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
-        <div class="stat"><div class="stat-val" id="st-com-total">—</div><div class="stat-lbl">Puntos totales</div></div>
-        <div class="stat"><div class="stat-val" id="st-com-activos">—</div><div class="stat-lbl">Activos</div></div>
-        <div class="stat"><div class="stat-val" id="st-com-eventos">—</div><div class="stat-lbl">Con evento</div></div>
-      </div>
-
-      <div id="mapa-com"></div>
-
-      <div class="com-form">
-        <h3 id="com-form-titulo">➕ Nuevo punto de encuentro</h3>
-        <div class="com-grid">
-          <div><span class="com-lbl">Nombre *</span><input class="com-inp" id="pt-nombre" placeholder="Fuente del parc de la Mitjana"></div>
-          <div><span class="com-lbl">Tipo</span><select class="com-inp" id="pt-tipo">
-            <option value="plaza">🏛️ Plaza</option><option value="parking">🅿️ Parking</option>
-            <option value="fuente">⛲ Fuente</option><option value="cafe">☕ Café</option>
-            <option value="tienda">🏪 Tienda</option><option value="inicio_ruta">🚴 Inicio de ruta</option>
-          </select></div>
-          <div><span class="com-lbl">Latitud *</span><input class="com-inp" id="pt-lat" placeholder="Toca el mapa"></div>
-          <div><span class="com-lbl">Longitud *</span><input class="com-inp" id="pt-lng" placeholder="Toca el mapa"></div>
-          <div><span class="com-lbl">Dirección</span><input class="com-inp" id="pt-dir" placeholder="Opcional"></div>
-          <div><span class="com-lbl">Horario habitual</span><input class="com-inp" id="pt-hora" placeholder="Sáb y dom 8:00"></div>
-          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pt-desc" placeholder="Punto de salida habitual rutas carretera norte"></div>
-          <div><span class="com-lbl">Estado</span><select class="com-inp" id="pt-estado">
-            <option value="activo">✅ Activo</option><option value="suspendido">⛔ Suspendido</option>
-            <option value="evento">📅 Evento programado</option>
-          </select></div>
-          <div style="display:flex;align-items:flex-end;gap:8px">
-            <button class="gen-btn" id="pt-guardar" onclick="guardarPunto()" style="flex:1">💾 GUARDAR PUNTO</button>
-            <button class="mini-btn" id="pt-cancelar" onclick="limpiarFormPunto()" style="display:none;padding:12px">✖</button>
-          </div>
-        </div>
-        <div class="com-hint">💡 Toca el mapa para rellenar las coordenadas automáticamente. Todos los puntos son neutrales: mismo peso visual, sin jerarquías comerciales.</div>
-      </div>
-
-      <div class="tabla">
-        <div id="lista-puntos"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-      </div>
-
-      <div class="sec-title" style="margin-top:24px">🛣️ Crear ruta sobre el mapa</div>
-      <div class="com-form">
-        <div id="ruta-off">
-          <button class="gen-btn" onclick="activarModoRuta()" style="width:100%">🛣️ EMPEZAR A CREAR RUTA</button>
-          <div class="com-hint">Se activa el modo ruta: cada toque en el mapa añade una parada (1, 2, 3...). Luego el sistema traza el camino real por carretera entre ellas.</div>
-        </div>
-        <div id="ruta-on" style="display:none">
-          <div style="background:var(--lime-dim);border:1px solid var(--lime);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--lime)">
-            🟢 <b>MODO RUTA ACTIVO</b> — toca el mapa para añadir paradas · <span id="ruta-npts">0 paradas</span>
-          </div>
-          <div class="com-grid">
-            <div><span class="com-lbl">Tipo de ruta</span><select class="com-inp" id="ruta-perfil">
-              <option value="cycling-road">🚴 Carretera</option>
-              <option value="cycling-mountain">⛰️ MTB</option>
-              <option value="cycling-regular">🚲 Mixta</option>
-              <option value="cycling-electric">⚡ eBike</option>
-            </select></div>
-            <div style="display:flex;align-items:flex-end;gap:8px">
-              <button class="mini-btn" onclick="deshacerParada()" style="padding:11px;flex:1">↩️ Quitar última</button>
-              <button class="mini-btn" onclick="cerrarCircuito()" style="padding:11px;flex:1">🔁 Volver al inicio</button>
-            </div>
-            <div class="full" style="display:flex;gap:8px">
-              <button class="gen-btn" id="btn-trazar" onclick="trazarRuta()" style="flex:2">🗺️ TRAZAR RUTA</button>
-              <button class="mini-btn rojo" onclick="cancelarModoRuta()" style="flex:1;padding:11px">✖ Cancelar</button>
-            </div>
-          </div>
-          <div class="com-hint">Mínimo 2 paradas. "Volver al inicio" convierte la ruta en circular. Tras trazar, abajo aparecerá el formulario para publicarla.</div>
-        </div>
-      </div>
-
-      <div class="sec-title" style="margin-top:24px">🚴 Subir ruta GPX a la comunidad</div>
-      <div class="com-form">
-        <input type="file" id="gpx-file" accept=".gpx" style="display:none" onchange="leerGPX(this)">
-        <button class="gen-btn" onclick="document.getElementById('gpx-file').click()" style="width:100%">📂 ELEGIR ARCHIVO GPX</button>
-        <div id="gpx-preview" style="display:none;margin-top:14px">
-          <div class="com-grid">
-            <div><span class="com-lbl">Nombre de la ruta *</span><input class="com-inp" id="gx-lugar"></div>
-            <div><span class="com-lbl">Tipo de bici</span><select class="com-inp" id="gx-bici">
-              <option value="carretera">🚴 Carretera</option><option value="mtb">⛰️ MTB</option>
-              <option value="gravel">🛤️ Gravel</option><option value="ebike">⚡ eBike</option>
-            </select></div>
-            <div><span class="com-lbl">Nivel</span><select class="com-inp" id="gx-nivel">
-              <option value="novato">🟢 Novato</option><option value="medio" selected>🟡 Medio</option>
-              <option value="pro">🔴 Pro</option>
-            </select></div>
-            <div><span class="com-lbl">Duración estimada (min)</span><input class="com-inp" id="gx-mins" type="number"></div>
-            <div><span class="com-lbl">Publicado por</span><input class="com-inp" id="gx-autor" value="RideSafe IA Oficial"></div>
-            <div style="display:flex;align-items:flex-end"><button class="gen-btn" onclick="publicarGPX()" style="width:100%">📤 PUBLICAR EN LA APP</button></div>
-          </div>
-          <div class="com-hint" id="gx-stats"></div>
-        </div>
-      </div>
-
-      <div class="sec-title" style="margin-top:24px">Rutas publicadas en la comunidad</div>
-      <div class="tabla">
-        <div id="lista-rutas-com"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="tab-legal">
-      <button class="refresh-btn" onclick="cargarLegal()">🔄 Actualizar</button>
-      <div class="stats-grid">
-        <div class="stat"><div class="stat-val" id="st-legal-total">—</div><div class="stat-lbl">Total aceptaciones</div></div>
-        <div class="stat" style="--ac:var(--lime)"><div class="stat-val" id="st-legal-hoy">—</div><div class="stat-lbl">Hoy</div></div>
-        <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="st-legal-semana">—</div><div class="stat-lbl">Esta semana</div></div>
-        <div class="stat" style="--ac:var(--orange)"><div class="stat-val">v1.0</div><div class="stat-lbl">Versión legal</div></div>
-      </div>
-      <div class="sec-title">Registro de aceptaciones</div>
-      <div class="tabla">
-        <div id="tabla-legal"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-      </div>
-    </div>
-
-    <!-- PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) -->
-    <div class="tab-panel" id="tab-puntosbici">
-      <button class="refresh-btn" onclick="cargarPuntosBici()">🔄 Actualizar</button>
-      <div class="stats-grid">
-        <div class="stat"><div class="stat-val" id="pb-total">—</div><div class="stat-lbl">Puntos totales</div></div>
-        <div class="stat" style="--ac:var(--cyan)"><div class="stat-val" id="pb-hoy">—</div><div class="stat-lbl">Añadidos hoy</div></div>
-        <div class="stat" style="--ac:var(--orange)"><div class="stat-val" id="pb-semana">—</div><div class="stat-lbl">Esta semana</div></div>
-      </div>
-      <div class="com-form" id="osm-import-box">
-        <h3>🌍 Importar desde OpenStreetMap</h3>
-        <div class="com-hint" style="margin-bottom:10px">Busca una zona y te traigo talleres, farmacias, fuentes, cafeterías y tiendas de bici que ya están en OpenStreetMap. Tú eliges cuáles añadir.</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input class="com-inp" id="osm-zona" placeholder="Ej: Lleida, Balaguer, Cervera..." style="flex:1">
-          <button class="gen-btn" onclick="osmBuscarZona()" style="flex:0 0 auto;padding:11px 16px">🔍 Buscar</button>
-        </div>
-        <div id="osm-estado" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
-        <div id="osm-resultados"></div>
-        <button class="gen-btn" id="osm-importar-btn" style="display:none;margin-top:10px" onclick="osmImportarSeleccionados()">💾 Importar seleccionados</button>
-      </div>
-
-      <div class="com-form">
-        <h3>➕ Añadir punto (tú, como admin)</h3>
-        <div id="mapa-pb-add" style="width:100%;height:320px;border-radius:14px;overflow:hidden;margin-bottom:14px;z-index:1"></div>
-        <div class="com-grid">
-          <div><span class="com-lbl">Nombre *</span><input class="com-inp" id="pb-add-nombre" placeholder="Fuente del parc de la Mitjana"></div>
-          <div><span class="com-lbl">Categoría *</span><select class="com-inp" id="pb-add-cat">
-            <option value="agua">💧 Agua</option><option value="panaderia">🥖 Panadería/tienda</option>
-            <option value="taller">🔧 Taller bici</option><option value="bar">☕ Bar/Restaurante</option>
-            <option value="farmacia">💊 Farmacia</option><option value="alquiler">🚲 Alquiler de bicicletas</option>
-            <option value="interes">📍 Punto de interés</option>
-          </select></div>
-          <div><span class="com-lbl">Latitud *</span><input class="com-inp" id="pb-add-lat" placeholder="Toca el mapa" readonly></div>
-          <div><span class="com-lbl">Longitud *</span><input class="com-inp" id="pb-add-lng" placeholder="Toca el mapa" readonly></div>
-          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pb-add-desc" placeholder="Horario, si hay aparcabicis, si acepta grupos..."></div>
-          <div style="display:flex;align-items:flex-end;gap:8px">
-            <button class="mini-btn" onclick="usarGpsPbAdd()" style="flex:1;padding:11px">📡 USAR MI UBICACIÓN</button>
-            <button class="gen-btn" onclick="guardarPuntoBiciAdmin()" style="flex:2">💾 GUARDAR PUNTO</button>
-          </div>
-        </div>
-        <div class="com-hint">💡 Toca el mapa para colocar el punto — las coordenadas se rellenan solas. Estos puntos se guardan igual que los que añade la comunidad desde la app.</div>
-      </div>
-      <div class="charts-row" style="grid-template-columns:1.3fr 1fr">
-        <div class="chart-card">
-          <h3>Puntos por categoría</h3>
-          <div class="chart-wrap"><canvas id="chart-pbcat"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <h3>Desglose</h3>
-          <div id="pb-desglose"></div>
-        </div>
-      </div>
-      <div class="sec-title">Todos los puntos</div>
-      <div id="pb-form-edit" style="display:none" class="com-form">
-        <h3>✏️ Editar punto</h3>
-        <div class="com-grid">
-          <div><span class="com-lbl">Nombre</span><input class="com-inp" id="pb-e-nombre"></div>
-          <div><span class="com-lbl">Categoría</span><select class="com-inp" id="pb-e-cat">
-            <option value="agua">💧 Agua</option><option value="panaderia">🥖 Panadería/tienda</option>
-            <option value="taller">🔧 Taller bici</option><option value="bar">☕ Bar/Restaurante</option>
-            <option value="farmacia">💊 Farmacia</option><option value="alquiler">🚲 Alquiler de bicicletas</option>
-            <option value="interes">📍 Punto de interés</option>
-          </select></div>
-          <div class="full"><span class="com-lbl">Descripción</span><input class="com-inp" id="pb-e-desc"></div>
-          <div style="display:flex;align-items:flex-end;gap:8px">
-            <button class="gen-btn" onclick="guardarEdicionPunto()" style="flex:1">💾 GUARDAR</button>
-            <button class="mini-btn" onclick="cerrarEdicionPunto()" style="padding:12px">✖</button>
-          </div>
-        </div>
-      </div>
-      <div class="tabla">
-        <div id="pb-lista"><div class="empty"><span class="spin"></span> Cargando...</div></div>
-      </div>
-    </div>
-
-  </div>
-</div>
+<div class="ov" id="ov"><div class="dlg" id="dlg"></div></div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-var TG_CANAL = '@RideSafeAI';
-var COLORES = ['#a8e63d','#00e5ff','#ff8833','#9966ff','#ffcc00','#ff3355'];
+/* ===================================================================
+   RideSafe IA — Consola Master (solo el creador y desarrollador)
+   La seguridad real la ponen las reglas de Firebase: solo la cuenta del
+   propietario puede leer y escribir estos datos. Esta página no guarda
+   ninguna clave privada ni el correo del propietario.
+   =================================================================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SAFE_IMG=/^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
+const COLORS=['#C8DC3C','#60A5FA','#F59E0B','#34D399','#F472B6','#A78BFA','#FB7185','#22D3EE'];
+const colorOf=n=>{let h=0;for(const c of String(n||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
+const ini=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
+const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:(v&&v.seconds?v.seconds*1000:0);
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const fDate=v=>{const t=typeof v==='string'?new Date(v+'T12:00'):new Date(tsMs(v));return isNaN(t)||!tsMs(v)&&typeof v!=='string'?'—':t.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})};
+const nf=n=>Number(n||0).toLocaleString('es-ES');
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
 
-var firebaseConfig = {
-  apiKey: 'AIzaSyDlaR4dgVtBMa4B4aY6l10_O4xBNgJvNJQ',
-  authDomain: 'ridesafe-app-25ecb.firebaseapp.com',
-  databaseURL: 'https://ridesafe-app-25ecb-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId: 'ridesafe-app-25ecb',
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
+firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
+const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue,TS=firebase.firestore.Timestamp;
 
-var TODAS_CLAVES = [
-  {clave:'RIDE-2026-PR',tipo:'General',dias:30},{clave:'RIDE-2026-A1',tipo:'General',dias:30},
-  {clave:'RIDE-2026-A2',tipo:'General',dias:30},{clave:'RIDE-2026-A3',tipo:'General',dias:30},
-  {clave:'RIDE-2026-A4',tipo:'General',dias:30},{clave:'RIDE-2026-A5',tipo:'General',dias:30},
-  {clave:'RSAI-INV-01',tipo:'Invitación',dias:30},{clave:'RSAI-INV-02',tipo:'Invitación',dias:30},
-  {clave:'RSAI-INV-03',tipo:'Invitación',dias:30},{clave:'RSAI-INV-04',tipo:'Invitación',dias:30},
-  {clave:'RSAI-INV-05',tipo:'Invitación',dias:30},{clave:'RSAI-INV-06',tipo:'Invitación',dias:30},
-  {clave:'RSAI-INV-07',tipo:'Invitación',dias:30},{clave:'RSAI-INV-08',tipo:'Invitación',dias:30},
-  {clave:'RSAI-INV-09',tipo:'Invitación',dias:30},{clave:'RSAI-INV-10',tipo:'Invitación',dias:30},
-  {clave:'RIDE-PRO-01',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-02',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-03',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-04',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-05',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-06',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-07',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-08',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-09',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-10',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-11',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-12',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-13',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-14',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-15',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-16',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-17',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-18',tipo:'Promoción',dias:30},
-  {clave:'RIDE-PRO-19',tipo:'Promoción',dias:30},{clave:'RIDE-PRO-20',tipo:'Promoción',dias:30},
-  // GRUPO FUNDADOR LLEIDA — PRO de por vida
-  {clave:'RIDE-FRAN-01',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-02',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-03',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-04',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-05',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-06',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-07',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-08',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-09',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-10',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-11',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-12',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-13',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-14',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-15',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-16',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-17',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-18',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-19',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-20',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-21',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-22',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-23',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-24',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-FRAN-25',tipo:'Fundador Fransi',dias:'∞'},
-  {clave:'RIDE-BIKE-01',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-02',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-03',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-04',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-05',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-06',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-07',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-08',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-09',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-10',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-11',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-12',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-13',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-14',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-15',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-16',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-17',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-18',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-19',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-20',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-21',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-22',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-23',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-24',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-BIKE-25',tipo:'Fundador Bike&Bici',dias:'∞'},
-  {clave:'RIDE-ADN-01',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-02',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-03',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-04',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-05',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-06',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-07',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-08',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-09',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-10',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-11',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-12',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-13',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-14',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-15',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-16',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-17',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-18',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-19',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-20',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-21',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-22',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-23',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-24',tipo:'Fundador ADN',dias:'∞'},
-  {clave:'RIDE-ADN-25',tipo:'Fundador ADN',dias:'∞'},
-];
-
-var clavesDinamicas = JSON.parse(localStorage.getItem('rs_master_claves') || '[]');
-
-// LOGIN DESARROLLADOR (Firebase Authentication)
-var auth = firebase.auth();
-
-document.getElementById('pass-input').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-document.getElementById('email-input').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('pass-input').focus(); });
-
-function doLogin(){
-  var email = document.getElementById('email-input').value.trim();
-  var pass = document.getElementById('pass-input').value;
-  if(!email || !pass){ mostrarErrorLogin('Rellena email y contraseña'); return; }
-  document.getElementById('login-btn').textContent = 'ENTRANDO...';
-  auth.signInWithEmailAndPassword(email, pass)
-    .catch(function(err){
-      document.getElementById('login-btn').textContent = 'ENTRAR';
-      mostrarErrorLogin('Acceso denegado');
-    });
-}
-function mostrarErrorLogin(msg){
-  var el = document.getElementById('login-err');
-  el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(function(){ el.style.display='none'; }, 3000);
-}
-auth.onAuthStateChanged(function(user){
-  if(user){
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('panel').style.display = 'block';
-    document.getElementById('login-btn').textContent = 'ENTRAR';
-    iniciarReloj(); cargarClaves(); cargarRadar(); cargarResumen();
-  } else {
-    document.getElementById('login').style.display = 'flex';
-    document.getElementById('panel').style.display = 'none';
-  }
+/* ---------- Acceso: Google + comprobación en el servidor ---------- */
+function gate(msg,showIn,showOut){$('gate').style.display='grid';$('app').style.display='none';$('gMsg').innerHTML=msg;$('gBtn').style.display=showIn?'flex':'none';$('gOut').style.display=showOut?'flex':'none'}
+function signIn(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(/popup/.test(e.code||''))auth.signInWithRedirect(p);else gate('No se pudo entrar: '+esc(e.code||e.message),true,false)})}
+function signOut(){auth.signOut().then(()=>gate('Sesión cerrada.',true,false))}
+auth.getRedirectResult().catch(()=>{});
+auth.onAuthStateChanged(async u=>{
+  if(!u||u.isAnonymous){gate('Acceso exclusivo del creador y desarrollador de la app.<br>Entra con tu cuenta de Google.',true,false);return}
+  gate('Comprobando permisos…',false,false);
+  try{await db.collection('reports').limit(1).get();}      // solo el propietario puede leer los reportes (reglas de Firebase)
+  catch(e){gate('🔒 <b>Acceso restringido.</b><br>Esta cuenta no es la del propietario de RideSafe IA.',false,true);return}
+  $('gate').style.display='none';$('app').style.display='block';$('meMail').textContent=u.email||'';
+  loadAll();
 });
-function doLogout(){
-  auth.signOut();
-  document.getElementById('pass-input').value = '';
-}
-function iniciarReloj(){
-  setInterval(function(){
-    var d = new Date();
-    document.getElementById('reloj').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
-  }, 1000);
-}
 
-// TABS
-function showTab(id, btn){
-  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('on');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('on');});
-  document.getElementById('tab-'+id).classList.add('on');
-  btn.classList.add('on');
-  if(id==='resumen') cargarResumen();
-  if(id==='radar') cargarRadar();
-  if(id==='grupos') cargarGrupos();
-  if(id==='legal') cargarLegal();
-  if(id==='comunidad') cargarComunidad();
-  if(id==='puntosbici') cargarPuntosBici();
+/* ---------- Datos ---------- */
+let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[]},ann={},loadedAt=0,view='res';
+const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank'];
+async function loadAll(manual){
+  $('view').innerHTML='<div class="empty">Cargando datos de la app…</div>';
+  const res=await Promise.all(COLS.map(c=>db.collection(c).limit(5000).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{console.warn(c,e);return[]})));
+  COLS.forEach((c,i)=>D[c]=res[i]);
+  try{const s=await db.collection('config').doc('announce').get();ann=s.exists?s.data():{}}catch(e){ann={}}
+  loadedAt=Date.now();counts();render();if(manual)toast('Datos actualizados');
 }
-
-// CLAVES
-function cargarClaves(){
-  db.ref('claves_activadas').once('value', function(snap){
-    var activadas = snap.val() || {};
-    var usadasMap = {};
-    Object.keys(activadas).forEach(function(k){
-      var d = activadas[k];
-      if(d && d.clave) usadasMap[d.clave] = d;
-    });
-    renderClaves(usadasMap);
-  });
+const clubName=c=>{const g=D.groups.find(x=>x.id===c);return g?g.name:(c?c:'Sin club')};
+const userClub=uid=>{const g=D.groups.find(x=>(x.members||{})[uid]);return g||null};
+function counts(){
+  $('nClubs').textContent=D.groups.length;$('nUsers').textContent=D.users.filter(u=>u.name).length;
+  $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
+  const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
+}
+function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
+function render(){
+  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],ann:['Aviso general','Mensaje para todos los usuarios'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
+  $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,ann:vAnn,mnt:vMnt})[view]();
 }
 
-function renderClaves(usadasMap){
-  var todas = TODAS_CLAVES.concat(clavesDinamicas);
-  var usadas = 0, libres = 0;
-  var html = '';
-  todas.forEach(function(c){
-    var datos = usadasMap[c.clave] || null;
-    var usada = !!datos;
-    if(usada) usadas++; else libres++;
-    var fecha = datos && datos.fecha ? datos.fecha : '—';
-    var btnRevocar = usada
-      ? ' <button onclick="revocarClave(\'' + c.clave + '\')" style="padding:3px 8px;background:rgba(255,51,85,.12);border:1px solid rgba(255,51,85,.35);border-radius:6px;color:var(--red);font-size:10px;font-family:Barlow Condensed,sans-serif;font-weight:700;cursor:pointer;margin-left:6px">🗑️</button>'
-      : '';
-    html += '<div class="tabla-row" style="grid-template-columns:1fr 80px 160px 130px">'
-      +'<div><div class="clave-code">'+c.clave+'</div><div class="clave-tipo">'+c.tipo+'</div></div>'
-      +'<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text)">'+c.dias+'d</div>'
-      +'<div style="display:flex;align-items:center"><span class="badge '+(usada?'badge-usada':'badge-libre')+'">'+(usada?'✅ Usada':'🟢 Libre')+'</span>'+btnRevocar+'</div>'
-      +'<div style="font-size:10px;color:var(--muted)">'+fecha+'</div>'
-      +'</div>';
-  });
-  document.getElementById('lista-claves').innerHTML = html || '<div class="empty">Sin claves</div>';
-  document.getElementById('st-total').textContent = todas.length;
-  document.getElementById('st-libres').textContent = libres;
-  document.getElementById('st-usadas').textContent = usadas;
-  document.getElementById('st-pct').textContent = todas.length > 0 ? Math.round(usadas/todas.length*100)+'%' : '0%';
+/* ---------- Gráfica de barras (una serie) con tooltip ---------- */
+const CH={};
+function barChart(id,vals,labels,color,unit){
+  CH[id]={vals,labels,unit};
+  const W=600,H=200,pl=30,pr=6,pt=12,pb=26,n=vals.length,mx=Math.max(1,...vals);
+  const step=Math.ceil(mx/4)||1,top=step*4,bw=(W-pl-pr)/n,gap=2;
+  let g='';for(let k=0;k<=4;k++){const y=pt+(H-pt-pb)*(1-k/4);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1F3350" stroke-width="1"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#6F8199">${step*k}</text>`}
+  let b='';vals.forEach((v,i)=>{const h=(H-pt-pb)*(v/top),x=pl+i*bw+gap/2,y=H-pb-h,w=Math.max(1,bw-gap);
+    if(v>0)b+=`<path d="M${x},${H-pb}V${y+Math.min(4,h)}Q${x},${y} ${x+Math.min(4,w/2)},${y}H${x+w-Math.min(4,w/2)}Q${x+w},${y} ${x+w},${y+Math.min(4,h)}V${H-pb}Z" fill="${color}"/>`;
+    b+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="transparent" data-c="${id}" data-i="${i}"/>`;
+    if(i%5===0||i===n-1)b+=`<text x="${pl+i*bw+bw/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="#6F8199">${labels[i].slice(8)}/${labels[i].slice(5,7)}</text>`});
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gráfica de barras">${g}<line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" stroke="#2A4468"/>${b}</svg></div>`;
+}
+document.addEventListener('mouseleave',()=>{$('tip').style.display='none'});
+document.addEventListener('scroll',()=>{$('tip').style.display='none'},true);
+document.addEventListener('mousemove',e=>{const t=e.target;const tip=$('tip');
+  if(t&&t.dataset&&t.dataset.c&&CH[t.dataset.c]){const c=CH[t.dataset.c],i=+t.dataset.i;tip.innerHTML=`<span style="color:#A7B4C6">${fDate(c.labels[i])}</span><br><b>${c.vals[i]}</b> ${c.vals[i]===1?c.unit[0]:c.unit[1]}`;tip.style.display='block';tip.style.left=Math.min(innerWidth-160,e.clientX+14)+'px';tip.style.top=(e.clientY-50)+'px'}else tip.style.display='none'});
+
+/* ---------- 📊 Resumen ---------- */
+function vRes(){
+  const today=iso(Date.now()),day=86400000;
+  const U=D.users.filter(u=>u.name),act=D.nearby.filter(n=>n.t>Date.now()-day).length;
+  const up=D.rides.filter(r=>r.date>=today).length;
+  const days=[...Array(30)].map((_,i)=>iso(Date.now()-(29-i)*day));
+  const byDay=(arr,f)=>days.map(d=>arr.filter(x=>{const t=tsMs(x[f]);return t&&iso(t)===d}).length);
+  const noClub={rides:D.rides.filter(r=>!r.group).length,feed:D.feed.filter(x=>!x.club).length,routes:D.routes.filter(x=>!x.club).length,pois:D.pois.filter(x=>!x.club).length};
+  const orphan=Object.values(noClub).reduce((a,b)=>a+b,0);
+  const topClubs=[...D.groups].sort((a,b)=>Object.keys(b.members||{}).length-Object.keys(a.members||{}).length).slice(0,6);const mxc=Math.max(1,...topClubs.map(g=>Object.keys(g.members||{}).length));
+  const noClubUsers=U.filter(u=>!userClub(u.id)).length;
+  $('view').innerHTML=`
+   <div class="kpis">
+    <div class="kpi"><div class="l">🏅 Clubes</div><div class="v num">${nf(D.groups.length)}</div><div class="h">${D.groups.filter(g=>g.club).length} oficiales</div></div>
+    <div class="kpi"><div class="l">👥 Ciclistas</div><div class="v num">${nf(U.length)}</div><div class="h">${U.filter(u=>u.google).length} con Google · ${noClubUsers} sin club</div></div>
+    <div class="kpi"><div class="l">🟢 Activos 24 h</div><div class="v num">${nf(act)}</div><div class="h">con la app abierta</div></div>
+    <div class="kpi"><div class="l">📅 Salidas próximas</div><div class="v num">${nf(up)}</div><div class="h">${nf(D.rides.length)} en total</div></div>
+    <div class="kpi"><div class="l">🗺️ Rutas</div><div class="v num">${nf(D.routes.length)}</div><div class="h">compartidas en clubes</div></div>
+    <div class="kpi"><div class="l">📰 Actividad</div><div class="v num">${nf(D.feed.length)}</div><div class="h">salidas publicadas</div></div>
+    <div class="kpi"><div class="l">☕ Puntos ciclistas</div><div class="v num">${nf(D.pois.length)}</div><div class="h">fuentes, cafés, talleres…</div></div>
+    <div class="kpi${D.reports.length?' alert':''}"><div class="l">⚠️ Reportes</div><div class="v num">${nf(D.reports.length)}</div><div class="h">${D.reports.length?'pendientes de revisar':'todo en orden'}</div></div>
+   </div>
+   <div class="grid2">
+    <div class="box"><h3>Ciclistas nuevos</h3><div class="d">Altas por día · últimos 30 días</div>${barChart('u',byDay(U,'since'),days,'#C8DC3C',['ciclista nuevo','ciclistas nuevos'])}</div>
+    <div class="box"><h3>Salidas creadas</h3><div class="d">Salidas por día · últimos 30 días</div>${barChart('r',byDay(D.rides,'createdAt'),days,'#60A5FA',['salida creada','salidas creadas'])}</div>
+   </div>
+   <div class="grid2">
+    <div class="box"><h3>Clubes con más ciclistas</h3><div class="d">Miembros por club</div>
+     <div class="rank">${topClubs.length?topClubs.map(g=>{const n=Object.keys(g.members||{}).length;return `<div class="row"><div class="n">${esc(g.name)}</div><div class="bw"><i style="width:${Math.round(n/mxc*100)}%"></i></div><div class="c num">${n}</div></div>`}).join(''):'<div class="empty">Aún no hay clubes</div>'}</div></div>
+    <div class="box"><h3>Estado de la app</h3><div class="d">Seguridad y datos</div>
+     <div class="kv"><span>Privacidad</span><b>🔒 Clubes privados (reglas v4.0)</b><span>Datos sin club</span><b>${orphan?`<span class="pill warn">${orphan} por asignar</span>`:'<span class="pill ok">Ninguno</span>'}</b><span>Ciclistas bloqueados</span><b>${U.filter(u=>u.banned).length}</b><span>Aviso general</span><b>${ann.active&&ann.text?'<span class="pill lime">Publicado</span>':'<span class="pill mut">Sin aviso</span>'}</b></div>
+     ${orphan?`<button class="btn sm" style="margin-top:14px" onclick="migrate()">🔧 Pasar datos antiguos a su club</button>`:''}</div>
+   </div>`;
 }
 
-function generarClave(){
-  var tipo = document.getElementById('gen-tipo').value;
-  var num = String(Math.floor(Math.random()*900+100));
-  var nueva = tipo + '-' + num;
-  var dias = tipo==='RIDE-CLUB'?365:tipo==='RIDE-VIP'?60:30;
-  var obj = {clave:nueva, tipo:tipo, dias:dias};
-  clavesDinamicas.push(obj);
-  localStorage.setItem('rs_master_claves', JSON.stringify(clavesDinamicas));
-  db.ref('claves_dinamicas/'+nueva.replace(/-/g,'_')).set({tipo:tipo, dias:dias, ts:Date.now()});
-  document.getElementById('gen-clave-txt').textContent = nueva;
-  document.getElementById('gen-result').style.display = 'block';
-  cargarClaves();
+/* ---------- 🏅 Clubes ---------- */
+let qClub='';
+function vClubs(){
+  const l=D.groups.filter(g=>!qClub||(g.name+' '+g.id).toLowerCase().includes(qClub.toLowerCase())).sort((a,b)=>Object.keys(b.members||{}).length-Object.keys(a.members||{}).length);
+  $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar club o código…" value="${esc(qClub)}" oninput="qClub=this.value;vClubs();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)"></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Club</th><th class="r">Ciclistas</th><th class="r hide-m">Grupetas</th><th class="hide-m">Administradores</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.map(g=>{const n=Object.keys(g.members||{}).length,gp=Object.keys(g.grupetas||{}).length;const adm=[g.members?.[g.byUid]||g.by||'—',...Object.values(g.admins||{})];
+     return `<tr><td><div class="who">${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:`<div class="av" style="background:${colorOf(g.name)}">${esc(ini(g.name))}</div>`}<div><b>${esc(g.name)}</b><small>código ${esc(g.id)}</small></div></div></td>
+      <td class="r num">${n}</td><td class="r num hide-m">${gp}</td><td class="hide-m" style="color:var(--txt2)">${adm.map(esc).join(', ')}</td>
+      <td class="hide-m">${g.club?'<span class="pill lime">🏅 Oficial</span>':'<span class="pill mut">Grupo</span>'}</td>
+      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView('${g.id}')">Ver</button><button class="btn sm" onclick="clubOfficial('${g.id}')">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole('${g.id}','admins')">🛡️ Admins</button><button class="btn sm red" onclick="clubDelete('${g.id}')">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
+   </tbody></table></div>`;
 }
-function copiarClave(){
-  var txt = document.getElementById('gen-clave-txt').textContent;
-  navigator.clipboard.writeText(txt).then(function(){ alert('Copiada: '+txt); });
+function clubView(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;const gps=Object.entries(g.grupetas||{});
+  const role=k=>k===g.byUid?'👑 Creador':(g.admins||{})[k]?'🛡️ Administrador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'🚴 Ciclista';
+  const cr=D.rides.filter(r=>r.group===id);
+  dlg(`<h3>${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:'🏅'} ${esc(g.name)}<button class="x" onclick="closeDlg()">✕</button></h3>
+   <div class="kv" style="margin-bottom:14px"><span>Código</span><b>${esc(g.id)}</b><span>Creado</span><b>${fDate(g.createdAt)}</b><span>Salidas</span><b>${cr.length} (${cr.filter(r=>r.date>=iso(Date.now())).length} próximas)</b><span>Rutas</span><b>${D.routes.filter(r=>r.club===id).length}</b></div>
+   <h3 style="font-size:15px">🏷️ Grupetas (${gps.length})</h3>${gps.length?gps.map(([k,x])=>`<div class="opt" style="cursor:default">${esc(x.name)} <span class="pill mut">${esc(x.mod||'')}</span>${Object.keys(x.resp||{}).length?' · 🎯 '+Object.values(x.resp).map(esc).join(', '):''}</div>`).join(''):'<p>Sin grupetas.</p>'}
+   <h3 style="font-size:15px;margin-top:10px">👥 Ciclistas (${Object.keys(g.members||{}).length})</h3>
+   ${Object.entries(g.members||{}).map(([k,n])=>`<div class="opt" style="cursor:default"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}<br><small style="color:var(--txt3)">${role(k)}</small></div></div>`).join('')}
+   <div class="row"><button class="btn sm" onclick="clubRole('${id}','captains')">⭐ Jefes de pelotón</button><button class="btn sm" onclick="clubRole('${id}','admins')">🛡️ Administradores</button></div>`);
 }
-
-// RADAR
-function cargarRadar(){
-  var ahora = Date.now(), INACT = 5*60*1000;
-  db.ref('radar').once('value', function(snap){
-    var datos = snap.val() || {};
-    var activos = [];
-    Object.keys(datos).forEach(function(uid){
-      var c = datos[uid];
-      if(!c||!c.nombre||ahora-c.ts>INACT) return;
-      activos.push(Object.assign({uid:uid, min:Math.round((ahora-c.ts)/60000)}, c));
-    });
-    activos.sort(function(a,b){return a.min-b.min;});
-    document.getElementById('st-ciclistas').textContent = activos.length;
-    document.getElementById('st-radar-n').textContent = activos.length;
-    var h = new Date(); document.getElementById('st-hora').textContent = String(h.getHours()).padStart(2,'0')+':'+String(h.getMinutes()).padStart(2,'0');
-    var el = document.getElementById('radar-container');
-    if(!activos.length){ el.innerHTML='<div class="empty">🚴 No hay ciclistas activos</div>'; return; }
-    var html = '<div class="radar-lista">';
-    activos.forEach(function(c,i){
-      var col=COLORES[i%COLORES.length];
-      var bici={carretera:'🚴',mtb:'🚵',gravel:'🛤️',ebike:'⚡'}[c.bici]||'🚲';
-      var niv={novato:'🟢 Novato',medio:'🟡 Medio',pro:'🔴 Pro'}[c.nivel]||c.nivel;
-      html+='<div class="radar-item"><div class="radar-av" style="background:'+col+'">'+c.nombre.charAt(0).toUpperCase()+'</div>'
-        +'<div class="radar-info"><div class="radar-nombre">'+c.nombre+'</div>'
-        +'<div class="radar-det">'+niv+' · '+bici+(c.grupo?' · Grupo '+c.grupo:' · Solo')+'</div></div>'
-        +'<div class="radar-time">'+(c.min===0?'ahora':'hace '+c.min+' min')+'</div></div>';
-    });
-    el.innerHTML = html+'</div>';
-  });
-  db.ref('grupos').once('value', function(snap){
-    var n = Object.keys(snap.val()||{}).filter(function(k){ var g=snap.val()[k]; return g&&g.miembros&&Object.keys(g.miembros).length>0; }).length;
-    document.getElementById('st-grupos-r').textContent = n;
-  });
+async function clubOfficial(id){const g=D.groups.find(x=>x.id===id);try{await db.collection('groups').doc(id).update({club:!g.club});g.club=!g.club;toast(g.club?'🏅 Ahora es club oficial':'Ya no es club oficial');render()}catch(e){err(e)}}
+async function clubRole(id,field){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;const ms=Object.entries(g.members||{}).filter(([k])=>k!==g.byUid);
+  const T=field==='admins'?'🛡️ Administradores':'⭐ Jefes de pelotón';
+  if(!ms.length){toast('Este club aún no tiene más ciclistas');return}
+  dlg(`<h3>${T} · ${esc(g.name)}<button class="x" onclick="closeDlg()">✕</button></h3><p>Toca un ciclista para darle o quitarle el cargo. El creador ya manda en su club.</p>
+   ${ms.map(([k,n])=>{const on=!!(g[field]||{})[k];return `<button class="opt" onclick="roleToggle('${id}','${field}','${k}')"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}</div>${on?'<span class="pill lime">Sí · quitar</span>':'<span class="pill mut">Nombrar</span>'}</button>`}).join('')}`);
+}
+async function roleToggle(id,field,k){
+  const g=D.groups.find(x=>x.id===id);const on=!!(g[field]||{})[k];
+  try{await db.collection('groups').doc(id).update({[field+'.'+k]:on?FV.delete():g.members[k]});g[field]=g[field]||{};if(on)delete g[field][k];else g[field][k]=g.members[k];toast(on?'Cargo quitado':'Cargo asignado');clubRole(id,field);if(view==='clubs')vClubs()}catch(e){err(e)}
+}
+async function clubDelete(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;
+  const ok=await typed('🗑️ Borrar club',`Se borrará el club «${esc(g.name)}». Sus ciclistas se quedarán sin club. Las salidas, rutas y rankings del club no se borran (puedes limpiarlos después). Esta acción no se puede deshacer.`,g.id);
+  if(!ok)return;try{await db.collection('groups').doc(id).delete();D.groups=D.groups.filter(x=>x.id!==id);counts();toast('Club borrado');render()}catch(e){err(e)}
 }
 
-// GRUPOS
-function cargarGrupos(){
-  db.ref('grupos').once('value', function(snap){
-    var datos = snap.val()||{}, grupos=[];
-    Object.keys(datos).forEach(function(k){
-      var g=datos[k]; if(!g||!g.miembros) return;
-      var m=Object.values(g.miembros).filter(function(x){return x&&x.nombre;});
-      if(m.length>0) grupos.push({codigo:k, miembros:m});
-    });
-    var el=document.getElementById('grupos-container');
-    if(!grupos.length){ el.innerHTML='<div class="empty">👥 No hay grupos activos</div>'; return; }
-    var html='<div style="display:flex;flex-direction:column;gap:10px">';
-    grupos.forEach(function(g){
-      html+='<div style="background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px">'
-        +'<div style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:900;color:var(--lime);letter-spacing:2px">'+g.codigo+'</div>'
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+g.miembros.map(function(m){return m.nombre;}).join(', ')+'</div>'
-        +'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+g.miembros.length+' de 10 miembros</div></div>'
-        +'<span style="background:var(--lime-dim);color:var(--lime);border:1px solid var(--border);font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px">'+g.miembros.length+' activos</span>'
-        +'</div>';
-    });
-    el.innerHTML = html+'</div>';
-  });
+/* ---------- 👥 Ciclistas ---------- */
+let qUser='',fUser='all';
+function vUsers(){
+  let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
+  if(fUser==='ban')l=l.filter(u=>u.banned);if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
+  if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
+  l.sort((a,b)=>(b.pts||0)-(a.pts||0));
+  $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
+    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Bloqueados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser='${k}';vUsers()">${t}</button>`).join('')}</div>
+    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(u=>`<tr><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
+     <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
+     <td class="hide-m">${u.banned?'<span class="pill bad">🚫 Bloqueado</span>':'<span class="pill ok">Activo</span>'}</td>
+     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button><button class="btn sm${u.banned?'':' red'}" onclick="userBan('${u.id}')">${u.banned?'Desbloquear':'🚫 Bloquear'}</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button></div></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Nadie con este filtro</div></td></tr>'}
+   </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
+}
+async function userPts(id){const u=D.users.find(x=>x.id===id);const v=prompt('Puntos de '+u.name,u.pts||0);if(v===null)return;const n=Math.max(0,Math.round(+v||0));try{await db.collection('users').doc(id).set({pts:n},{merge:true});u.pts=n;toast('Puntos actualizados');vUsers()}catch(e){err(e)}}
+async function userBan(id){const u=D.users.find(x=>x.id===id);const on=!u.banned;if(!await confirmDlg(on?'🚫 Bloquear ciclista':'Desbloquear ciclista',on?`${esc(u.name)} no podrá publicar salidas, rutas, puntos ni comentarios.`:`${esc(u.name)} podrá volver a publicar.`,on?'Bloquear':'Desbloquear',on))return;try{await db.collection('users').doc(id).set({banned:on},{merge:true});u.banned=on;toast(on?'Ciclista bloqueado':'Ciclista desbloqueado');vUsers()}catch(e){err(e)}}
+async function userWipe(id){
+  const u=D.users.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar su contenido',`Se borrarán las salidas que organiza ${esc(u.name)}, sus rutas, su actividad y sus puntos ciclistas. Su cuenta sigue existiendo. Esta acción no se puede deshacer.`,'Borrar',true))return;
+  let n=0;for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id)){try{await db.collection(c).doc(d.id).delete();n++}catch(e){}}
+  for(const r of D.rides.filter(x=>x.byUid===id)){try{await db.collection('rides').doc(r.id).delete();n++}catch(e){}}
+  toast(n+' elementos borrados');loadAll();
+}
+function csvUsers(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Nombre','Club','Puntos','Desde','Google','Bloqueado']].concat(D.users.filter(u=>u.name).map(u=>[u.name,(userClub(u.id)||{}).name||'',u.pts||0,fDate(u.since),u.google?'sí':'no',u.banned?'sí':'no']));download('ciclistas-ridesafe.csv','﻿'+rows.map(r=>r.map(q).join(';')).join('\n'),'text/csv')}
+
+/* ---------- 📅 Salidas ---------- */
+let fRide='up',cRide='';
+function vRides(){
+  const t=iso(Date.now());let l=D.rides.slice();
+  if(fRide==='up')l=l.filter(r=>r.date>=t);if(fRide==='past')l=l.filter(r=>r.date<t);if(cRide)l=l.filter(r=>(r.group||'')===cRide);
+  l.sort((a,b)=>fRide==='past'?(b.date+b.hour).localeCompare(a.date+a.hour):(a.date+a.hour).localeCompare(b.date+b.hour));
+  const old=D.rides.filter(r=>r.date<iso(Date.now()-60*86400000)).length;
+  $('view').innerHTML=`<div class="bar"><div class="chips">${[['up','Próximas'],['past','Pasadas'],['all','Todas']].map(([k,x])=>`<button class="chip${fRide===k?' on':''}" onclick="fRide='${k}';vRides()">${x}</button>`).join('')}</div>
+    <select class="inp" onchange="cRide=this.value;vRides()"><option value="">Todos los clubes</option>${D.groups.map(g=>`<option value="${esc(g.id)}"${cRide===g.id?' selected':''}>${esc(g.name)}</option>`).join('')}</select>
+    <div style="flex:1"></div>${old?`<button class="btn sm red" onclick="cleanOld()">🧹 Borrar ${old} salidas de hace más de 60 días</button>`:''}</div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Fecha</th><th>Salida</th><th class="hide-m">Club</th><th class="r hide-m">Apuntados</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(r=>`<tr><td class="num" style="white-space:nowrap">${fDate(r.date)}<br><small style="color:var(--txt3)">${esc(r.hour||'')}</small></td><td><b>${esc(r.title||'Salida')}</b><br><small style="color:var(--txt3)">${esc(r.start||'')} · organiza ${esc(r.by||'')}</small></td>
+    <td class="hide-m" style="color:var(--txt2)">${r.group?esc(clubName(r.group)):'<span class="pill warn">Sin club</span>'}${r.gp&&D.groups.find(g=>g.id===r.group)?.grupetas?.[r.gp]?'<br><small>🏷️ '+esc(D.groups.find(g=>g.id===r.group).grupetas[r.gp].name)+'</small>':''}</td><td class="r num hide-m">${Object.keys(r.people||{}).length}</td>
+    <td class="r"><div class="acts"><a class="btn sm" style="text-decoration:none" href="./#salida=${esc(r.id)}" target="_blank" rel="noopener">Ver</a><button class="btn sm red" onclick="delDoc('rides','${r.id}','la salida «${esc(r.title||'Salida')}»')">🗑️</button></div></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">No hay salidas con este filtro</div></td></tr>'}
+   </tbody></table></div>`;
+}
+async function cleanOld(){
+  const lim=iso(Date.now()-60*86400000);const l=D.rides.filter(r=>r.date<lim);
+  if(!await confirmDlg('🧹 Limpiar salidas antiguas',`Se borrarán ${l.length} salidas de hace más de 60 días de <b>toda la app</b> (todos los clubes). Las actividades de cada ciclista no se tocan. Esta acción no se puede deshacer.`,'Borrar',true))return;
+  const bar=progress('Borrando salidas antiguas…');let n=0;for(const r of l){try{await db.collection('rides').doc(r.id).delete()}catch(e){}n++;bar(n/l.length)}
+  closeDlg();toast(n+' salidas borradas');loadAll();
 }
 
-// CANAL
-function publicarCanal(){
-  var txt=document.getElementById('canal-txt').value.trim();
-  if(!txt){ alert('Escribe un mensaje'); return; }
-  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev',{
-    method:'POST',headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
-    body:JSON.stringify({telegram:true,chat_id:TG_CANAL,text:txt,parse_mode:'HTML'})
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.ok){ document.getElementById('canal-txt').value=''; alert('Publicado en '+TG_CANAL); }
-    else alert('Error: '+(d.description||'desconocido'));
-  }).catch(function(){ alert('Error de conexión'); });
+/* ---------- 🗂️ Contenido ---------- */
+let cTab='routes';
+function vCont(){
+  const T={routes:'🗺️ Rutas',feed:'📰 Actividad',pois:'☕ Puntos ciclistas'};
+  const l=D[cTab].slice().sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
+  const title=x=>cTab==='routes'?`${x.name} · ${nf(Math.round(x.km||0))} km`:cTab==='feed'?`${x.title} · ${String(Number(x.km||0).toFixed(1)).replace('.',',')} km`:x.name;
+  $('view').innerHTML=`<div class="bar"><div class="chips">${Object.entries(T).map(([k,t])=>`<button class="chip${cTab===k?' on':''}" onclick="cTab='${k}';vCont()">${t} (${D[k].length})</button>`).join('')}</div></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>${T[cTab]}</th><th class="hide-m">Club</th><th class="hide-m">Autor</th><th class="hide-m">Fecha</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(x=>`<tr><td><b>${esc(title(x))}</b></td><td class="hide-m" style="color:var(--txt2)">${x.club?esc(clubName(x.club)):'<span class="pill warn">Sin club</span>'}</td><td class="hide-m" style="color:var(--txt2)">${esc(x.by||x.name||'')}</td><td class="hide-m" style="color:var(--txt2)">${fDate(x.createdAt)}</td>
+    <td class="r"><button class="btn sm red" onclick="delDoc('${cTab}','${x.id}','este elemento')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">Nada por aquí</div></td></tr>'}
+   </tbody></table></div>`;
 }
-function msgRapido(txt){ document.getElementById('canal-txt').value=txt; }
-
-// LEGAL
-function cargarLegal(){
-  db.ref('aceptaciones_legales').once('value', function(snap){
-    var datos=snap.val()||{}, lista=[];
-    var ahora=Date.now(), hoy=new Date().toDateString(), semana=ahora-7*24*60*60*1000;
-    var contHoy=0, contSemana=0;
-    Object.keys(datos).forEach(function(k){
-      var d=datos[k]; if(!d) return;
-      lista.push(d);
-      if(new Date(d.ts).toDateString()===hoy) contHoy++;
-      if(d.ts>semana) contSemana++;
-    });
-    lista.sort(function(a,b){return b.ts-a.ts;});
-    document.getElementById('st-legal-total').textContent=lista.length;
-    document.getElementById('st-legal-hoy').textContent=contHoy;
-    document.getElementById('st-legal-semana').textContent=contSemana;
-    var el=document.getElementById('tabla-legal');
-    if(!lista.length){ el.innerHTML='<div class="empty">⚖️ Sin aceptaciones registradas aún</div>'; return; }
-    var h='<table class="legal-tabla"><tr><th>Fecha y hora</th><th>Usuario</th><th>Versión</th><th>Dispositivo</th></tr>';
-    lista.forEach(function(d,i){
-      var disp=d.dispositivo?d.dispositivo.substring(0,60)+'...':'N/D';
-      h+='<tr><td style="color:var(--lime);font-family:Barlow Condensed,sans-serif;font-weight:700;white-space:nowrap">'+(d.fecha_legible||'—')+'</td>'
-        +'<td style="color:var(--text);font-weight:600">'+(d.nombre||'—')+'</td>'
-        +'<td style="color:var(--muted)">'+(d.version_legal||'—')+'</td>'
-        +'<td style="color:var(--dim);font-size:10px">'+disp+'</td></tr>';
-    });
-    el.innerHTML=h+'</table>';
-  });
+async function delDoc(col,id,what){
+  if(!await confirmDlg('🗑️ Borrar',`¿Seguro que quieres borrar ${what}? Esta acción no se puede deshacer.`,'Borrar',true))return;
+  try{await db.collection(col).doc(id).delete();D[col]=D[col].filter(x=>x.id!==id);counts();toast('Borrado');render()}catch(e){err(e)}
 }
 
+/* ---------- ⚠️ Reportes ---------- */
+function vRep(){
+  const C={feed:'Actividad',pois:'Punto ciclista',routes:'Ruta',rides:'Salida'};
+  $('view').innerHTML=D.reports.length?D.reports.sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt)).map(r=>`<div class="box" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><span class="pill warn">${esc(C[r.type]||r.type)}</span><h3 style="margin-top:6px">${esc(r.title||'(sin título)')}</h3><div class="d" style="margin:2px 0 0">Reportado por ${esc(r.byName||'')} · ${fDate(r.createdAt)} · «${esc(r.reason||'')}»</div></div>
+    <div class="acts" style="display:flex;gap:8px"><button class="btn sm red" onclick="repDel('${r.id}')">🗑️ Borrar contenido</button><button class="btn sm" onclick="repDismiss('${r.id}')">✓ Descartar</button></div></div>`).join(''):'<div class="box"><div class="empty">✅ No hay reportes pendientes</div></div>';
+}
+async function repDel(id){const r=D.reports.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar contenido reportado',`Se borrará «${esc(r.title||'')}» para todos.`,'Borrar',true))return;try{if(r.refId)await db.collection(r.type).doc(r.refId).delete().catch(()=>{});await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Contenido borrado');vRep()}catch(e){err(e)}}
+async function repDismiss(id){try{await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Reporte descartado');vRep()}catch(e){err(e)}}
 
-// ═══ RESUMEN — dashboard general (aditivo) ═══
-var PB_CAT = {agua:'💧 Agua', panaderia:'🥖 Panadería/tienda', taller:'🔧 Taller bici', bar:'☕ Bar/Restaurante', farmacia:'💊 Farmacia', alquiler:'🚲 Alquiler de bicicletas', interes:'📍 Punto de interés'};
-var chartLegal7 = null, chartRadarBici = null, chartPbCat = null;
+/* ---------- 📣 Aviso general ---------- */
+function vAnn(){
+  $('view').innerHTML=`<div class="grid2"><div class="box"><h3>Escribir aviso</h3><div class="d">Aparece arriba en Comunidad para <b>todos</b> los usuarios de todos los clubes.</div>
+    <textarea class="inp" id="annT" rows="4" maxlength="200" style="width:100%;resize:vertical" placeholder="Ej. 🎉 Nueva versión: clubes privados y grupetas">${esc(ann.active?ann.text:'')}</textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn lime" onclick="annSave(true)">📣 Publicar aviso</button>${ann.active?'<button class="btn red" onclick="annSave(false)">Quitar aviso</button>':''}</div></div>
+    <div class="box"><h3>Estado</h3><div class="d">${ann.active&&ann.text?'Publicado el '+fDate(ann.t):'No hay ningún aviso publicado'}</div>${ann.active&&ann.text?`<div class="opt" style="cursor:default;border-color:var(--lime)">📣 ${esc(ann.text)}</div>`:''}</div></div>`;
+}
+async function annSave(on){const text=on?$('annT').value.trim().slice(0,200):'';if(on&&!text){toast('Escribe el aviso');return}try{await db.collection('config').doc('announce').set({text,active:on,t:Date.now()});ann={text,active:on,t:Date.now()};toast(on?'📣 Aviso publicado':'Aviso quitado');vAnn()}catch(e){err(e)}}
 
-function cargarResumen(){
-  db.ref('claves_activadas').once('value', function(snap){
-    document.getElementById('rs-claves').textContent = Object.keys(snap.val()||{}).length;
-  });
-  db.ref('grupos').once('value', function(snap){
-    var n = Object.keys(snap.val()||{}).filter(function(k){ var g=snap.val()[k]; return g&&g.miembros&&Object.keys(g.miembros).length>0; }).length;
-    document.getElementById('rs-grupos').textContent = n;
-  });
-  db.ref('puntos_bici').once('value', function(snap){
-    document.getElementById('rs-puntos').textContent = Object.keys(snap.val()||{}).length;
-  });
-  var ahora = Date.now(), INACT = 5*60*1000;
-  db.ref('radar').once('value', function(snap){
-    var datos = snap.val()||{}, activos=[], porBici={};
-    Object.keys(datos).forEach(function(uid){
-      var c = datos[uid]; if(!c||!c.nombre||ahora-c.ts>INACT) return;
-      activos.push(c);
-      var b = c.bici||'otro'; porBici[b] = (porBici[b]||0)+1;
-    });
-    document.getElementById('rs-radar').textContent = activos.length;
-    var labs = {carretera:'🚴 Carretera',mtb:'🚵 MTB',gravel:'🛤️ Gravel',ebike:'⚡ eBike',otro:'🚲 Otro'};
-    var keys = Object.keys(porBici);
-    if(chartRadarBici) chartRadarBici.destroy();
-    chartRadarBici = new Chart(document.getElementById('chart-radarbici'), {
-      type:'doughnut',
-      data:{ labels: keys.length?keys.map(function(k){return labs[k]||k;}):['Sin datos'],
-             datasets:[{ data: keys.length?keys.map(function(k){return porBici[k];}):[1],
-                         backgroundColor:['#a8e63d','#00e5ff','#ff8833','#9966ff','#ff3355'], borderWidth:0 }] },
-      options:{ plugins:{ legend:{ position:'bottom', labels:{ color:'#7a9a7e', font:{size:11} } } }, maintainAspectRatio:false }
-    });
-  });
-  db.ref('quedadas').once('value', function(snap){
-    var datos = snap.val()||{}, activas=0, lim = Date.now()-3*3600*1000;
-    Object.keys(datos).forEach(function(k){ var q=datos[k]; if(q&&q.fechaHora && new Date(q.fechaHora).getTime()>lim) activas++; });
-    document.getElementById('rs-quedadas').textContent = activas;
-  });
-  db.ref('aceptaciones_legales').once('value', function(snap){
-    var datos = snap.val()||{}, hoy = new Date().toDateString();
-    var dias = [], cont = {}, hoyN = 0;
-    for(var i=6;i>=0;i--){ var d=new Date(Date.now()-i*86400000); var k=d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}); dias.push(k); cont[k]=0; }
-    Object.keys(datos).forEach(function(k){
-      var d = datos[k]; if(!d||!d.ts) return;
-      if(new Date(d.ts).toDateString()===hoy) hoyN++;
-      var lk = new Date(d.ts).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
-      if(cont.hasOwnProperty(lk)) cont[lk]++;
-    });
-    document.getElementById('rs-legal-hoy').textContent = hoyN;
-    if(chartLegal7) chartLegal7.destroy();
-    chartLegal7 = new Chart(document.getElementById('chart-legal7'), {
-      type:'bar',
-      data:{ labels: dias, datasets:[{ label:'Aceptaciones', data: dias.map(function(k){return cont[k];}), backgroundColor:'#a8e63d', borderRadius:6 }] },
-      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}},
-                scales:{ x:{ ticks:{color:'#7a9a7e',font:{size:11}}, grid:{display:false} },
-                         y:{ ticks:{color:'#7a9a7e',font:{size:11},stepSize:1}, grid:{color:'rgba(168,230,61,.06)'}, beginAtZero:true } } }
-    });
-  });
+/* ---------- 🛠️ Copias y restaurar ---------- */
+const BK=['users','groups','rides','feed','routes','pois','rank','reports','config'];
+function vMnt(){
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>💾 Copia de seguridad</h3><div class="d">Descarga en tu ordenador todos los datos de la app en un archivo (.json).</div>
+    <ul class="list"><li>Incluye: ciclistas, clubes y grupetas, salidas, actividad, rutas, puntos, rankings, reportes y aviso.</li><li>No incluye los códigos de notificación de los móviles ni los comentarios del chat.</li><li>Guárdala en un sitio seguro: contiene nombres de ciclistas.</li></ul>
+    <button class="btn lime" style="margin-top:10px" onclick="backup()">⬇️ Descargar copia completa</button></div>
+   <div class="box"><h3>♻️ Restaurar desde una copia</h3><div class="d">Vuelve a poner los datos de una copia descargada antes.</div>
+    <ul class="list"><li>Solo reescribe los documentos que están en la copia; lo nuevo que no esté en la copia no se borra.</li><li>Puedes elegir qué partes restaurar.</li><li>Pide escribir RESTAURAR para confirmar.</li></ul>
+    <input type="file" id="rsFile" accept=".json,application/json" style="display:none" onchange="restorePick(this.files[0])"><button class="btn" style="margin-top:10px" onclick="$('rsFile').click()">📂 Elegir archivo de copia…</button></div>
+   </div>
+   <div class="grid2">
+   <div class="box"><h3>🔧 Datos antiguos sin club</h3><div class="d">Asigna salidas, rutas, actividad y puntos sin club al club de quien los creó.</div><button class="btn" onclick="migrate()">🔧 Pasar datos antiguos a su club</button></div>
+   <div class="box"><h3>🔒 Seguridad</h3><div class="d">Cómo está protegida esta consola</div><ul class="list"><li>Solo tu cuenta de Google verificada puede leer y escribir aquí: lo comprueban las reglas de Firebase en el servidor.</li><li>Esta página no está enlazada en la app para los usuarios y no aparece en buscadores.</li><li>Si alguien la abre con otra cuenta, ve «Acceso restringido».</li></ul></div>
+   </div>`;
+}
+const ser=v=>{if(v&&typeof v.toMillis==='function')return{__ts:v.toMillis()};if(Array.isArray(v))return v.map(ser);if(v&&typeof v==='object'){const o={};for(const k in v)o[k]=ser(v[k]);return o}return v};
+const des=v=>{if(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===1&&typeof v.__ts==='number')return TS.fromMillis(v.__ts);if(Array.isArray(v))return v.map(des);if(v&&typeof v==='object'){const o={};for(const k in v)o[k]=des(v[k]);return o}return v};
+async function backup(){
+  toast('Preparando la copia…');const out={app:'RideSafe IA',kind:'backup',version:1,createdAt:Date.now(),collections:{}};
+  for(const c of BK){try{const s=await db.collection(c).limit(20000).get();out.collections[c]={};s.docs.forEach(d=>out.collections[c][d.id]=ser(d.data()))}catch(e){console.warn(c,e)}}
+  const n=Object.values(out.collections).reduce((a,c)=>a+Object.keys(c).length,0);
+  const d=new Date();download(`ridesafe-copia-${iso(d)}-${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.json`,JSON.stringify(out),'application/json');
+  toast(`💾 Copia descargada (${nf(n)} documentos)`);
+}
+let RS=null;
+function restorePick(f){
+  if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{let j;try{j=JSON.parse(rd.result)}catch(e){toast('Ese archivo no es una copia válida');return}
+    if(!j||j.app!=='RideSafe IA'||j.kind!=='backup'||!j.collections){toast('Ese archivo no es una copia de RideSafe IA');return}
+    RS=j;const cols=Object.keys(j.collections).filter(c=>BK.includes(c));
+    dlg(`<h3>♻️ Restaurar copia<button class="x" onclick="closeDlg()">✕</button></h3><p>Copia del <b>${new Date(j.createdAt).toLocaleString('es-ES')}</b>. Marca lo que quieres restaurar:</p>
+     ${cols.map(c=>`<label class="opt"><input type="checkbox" class="rsC" value="${c}" ${c==='reports'?'':'checked'}> <span style="flex:1">${esc({users:'👥 Ciclistas',groups:'🏅 Clubes y grupetas',rides:'📅 Salidas',feed:'📰 Actividad',routes:'🗺️ Rutas',pois:'☕ Puntos ciclistas',rank:'🏆 Rankings',reports:'⚠️ Reportes',config:'📣 Aviso general'}[c]||c)}</span><span class="pill mut">${nf(Object.keys(j.collections[c]).length)}</span></label>`).join('')}
+     <p style="margin-top:10px">Escribe <b>RESTAURAR</b> para confirmar:</p><input class="inp" id="rsOk" style="width:100%" autocomplete="off">
+     <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn lime" onclick="restoreRun()">♻️ Restaurar</button></div>`);
+  };rd.readAsText(f);$('rsFile').value='';
+}
+async function restoreRun(){
+  if($('rsOk').value.trim().toUpperCase()!=='RESTAURAR'){toast('Escribe RESTAURAR para confirmar');return}
+  const cols=[...document.querySelectorAll('.rsC:checked')].map(i=>i.value);if(!cols.length){toast('Marca algo para restaurar');return}
+  const jobs=[];cols.forEach(c=>Object.entries(RS.collections[c]).forEach(([id,d])=>jobs.push([c,id,d])));
+  const bar=progress('Restaurando '+nf(jobs.length)+' documentos…');let ok=0,ko=0;
+  for(let i=0;i<jobs.length;i+=400){const b=db.batch();jobs.slice(i,i+400).forEach(([c,id,d])=>b.set(db.collection(c).doc(id),des(d)));try{await b.commit();ok+=Math.min(400,jobs.length-i)}catch(e){console.warn(e);ko+=Math.min(400,jobs.length-i)}bar((i+400)/jobs.length)}
+  closeDlg();toast(ko?`Restaurados ${nf(ok)} · fallaron ${nf(ko)}`:`♻️ Restaurados ${nf(ok)} documentos`);loadAll();
+}
+async function migrate(){
+  if(!await confirmDlg('🔧 Pasar datos antiguos a su club','Las salidas, rutas, puntos ciclistas y actividad sin club se asignarán al club de quien los creó. Lo de ciclistas sin club se queda como está.','Asignar',false))return;
+  const clubOf={};D.groups.forEach(g=>Object.keys(g.members||{}).forEach(k=>{if(!clubOf[k])clubOf[k]=g.id}));
+  let n=0;for(const r of D.rides.filter(r=>!r.group&&clubOf[r.byUid])){try{await db.collection('rides').doc(r.id).update({group:clubOf[r.byUid]});n++}catch(e){}}
+  for(const c of ['feed','routes','pois'])for(const x of D[c].filter(x=>!x.club&&clubOf[x.uid])){try{await db.collection(c).doc(x.id).update({club:clubOf[x.uid]});n++}catch(e){}}
+  toast(`✅ ${n} datos asignados a su club`);loadAll();
 }
 
-// ═══ PUNTOS CICLISTAS — gestión de puntos_bici (aditivo) ═══
-var pbCache = {}, pbEditId = null;
-var mapaPbAdd = null, tempMarkerPbAdd = null, pbMarkers = [];
-
-// ═══ IMPORTAR DESDE OPENSTREETMAP (Overpass API) ═══
-var OSM_TAGS = [
-  {tag:'shop=bicycle', categoria:'taller'},
-  {tag:'amenity=pharmacy', categoria:'farmacia'},
-  {tag:'amenity=drinking_water', categoria:'agua'},
-  {tag:'amenity=cafe', categoria:'bar'},
-  {tag:'shop=bakery', categoria:'panaderia'},
-  {tag:'amenity=bicycle_rental', categoria:'alquiler'}
-];
-var osmResultados = [];
-
-function osmBuscarZona(){
-  var zona = document.getElementById('osm-zona').value.trim();
-  if(!zona){ alert('Escribe una zona para buscar'); return; }
-  var estado = document.getElementById('osm-estado');
-  var resDiv = document.getElementById('osm-resultados');
-  document.getElementById('osm-importar-btn').style.display = 'none';
-  estado.textContent = '🔎 Localizando "'+zona+'"...';
-  resDiv.innerHTML = '';
-  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(zona)+'&format=json&limit=1&countrycodes=es', {headers:{'Accept-Language':'es'}})
-    .then(function(r){ return r.json(); })
-    .then(function(geo){
-      if(!geo || !geo.length){ estado.textContent = '❌ No he encontrado esa zona.'; return; }
-      var lat = parseFloat(geo[0].lat), lon = parseFloat(geo[0].lon);
-      estado.textContent = '🔎 Buscando servicios cerca de '+geo[0].display_name.split(',').slice(0,2).join(',')+'...';
-      var partes = OSM_TAGS.map(function(t){
-        var kv = t.tag.split('=');
-        return 'node["'+kv[0]+'"="'+kv[1]+'"](around:4000,'+lat+','+lon+');';
-      }).join('\n');
-      var query = '[out:json][timeout:25];('+partes+');out body;';
-      return fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:'data='+encodeURIComponent(query)})
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          osmResultados = (data.elements||[]).filter(function(el){ return el.tags && el.tags.name; }).map(function(el){
-            var catInfo = OSM_TAGS.find(function(t){
-              var kv = t.tag.split('=');
-              return el.tags[kv[0]] === kv[1];
-            });
-            return {
-              id: 'osm_'+el.id,
-              nombre: el.tags.name,
-              categoria: catInfo ? catInfo.categoria : 'interes',
-              lat: el.lat, lng: el.lon,
-              descripcion: [el.tags['opening_hours']?('Horario: '+el.tags['opening_hours']):'', el.tags['addr:street']?(el.tags['addr:street']+' '+(el.tags['addr:housenumber']||'')):''].filter(Boolean).join(' · ')
-            };
-          });
-          if(!osmResultados.length){ estado.textContent = '😕 No he encontrado sitios con nombre cerca de ahí. Prueba con otra zona.'; return; }
-          estado.textContent = '✅ '+osmResultados.length+' sitios encontrados. Marca los que quieras añadir:';
-          var html = '';
-          osmResultados.forEach(function(p, i){
-            var emoji = (PB_CAT[p.categoria]||'📍').split(' ')[0];
-            html += '<label class="pt-row" style="cursor:pointer">'
-              + '<input type="checkbox" class="osm-check" data-i="'+i+'" style="width:18px;height:18px;flex-shrink:0">'
-              + '<span style="font-size:16px">'+emoji+'</span>'
-              + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+p.nombre+'</div>'
-              + '<div style="font-size:10px;color:var(--muted)">'+(PB_CAT[p.categoria]||'').split(' ').slice(1).join(' ')+(p.descripcion?(' · '+p.descripcion):'')+'</div></div>'
-              + '</label>';
-          });
-          resDiv.innerHTML = html;
-          document.getElementById('osm-importar-btn').style.display = 'block';
-        });
-    })
-    .catch(function(e){ estado.textContent = '❌ Error al buscar: '+e.message; });
-}
-
-function osmImportarSeleccionados(){
-  var checks = document.querySelectorAll('.osm-check:checked');
-  if(!checks.length){ alert('Marca al menos uno para importar'); return; }
-  var seleccionados = Array.prototype.map.call(checks, function(c){ return osmResultados[parseInt(c.dataset.i)]; });
-  var pendientes = seleccionados.length, hechos = 0;
-  document.getElementById('osm-estado').textContent = 'Importando '+pendientes+' puntos...';
-  seleccionados.forEach(function(p){
-    var punto = {
-      nombre: p.nombre.slice(0,60),
-      categoria: p.categoria,
-      descripcion: (p.descripcion||'').slice(0,200),
-      lat: p.lat, lng: p.lng,
-      creadorId: 'admin',
-      creadorNombre: 'RideSafe IA (equipo) · OpenStreetMap',
-      creado: firebase.database.ServerValue.TIMESTAMP
-    };
-    db.ref('puntos_bici').push().set(punto).then(function(){
-      hechos++;
-      if(hechos===pendientes){
-        document.getElementById('osm-estado').textContent = '✅ '+hechos+' puntos importados.';
-        document.getElementById('osm-resultados').innerHTML = '';
-        document.getElementById('osm-importar-btn').style.display = 'none';
-        document.getElementById('osm-zona').value = '';
-        cargarPuntosBici();
-      }
-    });
-  });
-}
-function pbEmoji(cat){ return (PB_CAT[cat]||'📍').split(' ')[0]; }
-
-function initMapaPbAdd(){
-  if(mapaPbAdd) return;
-  mapaPbAdd = L.map('mapa-pb-add').setView([41.6176, 0.6200], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {attribution:'&copy; OpenStreetMap contributors', maxZoom:19}).addTo(mapaPbAdd);
-  mapaPbAdd.on('click', function(e){
-    ponMarcadorPbAdd(e.latlng.lat, e.latlng.lng);
-  });
-}
-function ponMarcadorPbAdd(lat, lng){
-  document.getElementById('pb-add-lat').value = lat.toFixed(6);
-  document.getElementById('pb-add-lng').value = lng.toFixed(6);
-  if(tempMarkerPbAdd) mapaPbAdd.removeLayer(tempMarkerPbAdd);
-  tempMarkerPbAdd = L.marker([lat, lng], {icon: L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#a8e63d;border:3px solid #060a07;box-shadow:0 0 14px rgba(168,230,61,.9)"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(mapaPbAdd);
-  mapaPbAdd.panTo([lat, lng]);
-}
-function usarGpsPbAdd(){
-  if(!navigator.geolocation){ alert('GPS no disponible en este dispositivo'); return; }
-  navigator.geolocation.getCurrentPosition(function(p){
-    mapaPbAdd.setView([p.coords.latitude, p.coords.longitude], 16);
-    ponMarcadorPbAdd(p.coords.latitude, p.coords.longitude);
-  }, function(){ alert('No se pudo obtener tu ubicación'); }, {enableHighAccuracy:true, timeout:10000});
-}
-function guardarPuntoBiciAdmin(){
-  var nombre = document.getElementById('pb-add-nombre').value.trim();
-  var lat = parseFloat(document.getElementById('pb-add-lat').value);
-  var lng = parseFloat(document.getElementById('pb-add-lng').value);
-  if(!nombre){ alert('Ponle un nombre al punto'); return; }
-  if(isNaN(lat) || isNaN(lng)){ alert('Faltan coordenadas. Toca el mapa para colocarlas.'); return; }
-  var punto = {
-    nombre: nombre.slice(0,60),
-    categoria: document.getElementById('pb-add-cat').value,
-    descripcion: document.getElementById('pb-add-desc').value.trim().slice(0,200),
-    lat: lat, lng: lng,
-    creadorId: 'admin',
-    creadorNombre: 'RideSafe IA (equipo)',
-    creado: firebase.database.ServerValue.TIMESTAMP
-  };
-  db.ref('puntos_bici').push().set(punto).then(function(){
-    document.getElementById('pb-add-nombre').value = '';
-    document.getElementById('pb-add-desc').value = '';
-    document.getElementById('pb-add-lat').value = '';
-    document.getElementById('pb-add-lng').value = '';
-    if(tempMarkerPbAdd){ mapaPbAdd.removeLayer(tempMarkerPbAdd); tempMarkerPbAdd = null; }
-    cargarPuntosBici();
-    alert('✅ Punto guardado: ' + nombre);
-  }).catch(function(e){ alert('Error al guardar: ' + e.message); });
-}
-
-function cargarPuntosBici(){
-  initMapaPbAdd();
-  setTimeout(function(){ mapaPbAdd.invalidateSize(); }, 150);
-  db.ref('puntos_bici').once('value', function(snap){
-    pbCache = snap.val()||{};
-    var items = Object.keys(pbCache).map(function(k){ return [k, pbCache[k]]; }).filter(function(it){return it[1];});
-    var hoy = new Date().toDateString(), semana = Date.now()-7*86400000;
-    var contHoy=0, contSemana=0, porCat={};
-    items.forEach(function(it){
-      var q = it[1];
-      if(q.creado && new Date(q.creado).toDateString()===hoy) contHoy++;
-      if(q.creado && q.creado>semana) contSemana++;
-      porCat[q.categoria] = (porCat[q.categoria]||0)+1;
-    });
-    document.getElementById('pb-total').textContent = items.length;
-    document.getElementById('pb-hoy').textContent = contHoy;
-    document.getElementById('pb-semana').textContent = contSemana;
-
-    /* Pintar cada punto guardado como chincheta en el mapa */
-    pbMarkers.forEach(function(mk){ mapaPbAdd.removeLayer(mk); });
-    pbMarkers = [];
-    items.forEach(function(it){
-      var k = it[0], q = it[1];
-      if(typeof q.lat !== 'number' || typeof q.lng !== 'number') return;
-      var mk = L.marker([q.lat, q.lng], {icon: L.divIcon({className:'', html:'<div style="width:16px;height:16px;border-radius:50%;background:#a8e63d;border:2px solid #060a07;display:flex;align-items:center;justify-content:center;font-size:10px">'+pbEmoji(q.categoria)+'</div>', iconSize:[16,16], iconAnchor:[8,8]})})
-        .addTo(mapaPbAdd)
-        .bindPopup('<b>'+(q.nombre||'—')+'</b><br>'+(PB_CAT[q.categoria]||q.categoria||''));
-      pbMarkers.push(mk);
-    });
-
-    var catKeys = Object.keys(PB_CAT);
-    if(chartPbCat) chartPbCat.destroy();
-    chartPbCat = new Chart(document.getElementById('chart-pbcat'), {
-      type:'bar',
-      data:{ labels: catKeys.map(function(c){return pbEmoji(c);}),
-             datasets:[{ data: catKeys.map(function(c){return porCat[c]||0;}), backgroundColor:'#a8e63d', borderRadius:6 }] },
-      options:{ indexAxis:'y', maintainAspectRatio:false, plugins:{legend:{display:false}},
-                scales:{ x:{ ticks:{color:'#7a9a7e',stepSize:1}, grid:{color:'rgba(168,230,61,.06)'}, beginAtZero:true },
-                         y:{ ticks:{color:'#7a9a7e',font:{size:14}}, grid:{display:false} } } }
-    });
-    var desg = document.getElementById('pb-desglose'); var h='';
-    catKeys.forEach(function(c){
-      h += '<div class="cat-row"><div class="cat-emoji">'+pbEmoji(c)+'</div><div class="cat-nombre">'+PB_CAT[c].split(' ').slice(1).join(' ')+'</div><div class="cat-count">'+(porCat[c]||0)+'</div></div>';
-    });
-    desg.innerHTML = h;
-
-    var el = document.getElementById('pb-lista');
-    if(!items.length){ el.innerHTML = '<div class="empty">☕ Todavía no hay puntos añadidos por la comunidad</div>'; return; }
-    items.sort(function(a,b){ return (b[1].creado||0)-(a[1].creado||0); });
-    var html='';
-    items.forEach(function(it){
-      var k=it[0], q=it[1];
-      html += '<div class="pt-row"><div style="font-size:18px">'+pbEmoji(q.categoria)+'</div>'
-        + '<div><div style="font-size:13px;font-weight:600;color:var(--text)">'+(q.nombre||'—')+'</div>'
-        + '<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(q.creadorNombre||'Anónimo')+(q.descripcion?(' · '+q.descripcion.substring(0,40)):'')+'</div></div>'
-        + '<div style="font-size:11px;color:var(--muted)">'+(PB_CAT[q.categoria]||q.categoria||'').split(' ').slice(1).join(' ')+'</div>'
-        + '<div class="pt-acc"><button class="mini-btn" onclick="editarPuntoBici(\''+k+'\')">✏️</button><button class="mini-btn rojo" onclick="borrarPuntoBici(\''+k+'\')">🗑️</button></div></div>';
-    });
-    el.innerHTML = html;
-  });
-}
-function editarPuntoBici(id){
-  var q = pbCache[id]; if(!q) return;
-  pbEditId = id;
-  document.getElementById('pb-e-nombre').value = q.nombre||'';
-  document.getElementById('pb-e-cat').value = q.categoria||'agua';
-  document.getElementById('pb-e-desc').value = q.descripcion||'';
-  document.getElementById('pb-form-edit').style.display = 'block';
-  document.getElementById('pb-form-edit').scrollIntoView({behavior:'smooth', block:'center'});
-}
-function cerrarEdicionPunto(){ document.getElementById('pb-form-edit').style.display='none'; pbEditId=null; }
-function guardarEdicionPunto(){
-  if(!pbEditId) return;
-  var nombre = document.getElementById('pb-e-nombre').value.trim();
-  if(!nombre){ alert('Ponle un nombre al punto'); return; }
-  db.ref('puntos_bici/'+pbEditId).update({
-    nombre: nombre.slice(0,60),
-    categoria: document.getElementById('pb-e-cat').value,
-    descripcion: document.getElementById('pb-e-desc').value.trim().slice(0,200)
-  }).then(function(){
-    cerrarEdicionPunto();
-    cargarPuntosBici();
-  }).catch(function(e){ alert('Error al guardar: '+e.message); });
-}
-function borrarPuntoBici(id){
-  if(!confirm('¿Borrar este punto de la comunidad?')) return;
-  db.ref('puntos_bici/'+id).remove().then(function(){ cargarPuntosBici(); });
-}
-
-function revocarClave(clave) {
-  if (!confirm('¿Revocar la clave ' + clave + '?\nEl usuario perderá el acceso.')) return;
-  var claveKey = clave.replace(/-/g,'_');
-  db.ref('claves_activadas/' + claveKey).remove()
-    .then(function() {
-      alert('✅ Clave ' + clave + ' revocada. El usuario perderá acceso al recargar la app.');
-      cargarClaves();
-    })
-    .catch(function(e) {
-      alert('Error al revocar: ' + e.message);
-    });
-}
-
-// ================= RUTAS GPX COMUNIDAD =================
-var gpxParsed = null, gpxPreviewLine = null;
-var ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdkOGFjNDY4Yjc1MzQ3Zjg5M2Q0M2RiMTRhODExYzBmIiwiaCI6Im11cm11cjY0In0=';
-var modoRuta = false, wayPoints = [], wayMarkers = [];
-
-function activarModoRuta(){
-  modoRuta = true;
-  wayPoints = []; wayMarkers = [];
-  document.getElementById('ruta-off').style.display = 'none';
-  document.getElementById('ruta-on').style.display = 'block';
-  if(tempMarker){ mapaCom.removeLayer(tempMarker); tempMarker = null; }
-  actualizarContadorRuta();
-  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
-}
-
-function anadirParada(latlng){
-  wayPoints.push([latlng.lat, latlng.lng]);
-  var n = wayPoints.length;
-  var mk = L.marker(latlng, {icon: L.divIcon({className:'', html:'<div style="background:#a8e63d;color:#060a07;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:Barlow Condensed,sans-serif;font-size:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)">'+n+'</div>', iconSize:[26,26], iconAnchor:[13,13]})}).addTo(mapaCom);
-  wayMarkers.push(mk);
-  actualizarContadorRuta();
-}
-
-function actualizarContadorRuta(){
-  document.getElementById('ruta-npts').textContent = wayPoints.length + (wayPoints.length===1 ? ' parada' : ' paradas');
-}
-
-function deshacerParada(){
-  if(!wayPoints.length) return;
-  wayPoints.pop();
-  mapaCom.removeLayer(wayMarkers.pop());
-  actualizarContadorRuta();
-}
-
-function cerrarCircuito(){
-  if(wayPoints.length < 2){ alert('Añade al menos 2 paradas antes de cerrar el circuito'); return; }
-  var inicio = wayPoints[0];
-  anadirParada({lat: inicio[0], lng: inicio[1]});
-}
-
-function cancelarModoRuta(){
-  modoRuta = false;
-  wayMarkers.forEach(function(m){ mapaCom.removeLayer(m); });
-  wayPoints = []; wayMarkers = [];
-  document.getElementById('ruta-off').style.display = 'block';
-  document.getElementById('ruta-on').style.display = 'none';
-}
-
-function trazarRuta(){
-  if(wayPoints.length < 2){ alert('Necesitas al menos 2 paradas. Toca el mapa para añadirlas.'); return; }
-  var btn = document.getElementById('btn-trazar');
-  btn.disabled = true; btn.textContent = '⏳ Trazando...';
-  var coords = wayPoints.map(function(p){ return [p[1], p[0]]; });
-  var perfil = document.getElementById('ruta-perfil').value;
-  fetch('https://api.openrouteservice.org/v2/directions/' + perfil + '/geojson', {
-    method: 'POST',
-    headers: {'Authorization': ORS_KEY, 'Content-Type': 'application/json', 'Accept': 'application/geo+json, application/json'},
-    body: JSON.stringify({coordinates: coords, elevation: true})
-  })
-  .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-  .then(function(data){
-    var f = data.features && data.features[0];
-    if(!f){ alert('No se encontró ruta entre esas paradas'); return; }
-    var latlngs = f.geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
-    var dist = Math.round((f.properties.summary && f.properties.summary.distance) || 0);
-    var desnivel = Math.round(f.properties.ascent || 0);
-    gpxParsed = { points: downsampleGPX(latlngs, 120), distancia: dist, desnivel: desnivel };
-    if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); }
-    gpxPreviewLine = L.polyline(latlngs, {color:'#00e5ff', weight:5, opacity:.9}).addTo(mapaCom);
-    mapaCom.fitBounds(gpxPreviewLine.getBounds(), {padding:[24,24]});
-    document.getElementById('gx-lugar').value = '';
-    document.getElementById('gx-mins').value = Math.round((dist/1000)/20*60);
-    document.getElementById('gx-stats').innerHTML = '📊 <b>' + (dist/1000).toFixed(1) + ' km</b> · desnivel +' + desnivel + ' m · trazado por carretera real';
-    document.getElementById('gpx-preview').style.display = 'block';
-    modoRuta = false;
-    document.getElementById('ruta-off').style.display = 'block';
-    document.getElementById('ruta-on').style.display = 'none';
-    document.getElementById('gx-lugar').scrollIntoView({behavior:'smooth'});
-    document.getElementById('gx-lugar').focus();
-  })
-  .catch(function(e){ alert('Error al trazar (' + e.message + ')' + (String(e.message)==='403' ? ' — clave ORS caducada' : '')); })
-  .finally(function(){ btn.disabled = false; btn.textContent = '🗺️ TRAZAR RUTA'; });
-}
-
-function distHaversine(a, b){
-  var R = 6371000, rad = Math.PI/180;
-  var dLat = (b[0]-a[0])*rad, dLng = (b[1]-a[1])*rad;
-  var s = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(a[0]*rad)*Math.cos(b[0]*rad)*Math.sin(dLng/2)*Math.sin(dLng/2);
-  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
-}
-
-function downsampleGPX(points, maxN){
-  if(points.length <= maxN) return points;
-  var step = points.length/maxN, out = [];
-  for(var i=0; i<maxN; i++){ out.push(points[Math.floor(i*step)]); }
-  out.push(points[points.length-1]);
-  return out;
-}
-
-function leerGPX(input){
-  var file = input.files[0];
-  if(!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev){
-    try{
-      var xml = new DOMParser().parseFromString(ev.target.result, 'text/xml');
-      var trkpts = xml.getElementsByTagName('trkpt');
-      if(!trkpts.length){ alert('El GPX no contiene puntos de trazado (trkpt)'); return; }
-      var points = [], eles = [];
-      for(var i=0; i<trkpts.length; i++){
-        var lat = parseFloat(trkpts[i].getAttribute('lat'));
-        var lon = parseFloat(trkpts[i].getAttribute('lon'));
-        if(isNaN(lat)||isNaN(lon)) continue;
-        points.push([lat, lon]);
-        var eleTag = trkpts[i].getElementsByTagName('ele')[0];
-        eles.push(eleTag ? parseFloat(eleTag.textContent) : null);
-      }
-      if(points.length < 2){ alert('GPX sin trazado válido'); return; }
-      var dist = 0;
-      for(var j=1; j<points.length; j++){ dist += distHaversine(points[j-1], points[j]); }
-      var desnivel = 0;
-      for(var k=1; k<eles.length; k++){
-        if(eles[k]!==null && eles[k-1]!==null && eles[k]>eles[k-1]) desnivel += eles[k]-eles[k-1];
-      }
-      var nombreTag = xml.getElementsByTagName('name')[0];
-      var nombreRuta = nombreTag ? nombreTag.textContent.trim() : file.name.replace('.gpx','');
-      gpxParsed = {
-        points: downsampleGPX(points, 120),
-        distancia: Math.round(dist),
-        desnivel: Math.round(desnivel)
-      };
-      document.getElementById('gx-lugar').value = nombreRuta;
-      document.getElementById('gx-mins').value = Math.round((dist/1000) / 20 * 60);
-      document.getElementById('gx-stats').innerHTML = '📊 <b>' + (dist/1000).toFixed(1) + ' km</b> · desnivel +' + Math.round(desnivel) + ' m · ' + points.length + ' puntos GPS (se publican ' + gpxParsed.points.length + ')';
-      document.getElementById('gpx-preview').style.display = 'block';
-      if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); }
-      gpxPreviewLine = L.polyline(gpxParsed.points, {color:'#00e5ff', weight:4, opacity:.85}).addTo(mapaCom);
-      mapaCom.fitBounds(gpxPreviewLine.getBounds(), {padding:[24,24]});
-    }catch(e){ alert('Error leyendo el GPX: ' + e.message); }
-  };
-  reader.readAsText(file);
-  input.value = '';
-}
-
-function publicarGPX(){
-  if(!gpxParsed){ alert('Primero elige un archivo GPX'); return; }
-  var lugar = document.getElementById('gx-lugar').value.trim();
-  if(!lugar){ alert('Ponle nombre a la ruta'); return; }
-  var mins = parseInt(document.getElementById('gx-mins').value) || 0;
-  var data = {
-    lugar: lugar,
-    distancia: gpxParsed.distancia,
-    duracion: mins * 60,
-    desnivel: gpxParsed.desnivel,
-    bici: document.getElementById('gx-bici').value,
-    nivel: document.getElementById('gx-nivel').value,
-    nombre: document.getElementById('gx-autor').value.trim() || 'RideSafe IA Oficial',
-    fecha: Date.now(),
-    points: gpxParsed.points
-  };
-  if(!confirm('Publicar "' + lugar + '" (' + (data.distancia/1000).toFixed(1) + ' km)?\nLa verán todos los ciclistas en la app, en Mis Rutas → Comunidad.')) return;
-  db.ref('rutas_sugeridas').push(data).then(function(){
-    alert('✅ Ruta publicada en la comunidad');
-    gpxParsed = null;
-    wayMarkers.forEach(function(m){ mapaCom.removeLayer(m); });
-    wayPoints = []; wayMarkers = [];
-    document.getElementById('gpx-preview').style.display = 'none';
-    if(gpxPreviewLine){ mapaCom.removeLayer(gpxPreviewLine); gpxPreviewLine = null; }
-    cargarRutasCom();
-  }).catch(function(e){ alert('Error: ' + e.message); });
-}
-
-var rutasComCache = {};
-function cargarRutasCom(){
-  db.ref('rutas_sugeridas').once('value', function(snap){
-    rutasComCache = snap.val() || {};
-    var ids = Object.keys(rutasComCache);
-    var el = document.getElementById('lista-rutas-com');
-    if(!ids.length){ el.innerHTML = '<div class="empty">🚴 Sin rutas publicadas aún</div>'; return; }
-    ids.sort(function(a,b){ return (rutasComCache[b].fecha||0)-(rutasComCache[a].fecha||0); });
-    var h = '';
-    ids.forEach(function(id){
-      var r = rutasComCache[id];
-      var km = ((r.distancia||0)/1000).toFixed(1);
-      var fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
-      var bici = {carretera:'🚴',mtb:'⛰️',gravel:'🛤️',ebike:'⚡'}[r.bici] || '🚲';
-      h += '<div class="punto-row" style="grid-template-columns:32px 1fr 90px 130px">'
-        + '<span style="font-size:18px">' + bici + '</span>'
-        + '<div><div style="font-weight:600;color:var(--text)">' + escHtml(r.lugar||'Ruta') + '</div>'
-        + '<div style="font-size:11px;color:var(--dim)">' + km + ' km · +' + (r.desnivel||0) + ' m · ' + escHtml(r.nombre||'') + ' · ' + fecha + '</div></div>'
-        + '<span class="est-pill est-activo">' + ((r.points&&r.points.length)||0) + ' pts</span>'
-        + '<div class="punto-acc">'
-        + '<button class="mini-btn" onclick="verRutaCom(\'' + id + '\')">🎯</button>'
-        + '<button class="mini-btn rojo" onclick="borrarRutaCom(\'' + id + '\')">🗑️</button>'
-        + '</div></div>';
-    });
-    el.innerHTML = h;
-  });
-}
-
-var rutaComLine = null;
-function verRutaCom(id){
-  var r = rutasComCache[id];
-  if(!r || !r.points || r.points.length < 2) return;
-  if(rutaComLine){ mapaCom.removeLayer(rutaComLine); }
-  rutaComLine = L.polyline(r.points, {color:'#a8e63d', weight:4, opacity:.9}).addTo(mapaCom);
-  mapaCom.fitBounds(rutaComLine.getBounds(), {padding:[24,24]});
-  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
-}
-
-function borrarRutaCom(id){
-  var r = rutasComCache[id];
-  if(!confirm('¿Eliminar la ruta "' + (r ? r.lugar : '') + '" de la comunidad?\nDesaparecerá de la app de todos los usuarios.')) return;
-  db.ref('rutas_sugeridas/' + id).remove()
-    .then(function(){ if(rutaComLine){ mapaCom.removeLayer(rutaComLine); rutaComLine=null; } cargarRutasCom(); })
-    .catch(function(e){ alert('Error: ' + e.message); });
-}
-
-// ================= COMUNIDAD =================
-var mapaCom = null, marcadoresCom = [], puntosCache = {}, editandoPuntoId = null, tempMarker = null;
-var TIPOS_PT = {plaza:'🏛️',parking:'🅿️',fuente:'⛲',cafe:'☕',tienda:'🏪',inicio_ruta:'🚴'};
-
-function cargarComunidad(){
-  if(!mapaCom){
-    mapaCom = L.map('mapa-com').setView([41.617, 0.622], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(mapaCom);
-    mapaCom.on('click', function(e){
-      if(modoRuta){ anadirParada(e.latlng); return; }
-      document.getElementById('pt-lat').value = e.latlng.lat.toFixed(6);
-      document.getElementById('pt-lng').value = e.latlng.lng.toFixed(6);
-      if(tempMarker) mapaCom.removeLayer(tempMarker);
-      tempMarker = L.marker(e.latlng, {opacity:0.75}).addTo(mapaCom)
-        .bindPopup('📍 <b>Nuevo punto aquí</b><br>Rellena el formulario de abajo y guarda').openPopup();
-      ['pt-lat','pt-lng'].forEach(function(i){
-        var el = document.getElementById(i);
-        el.style.borderColor = 'var(--lime)';
-        el.style.boxShadow = '0 0 12px rgba(168,230,61,.4)';
-        setTimeout(function(){ el.style.borderColor=''; el.style.boxShadow=''; }, 2500);
-      });
-      document.getElementById('pt-nombre').focus();
-    });
-  }
-  setTimeout(function(){ mapaCom.invalidateSize(); }, 150);
-  refrescarPuntos();
-  cargarRutasCom();
-}
-
-function refrescarPuntos(){
-  db.ref('puntos_encuentro').once('value', function(snap){
-    puntosCache = snap.val() || {};
-    pintarPuntos();
-  });
-}
-
-function pintarPuntos(){
-  marcadoresCom.forEach(function(m){ mapaCom.removeLayer(m); });
-  marcadoresCom = [];
-  var ids = Object.keys(puntosCache);
-  var activos = 0, eventos = 0;
-  var el = document.getElementById('lista-puntos');
-  if(!ids.length){
-    el.innerHTML = '<div class="empty">🗺️ Sin puntos de encuentro. Toca el mapa y crea el primero.</div>';
-  } else {
-    var h = '';
-    ids.sort(function(a,b){ return (puntosCache[b].creado||0)-(puntosCache[a].creado||0); });
-    ids.forEach(function(id){
-      var p = puntosCache[id];
-      if(p.estado === 'activo') activos++;
-      if(p.estado === 'evento') eventos++;
-      var icono = TIPOS_PT[p.tipo] || '📍';
-      if(p.estado !== 'suspendido'){
-        var mk = L.marker([p.lat, p.lng]).addTo(mapaCom)
-          .bindPopup('<b>'+escHtml(p.nombre)+'</b><br>'+icono+' '+escHtml(p.tipo||'')+(p.horario?'<br>🕐 '+escHtml(p.horario):''));
-        marcadoresCom.push(mk);
-      }
-      h += '<div class="punto-row">'
-        + '<span style="font-size:18px">'+icono+'</span>'
-        + '<div><div style="font-weight:600;color:var(--text)">'+escHtml(p.nombre)+'</div>'
-        + '<div style="font-size:11px;color:var(--dim)">'+(p.direccion?escHtml(p.direccion)+' · ':'')+p.lat.toFixed(4)+', '+p.lng.toFixed(4)+'</div></div>'
-        + '<span class="est-pill est-'+p.estado+'">'+p.estado+'</span>'
-        + '<div class="punto-acc">'
-        + '<button class="mini-btn" onclick="centrarPunto(\''+id+'\')">🎯</button>'
-        + '<button class="mini-btn" onclick="editarPunto(\''+id+'\')">✏️</button>'
-        + '<button class="mini-btn" onclick="anunciarPunto(\''+id+'\')">📣</button>'
-        + '<button class="mini-btn rojo" onclick="eliminarPunto(\''+id+'\')">🗑️</button>'
-        + '</div></div>';
-    });
-    el.innerHTML = h;
-  }
-  document.getElementById('st-com-total').textContent = ids.length;
-  document.getElementById('st-com-activos').textContent = activos;
-  document.getElementById('st-com-eventos').textContent = eventos;
-}
-
-function guardarPunto(){
-  var nombre = document.getElementById('pt-nombre').value.trim();
-  var lat = parseFloat(document.getElementById('pt-lat').value);
-  var lng = parseFloat(document.getElementById('pt-lng').value);
-  if(!nombre){ alert('Falta el nombre del punto'); return; }
-  if(isNaN(lat) || isNaN(lng)){ alert('Faltan coordenadas. Toca el mapa para rellenarlas.'); return; }
-  var punto = {
-    nombre: nombre,
-    tipo: document.getElementById('pt-tipo').value,
-    lat: lat, lng: lng,
-    direccion: document.getElementById('pt-dir').value.trim(),
-    horario: document.getElementById('pt-hora').value.trim(),
-    descripcion: document.getElementById('pt-desc').value.trim(),
-    estado: document.getElementById('pt-estado').value,
-    actualizado: Date.now()
-  };
-  var ref;
-  if(editandoPuntoId){
-    punto.creado = (puntosCache[editandoPuntoId] && puntosCache[editandoPuntoId].creado) || Date.now();
-    ref = db.ref('puntos_encuentro/' + editandoPuntoId).set(punto);
-  } else {
-    punto.creado = Date.now();
-    ref = db.ref('puntos_encuentro').push(punto);
-  }
-  Promise.resolve(ref).then(function(){
-    if(tempMarker){ mapaCom.removeLayer(tempMarker); tempMarker = null; }
-    limpiarFormPunto();
-    refrescarPuntos();
-    alert('✅ Punto guardado: ' + nombre);
-  }).catch(function(e){ alert('Error al guardar: ' + e.message); });
-}
-
-function editarPunto(id){
-  var p = puntosCache[id]; if(!p) return;
-  editandoPuntoId = id;
-  document.getElementById('pt-nombre').value = p.nombre || '';
-  document.getElementById('pt-tipo').value = p.tipo || 'plaza';
-  document.getElementById('pt-lat').value = p.lat;
-  document.getElementById('pt-lng').value = p.lng;
-  document.getElementById('pt-dir').value = p.direccion || '';
-  document.getElementById('pt-hora').value = p.horario || '';
-  document.getElementById('pt-desc').value = p.descripcion || '';
-  document.getElementById('pt-estado').value = p.estado || 'activo';
-  document.getElementById('com-form-titulo').textContent = '✏️ Editando: ' + p.nombre;
-  document.getElementById('pt-guardar').textContent = '💾 ACTUALIZAR PUNTO';
-  document.getElementById('pt-cancelar').style.display = 'block';
-  mapaCom.setView([p.lat, p.lng], 15);
-  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
-}
-
-function limpiarFormPunto(){
-  editandoPuntoId = null;
-  ['pt-nombre','pt-lat','pt-lng','pt-dir','pt-hora','pt-desc'].forEach(function(i){
-    document.getElementById(i).value = '';
-  });
-  document.getElementById('pt-tipo').value = 'plaza';
-  document.getElementById('pt-estado').value = 'activo';
-  document.getElementById('com-form-titulo').textContent = '➕ Nuevo punto de encuentro';
-  document.getElementById('pt-guardar').textContent = '💾 GUARDAR PUNTO';
-  document.getElementById('pt-cancelar').style.display = 'none';
-}
-
-function centrarPunto(id){
-  var p = puntosCache[id]; if(!p) return;
-  mapaCom.setView([p.lat, p.lng], 16);
-  document.getElementById('mapa-com').scrollIntoView({behavior:'smooth'});
-}
-
-function eliminarPunto(id){
-  var p = puntosCache[id]; if(!p) return;
-  if(!confirm('¿Eliminar el punto "' + p.nombre + '"?\nEsta acción no se puede deshacer.')) return;
-  db.ref('puntos_encuentro/' + id).remove()
-    .then(function(){ refrescarPuntos(); })
-    .catch(function(e){ alert('Error: ' + e.message); });
-}
-
-function anunciarPunto(id){
-  var p = puntosCache[id]; if(!p) return;
-  var icono = TIPOS_PT[p.tipo] || '📍';
-  var txt = '🗺️ <b>Punto de encuentro RideSafe</b>\n\n'
-    + icono + ' <b>' + p.nombre + '</b>\n'
-    + (p.direccion ? '📍 ' + p.direccion + '\n' : '')
-    + (p.horario ? '🕐 ' + p.horario + '\n' : '')
-    + (p.descripcion ? '\n' + p.descripcion + '\n' : '')
-    + '\n🧭 https://maps.google.com/?q=' + p.lat + ',' + p.lng;
-  if(!confirm('¿Publicar este punto en el canal ' + TG_CANAL + '?')) return;
-  fetch('https://orange-boat-6d42.pedrosaborrego.workers.dev', {
-    method:'POST', headers:{'Content-Type':'application/json','X-App-Token':'RSAI-W7K4X9-M2PQ3B'},
-    body: JSON.stringify({telegram:true, chat_id: TG_CANAL, text: txt, parse_mode:'HTML'})
-  }).then(function(r){ return r.json(); }).then(function(d){
-    if(d.ok) alert('✅ Publicado en ' + TG_CANAL);
-    else alert('Error: ' + (d.description || 'desconocido'));
-  }).catch(function(){ alert('Error de conexión'); });
-}
-
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* ---------- Ventanas y utilidades ---------- */
+function dlg(h){$('dlg').innerHTML=h;$('ov').classList.add('show')}
+function closeDlg(){$('ov').classList.remove('show')}
+$('ov').addEventListener('click',e=>{if(e.target.id==='ov')closeDlg()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDlg()});
+function confirmDlg(t,txt,ok,danger){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn ${danger?'red':'lime'}" id="cOk">${esc(ok)}</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{closeDlg();res(true)}})}
+function typed(t,txt,word){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><p>Escribe <b>${esc(word)}</b> para confirmar:</p><input class="inp" id="tyI" style="width:100%" autocomplete="off"><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn red" id="cOk">Borrar</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{if($('tyI').value.trim().toUpperCase()!==String(word).toUpperCase()){toast('No coincide');return}closeDlg();res(true)}})}
+function progress(t){dlg(`<h3>${t}</h3><div class="prog"><i id="pgI"></i></div>`);return p=>{const i=$('pgI');if(i)i.style.width=Math.min(100,Math.round(p*100))+'%'}}
+function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function err(e){console.error(e);toast(/permission/.test(e&&e.code||'')?'Firebase no lo permite: ¿reglas v4.0 publicadas?':'No se pudo: '+(e&&(e.code||e.message)||'error'))}
 </script>
-</body>
-</html>
+</body></html>
