@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <style>
 :root{
   --bg:#0E1A2B; --card:#16263D; --card2:#1C2F4A; --line:#2A3B55;
@@ -545,6 +546,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #famBar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #famBar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:14px;padding:5px 10px;font-weight:800;font-size:12px;flex-shrink:0}
 .famcard{display:flex;align-items:center;gap:12px;border:1.5px solid #22C55E!important}
+#saver{position:fixed;inset:0;background:#000;z-index:9500;display:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;user-select:none}
+#saver.show{display:flex}
+#saver .sv-in{text-align:center;transition:transform 1.5s ease}
+#saver .sv-d{color:#3a3a3a;font-size:22px;font-weight:800;letter-spacing:.02em}
+#saver .sv-h{color:#5a5a5a;font-size:14px;margin-top:14px;line-height:1.5;transition:opacity .6s}
 </style>
 </head>
 <body>
@@ -579,7 +585,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button onclick="toggleRec()" id="recBtn">INICIAR</button>
   </div>
   <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div></div>
-  <div class="lv lvside"><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
+  <div class="lv lvside"><button onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
   <div class="lv lvpanel">
     <span class="lvstate" id="lvState">● GRABANDO</span>
     <div class="lvstats">
@@ -696,6 +702,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <p>Importa el archivo GPX o TCX de tu reloj o ciclocomputador.</p>
     <button class="btn btn-lime" onclick="pickFile()"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Subir archivo</button>
   </div>
+  <div id="stravaBox" style="margin-top:12px"></div>
   <div class="block">
     <div class="sec"><h3>Este mes</h3></div>
     <div class="stats">
@@ -745,7 +752,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2009,6 +2016,7 @@ function openActDetail(id){
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
     <button class="btn btn-lime" style="grid-column:1/-1" onclick="openPhoto(${a.id})">📸 Foto con tus datos</button>
     ${a.poly?`<button class="btn btn-line" style="font-size:15px" onclick="closeSheets();openAct(${a.id})">🗺️ Mapa grande</button><button class="btn btn-line" style="font-size:15px" onclick="downloadGPX(decodePoly(acts.find(x=>x.id===${a.id}).poly),acts.find(x=>x.id===${a.id}).name)">⬇️ GPX</button>`:''}
+    ${a.src==='strava'?`<a class="btn btn-line" style="font-size:15px;grid-column:1/-1;color:#FC4C02;border-color:#FC4C02;text-decoration:none" href="https://www.strava.com/activities/${Number(a.id)}" target="_blank" rel="noopener">Ver en Strava</a>`:''}
     <button class="btn btn-line" style="font-size:15px" onclick="renameAct(${a.id})">✏️ Cambiar nombre</button>
     <button class="btn btn-line" style="font-size:15px;color:var(--red)" onclick="deleteAct(${a.id})">🗑️ Borrar</button>
    </div>`;
@@ -2566,7 +2574,7 @@ function alarmShow(kind,title,sub,btns){
   const A=ALERTS[kind];const b=$('alarmBox');b.style.setProperty('--alc',A.c1);b.style.setProperty('--alc2',A.c2);
   $('alIco').textContent=A.ico;$('alTitle').textContent=title;$('alSub').textContent=sub||'';
   $('alBtns').innerHTML=btns.map(([t,cls,fn])=>`<button class="${cls}" onclick="${fn}">${t}</button>`).join('');
-  b.classList.add('show');
+  b.classList.add('show');saverOff();
 }
 function alarmClose(){alarmStop();$('alarmBox').classList.remove('show')}
 async function sendAlert(kind){
@@ -2611,7 +2619,7 @@ function groupTips(){
   if(store.get('noGroupTip',0))return;
   setTimeout(()=>{if(!live.on)return;
     const d=document.createElement('div');d.className='cfm';
-    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si vas a llevar el móvil en el bolsillo, ten a mano el <b>grupo de WhatsApp</b> de la grupeta: los avisos también se pueden mandar por ahí y suenan aunque la app esté cerrada.<br><br>🔊 Sube el volumen de multimedia.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
+    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si vas a llevar el móvil en el bolsillo, ten a mano el <b>grupo de WhatsApp</b> de la grupeta: los avisos también se pueden mandar por ahí y suenan aunque la app esté cerrada.<br><br>🔊 Sube el volumen de multimedia.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se queda negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
     d.onclick=e=>{if(e.target.closest('.cfm-ok')){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
     document.body.appendChild(d)},1200);
 }
@@ -2648,6 +2656,67 @@ async function refreshPush(){
 }
 // Si la app está abierta cuando llega el aviso, ya lo muestra el pelotón en pantalla
 function pushForeground(){try{if(pushReady())firebase.messaging().onMessage(()=>{})}catch(e){}}
+/* ===== v3.5 — Strava: las salidas del reloj llegan solas ===== */
+const STRAVA_CLIENT_ID='PON_AQUI_CLIENT_ID';
+let strava=null;   // {athleteName,lastSync} si está conectado
+const stravaOn=()=>STRAVA_CLIENT_ID&&!STRAVA_CLIENT_ID.startsWith('PON_');
+const callFn=(n,d)=>firebase.app().functions('europe-southwest1').httpsCallable(n)(d||{}).then(r=>r.data);
+const STRAVA_SVG='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.4 17.9 13.3 13.8h-3.1L15.4 24l5.1-10.2h-3.1zM10.2 0 3.3 13.8h4.1L10.2 8.3l2.8 5.5h4z"/></svg>';
+async function loadStrava(){
+  if(!db||!uid||!stravaOn()){renderStrava();return}
+  try{const d=(await db.collection('users').doc(uid).collection('private').doc('strava').get()).data();strava=d&&d.athleteId!==undefined?{athleteName:d.athleteName||'',lastSync:d.lastSync||0}:null}catch(e){strava=null}
+  renderStrava();
+  if(strava&&Date.now()-store.get('stravaAuto',0)>30*60000){store.set('stravaAuto',Date.now());stravaSync(true)}
+}
+function renderStrava(){
+  const b=$('stravaBox');if(!b)return;
+  if(!stravaOn()){b.innerHTML='';return}
+  if(!strava){b.innerHTML=`<button class="li" onclick="stravaConnect()" style="border-color:#FC4C02"><span class="em" style="color:#FC4C02">${STRAVA_SVG}</span><div><b>Conectar con Strava</b><small>Tus salidas del reloj o ciclocomputador aparecerán aquí solas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`;return}
+  b.innerHTML=`<div class="li" style="cursor:default;border-color:#FC4C02"><span class="em" style="color:#FC4C02">${STRAVA_SVG}</span><div><b>Strava conectado${strava.athleteName?' · '+esc(strava.athleteName):''}</b><small>${strava.lastSync?'Última sincronización: '+new Date(strava.lastSync).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Sincronizando…'}</small></div></div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><button class="mini" style="justify-content:center;min-height:40px" onclick="stravaSync()">🔄 Sincronizar ahora</button><button class="mini" style="justify-content:center;min-height:40px;color:var(--txt2)" onclick="stravaDisconnect()">Desconectar</button></div>`;
+}
+function stravaConnect(){
+  if(!ready())return;
+  const st=Math.random().toString(36).slice(2,12);store.set('stravaState',st);
+  const back=location.origin+location.pathname;
+  location.href='https://www.strava.com/oauth/authorize?client_id='+encodeURIComponent(STRAVA_CLIENT_ID)+'&response_type=code&approval_prompt=auto&scope=read,activity:read_all&redirect_uri='+encodeURIComponent(back)+'&state='+st;
+}
+async function stravaReturn(){
+  const q=new URLSearchParams(location.search);if(!q.has('state')||(!q.has('code')&&!q.has('error')))return;
+  history.replaceState(null,'',location.pathname);
+  if(q.get('state')!==store.get('stravaState','')){toast('Enlace de Strava no válido');return}
+  store.set('stravaState','');go('actividades');
+  if(q.get('error')){toast('Has cancelado la conexión con Strava');return}
+  if(!/activity:read/.test(q.get('scope')||'')){alert('Para importar tus salidas, deja marcada la casilla «Ver datos de tus actividades» en Strava. Vuelve a pulsar «Conectar con Strava».');return}
+  toast('Conectando con Strava…');
+  try{const r=await callFn('stravaConnect',{code:q.get('code')});toast(`✅ Strava conectado${r.name?', '+r.name:''}. ${r.imported?r.imported+' salidas importadas':'Sin salidas nuevas'}`);await syncActs();loadStrava()}
+  catch(e){console.error(e);alert('No se pudo conectar con Strava.\n('+(e.message||e.code||e)+')')}
+}
+async function stravaSync(silent){
+  try{const r=await callFn('stravaSync');if(r.imported){await syncActs();toast(`🟠 ${r.imported} ${r.imported===1?'salida nueva':'salidas nuevas'} desde Strava`)}else if(!silent)toast('No hay salidas nuevas en Strava');if(strava)strava.lastSync=Date.now();renderStrava()}
+  catch(e){console.warn('strava',e);if(!silent)toast('No se pudo sincronizar con Strava ahora')}
+}
+async function stravaDisconnect(){
+  if(!await askConfirm('¿Desconectar Strava?','Las salidas ya importadas se quedan en tus Actividades. Las nuevas dejarán de llegar.','Desconectar'))return;
+  try{await callFn('stravaDisconnect');strava=null;renderStrava();toast('Strava desconectado')}catch(e){toast('No se pudo desconectar ahora')}
+}
+/* ===== v3.6 — Modo ahorro: pantalla negra con el GPS grabando ===== */
+let saverT=null,saverTap=0;
+function saverOn(){
+  if(!live.on)return;
+  let d=$('saver');if(!d){d=document.createElement('div');d.id='saver';d.innerHTML='<div class="sv-in"><div class="sv-d" id="svData"></div><div class="sv-h" id="svHint">🌙 Modo ahorro · el GPS sigue grabando<br>Toca dos veces para volver</div></div>';document.body.appendChild(d);
+    d.addEventListener('click',()=>{const n=Date.now();if(n-saverTap<450){saverOff();return}saverTap=n;const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,2500)})}
+  d.classList.add('show');const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,4000);
+  saverTick();clearInterval(saverT);saverT=setInterval(saverTick,1000);
+  try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}
+  keepAwake();speak('Modo ahorro. El GPS sigue grabando');
+}
+function saverTick(){
+  const d=$('svData');if(!d||!live.on){saverOff();return}
+  d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`;
+  if(Math.floor(Date.now()/1000)%30===0){const i=$('saver').querySelector('.sv-in');i.style.transform=`translate(${Math.round(Math.random()*60-30)}px,${Math.round(Math.random()*160-80)}px)`}
+}
+function saverOff(){clearInterval(saverT);const d=$('saver');if(d)d.classList.remove('show');try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}
 function alertWA(){if(!live.waText)return;window.open('https://wa.me/?text='+encodeURIComponent(live.waText),'_blank')}
 function alertGo(id){const v=(live.members||{})[id];if(!v)return;live.follow=false;map.easeTo({center:[v.lng,v.lat],zoom:16})}
 function alarmTest(){alarmUnlock();alarmSound('flat',2);alarmShow('flat','Prueba de aviso','Así sonará cuando alguien del grupo pinche. Sube el volumen del móvil.',[['Parar','al-main','alarmClose()']])}
@@ -2665,7 +2734,7 @@ function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collecti
 const FEATURES=[
   ['Rodar en grupo',[['📡','Ciclistas cercanos','Quién rueda a menos de 2 km','fn:openNearby()'],['👥','Mi grupo','Tu grupo habitual de salida','fn:openGroup()'],['🔔','Probar aviso de pinchazo','Escucha la sirena del pelotón','fn:alarmTest()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
   ['Compartir y descubrir',[['🗺️','Rutas de la comunidad','Rutas compartidas por otros ciclistas','fn:openCommRoutes()'],['☕','Puntos ciclistas','Fuentes, cafés, talleres y más','fn:openPois()'],['📰','Actividad de la comunidad','Últimas salidas','fn:openFeed()'],['🎖️','Logros','Tus medallas','fn:openBadges()']]],
-  ['Seguridad',[['📍','Ubicación para la familia','Por WhatsApp, sin instalar nada','fn:famShare()'],['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
+  ['Seguridad',[['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
 ];
 $('features').innerHTML=FEATURES.map(([g,items])=>`<div class="grp-t">${g}</div>`+items.map(([e,t,s,p])=>`<button class="li" onclick="${p.startsWith('fn:')?p.slice(3):p==='sos'?'sos()':p==='peloton'?`toast('Se activa al pulsar «Empezar salida» el día de la salida')`:`toast('${t}: próximamente')`}"><span class="em">${e}</span><div><b>${t}</b><small>${s}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`).join('')).join('');
 function sos(){
@@ -3342,7 +3411,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
+  saverOff();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}
@@ -3587,7 +3656,7 @@ function startFirebase(){
       if((me?.group||null)!==(myGroup?.id||null)||!groupUnsub)watchGroup();
       checkBadges();
     },e=>console.error(e));
-    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();
+    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
     // Salidas próximas (en vivo)
     db.collection('rides').where('date','>=',iso(new Date())).orderBy('date').limit(150).onSnapshot(s=>{
       rides=s.docs.map(d=>({id:d.id,...d.data()}));ridesLoaded=true;renderRides();drawRideMarkers();
