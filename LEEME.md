@@ -1,3 +1,8 @@
+## Versión 3.9.1
+- Tarjeta para redes sociales (Actividades → foto con tus datos): formatos Historia 9:16, Publicación 4:5 y Cuadrada 1:1; escudo del club; recorrido opcional; botón «📤 Publicar en redes» (menú del móvil: Instagram, Facebook, WhatsApp, Strava, X…) y texto (sin emoticonos) con hashtags que se copia solo.
+- Desnivel: si el GPS del móvil no da altitud (salía «+0 m»), se calcula con el mapa de altitudes (Open‑Meteo) al terminar la salida o al hacer la foto.
+- Arreglado: la foto ya no se dibuja dos veces si se cambia de formato rápido.
+
 ## Versión 3.9
 - «🧭 Cómo llegar» ya no abre Google Maps: guía dentro de la app con Mapbox (mapa, km, minutos, hora de llegada, indicaciones en español, En bici / En coche y «▶ Guiarme con voz»).
 - Funciona en punto de salida, punto de encuentro, puntos ciclistas, aviso de un compañero (durante la salida, sin cortar la grabación) y en la página de la familia (camino en coche dibujado en el mapa).

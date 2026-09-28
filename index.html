@@ -784,7 +784,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.9.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -980,14 +980,20 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </div>
   <div id="phStep2" style="display:none">
-    <div class="chips" id="phFmt" style="margin-bottom:12px"><button class="chip on" data-f="story" onclick="phSetFmt('story')">Historia 9:16</button><button class="chip" data-f="post" onclick="phSetFmt('post')">Publicación 4:5</button></div>
+    <div class="chips" id="phFmt" style="margin-bottom:8px"><button class="chip on" data-f="story" onclick="phSetFmt('story')">📱 Historia 9:16</button><button class="chip" data-f="post" onclick="phSetFmt('post')">🖼️ Publicación 4:5</button><button class="chip" data-f="square" onclick="phSetFmt('square')">⬜ Cuadrada 1:1</button></div>
+    <p style="color:var(--txt2);font-size:13px;margin:0 0 10px">Historia: Instagram, Facebook y Estado de WhatsApp · Publicación: Instagram y Facebook · Cuadrada: Facebook, X y Strava</p>
+    <div class="chips" id="phOpts" style="margin-bottom:12px"><button class="chip on" id="phLogoChip" style="display:none" onclick="phLogo=!phLogo;this.classList.toggle('on',phLogo);phRender()">🏅 Escudo del club</button><button class="chip on" id="phMapChip" onclick="phMap=!phMap;this.classList.toggle('on',phMap);phRender()">🗺️ Recorrido</button></div>
     <img id="phPrev" alt="Vista previa de la foto con tus datos" style="width:100%;border-radius:18px;border:1px solid var(--line);display:block;margin-bottom:12px">
     <canvas id="phCanvas" style="display:none"></canvas>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button class="btn btn-lime" style="grid-column:1/-1" onclick="phShare()">📤 Compartir</button>
+      <button class="btn btn-lime" style="grid-column:1/-1" onclick="phShare()">📤 Publicar en redes</button>
       <button class="btn btn-line" onclick="phDownload()">⬇️ Guardar</button>
       <button class="btn btn-line" onclick="$('phStep1').style.display='block';$('phStep2').style.display='none'">🔄 Otra foto</button>
     </div>
+    <p style="font-weight:700;margin:16px 0 6px">✍️ Texto para la publicación</p>
+    <textarea class="inp" id="phCap" rows="5" style="width:100%;resize:vertical;font-size:14.5px;line-height:1.4"></textarea>
+    <button class="btn btn-line" style="margin-top:8px;min-height:46px" onclick="phCopy()">📋 Copiar texto</button>
+    <p style="color:var(--txt2);font-size:13px;margin-top:8px">Al pulsar «Publicar en redes» el texto se copia solo: en Instagram o Facebook, mantén el dedo en el pie de foto y pulsa «Pegar».</p>
   </div>
   <input type="file" id="phCam" accept="image/*" capture="environment" hidden onchange="phLoad(event)">
   <input type="file" id="phGal" accept="image/*" hidden onchange="phLoad(event)">
@@ -3725,7 +3731,7 @@ async function finishLive(save){
   const pk=packRoute(r);
   const title=L.rideId?(L.rideTitle||'Salida en grupo'):'Salida en bici';
   const a={id:Date.now(),name:title,date:iso(new Date(L.startT)),km:+L.km.toFixed(1),up:Math.round(r.up||L.up),mins,group:!!L.rideId,...pk};
-  acts.unshift(a);store.set('acts',acts.slice(0,300));saveActRemote(a);
+  acts.unshift(a);store.set('acts',acts.slice(0,300));saveActRemote(a);if(!a.up&&a.poly)fixUp(a);
   const gain=Math.min(300,Math.round(L.km))+10+(L.rideId?30:0);
   addPoints(gain,L.rideId?{done:FV.increment(1)}:null);if(L.rideId&&me)me.done=(me.done||0)+1;
   publishAct(a);checkBadges();addKmToBike(L.km);
@@ -3765,15 +3771,31 @@ window.addEventListener('beforeunload',e=>{if(live.on){e.preventDefault();e.retu
 /* ===================================================================
    FOTO CON TUS DATOS (tipo "story") — se genera en el móvil, no se sube a ningún sitio
    =================================================================== */
-let phAct=null,phImg=null,phFmt='story',phBlob=null;
+let phSeq=0,phAct=null,phImg=null,phFmt='story',phBlob=null,phLogo=true,phMap=true,phLogoImg=null;
 const fmtNum=(n,d)=>Number(n).toFixed(d).replace('.',',');
+// Desnivel real con el mapa de altitudes (cuando el GPS del móvil no da altitud)
+async function fixUp(a){
+  try{const c=decodePoly(a.poly);if(!c||c.length<2)return false;
+    const r=await addElevation({coords:c.map(p=>[p[0],p[1]])});const up=Math.round(r.up||0);if(!up)return false;
+    a.up=up;store.set('acts',acts);try{saveActRemote(a)}catch(e){}try{renderActs()}catch(e){}return true}catch(e){return false}
+}
+function phCaption(a){
+  const vm=a.mins>0?a.km/(a.mins/60):0;const club=a.group&&myGroup&&myGroup.name?myGroup.name:'';
+  const t=a.mins>=60?Math.floor(a.mins/60)+'h '+String(a.mins%60).padStart(2,'0')+'min':(a.mins||0)+' min';
+  return `${a.group?'Salida en grupo':'Salida en bici'}${club?' con '+club:''}\nDistancia ${fmtNum(a.km,1)} km · Tiempo ${t}${vm?' · Media '+fmtNum(vm,1)+' km/h':''}${a.up?' · Desnivel +'+a.up+' m':''}\n\n#ciclismo #bici #cycling${club?' #'+club.replace(/[^\wÁÉÍÓÚÑáéíóúñ]/g,''):''} #RideSafeIA\nRegistrada con RideSafe IA · app.ridesafeia.es`;
+}
+async function phCopy(silent){const t=$('phCap').value;try{await navigator.clipboard.writeText(t);if(!silent)toast('Texto copiado ✓');return true}catch(e){if(!silent){$('phCap').select();toast('Mantén pulsado el texto para copiarlo')}return false}}
 function openPhoto(id,auto){
   phAct=acts.find(x=>x.id===id);if(!phAct)return;
   phImg=null;phBlob=null;
   $('phStep1').style.display='block';$('phStep2').style.display='none';
   $('phTitle').textContent=auto?'¡Salida guardada! 🎉':'Foto con tus datos';
   $('phSub').textContent=`${fmtNum(phAct.km,2)} km · ${hm(phAct.mins||0)}${phAct.up?' · +'+phAct.up+' m':''}`;
+  const lg=clubLogo(myGroup);phLogoImg=null;$('phLogoChip').style.display=lg?'':'none';
+  if(lg){const im=new Image();im.onload=()=>{phLogoImg=im;if($('phStep2').style.display!=='none')phRender()};im.src=lg}
+  $('phCap').value=phCaption(phAct);
   openSheet('sh-photo');
+  if(!phAct.up&&phAct.poly)fixUp(phAct).then(ok=>{if(ok&&phAct&&phAct.id===id){$('phSub').textContent=`${fmtNum(phAct.km,2)} km · ${hm(phAct.mins||0)} · +${phAct.up} m`;$('phCap').value=phCaption(phAct);if($('phStep2').style.display!=='none')phRender()}});
 }
 function phPick(camera){const i=$(camera?'phCam':'phGal');i.value='';i.click()}
 function phLoad(e){
@@ -3786,9 +3808,11 @@ function phSetFmt(f){phFmt=f;document.querySelectorAll('#phFmt .chip').forEach(c
 
 async function phRender(){
   $('phStep1').style.display='none';$('phStep2').style.display='block';
+  const seq=++phSeq;
   try{await document.fonts.load('800 60px "Plus Jakarta Sans"');await document.fonts.load('600 30px "Plus Jakarta Sans"')}catch(e){}
-  const a=phAct,W=1080,H=phFmt==='story'?1920:1350;
-  const cv=$('phCanvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  if(seq!==phSeq)return;   // se pidió otro dibujo mientras tanto: vale el último
+  const a=phAct,W=1080,H=phFmt==='story'?1920:phFmt==='square'?1080:1350;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const F=(w,s)=>`${w} ${s}px "Plus Jakarta Sans", system-ui, sans-serif`;
   // Fondo: foto recortada a pantalla completa o degradado RideSafe IA
   if(phImg){
@@ -3804,12 +3828,18 @@ async function phRender(){
   // Marca RideSafe IA arriba a la derecha y fecha a la izquierda
   g.font=F(800,64);g.textAlign='right';
   const goW=g.measureText('IA').width;g.fillStyle='#C8DC3C';g.fillText('IA',W-70,130);g.fillStyle='#fff';g.fillText('RideSafe ',W-70-goW,130);
-  g.textAlign='left';g.font=F(600,36);g.fillStyle='rgba(255,255,255,.9)';
-  const d=new Date(a.date+'T12:00');g.fillText(d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),70,195);
+  g.textAlign='left';g.font=F(600,phFmt==='square'?32:36);g.fillStyle='rgba(255,255,255,.9)';
+  const d=new Date(a.date+'T12:00');g.fillText(d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),70,phFmt==='square'?190:195);
+  // Escudo del club (arriba a la izquierda)
+  if(phLogo&&phLogoImg){const L=phFmt==='square'?110:150,lx=70,ly=phFmt==='square'?225:235;
+    g.save();g.shadowBlur=0;g.fillStyle='#fff';g.beginPath();g.arc(lx+L/2,ly+L/2,L/2+6,0,7);g.fill();
+    g.beginPath();g.arc(lx+L/2,ly+L/2,L/2,0,7);g.clip();const r0=Math.max(L/phLogoImg.naturalWidth,L/phLogoImg.naturalHeight);
+    g.drawImage(phLogoImg,lx+(L-phLogoImg.naturalWidth*r0)/2,ly+(L-phLogoImg.naturalHeight*r0)/2,phLogoImg.naturalWidth*r0,phLogoImg.naturalHeight*r0);g.restore();
+    if(myGroup&&myGroup.name){g.font=F(700,30);g.fillStyle='#fff';g.fillText(String(myGroup.name).slice(0,28),lx+L+24,ly+L/2+10)}}
   // Recorrido
   const pts=a.poly?decodePoly(a.poly):null;
-  if(pts&&pts.length>1){
-    const box=phImg?{x:W-70-330,y:phFmt==='story'?H*0.46:H*0.20,w:330,h:330}:{x:140,y:H*0.16,w:W-280,h:phFmt==='story'?H*0.40:H*0.34};
+  if(phMap&&pts&&pts.length>1){
+    const box=phFmt==='square'?(phImg?{x:W-70-260,y:190,w:260,h:260}:{x:W/2-60,y:190,w:W/2-10,h:330}):phImg?{x:W-70-330,y:phFmt==='story'?H*0.46:H*0.20,w:330,h:330}:{x:140,y:H*0.16,w:W-280,h:phFmt==='story'?H*0.40:H*0.34};
     let mnLa=1e9,mxLa=-1e9,mnLg=1e9,mxLg=-1e9;pts.forEach(p=>{mnLa=Math.min(mnLa,p[0]);mxLa=Math.max(mxLa,p[0]);mnLg=Math.min(mnLg,p[1]);mxLg=Math.max(mxLg,p[1])});
     const k=Math.cos(((mnLa+mxLa)/2)*Math.PI/180);const sw=(mxLg-mnLg)*k||1e-6,sh=(mxLa-mnLa)||1e-6;
     const sc=Math.min(box.w/sw,box.h/sh),ox=box.x+(box.w-sw*sc)/2,oy=box.y+(box.h-sh*sc)/2;
@@ -3823,7 +3853,7 @@ async function phRender(){
     g.shadowBlur=12;
   }
   // Icono de bici + título
-  const baseY=H-(phFmt==='story'?560:470);
+  const baseY=H-(phFmt==='story'?560:phFmt==='square'?450:470);
   g.save();g.translate(70,baseY-58);g.scale(2.6,2.6);g.strokeStyle='#fff';g.lineWidth=2;g.lineCap='round';g.lineJoin='round';g.shadowBlur=0;
   g.stroke(new Path2D('M5.5 20.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3'));g.restore();
   if(a.group){g.font=F(700,32);g.fillStyle='#C8DC3C';g.fillText('SALIDA EN GRUPO',150,baseY-18)}
@@ -3840,18 +3870,19 @@ async function phRender(){
     g.font=F(800,72);g.fillStyle='#fff';g.fillText(v,x,y+78);
   });
   g.shadowBlur=0;
-  cv.toBlob(b=>{phBlob=b;$('phPrev').src=URL.createObjectURL(b)},'image/jpeg',0.9);
+  cv.toBlob(b=>{if(seq!==phSeq)return;phBlob=b;$('phPrev').src=URL.createObjectURL(b)},'image/jpeg',0.9);
 }
 async function phShare(){
   if(!phBlob){toast('Espera un momento…');return}
-  const file=new File([phBlob],'velogo-'+(phAct?.date||'salida')+'.jpg',{type:'image/jpeg'});
+  const file=new File([phBlob],'ridesafe-'+(phAct?.date||'salida')+'.jpg',{type:'image/jpeg'});
+  const copied=await phCopy(true);if(copied)toast('Texto copiado: pégalo en el pie de foto');
   try{
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:'Mi salida en bici con RideSafe IA 🚴'});return}
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:$('phCap').value});return}
   }catch(e){if(e.name==='AbortError')return}
   phDownload();toast('Foto guardada. Compártela desde tu galería');
 }
 function phDownload(){
-  if(!phBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(phBlob);a.download='velogo-'+(phAct?.date||'salida')+'.jpg';document.body.appendChild(a);a.click();a.remove();
+  if(!phBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(phBlob);a.download='ridesafe-'+(phAct?.date||'salida')+'.jpg';document.body.appendChild(a);a.click();a.remove();
 }
 
 
