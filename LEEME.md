@@ -1,3 +1,12 @@
+## Versión 4.0 — Clubes privados
+- Cada club es un espacio privado: salidas, rutas, actividad, puntos ciclistas, ranking y ciclistas cercanos solo los ven los miembros de ese club. Lo garantizan las reglas de Firebase v4.0 (hay que publicarlas).
+- Grupetas dentro del club (MTB, Carretera adultos, Veteranos, Escuela infantil…) con modalidad, nivel y responsables. Cada ciclista se apunta a las suyas; el administrador del club puede cambiarlo.
+- Crear salida: «¿Para quién es?» → Todo el club o una grupeta. Las rutas compartidas también se asignan al club o a una grupeta.
+- Nuevo papel: 🛡️ Administrador del club (el creador y los que él nombre). Pantalla «Administración del club»: Grupetas, Salidas y rutas (borrar, limpiar historial), Rankings (reiniciar o borrar por grupeta), Miembros (grupetas, papeles, quitar del club, descargar lista del club) y Privacidad.
+- Ranking del club por kilómetros: general y por grupeta. Se suma al terminar cada salida.
+- 🎯 Responsable de grupeta: gestiona las salidas de su grupeta.
+- Propietario de la app: botón «🔧 Pasar datos antiguos a su club» (Panel → Resumen) y 🛡️ para nombrar administradores de cualquier club.
+
 ## Versión 3.9.1
 - Tarjeta para redes sociales (Actividades → foto con tus datos): formatos Historia 9:16, Publicación 4:5 y Cuadrada 1:1; escudo del club; recorrido opcional; botón «📤 Publicar en redes» (menú del móvil: Instagram, Facebook, WhatsApp, Strava, X…) y texto (sin emoticonos) con hashtags que se copia solo.
 - Desnivel: si el GPS del móvil no da altitud (salía «+0 m»), se calcula con el mapa de altitudes (Open‑Meteo) al terminar la salida o al hacer la foto.

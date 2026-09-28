@@ -643,10 +643,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <button id="bGo" class="go" onclick="goNav()">▲ Iniciar</button>
       <button id="bSave" onclick="plan.view&&viewingComm?saveCommRoute():saveRoute()">💾 Guardar</button>
       <button id="bUse" class="lime" onclick="useRoute()">📅 Crear salida con esta ruta</button>
-      <button id="bPub" style="grid-column:1/-1" onclick="publishRoute()">🌍 Compartir en la comunidad</button>
+      <button id="bPub" style="grid-column:1/-1" onclick="publishRoute()">👥 Compartir con mi club</button>
       <button class="gm-link" onclick="plan.route&&saveRouteOffline(plan.route.coords,$('planTitle').textContent)">📥 Guardar mapa para usar sin conexión</button>
       <button class="gm-link" onclick="gpxPlan()">⬇️ Descargar GPX (Garmin, Wahoo…)</button>
-      <button class="gm-link" id="bDelComm" style="color:var(--red);display:none" onclick="viewingComm&&delCommRoute(viewingComm.id)">Quitar de la comunidad</button>
+      <button class="gm-link" id="bDelComm" style="color:var(--red);display:none" onclick="viewingComm&&delCommRoute(viewingComm.id)">🗑️ Borrar ruta del club</button>
       <button class="gm-link" id="bRepComm" style="display:none" onclick="viewingComm&&reportContent('routes',viewingComm.id,viewingComm.name)">⚠️ Reportar esta ruta</button>
     </div>
     <div class="pstats" id="pStats"></div>
@@ -690,7 +690,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </div>
 
   <div class="block">
-    <div class="sec"><h3>Mi grupo</h3></div>
+    <div class="sec"><h3>Mi club</h3></div>
     <div id="groupBox"></div>
   </div>
 
@@ -705,12 +705,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </div>
 
   <div class="block">
-    <div class="sec"><h3>Ranking</h3><a onclick="openRanking()">Ver ranking completo <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
+    <div class="sec"><h3>Ranking del club</h3><a onclick="openRanking()">Ver ranking completo <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
     <div class="rank" id="rank"></div>
   </div>
 
   <div class="block">
-    <div class="sec"><h3>Actividad</h3><a onclick="openFeed()">Ver todo <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
+    <div class="sec"><h3>Actividad del club</h3><a onclick="openFeed()">Ver todo <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
     <div id="feedBox"></div>
   </div>
 
@@ -776,7 +776,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos del pelotón con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Pinchazos, «esperad» y «ayuda» de tus salidas, aunque tengas el móvil bloqueado</small></div>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
-  <div class="set">Publicar mis salidas en la comunidad <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
+  <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Ayuda</h3></div>
   <div class="list">
     <button class="li" onclick="openHelp()"><span class="em">❓</span><div><b>Cómo funciona</b><small>Preguntas rápidas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -784,7 +784,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.9.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -914,9 +914,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <select class="inp" id="cSeats"><option value="0">Sin límite</option><option>5</option><option>10</option><option>15</option><option>20</option><option>30</option></select>
   </div>
 
-  <div class="f" id="visRow" style="display:none">
-    <label class="l">👁️ Quién la ve</label>
-    <div class="chips" id="visChips"><button class="chip on">Toda la comunidad</button><button class="chip">Solo mi grupo</button></div>
+  <div class="f" id="visRow">
+    <label class="l">👁️ ¿Para quién es?</label>
+    <div class="chips" id="visChips"></div>
+    <small id="visNote" style="display:block;color:var(--txt2);margin-top:6px"></small>
   </div>
 
   <div class="f">
@@ -999,10 +1000,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <input type="file" id="phGal" accept="image/*" hidden onchange="phLoad(event)">
 </div>
 
-<!-- Actividad de la comunidad -->
+<!-- Actividad del club -->
 <div class="sheet" id="sh-feed">
   <div class="grab"></div>
-  <h2>Actividad <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+  <h2>Actividad del club <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
   <div id="feedAll"></div>
 </div>
 
@@ -1151,7 +1152,7 @@ function togglePlus(){$('sh-plus').classList.contains('show')?closeSheets():open
 /* ===== Chips ===== */
 function chipGroup(id,cb){$(id).querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');cb&&cb(c)})}
 const chipVal=id=>$(id).querySelector('.chip.on')?.textContent;
-chipGroup('typeChips');chipGroup('paceChips');chipGroup('visChips');chipGroup('stType');
+chipGroup('typeChips');chipGroup('paceChips');chipGroup('stType');
 chipGroup('dayChips',c=>{$('cDate').style.display=c.dataset.d==='x'?'block':'none'});
 chipGroup('fltChips',()=>renderAll());
 
@@ -1169,14 +1170,14 @@ function fbErr(e,what){console.error(e);const c=e&&e.code||'';
 function netErr(e){console.error(e);toast(navigator.onLine?'No se pudo guardar. Inténtalo de nuevo':'Sin conexión. Se guardará al recuperar cobertura')}
 
 /* ===== Salidas ===== */
-function upcoming(){const t=iso(new Date());return rides.filter(r=>r.date>=t&&(r.vis!=='group'||r.group===me?.group||joined(r)||isOwner(r))).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour))}
+function upcoming(){const t=iso(new Date());return rides.filter(r=>r.date>=t&&canSeeRideUI(r)).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour))}
 function faces(r){const p=names(r),n=p.length;return `<div class="faces">${p.slice(0,4).map(x=>`<div class="face" style="background:${colorOf(x)}">${ini(x)}</div>`).join('')}<span>${n} ${n===1?'apuntado':'apuntados'}</span></div>`}
 function rideCard(r,full){
   const inR=joined(r);
   const meet=r.meet&&r.meet!==r.start?`<div class="pt"><span class="ico">📍</span><span>Encuentro: <b>${esc(r.meet)}</b>${r.meetHour?' · '+esc(r.meetHour):''}</span></div>`:`<div class="pt"><span class="ico">📍</span><span>Encuentro en el mismo punto</span></div>`;
   return `<div class="ride${full?' full':''}" onclick="openRide('${r.id}')">
     <div class="when"><div><div class="date">${fmtDate(r.date)}</div><div class="hour num">${esc(r.hour)}</div></div>
-    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:''}${r.gp&&gpName(r.gp)?`<span class="tag">🏷️ ${esc(gpName(r.gp))}</span>`:''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
     ${r.plan&&r.plan.text?`<div class="pt pl"><span class="ptag">Recorrido</span><span class="clip2">${esc(r.plan.text)}</span></div>`:''}
@@ -1189,7 +1190,7 @@ function rideCard(r,full){
 function renderRides(){
   const up=upcoming();
   if(!ridesLoaded){$('nextRides').innerHTML=`<div class="empty" style="flex:1 0 100%">Cargando salidas…</div>`;}
-  else $('nextRides').innerHTML=up.length?up.slice(0,6).map(r=>rideCard(r)).join(''):`<div class="empty" style="flex:1 0 100%">Aún no hay salidas próximas.<br>¡Crea la primera y avisa a tu grupo!</div>`;
+  else $('nextRides').innerHTML=up.length?up.slice(0,6).map(r=>rideCard(r)).join(''):`<div class="empty" style="flex:1 0 100%">${me?.group?'Aún no hay salidas próximas en tu club.<br>¡Crea la primera y avisa a tu grupeta!':'Únete a tu club para ver sus salidas.<br><button class="btn btn-line" style="max-width:240px;margin-top:8px" onclick="joinGroupAsk()">🔗 Unirme a mi club</button>'}</div>`;
   const mine=up.filter(joined);
   $('myRides').innerHTML=mine.length?mine.map(r=>rideCard(r,true)).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4"/></svg>Todavía no te has apuntado a ninguna salida<button class="btn btn-lime" style="max-width:240px" onclick="openCreate()">Crear salida</button></div>`;
   renderStats();renderRank();
@@ -1340,7 +1341,8 @@ function cardDownload(){if(!cardBlob)return;const a=document.createElement('a');
 async function openRide(id,keep){
   let r=rides.find(x=>x.id===id);
   if(!r&&db){try{const s=await db.collection('rides').doc(id).get();if(s.exists){r={id:s.id,...s.data()};if(!rides.some(x=>x.id===r.id))rides.push(r)}}catch(e){}}
-  if(!r){if(!keep)toast('Esta salida ya no existe o ha terminado');return}
+  if(r&&!isAdmin&&!canSeeRideUI(r))r=null;   // v4.0: nunca se muestra una salida de otro club
+  if(!r){if(!keep)toast('Esta salida no existe o es privada de otro club');return}
   const _ci=$('chatIn'),draft=_ci?_ci.value:'',focused=document.activeElement===_ci,_sh=$('sh-ride').scrollTop;
   openRideId=id;const inR=joined(r);const meetPt=r.meet||r.start;const isToday=r.date===iso(new Date());const p=names(r);
   $('rideBody').innerHTML=`
@@ -1612,7 +1614,7 @@ function openCreate(){
   ['gpsStart','gpsMeet','mapStart','mapMeet'].forEach(i=>$(i).classList.remove('ok'));
   pickLL.start=pickLL.meet=null;$('okStart').classList.remove('on');$('okMeet').classList.remove('on');
   formRoute=null;renderRouteBox();resetPlanForm(null);
-  document.querySelectorAll('#visChips .chip').forEach((c,i)=>c.classList.toggle('on',i===0));
+  fillVisChips('');
   document.querySelectorAll('.err').forEach(e=>e.style.display='none');
   $('cDate').value=iso(addDays(1));$('cDate').min=iso(new Date());
   openSheet('sh-create');
@@ -1641,7 +1643,7 @@ function publishRide(){
   if(!ok)return;
   const ref=db.collection('rides').doc();
   const r={title:$('cTitle').value.trim().slice(0,40),date,hour,start,meet,meetHour:same?'':($('cMeetHour').value||''),
-    vis:myGroup&&chipVal('visChips')==='Solo mi grupo'?'group':'all',group:myGroup?myGroup.id:null,type:chipVal('typeChips')||'',pace:chipVal('paceChips')||'',km:Math.max(0,Math.min(400,Math.round(+$('cKm').value||0))),seats:+$('cSeats').value||0,
+    vis:myGroup?'club':'me',group:myGroup?myGroup.id:null,gp:myGroup?visGp():'',type:chipVal('typeChips')||'',pace:chipVal('paceChips')||'',km:Math.max(0,Math.min(400,Math.round(+$('cKm').value||0))),seats:+$('cSeats').value||0,
     note:$('cNote').value.trim().slice(0,200),by:myName(),byUid:uid,people:{[uid]:myName()},createdAt:FV.serverTimestamp(),
     startLL:pickLL.start||null,meetLL:same?(pickLL.start||null):(pickLL.meet||null),route:formRoute?{...formRoute}:null,...collectPlan()};
   if(r.route){delete r.route.a;if(!r.km)r.km=Math.round(r.route.km)}
@@ -1672,12 +1674,6 @@ function renderStats(){
   const pts=me?.pts||0;
   $('stPts').textContent=pts;$('stRides').textContent=me?.done||0;$('stLvl').textContent=level(pts);
   $('pfLvl').textContent='Nivel '+level(pts)+' · '+pts+' puntos';
-}
-function renderRank(){
-  if(!ranking.length){$('rank').innerHTML=`<div class="rrow"><div class="nm" style="color:var(--txt2);font-weight:500">El ranking aparecerá cuando haya más ciclistas</div></div>`;return}
-  let l=ranking.map(u=>({...u}));
-  if(uid&&me&&!l.some(u=>u.id===uid))l.push({id:uid,name:me.name,pts:me.pts||0,out:1});
-  $('rank').innerHTML=l.map((u,i)=>`<div class="rrow${u.id===uid?' me':''}"><div class="pos p${u.out?'':i+1}">${u.out?'·':i+1}</div><div class="face" style="background:${colorOf(u.name)}">${ini(u.name)}</div><div class="nm">${esc(u.name)}${u.id===uid?' (tú)':''}</div><div class="pts num">${u.pts||0} <small>pts</small></div></div>`).join('');
 }
 
 
@@ -1718,14 +1714,34 @@ async function admCaptain(gid){
     toast((d.captains||{})[k]?'Ya no es jefe de pelotón':'⭐ '+n+' ya es jefe de pelotón');if($('admCL'))admCont();
   }catch(e){fbErr(e,'cambiar los jefes')}
 }
+async function admClubAdmins(gid){
+  try{const d=(await db.collection('groups').doc(gid).get()).data();if(!d)return;
+    const ms=Object.entries(d.members||{}).filter(([k])=>k!==d.byUid);if(!ms.length){toast('Este club aún no tiene más ciclistas');return}
+    const i=await askChoice('🛡️ Administradores de «'+d.name+'»',ms.map(([k,n])=>[(d.admins||{})[k]?'🛡️ '+n+' (quitar)':n,'',k]));if(i<0)return;
+    const [k,n]=ms[i];await db.collection('groups').doc(gid).update({['admins.'+k]:(d.admins||{})[k]?FV.delete():n});
+    toast((d.admins||{})[k]?'Ya no es administrador del club':'🛡️ '+n+' ya es administrador del club');if($('admCL'))admCont();
+  }catch(e){fbErr(e,'cambiar los administradores')}
+}
+// v4.0 — Datos antiguos sin club: se asignan al club del que los creó (según la lista de miembros de cada club)
+async function admMigrate(){
+  if(!await askConfirm('Pasar datos antiguos a su club','Las salidas, rutas, puntos ciclistas y actividad antiguos que no tienen club se asignarán al club de quien los creó. Lo de ciclistas sin club quedará solo para ellos.','Asignar',true))return;
+  toast('Asignando…');
+  try{
+    const clubOf={};(await db.collection('groups').limit(2000).get()).docs.forEach(d=>Object.keys(d.data().members||{}).forEach(k=>{if(!clubOf[k])clubOf[k]=d.id}));
+    let n=0;
+    for(const d of (await db.collection('rides').limit(3000).get()).docs){const r=d.data();if(!r.group&&clubOf[r.byUid]){await d.ref.update({group:clubOf[r.byUid]}).catch(()=>{});n++}}
+    for(const c of ['feed','routes','pois'])for(const d of (await db.collection(c).limit(3000).get()).docs){const r=d.data();if(!r.club&&clubOf[r.uid]){await d.ref.update({club:clubOf[r.uid]}).catch(()=>{});n++}}
+    toast(`✅ ${n} datos asignados a su club`);
+  }catch(e){fbErr(e,'asignar los datos antiguos')}
+}
 async function admClub(gid,on){
   try{await db.collection('groups').doc(gid).update({club:on});toast(on?'🏅 Ahora es club oficial: ya puede poner su escudo':'Ya no es club oficial');if($('admCL'))admCont()}catch(e){fbErr(e,'cambiar el club')}
 }
 /* ===== v3.1 — Jefes de pelotón: mandan solo en su club/grupo ===== */
-const isBossOf=g=>!!(g&&myGroup&&myGroup.id===g&&(myGroup.byUid===uid||(myGroup.captains||{})[uid]));
+const isBossOf=g=>!!(g&&myGroup&&myGroup.id===g&&(myGroup.byUid===uid||(myGroup.captains||{})[uid]||(myGroup.admins||{})[uid]));
 const isCreatorOf=g=>!!(g&&myGroup&&myGroup.id===g&&myGroup.byUid===uid);
-const canManage=r=>!!r&&(isOwner(r)||isBossOf(r.group));
-const roleOf=(g,k)=>k===g.byUid?'👑 Creador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'';
+const canManage=r=>!!r&&(isOwner(r)||isBossOf(r.group)||isGpResp(r));
+const roleOf=(g,k)=>k===g.byUid?'👑 Creador':(g.admins||{})[k]?'🛡️ Administrador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'';
 function askChoice(title,opts){return new Promise(res=>{
   const d=document.createElement('div');d.className='cfm';
   d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${i}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${o[0]}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
@@ -1736,16 +1752,24 @@ function askChoice(title,opts){return new Promise(res=>{
 async function memberMenu(k){
   const g=myGroup;if(!g||!isBossOf(g.id)||k===uid)return;
   const n=g.members[k]||'Ciclista';const cap=!!(g.captains||{})[k];const opts=[];
-  if(isCreatorOf(g.id)||isAdmin)opts.push([cap?'Quitar como jefe de pelotón':'⭐ Nombrar jefe de pelotón','',cap?'uncap':'cap']);
-  if(k!==g.byUid&&(!cap||isCreatorOf(g.id)||isAdmin))opts.push(['🚪 Expulsar del grupo','red','kick']);
+  const adm=!!(g.admins||{})[k];
+  if(isClubAdm()){
+    opts.push(['🏷️ Grupetas de '+n.split(' ')[0],'','gps']);
+    if(k!==g.byUid)opts.push([adm?'Quitar como administrador del club':'🛡️ Nombrar administrador del club','',adm?'unadm':'adm']);
+    opts.push([cap?'Quitar como jefe de pelotón':'⭐ Nombrar jefe de pelotón','',cap?'uncap':'cap']);
+  }
+  if(k!==g.byUid&&(isClubAdm()||(!cap&&!adm)))opts.push(['🚪 Quitar del club','red','kick']);
   if(!opts.length){toast('No puedes cambiar a otro jefe de pelotón');return}
   const i=await askChoice(n,opts);if(i<0)return;const act=opts[i][2];const ref=db.collection('groups').doc(g.id);
   try{
     if(act==='cap'){await ref.update({['captains.'+k]:n});toast(`⭐ ${n.split(' ')[0]} ya es jefe de pelotón`)}
     if(act==='uncap'){await ref.update({['captains.'+k]:FV.delete()});toast('Ya no es jefe de pelotón')}
-    if(act==='kick'){if(!await askConfirm('¿Expulsar del grupo?',`${n} dejará de ver las salidas privadas del grupo. Podrá volver a entrar si le dais el código.`,'Expulsar'))return;
-      const up={['members.'+k]:FV.delete()};if(cap)up['captains.'+k]=FV.delete();await ref.update(up);toast('Expulsado del grupo')}
-    setTimeout(openGroup,400);
+    if(act==='adm'){await ref.update({['admins.'+k]:n});toast(`🛡️ ${n.split(' ')[0]} ya es administrador del club`)}
+    if(act==='unadm'){await ref.update({['admins.'+k]:FV.delete()});toast('Ya no es administrador del club')}
+    if(act==='gps'){await assignGps(k);return}
+    if(act==='kick'){if(!await askConfirm('¿Quitar del club?',`${n} dejará de ver las salidas, rutas, ranking y ciclistas del club. Podrá volver a entrar si le dais el código.`,'Quitar del club'))return;
+      const up={['members.'+k]:FV.delete(),['gm.'+k]:FV.delete()};if(cap)up['captains.'+k]=FV.delete();if((g.admins||{})[k])up['admins.'+k]=FV.delete();await ref.update(up);toast('Quitado del club')}
+    setTimeout(()=>(memberBack||openGroup)(),400);
   }catch(e){fbErr(e,'hacer ese cambio')}
 }
 async function groupNotice(){
@@ -1753,47 +1777,275 @@ async function groupNotice(){
   const t=(prompt('Aviso para todo el grupo (lo verán en la app).\nDéjalo vacío para quitar el aviso.',g.notice?.text||'')??null);if(t===null)return;
   try{await db.collection('groups').doc(g.id).update({notice:t.trim()?{text:t.trim().slice(0,200),by:myName(),t:Date.now()}:FV.delete()});toast(t.trim()?'📣 Aviso publicado para el grupo':'Aviso quitado');setTimeout(openGroup,400)}catch(e){fbErr(e,'publicar el aviso')}
 }
+/* ===================================================================
+   v4.0 — CADA CLUB ES UN ESPACIO PRIVADO
+   Salidas, rutas, actividad, puntos, ranking y ciclistas cercanos llevan el código del club
+   y solo los ven sus miembros. Dentro del club hay grupetas (MTB, Carretera, Veteranos…).
+   Las reglas de Firebase (v4.0) lo garantizan; la app además filtra por grupeta.
+   =================================================================== */
+const GP_ICO={Carretera:'🚴',MTB:'🚵',Gravel:'🪨',Mixta:'🔀',Escuela:'🧒'};
+const GP_MODS=['Carretera','MTB','Gravel','Mixta','Escuela'];
+const GP_LVLS=['Tranquilo','Medio','Alto','Infantil'];
+let memberBack=null;
+const isClubAdm=()=>!!(myGroup&&(myGroup.byUid===uid||(myGroup.admins||{})[uid]))||(!!myGroup&&isAdmin);
+const grupetas=()=>Object.entries(myGroup?.grupetas||{}).map(([id,g])=>({id,...g})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+const myGps=()=>Array.isArray(myGroup?.gm?.[uid])?myGroup.gm[uid]:[];
+const gpName=id=>(myGroup?.grupetas||{})[id]?.name||'';
+const gpMembers=id=>Object.entries(myGroup?.gm||{}).filter(([k,l])=>Array.isArray(l)&&l.includes(id)&&myGroup.members[k]).map(([k])=>myGroup.members[k]);
+const isGpResp=r=>!!(r&&r.gp&&myGroup&&r.group===myGroup.id&&((myGroup.grupetas||{})[r.gp]?.resp||{})[uid]);
+// ¿Veo lo de esta grupeta? (si la grupeta ya no existe, es de todo el club)
+const canSeeGp=gp=>!gp||!myGroup||!(myGroup.grupetas||{})[gp]||myGps().includes(gp)||isBossOf(myGroup.id)||!!((myGroup.grupetas[gp].resp||{})[uid]);
+// Grupetas para las que puedo crear salidas/rutas: las mías (o todas si mando en el club)
+const visGpList=()=>grupetas().filter(x=>isBossOf(myGroup?.id)||myGps().includes(x.id)||(x.resp||{})[uid]);
+function canSeeRideUI(r){
+  if(isOwner(r)||joined(r))return true;
+  if(!r.group||!myGroup||r.group!==myGroup.id)return false;
+  return canSeeGp(r.gp);
+}
+function fillVisChips(sel){
+  const box=$('visChips');if(!box)return;
+  if(!myGroup){box.innerHTML='<button class="chip on" data-gp="">🔒 Solo yo</button>';$('visNote').textContent='No estás en ningún club: solo tú verás esta salida. Únete a tu club para organizar salidas con él.';return}
+  const l=visGpList();
+  box.innerHTML=`<button class="chip${sel?'':' on'}" data-gp="">👥 Todo el club</button>`+l.map(x=>`<button class="chip${sel===x.id?' on':''}" data-gp="${x.id}">${GP_ICO[x.mod]||'🚴'} ${esc(x.name)}</button>`).join('');
+  if(sel&&!l.some(x=>x.id===sel))box.querySelector('.chip').classList.add('on');
+  $('visNote').textContent=`Solo la verán los ciclistas de ${myGroup.name}${l.length?' (o de la grupeta que elijas)':''}.`;
+  chipGroup('visChips');
+}
+const visGp=()=>$('visChips')?.querySelector('.chip.on')?.dataset.gp||'';
+
+/* ---- Datos del club en tiempo real: salidas, actividad y puntos ---- */
+let clubSubs=[],clubSubKey=null,ridesClub=[],ridesMine=[];
+function watchClubData(){
+  if(!db||!uid)return;
+  const C=me?.group||null;const key=uid+'|'+(C||'');
+  if(key===clubSubKey)return;clubSubKey=key;
+  clubSubs.forEach(f=>{try{f()}catch(e){}});clubSubs=[];
+  ridesClub=[];ridesMine=[];feed=[];pois=[];rides=[];
+  const merge=()=>{const m=new Map();[...ridesClub,...ridesMine].forEach(r=>m.set(r.id,r));rides=[...m.values()];ridesLoaded=true;renderRides();drawRideMarkers();
+    if(openRideId&&$('sh-ride').classList.contains('show'))openRide(openRideId,true)};
+  const docs=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+  // Mis propias salidas (también las que hice sin club)
+  clubSubs.push(db.collection('rides').where('byUid','==',uid).limit(300).onSnapshot(s=>{ridesMine=docs(s);merge()},e=>{console.warn('mis salidas',e);ridesLoaded=true;renderRides()}));
+  if(C){
+    clubSubs.push(db.collection('rides').where('group','==',C).limit(500).onSnapshot(s=>{ridesClub=docs(s);merge()},e=>{console.warn('salidas del club',e);ridesLoaded=true;renderRides()}));
+    clubSubs.push(db.collection('feed').where('club','==',C).limit(200).onSnapshot(s=>{feed=docs(s).sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));renderFeed()},e=>console.warn('actividad',e)));
+    clubSubs.push(db.collection('pois').where('club','==',C).limit(500).onSnapshot(s=>{pois=docs(s);drawPois()},e=>console.warn('puntos',e)));
+  }else{ridesLoaded=true;renderFeed();drawPois()}
+  rankKey=null;watchRanks();
+}
+
+/* ---- Ranking del club (km). General y por grupeta. Solo lo ven los del club ---- */
+let rankDocs={},rankSubs=[],rankKey=null,rankSel='all';
+function rankIds(){const C=me?.group;if(!C||!myGroup)return[];return['all',...grupetas().filter(x=>canSeeGp(x.id)).map(x=>x.id)]}
+function watchRanks(){
+  const C=me?.group,ids=rankIds();const key=(C||'')+'|'+ids.join(',');
+  if(key===rankKey)return;rankKey=key;
+  rankSubs.forEach(f=>{try{f()}catch(e){}});rankSubs=[];rankDocs={};
+  if(!db||!C){renderRank();return}
+  ids.forEach(g=>rankSubs.push(db.collection('rank').doc(C+'_'+g).onSnapshot(s=>{rankDocs[g]=s.exists?s.data():null;renderRank();if($('rankAll'))renderRankAll()},e=>console.warn('ranking',e))));
+  renderRank();
+}
+function rankList(g){const d=rankDocs[g];if(!d||!d.s)return[];return Object.entries(d.s).map(([k,v])=>({id:k,name:v.n||myGroup?.members?.[k]||'Ciclista',km:+v.km||0,rides:+v.rides||0,up:+v.up||0})).filter(u=>u.km>0).sort((a,b)=>b.km-a.km)}
+function addRank(a){
+  const C=me?.group;if(!db||!uid||!C||!myGroup||!(+a.km>0))return;
+  const gs=['',...(a.gp&&(myGroup.grupetas||{})[a.gp]?[a.gp]:[])];
+  gs.forEach(g=>db.collection('rank').doc(C+'_'+(g||'all')).set({club:C,gp:g,period:'temporada',s:{[uid]:{n:myName(),km:FV.increment(+(+a.km).toFixed(1)),rides:FV.increment(1),up:FV.increment(Math.round(+a.up||0))}}},{merge:true}).catch(e=>console.warn('ranking',e)));
+}
+function rankRows(l,max){
+  return l.slice(0,max||50).map((u,i)=>`<div class="rrow${u.id===uid?' me':''}"><div class="pos p${i+1}">${i+1}</div><div class="face" style="background:${colorOf(u.name)}">${ini(u.name)}</div><div class="nm">${esc(u.name)}${u.id===uid?' (tú)':''}<small style="display:block;color:var(--txt2);font-weight:500;font-size:12px">${u.rides} ${u.rides===1?'salida':'salidas'}${u.up?' · +'+u.up+' m':''}</small></div><div class="pts num">${fmtNum(u.km,0)}<small style="font-size:11px;color:var(--txt2)"> km</small></div></div>`).join('');
+}
+function renderRank(){
+  const el=$('rank');if(!el)return;
+  if(!me?.group||!myGroup){el.innerHTML=`<div class="rrow"><div class="nm" style="color:var(--txt2);font-weight:500">Únete a tu club para ver su ranking. Cada club tiene el suyo, privado.</div></div>`;return}
+  const l=rankList('all');
+  el.innerHTML=l.length?rankRows(l,5):`<div class="rrow"><div class="nm" style="color:var(--txt2);font-weight:500">El ranking de ${esc(myGroup.name)} empezará con la primera salida grabada</div></div>`;
+}
+function openRanking(g){
+  if(!me?.group||!myGroup){toast('Únete a tu club para ver su ranking');return}
+  if(g)rankSel=g;if(rankSel!=='all'&&!rankIds().includes(rankSel))rankSel='all';
+  $('rideBody').innerHTML=sheetHead('Ranking del club')+`<p style="color:var(--txt2);margin:-8px 0 12px">Kilómetros de ${esc(myGroup.name)}. Solo lo ven los miembros del club.</p>
+   <div class="chips" style="margin-bottom:12px">${rankIds().map(id=>`<button class="chip${rankSel===id?' on':''}" onclick="openRanking('${id}')">${id==='all'?'👥 Todo el club':(GP_ICO[(myGroup.grupetas[id]||{}).mod]||'🚴')+' '+esc(gpName(id))}</button>`).join('')}</div>
+   <div id="rankAll"></div>`;
+  openRideId=null;openSheet('sh-ride');renderRankAll();
+}
+function renderRankAll(){
+  const el=$('rankAll');if(!el)return;const d=rankDocs[rankSel];const l=rankList(rankSel);
+  el.innerHTML=`<small style="display:block;color:var(--txt2);margin:0 4px 8px">${d&&d.since?'Desde el '+fmtDate(iso(new Date(d.since))):'Temporada actual'}</small><div class="rank">${l.length?rankRows(l):'<div class="rrow"><div class="nm" style="color:var(--txt2);font-weight:500">Aún no hay kilómetros en este ranking</div></div>'}</div>
+   ${isClubAdm()?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button class="btn btn-line" onclick="rankReset('${rankSel}')">🔄 Reiniciar</button><button class="btn" style="color:var(--red);border:1px solid var(--red)" onclick="rankDelete('${rankSel}')">🗑️ Borrar ranking</button></div>`:''}`;
+}
+async function rankReset(g){
+  const C=myGroup?.id;if(!C||!isClubAdm())return;
+  const lbl=g==='all'?'de todo el club':'de la grupeta «'+gpName(g)+'»';
+  if(!await askConfirm('¿Reiniciar ranking?',`¿Seguro que quieres reiniciar el ranking ${lbl}? Todos empiezan desde 0. Solo afecta a ${myGroup.name}.`,'Reiniciar'))return;
+  try{if(rankDocs[g])await db.collection('rank').doc(C+'_'+g).update({s:{},since:Date.now()});toast('🔄 Ranking reiniciado');if($('rankAll'))renderRankAll();if($('caBody'))openClubAdmin('rank')}catch(e){fbErr(e,'reiniciar el ranking')}
+}
+async function rankDelete(g){
+  const C=myGroup?.id;if(!C||!isClubAdm())return;
+  const lbl=g==='all'?'de todo el club':'de la grupeta «'+gpName(g)+'»';
+  if(!await askConfirm('¿Borrar ranking?',`¿Seguro que quieres borrar el ranking ${lbl}? Esta acción no se puede deshacer. Los demás rankings no se tocan.`,'Borrar'))return;
+  try{await db.collection('rank').doc(C+'_'+g).delete();toast('Ranking borrado');if($('rankAll'))renderRankAll();if($('caBody'))openClubAdmin('rank')}catch(e){fbErr(e,'borrar el ranking')}
+}
+
+/* ---- Grupetas: el ciclista se apunta solo; el administrador puede cambiarlo ---- */
+async function gpToggle(id){
+  if(!myGroup||!ready())return;const cur=myGps();const on=cur.includes(id);const nx=on?cur.filter(x=>x!==id):[...cur,id];
+  try{await db.collection('groups').doc(myGroup.id).update({['gm.'+uid]:nx.length?nx:FV.delete()});toast(on?'Has salido de «'+gpName(id)+'»':'✅ Te has apuntado a «'+gpName(id)+'»');setTimeout(()=>{if($('sh-ride').classList.contains('show'))openGroup()},350)}catch(e){fbErr(e,'cambiar tus grupetas')}
+}
+async function assignGps(k){
+  const g=myGroup;if(!g||!isClubAdm())return;const n=g.members[k]||'Ciclista';
+  const l=grupetas();if(!l.length){toast('Primero crea las grupetas del club');return}
+  let cur=Array.isArray((g.gm||{})[k])?[...g.gm[k]]:[];
+  $('rideBody').innerHTML=sheetHead('🏷️ Grupetas de '+esc(n.split(' ')[0]))+`<p style="color:var(--txt2);margin:-8px 0 12px">Marca las grupetas de ${esc(n)}.</p>
+   <div id="agList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">${l.map(x=>`<label class="set" style="margin:0"><span>${GP_ICO[x.mod]||'🚴'} ${esc(x.name)}</span><label class="sw"><input type="checkbox" data-id="${x.id}" ${cur.includes(x.id)?'checked':''}><span></span></label></label>`).join('')}</div>
+   <button class="btn btn-lime" id="agSave">✓ Guardar</button><button class="btn" style="color:var(--txt2);margin-top:8px" onclick="(memberBack||openGroup)()">Cancelar</button>`;
+  openRideId=null;openSheet('sh-ride');
+  $('agSave').onclick=async()=>{const nx=[...document.querySelectorAll('#agList input:checked')].map(i=>i.dataset.id);
+    try{await db.collection('groups').doc(g.id).update({['gm.'+k]:nx.length?nx:FV.delete()});toast('Grupetas guardadas');setTimeout(()=>(memberBack||openGroup)(),350)}catch(e){fbErr(e,'guardar las grupetas')}};
+}
+function gpEdit(id){
+  const g=myGroup;if(!g||!isClubAdm())return;const x=id?(g.grupetas||{})[id]:null;const resp=x?.resp||{};
+  memberBack=()=>openClubAdmin('gps');
+  $('rideBody').innerHTML=sheetHead(id?'Editar grupeta':'Nueva grupeta')+`
+   <div class="f"><label class="l" for="gpN">Nombre</label><input class="inp" id="gpN" maxlength="30" placeholder="Ej. MTB, Carretera adultos, Veteranos" value="${esc(x?.name||'')}"></div>
+   <div class="f"><label class="l">Modalidad</label><div class="chips" id="gpM">${GP_MODS.map(m=>`<button class="chip${(x?.mod||'Carretera')===m?' on':''}">${m}</button>`).join('')}</div></div>
+   <div class="f"><label class="l">Nivel</label><div class="chips" id="gpL">${GP_LVLS.map(m=>`<button class="chip${(x?.lvl||'Medio')===m?' on':''}">${m}</button>`).join('')}</div></div>
+   <div class="f"><label class="l">🎯 Responsables <em>(gestionan las salidas de la grupeta)</em></label><div class="chips" id="gpR">${Object.entries(g.members).map(([k,n])=>`<button class="chip${resp[k]?' on':''}" data-k="${k}" onclick="this.classList.toggle('on')">${esc(n)}</button>`).join('')}</div></div>
+   <button class="btn btn-lime" onclick="gpSave('${id||''}')">✓ Guardar grupeta</button>
+   ${id?`<button class="btn" style="color:var(--red);margin-top:10px" onclick="gpDelete('${id}')">🗑️ Eliminar grupeta</button>`:''}
+   <button class="btn" style="color:var(--txt2);margin-top:6px" onclick="openClubAdmin('gps')">← Volver</button>`;
+  openRideId=null;openSheet('sh-ride');chipGroup('gpM');chipGroup('gpL');
+}
+async function gpSave(id){
+  const g=myGroup;const name=$('gpN').value.trim().slice(0,30);if(!name){toast('Pon un nombre a la grupeta');return}
+  const resp={};document.querySelectorAll('#gpR .chip.on').forEach(c=>resp[c.dataset.k]=g.members[c.dataset.k]);
+  const nid=id||('g'+Date.now().toString(36));
+  try{await db.collection('groups').doc(g.id).update({['grupetas.'+nid]:{name,mod:chipVal('gpM')||'Carretera',lvl:chipVal('gpL')||'',resp,t:Date.now()}});toast(id?'Grupeta guardada':'✅ Grupeta creada');setTimeout(()=>openClubAdmin('gps'),350)}catch(e){fbErr(e,'guardar la grupeta')}
+}
+async function gpDelete(id){
+  const g=myGroup;const n=gpName(id);
+  if(!await askConfirm('¿Eliminar grupeta?',`¿Seguro que quieres eliminar «${n}»? Sus salidas y rutas pasarán a ser de todo el club y se borrará su ranking. Esta acción no se puede deshacer.`,'Eliminar'))return;
+  const up={['grupetas.'+id]:FV.delete()};
+  Object.entries(g.gm||{}).forEach(([k,l])=>{if(Array.isArray(l)&&l.includes(id)){const nx=l.filter(x=>x!==id);up['gm.'+k]=nx.length?nx:FV.delete()}});
+  try{await db.collection('groups').doc(g.id).update(up);await db.collection('rank').doc(g.id+'_'+id).delete().catch(()=>{});toast('Grupeta eliminada');setTimeout(()=>openClubAdmin('gps'),350)}catch(e){fbErr(e,'eliminar la grupeta')}
+}
+
+/* ---- Administración del club: solo el club propio ---- */
+let caRoutes=null;
+async function openClubAdmin(tab){
+  const g=myGroup;if(!g||!isClubAdm()){toast('Solo para el administrador del club');return}
+  tab=tab||'gps';memberBack=()=>openClubAdmin('members');
+  const T=[['gps','🏷️ Grupetas'],['rides','📅 Salidas y rutas'],['rank','🏆 Rankings'],['members','👥 Miembros'],['priv','🔒 Privacidad']];
+  $('rideBody').innerHTML=sheetHead('🛡️ Administración del club')+`<p style="color:var(--txt2);margin:-8px 0 12px">Club activo: <b style="color:var(--txt)">${esc(g.name)}</b> · código ${g.id}</p>
+   <div class="chips admtabs" style="margin-bottom:14px;flex-wrap:nowrap;overflow-x:auto">${T.map(([k,t])=>`<button class="chip${tab===k?' on':''}" onclick="openClubAdmin('${k}')">${t}</button>`).join('')}</div><div id="caBody"><div class="empty">Cargando…</div></div>`;
+  openRideId=null;if(!$('sh-ride').classList.contains('show'))openSheet('sh-ride');
+  const B=$('caBody');const today=iso(new Date());const cr=rides.filter(r=>r.group===g.id);
+  if(tab==='gps'){
+    const l=grupetas();
+    B.innerHTML=`<button class="btn btn-lime" style="margin-bottom:12px" onclick="gpEdit('')">➕ Crear grupeta</button>`+(l.length?l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><span class="em">${GP_ICO[x.mod]||'🚴'}</span><div><b>${esc(x.name)}</b><small>${[x.mod,x.lvl].filter(Boolean).map(esc).join(' · ')} · ${gpMembers(x.id).length} ciclistas${Object.keys(x.resp||{}).length?' · 🎯 '+Object.values(x.resp).map(esc).join(', '):''}</small></div><button class="mini" onclick="gpEdit('${x.id}')">Editar</button></div>`).join(''):'<div class="empty">Crea las grupetas del club: por ejemplo MTB, Carretera adultos, Veteranos o Escuela infantil.</div>');
+  }
+  if(tab==='rides'){
+    const up=cr.filter(r=>r.date>=today).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour)),past=cr.filter(r=>r.date<today);
+    B.innerHTML=`<div class="sec"><h3 style="font-size:17px">Próximas salidas (${up.length})</h3></div>`+(up.length?up.map(r=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${fmtDate(r.date)} · ${esc(r.hour)} — ${esc(r.title||'Salida')}</b><small>${r.gp&&gpName(r.gp)?'🏷️ '+esc(gpName(r.gp))+' · ':''}organiza ${esc(r.by)} · ${names(r).length} apuntados</small></div><button class="mini" style="color:var(--red)" onclick="caDelRide('${r.id}')">🗑️</button></div>`).join(''):'<div class="empty">No hay salidas próximas</div>')+
+     `<div class="sec" style="margin-top:14px"><h3 style="font-size:17px">Historial (${past.length} salidas pasadas)</h3></div>
+      <button class="btn btn-line" style="color:var(--red)" onclick="caCleanHistory()">🧹 Limpiar historial</button>
+      <div class="sec" style="margin-top:16px"><h3 style="font-size:17px">Rutas del club</h3></div><div id="caRoutes"><div class="empty">Cargando rutas…</div></div>`;
+    try{const s=await db.collection('routes').where('club','==',g.id).limit(300).get();caRoutes=s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){caRoutes=[]}
+    if($('caRoutes'))$('caRoutes').innerHTML=caRoutes.length?caRoutes.map(r=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(r.name)} · ${fmtNum(+r.km||0,0)} km</b><small>${r.gp&&gpName(r.gp)?'🏷️ '+esc(gpName(r.gp))+' · ':''}por ${esc(r.by)}${tsMs(r.createdAt)?' · '+fmtDate(iso(new Date(tsMs(r.createdAt)))):''}</small></div><button class="mini" style="color:var(--red)" onclick="caDelRoute('${r.id}')">🗑️</button></div>`).join(''):'<div class="empty">El club aún no tiene rutas compartidas</div>';
+  }
+  if(tab==='rank'){
+    B.innerHTML=rankIds().map(id=>{const l=rankList(id);const d=rankDocs[id];return `<div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Ranking</span><b>${id==='all'?'👥 Todo el club':(GP_ICO[(g.grupetas[id]||{}).mod]||'🚴')+' '+esc(gpName(id))}</b></div>
+      <small style="display:block;color:var(--txt2);margin:4px 0 8px">${l.length?l.length+' ciclistas · líder: '+esc(l[0].name)+' ('+fmtNum(l[0].km,0)+' km)':'Sin kilómetros todavía'}${d&&d.since?' · desde el '+fmtDate(iso(new Date(d.since))):''}</small>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><button class="mini" onclick="openRanking('${id}')">Ver</button><button class="mini" onclick="rankReset('${id}')">🔄 Reiniciar</button><button class="mini" style="color:var(--red)" onclick="rankDelete('${id}')">🗑️ Borrar</button></div></div>`}).join('');
+  }
+  if(tab==='members'){
+    const m=Object.entries(g.members).sort((a,b)=>String(a[1]).localeCompare(String(b[1])));
+    B.innerHTML=`<button class="btn btn-line" style="margin-bottom:12px" onclick="caCsv()">⬇️ Descargar lista del club (Excel/CSV)</button><small style="display:block;color:var(--txt2);margin:-4px 4px 10px">Toca un ciclista para asignar grupetas, cambiar su papel o quitarlo del club.</small>`+
+      m.map(([k,n])=>{const gl=((g.gm||{})[k]||[]).map(gpName).filter(Boolean);return `<button class="li" style="margin-bottom:8px" ${k!==uid?`onclick="memberMenu('${k}')"`:''}><span class="face" style="margin:0;width:38px;height:38px;flex-shrink:0;background:${colorOf(n)}">${ini(n)}</span><div><b>${esc(n)}${k===uid?' (tú)':''}</b><small>${roleOf(g,k)||'🚴 Ciclista'}${gl.length?' · 🏷️ '+gl.map(esc).join(', '):' · sin grupeta'}</small></div>${k!==uid?'<svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>':''}</button>`}).join('');
+  }
+  if(tab==='priv'){
+    B.innerHTML=`<div class="plc"><div class="pc-h"><span class="pc-tag">Privacidad</span><b>🔒 Datos separados por club</b></div>
+      <ul style="margin:8px 0 0 18px;line-height:1.55;font-size:14.5px">
+       <li>Club activo: <b>${esc(g.name)}</b> (código ${g.id}).</li>
+       <li>Salidas, rutas, actividad, puntos ciclistas, ranking y ciclistas cercanos llevan el código del club y <b>solo los ven sus ${gNames(g).length} miembros</b>.</li>
+       <li>Lo protege el servidor (reglas de seguridad de Firebase), no solo la app: nadie de otro club puede leerlo ni descargarlo.</li>
+       <li>Dentro del club, cada ciclista ve lo de <b>todo el club</b> y lo de <b>sus grupetas</b>.</li>
+       <li>Tú administras <b>solo este club</b>: los borrados y reinicios nunca afectan a otros clubes ni a otras grupetas.</li>
+       <li>La lista de ciclistas que descargas es solo la de este club.</li></ul></div>`;
+  }
+}
+async function caDelRide(id){
+  const r=rides.find(x=>x.id===id);if(!r)return;
+  if(!await askConfirm('¿Borrar salida?',`¿Seguro que quieres borrar la salida «${r.title||'Salida'}» del ${fmtDate(r.date)}? Esta acción no se puede deshacer.`,'Borrar salida'))return;
+  try{await db.collection('rides').doc(id).delete();toast('Salida borrada');setTimeout(()=>openClubAdmin('rides'),300)}catch(e){fbErr(e,'borrar la salida')}
+}
+async function caDelRoute(id){
+  const r=(caRoutes||[]).find(x=>x.id===id);
+  if(!await askConfirm('¿Borrar ruta?',`¿Seguro que quieres borrar la ruta «${r?r.name:''}»? Esta acción no se puede deshacer.`,'Borrar ruta'))return;
+  try{await db.collection('routes').doc(id).delete();toast('Ruta borrada');openClubAdmin('rides')}catch(e){fbErr(e,'borrar la ruta')}
+}
+async function caCleanHistory(){
+  const g=myGroup;const today=iso(new Date());
+  const l=grupetas();let gp=null;
+  if(l.length){const i=await askChoice('¿Qué historial limpias?',[['👥 Todo el club','',''],...l.map(x=>[(GP_ICO[x.mod]||'🚴')+' Solo '+x.name,'',x.id])]);if(i<0)return;gp=i?l[i-1].id:null}
+  const past=rides.filter(r=>r.group===g.id&&r.date<today&&(!gp||r.gp===gp));
+  if(!past.length){toast('No hay salidas pasadas que borrar');return}
+  if(!await askConfirm('¿Limpiar historial?',`¿Seguro que quieres borrar ${past.length} ${past.length===1?'salida pasada':'salidas pasadas'} ${gp?'de la grupeta «'+gpName(gp)+'»':'de todo el club'}? Esta acción no se puede deshacer. Las actividades de cada ciclista no se borran.`,'Borrar'))return;
+  let n=0;for(const r of past){try{await db.collection('rides').doc(r.id).delete();n++}catch(e){}}
+  toast(`🧹 ${n} salidas borradas`);setTimeout(()=>openClubAdmin('rides'),300);
+}
+function caCsv(){
+  const g=myGroup;if(!g||!isClubAdm())return;
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Club','Ciclista','Papel','Grupetas']].concat(Object.entries(g.members).map(([k,n])=>[g.name,n,roleOf(g,k).replace(/^\S+\s/,'')||'Ciclista',((g.gm||{})[k]||[]).map(gpName).filter(Boolean).join(' / ')]));
+  const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(';')).join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ciclistas-'+g.id+'.csv';document.body.appendChild(a);a.click();a.remove();toast('Lista del club descargada');
+}
+
 /* ---- Mi grupo ---- */
 function watchGroup(){
   if(groupUnsub){groupUnsub();groupUnsub=null}
   const code=me?.group;
-  if(!db||!code){myGroup=null;renderGroup();return}
+  if(!db||!code){myGroup=null;renderGroup();watchClubData();return}
+  watchClubData();
   groupUnsub=db.collection('groups').doc(code).onSnapshot(s=>{
     myGroup=s.exists?{id:s.id,...s.data()}:null;
-    if(myGroup&&!myGroup.members?.[uid])myGroup=null;
-    renderGroup();renderRides();
+    if(!myGroup||!myGroup.members?.[uid]){
+      // Ya no pertenezco a ese club (me han quitado o se borró): dejo de ver sus datos
+      const was=myGroup?myGroup.name:'';myGroup=null;
+      if(me&&me.group===code&&s.exists!==undefined){me.group=null;store.set('me',me);db.collection('users').doc(uid).set({group:null},{merge:true}).catch(()=>{});if(was)toast('Ya no formas parte de «'+was+'»');watchClubData()}
+    }
+    renderGroup();renderRides();watchRanks();
   },e=>{console.warn('grupo',e);myGroup=null;renderGroup()});
 }
 function renderGroup(){
   const g=myGroup;
   $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
-   :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún grupo
-     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="createGroup()">➕ Crear grupo</button><button class="btn btn-line" onclick="joinGroupAsk()">🔗 Unirme</button></div></div>`;
-  $('visRow').style.display=g?'block':'none';
+   :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún club.<br><small style="color:var(--txt2)">Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas.</small>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="joinGroupAsk()">🔗 Unirme a mi club</button><button class="btn btn-line" onclick="createGroup()">➕ Crear club</button></div></div>`;
 }
 async function createGroup(){
   if(!ready())return;
   if(myGroup){openGroup();return}
-  const name=(prompt('Nombre del grupo (ej. Los del domingo)','')||'').trim().slice(0,30);if(!name)return;
+  const name=(prompt('Nombre del club (ej. Club 8:30 Marchena)','')||'').trim().slice(0,30);if(!name)return;
   let code,tries=0;
   do{code=newCode();tries++;try{const s=await db.collection('groups').doc(code).get();if(!s.exists)break}catch(e){break}}while(tries<5);
   try{
     await db.collection('groups').doc(code).set({name,by:myName(),byUid:uid,members:{[uid]:myName()},createdAt:FV.serverTimestamp()});
     await db.collection('users').doc(uid).set({group:code},{merge:true});
     me.group=code;store.set('me',me);watchGroup();
-    toast('¡Grupo creado! Comparte el código '+code);setTimeout(openGroup,400);
+    toast('¡Club creado! Comparte el código '+code);setTimeout(openGroup,400);
   }catch(e){fbErr(e,'crear el grupo')}
 }
-function joinGroupAsk(){const c=(prompt('Escribe el código del grupo (6 letras/números)','')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c)joinGroup(c)}
+function joinGroupAsk(){const c=(prompt('Escribe el código de tu club (6 letras/números)','')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c)joinGroup(c)}
 async function joinGroup(code){
   if(!ready())return;
   if(code.length!==6){toast('El código tiene 6 caracteres');return}
   if(myGroup&&myGroup.id===code){openGroup();return}
   try{
     const s=await db.collection('groups').doc(code).get();
-    if(!s.exists){toast('No existe ningún grupo con ese código');return}
+    if(!s.exists){toast('No existe ningún club con ese código');return}
     const g=s.data();
-    if(myGroup&&!confirm(`Ya estás en "${myGroup.name}". ¿Cambiar al grupo "${g.name}"?`))return;
+    if(myGroup&&!confirm(`Ya estás en "${myGroup.name}". ¿Cambiar al club "${g.name}"? Dejarás de ver los datos del club actual.`))return;
     if(myGroup&&myGroup.id!==code)await leaveGroup(true);
     await db.collection('groups').doc(code).update({['members.'+uid]:myName()});
     await db.collection('users').doc(uid).set({group:code},{merge:true});
@@ -1804,38 +2056,46 @@ async function joinGroup(code){
 async function leaveGroup(silent){
   if(!myGroup)return;
   const g=myGroup;
-  if(!silent&&!confirm(`¿Salir del grupo "${g.name}"?`))return;
+  if(!silent&&!confirm(`¿Salir del club "${g.name}"? Dejarás de ver sus salidas, rutas, ranking y ciclistas.`))return;
   try{
     if(g.byUid===uid&&gNames(g).length<=1)await db.collection('groups').doc(g.id).delete();
-    else await db.collection('groups').doc(g.id).update({['members.'+uid]:FV.delete()});
+    else await db.collection('groups').doc(g.id).update({['members.'+uid]:FV.delete(),['gm.'+uid]:FV.delete()});
     await db.collection('users').doc(uid).set({group:null},{merge:true});
   }catch(e){console.warn(e)}
-  me.group=null;store.set('me',me);myGroup=null;watchGroup();if(!silent){closeSheets();toast('Has salido del grupo')}
+  me.group=null;store.set('me',me);myGroup=null;watchGroup();if(!silent){closeSheets();toast('Has salido del club')}
 }
 function shareGroup(){
   if(!myGroup)return;
-  const t=`🚴 Únete a mi grupo "${myGroup.name}" en RideSafe IA\n\nCódigo: ${myGroup.id}\n👉 ${appUrl()}#grupo=${myGroup.id}`;
+  const t=`🚴 Únete a nuestro club "${myGroup.name}" en RideSafe IA\n\nCódigo del club: ${myGroup.id}\n👉 ${appUrl()}#grupo=${myGroup.id}`;
   window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 function openGroup(){
-  const g=myGroup;if(!g){renderGroup();toast('Crea un grupo o únete con un código');go('comunidad');return}
-  const gr=upcoming().filter(r=>r.group===g.id||(r.byUid&&g.members[r.byUid]));
-  const canLogo=isAdmin||(g.club&&isBossOf(g.id));const boss=isBossOf(g.id);
+  const g=myGroup;if(!g){renderGroup();toast('Únete a tu club con su código');go('comunidad');return}
+  memberBack=null;
+  const gr=upcoming().filter(r=>r.group===g.id);
+  const canLogo=isAdmin||(g.club&&isBossOf(g.id));const boss=isBossOf(g.id);const adm=isClubAdm();
+  const gps=grupetas(),mine=myGps();
+  const myRole=g.byUid===uid?'👑 Creaste este club':(g.admins||{})[uid]?'🛡️ Eres administrador del club':(g.captains||{})[uid]?'⭐ Eres jefe de pelotón':'';
   $('rideBody').innerHTML=`<h2>${esc(g.name)} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
    ${g.club?`<div class="clubhead">${clubLogo(g)?`<img src="${clubLogo(g)}" alt="Escudo de ${esc(g.name)}">`:'<div class="empty" style="padding:10px">Este club aún no tiene escudo</div>'}<span class="clubbadge">🏅 CLUB OFICIAL · ${gNames(g).length} ${gNames(g).length===1?"CICLISTA":"CICLISTAS"}</span></div>`:''}
+   <div class="li" style="cursor:default;margin-bottom:12px"><span class="em">🔒</span><div><b>Espacio privado del club</b><small>Solo los miembros de ${esc(g.name)} ven sus salidas, rutas, ranking y ciclistas. Nada se mezcla con otros clubes.</small></div></div>
+   ${adm?`<button class="btn btn-lime" style="margin-bottom:12px" onclick="openClubAdmin()">🛡️ Administración del club</button>`:''}
    ${canLogo?`<div style="display:grid;grid-template-columns:${clubLogo(g)?'1fr 1fr':'1fr'};gap:10px;margin-bottom:14px"><button class="btn btn-line" onclick="setClubLogo('${g.id}')">${clubLogo(g)?'🖼️ Cambiar escudo':g.club?'🖼️ Poner escudo del club':'🏅 Hacer club oficial y poner escudo'}</button>${clubLogo(g)?`<button class="btn btn-line" onclick="delClubLogo('${g.id}')">Quitar escudo</button>`:''}</div>`:''}
    ${g.notice?.text?`<div class="li" style="cursor:default;margin-bottom:12px;border-color:var(--lime)"><span class="em">📣</span><div><small>Aviso de ${esc(g.notice.by||'')} · ${fmtDate(iso(new Date(g.notice.t||Date.now())))}</small><b style="font-weight:600">${esc(g.notice.text)}</b></div></div>`:''}
-   ${boss?`<div class="li" style="cursor:default;margin-bottom:12px;border-color:var(--bronze)"><span class="em">⭐</span><div><b>${isCreatorOf(g.id)?'Creaste este grupo':'Eres jefe de pelotón'}</b><small>Puedes editar y cancelar las salidas del grupo, borrar comentarios${isCreatorOf(g.id)?', nombrar jefes':''} y expulsar ciclistas (toca su nombre).</small></div></div>
-   <button class="btn btn-line" style="margin-bottom:12px" onclick="groupNotice()">📣 ${g.notice?.text?'Cambiar aviso al grupo':'Poner un aviso al grupo'}</button>`:''}
-   <div class="codebox"><small>Código del grupo</small><b>${g.id}</b></div>
+   ${boss?`<div class="li" style="cursor:default;margin-bottom:12px;border-color:var(--bronze)"><span class="em">${adm?'🛡️':'⭐'}</span><div><b>${myRole}</b><small>${adm?'Gestionas grupetas, salidas, rutas, ranking y ciclistas de este club (y solo de este club).':'Puedes editar y cancelar las salidas del club, borrar comentarios y quitar ciclistas (toca su nombre).'}</small></div></div>
+   <button class="btn btn-line" style="margin-bottom:12px" onclick="groupNotice()">📣 ${g.notice?.text?'Cambiar aviso al club':'Poner un aviso al club'}</button>`:''}
+   <div class="sec"><h3 style="font-size:18px">🏷️ Grupetas</h3></div>
+   <small style="display:block;color:var(--txt2);margin:-6px 4px 10px">Apúntate a las tuyas: verás sus salidas, rutas y ranking.</small>
+   ${gps.length?gps.map(x=>{const on=mine.includes(x.id);const nm=gpMembers(x.id);return `<div class="li gprow" style="cursor:default;margin-bottom:8px${on?';border-color:var(--lime)':''}"><span class="em">${GP_ICO[x.mod]||'🚴'}</span><div><b>${esc(x.name)}</b><small>${[x.mod,x.lvl].filter(Boolean).map(esc).join(' · ')}${' · '+nm.length+(nm.length===1?' ciclista':' ciclistas')}${Object.keys(x.resp||{}).length?' · 🎯 '+Object.values(x.resp).map(esc).join(', '):''}</small>${on&&nm.length?`<small style="display:block;color:var(--txt);margin-top:2px">👥 ${nm.map(esc).join(', ')}</small>`:''}</div><button class="mini${on?'':' lime'}" onclick="gpToggle('${x.id}')">${on?'Salir':'Unirme'}</button></div>`}).join(''):`<div class="empty" style="margin-bottom:10px">${adm?'Aún no hay grupetas. Créalas en «Administración del club».':'El club aún no tiene grupetas.'}</div>`}
+   <div class="codebox" style="margin-top:14px"><small>Código del club</small><b>${g.id}</b></div>
    <button class="btn btn-lime" style="margin-bottom:10px" onclick="shareGroup()">💬 Invitar por WhatsApp</button>
-   <button class="btn btn-line" style="margin-bottom:18px" onclick="closeSheets();openCreate();setTimeout(()=>{const c=document.querySelectorAll('#visChips .chip')[1];c&&c.click()},300)">📅 Crear salida para el grupo</button>
-   <div class="sec"><h3 style="font-size:18px">Próximas salidas del grupo</h3></div>
-   ${gr.length?gr.map(r=>rideCard(r,true)).join(''):'<div class="empty" style="margin-bottom:14px">No hay salidas del grupo todavía</div>'}
+   <button class="btn btn-line" style="margin-bottom:18px" onclick="closeSheets();openCreate()">📅 Crear salida del club</button>
+   <div class="sec"><h3 style="font-size:18px">Próximas salidas del club</h3></div>
+   ${gr.length?gr.map(r=>rideCard(r,true)).join(''):'<div class="empty" style="margin-bottom:14px">No hay salidas del club todavía</div>'}
    <div class="sec"><h3 style="font-size:18px">Ciclistas (${gNames(g).length})</h3></div>
-   ${boss?'<small style="display:block;color:var(--txt2);margin:-6px 4px 8px">Toca un nombre para nombrar jefe o expulsar</small>':''}
-   <div class="chips" style="margin-bottom:20px">${Object.entries(g.members).sort((a,b)=>(roleOf(g,b[0])?1:0)-(roleOf(g,a[0])?1:0)).map(([k,n])=>`<button class="tag" ${boss&&k!==uid?`onclick="memberMenu('${k}')"`:''} style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;${roleOf(g,k)?'border:1px solid var(--bronze)':''}"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}${k===g.byUid?' 👑':(g.captains||{})[k]?' ⭐':''}</button>`).join('')}</div>
-   <button class="btn" style="color:var(--red)" onclick="leaveGroup()">Salir del grupo</button>`;
+   ${boss?'<small style="display:block;color:var(--txt2);margin:-6px 4px 8px">Toca un nombre para gestionarlo</small>':''}
+   <div class="chips" style="margin-bottom:20px">${Object.entries(g.members).sort((a,b)=>(roleOf(g,b[0])?1:0)-(roleOf(g,a[0])?1:0)).map(([k,n])=>`<button class="tag" ${boss&&k!==uid?`onclick="memberMenu('${k}')"`:''} style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;${roleOf(g,k)?'border:1px solid var(--bronze)':''}"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}${k===g.byUid?' 👑':(g.admins||{})[k]?' 🛡️':(g.captains||{})[k]?' ⭐':''}</button>`).join('')}</div>
+   <button class="btn" style="color:var(--red)" onclick="leaveGroup()">Salir del club</button>`;
   openRideId=null;openSheet('sh-ride');fillWx();
 }
 
@@ -1848,13 +2108,10 @@ function routeSVG(poly,w,h){
   return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline points="${P}" fill="none" stroke="#0E1A2B" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><polyline points="${P}" fill="none" stroke="#C8DC3C" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 function publishAct(a){
-  if(!db||!uid||!me||!store.get('pubActs',true))return;
-  db.collection('feed').doc(uid+'_'+a.id).set({uid,name:myName(),title:String(a.name||'Salida en bici').slice(0,60),date:a.date,km:+a.km||0,up:+a.up||0,mins:+a.mins||0,group:!!a.group,poly:(a.poly||'').slice(0,15000),likes:{},createdAt:FV.serverTimestamp()}).catch(e=>console.warn('feed',e));
+  if(!db||!uid||!me||!me.group||!store.get('pubActs',true))return;
+  db.collection('feed').doc(uid+'_'+a.id).set({uid,club:me.group,gp:a.gp||'',name:myName(),title:String(a.name||'Salida en bici').slice(0,60),date:a.date,km:+a.km||0,up:+a.up||0,mins:+a.mins||0,group:!!a.group,poly:(a.poly||'').slice(0,15000),likes:{},createdAt:FV.serverTimestamp()}).catch(e=>console.warn('feed',e));
 }
-function watchFeed(){
-  if(feedUnsub||!db)return;
-  feedUnsub=db.collection('feed').orderBy('createdAt','desc').limit(40).onSnapshot(s=>{feed=s.docs.map(d=>({id:d.id,...d.data()}));renderFeed()},e=>console.warn('feed',e));
-}
+function watchFeed(){}   // v4.0: la actividad se escucha por club en watchClubData()
 const REACT=['👍','❤️','🔥'];
 function feedCard(f){
   const likes=f.likes||{};const mine=likes[uid];
@@ -1868,16 +2125,17 @@ function feedCard(f){
   </div>`;
 }
 function renderFeed(){
-  $('feedBox').innerHTML=feed.length?feed.slice(0,3).map(feedCard).join(''):'<div class="empty">Aún no hay actividad. ¡Graba tu primera salida!</div>';
-  if($('sh-feed').classList.contains('show'))$('feedAll').innerHTML=feed.length?feed.map(feedCard).join(''):'<div class="empty">Aún no hay actividad</div>';
+  const fv=feed.filter(f=>!f.gp||canSeeGp(f.gp));
+  $('feedBox').innerHTML=fv.length?fv.slice(0,3).map(feedCard).join(''):`<div class="empty">${me?.group?'Aún no hay actividad en tu club. ¡Graba tu primera salida!':'Únete a tu club para ver su actividad.'}</div>`;
+  if($('sh-feed').classList.contains('show'))$('feedAll').innerHTML=fv.length?fv.map(feedCard).join(''):'<div class="empty">Aún no hay actividad en tu club</div>';
 }
-function openFeed(){$('feedAll').innerHTML=feed.length?feed.map(feedCard).join(''):'<div class="empty">Aún no hay actividad</div>';openSheet('sh-feed')}
+function openFeed(){openSheet('sh-feed');renderFeed()}
 function react(id,e){
   if(!ready())return;const f=feed.find(x=>x.id===id);if(!f)return;
   const cur=(f.likes||{})[uid];
   db.collection('feed').doc(id).update({['likes.'+uid]:cur===e?FV.delete():e}).catch(netErr);
 }
-function delFeed(id){if(!confirm('¿Quitar esta salida de la comunidad? Seguirá en tus Actividades.'))return;db.collection('feed').doc(id).delete().catch(netErr)}
+function delFeed(id){if(!confirm('¿Quitar esta salida de la actividad del club? Seguirá en tus Actividades.'))return;db.collection('feed').doc(id).delete().catch(netErr)}
 
 /* ---- Logros ---- */
 const BADGES=[
@@ -1914,16 +2172,7 @@ function openBadges(){
   openRideId=null;openSheet('sh-ride');
 }
 
-/* ---- Ranking completo ---- */
-function openRanking(){
-  if(!db){toast('Sin conexión');return}
-  $('rideBody').innerHTML=`<h2>Ranking <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2><div class="rank" id="rankAll"><div class="rrow"><div class="nm" style="color:var(--txt2)">Cargando…</div></div></div>`;
-  openRideId=null;openSheet('sh-ride');
-  db.collection('users').orderBy('pts','desc').limit(50).get().then(s=>{
-    const l=s.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.name);
-    $('rankAll').innerHTML=l.map((u,i)=>`<div class="rrow${u.id===uid?' me':''}"><div class="pos p${i+1}">${i+1}</div><div class="face" style="background:${colorOf(u.name)}">${ini(u.name)}</div><div class="nm">${esc(u.name)}${u.id===uid?' (tú)':''}<small style="display:block;color:var(--txt2);font-weight:500;font-size:12px">Nivel ${level(u.pts||0)}</small></div><div class="pts num">${u.pts||0} <small>pts</small></div></div>`).join('')||'<div class="rrow"><div class="nm">Aún no hay ciclistas</div></div>';
-  }).catch(e=>netErr(e));
-}
+/* ---- Ranking: ver v4.0 (ranking del club) ---- */
 
 
 /* ===================================================================
@@ -1940,20 +2189,24 @@ let commRoutes=[],crFilter='all';
 async function publishRoute(src){
   if(!ready())return;
   const r=src||plan.route;if(!r){toast('Primero planifica una ruta');return}
+  if(!me?.group||!myGroup){toast('Únete a tu club para compartir rutas con él');return}
+  const vis=visGpList();let gp='';
+  if(vis.length){const i=await askChoice('¿Para quién es la ruta?',[['Todo el club','',''],...vis.map(x=>[(GP_ICO[x.mod]||'🚴')+' '+x.name,'',x.id])]);if(i<0)return;gp=i?vis[i-1].id:''}
   const pk=r.poly?r:packRoute(r);
   const s0=decodePoly(pk.poly)[0];
-  const name=(prompt('Nombre de la ruta para la comunidad',src?.name||routeName(unpackRoute(pk)))||'').trim().slice(0,50);if(!name)return;
+  const name=(prompt('Nombre de la ruta para el club',src?.name||routeName(unpackRoute(pk)))||'').trim().slice(0,50);if(!name)return;
   const town=await reverseName({lat:s0[0],lng:s0[1]}).then(t=>t.split(',').pop().trim()).catch(()=>'');
-  const doc={uid,by:myName(),name,town:town.slice(0,40),km:pk.km,up:pk.up,down:pk.down,mins:pk.mins,mode:pk.mode||'ab',poly:pk.poly.slice(0,15000),pd:pk.pd||[],pe:pk.pe||[],nav:pk.nav||[],wps:pk.wps||[],start:{lat:+s0[0].toFixed(5),lng:+s0[1].toFixed(5)},uses:0,createdAt:FV.serverTimestamp()};
-  db.collection('routes').add(doc).then(()=>{toast('¡Ruta compartida con la comunidad! +15 puntos');addPoints(15)}).catch(netErr);
+  const doc={uid,club:myGroup.id,gp,by:myName(),name,town:town.slice(0,40),km:pk.km,up:pk.up,down:pk.down,mins:pk.mins,mode:pk.mode||'ab',poly:pk.poly.slice(0,15000),pd:pk.pd||[],pe:pk.pe||[],nav:pk.nav||[],wps:pk.wps||[],start:{lat:+s0[0].toFixed(5),lng:+s0[1].toFixed(5)},uses:0,createdAt:FV.serverTimestamp()};
+  db.collection('routes').add(doc).then(()=>{toast('¡Ruta compartida con tu club! +15 puntos');addPoints(15)}).catch(netErr);
 }
 async function openCommRoutes(){
   if(!db){toast('Sin conexión');return}
-  $('rideBody').innerHTML=sheetHead('Rutas de la comunidad')+`
+  $('rideBody').innerHTML=sheetHead('Rutas del club')+`
    <div class="chips" id="crChips" style="margin-bottom:12px">${[['all','Todas'],['s','Hasta 30 km'],['m','30–60 km'],['l','Más de 60 km']].map(([k,t])=>`<button class="chip${crFilter===k?' on':''}" onclick="crFilter='${k}';renderCommRoutes()">${t}</button>`).join('')}</div>
    <div id="crList"><div class="empty">Cargando rutas…</div></div>`;
   openRideId=null;openSheet('sh-ride');
-  try{const s=await db.collection('routes').orderBy('createdAt','desc').limit(150).get();commRoutes=s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){console.warn(e);commRoutes=[]}
+  if(!me?.group){$('crList').innerHTML='<div class="empty">Únete a tu club para ver sus rutas.</div>';return}
+  try{const s=await db.collection('routes').where('club','==',me.group).limit(300).get();commRoutes=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.gp||canSeeGp(r.gp))}catch(e){console.warn(e);commRoutes=[]}
   renderCommRoutes();
 }
 function renderCommRoutes(){
@@ -1975,15 +2228,12 @@ function saveCommRoute(){
   store.set('routes',list.slice(0,50));toast('Guardada en "Mis rutas"');
   if(db&&r.id)db.collection('routes').doc(r.id).update({uses:FV.increment(1)}).catch(()=>{});
 }
-function delCommRoute(id){if(!confirm('¿Quitar esta ruta de la comunidad?'))return;db.collection('routes').doc(id).delete().then(()=>{commRoutes=commRoutes.filter(r=>r.id!==id);exitPlanner();toast('Ruta quitada')}).catch(netErr)}
+async function delCommRoute(id){if(!await askConfirm('¿Borrar esta ruta?','¿Seguro que quieres borrar esta ruta? Esta acción no se puede deshacer.','Borrar ruta'))return;db.collection('routes').doc(id).delete().then(()=>{commRoutes=commRoutes.filter(r=>r.id!==id);exitPlanner();toast('Ruta quitada')}).catch(netErr)}
 
 /* ---------- Puntos ciclistas ---------- */
 const POI_CAT={agua:['💧','Fuente de agua'],cafe:['☕','Café / bar'],taller:['🔧','Taller'],mirador:['🔭','Mirador'],tienda:['🛒','Tienda de bicis'],aseo:['🚻','Aseos'],peligro:['⚠️','Peligro']};
 let pois=[],poiMarkers=[],poiUnsub=null,poiShow=store.get('poiShow',true);
-function watchPois(){
-  if(poiUnsub||!db)return;
-  poiUnsub=db.collection('pois').orderBy('createdAt','desc').limit(500).onSnapshot(s=>{pois=s.docs.map(d=>({id:d.id,...d.data()}));drawPois()},e=>console.warn('pois',e));
-}
+function watchPois(){}   // v4.0: los puntos se escuchan por club en watchClubData()
 function drawPois(){
   poiMarkers.forEach(m=>m.remove());poiMarkers=[];
   if(!map||!poiShow||plan.active||live.on&&false)return;
@@ -2000,7 +2250,7 @@ function openPoi(id){
    ${p.note?`<div class="li" style="cursor:default;margin-bottom:14px"><span class="em">💬</span><div><b style="font-weight:500">${esc(p.note)}</b></div></div>`:''}
    <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn btn-lime" onclick="guideKey(${gdKey(p.name,{lat:p.lat,lng:p.lng})})">🧭 Cómo llegar</button>
-    ${p.uid===uid?`<button class="btn" style="color:var(--red)" onclick="delPoi('${p.id}')">Borrar este punto</button>`:`<button class="btn" style="color:var(--txt2)" onclick="reportContent('pois','${p.id}','${esc(String(p.name).replace(/['"\\]/g,''))}')">⚠️ Reportar (no existe, es incorrecto…)</button>`}
+    ${p.uid===uid||isClubAdm()?`<button class="btn" style="color:var(--red)" onclick="delPoi('${p.id}')">Borrar este punto</button>`:`<button class="btn" style="color:var(--txt2)" onclick="reportContent('pois','${p.id}','${esc(String(p.name).replace(/['"\\]/g,''))}')">⚠️ Reportar (no existe, es incorrecto…)</button>`}
    </div>`;
   openRideId=null;openSheet('sh-ride');
 }
@@ -2022,7 +2272,8 @@ function addPoi(){
 }
 function savePoi(){
   const cat=$('poiCat').querySelector('.chip.on').dataset.k;const name=$('poiName').value.trim().slice(0,40)||POI_CAT[cat][1];
-  db.collection('pois').add({uid,by:myName(),cat,name,note:$('poiNote').value.trim().slice(0,120),lat:+newPoiLL.lat.toFixed(6),lng:+newPoiLL.lng.toFixed(6),createdAt:FV.serverTimestamp()})
+  if(!me?.group){toast('Únete a tu club para añadir puntos');return}
+  db.collection('pois').add({uid,club:me.group,by:myName(),cat,name,note:$('poiNote').value.trim().slice(0,120),lat:+newPoiLL.lat.toFixed(6),lng:+newPoiLL.lng.toFixed(6),createdAt:FV.serverTimestamp()})
    .then(()=>{closeSheets();toast('¡Punto añadido! +5 puntos');addPoints(5);go('rutas')}).catch(netErr);
 }
 function openPois(){
@@ -2039,7 +2290,7 @@ function openPois(){
 let nearTimer=null,nearList=[];
 const nearOn=()=>store.get('nearOn',true);
 async function pushNear(){
-  if(!db||!uid||!me||!nearOn()||document.visibilityState!=='visible')return;
+  if(!db||!uid||!me||!me.group||!nearOn()||document.visibilityState!=='visible')return;
   let p=null;try{p=hereLL()&&meMarker?hereLL():await gpsOnce()}catch(e){return}
   if(!p)return;
   db.collection('nearby').doc(uid).set({name:myName(),lat:+p[0].toFixed(3),lng:+p[1].toFixed(3),t:Date.now(),riding:!!live.on,group:me.group||null}).catch(e=>console.warn('near',e));
@@ -2048,13 +2299,14 @@ function startNear(){if(nearTimer)return;setTimeout(pushNear,3000);nearTimer=set
 function setNear(on){store.set('nearOn',on);if(!on&&db&&uid)db.collection('nearby').doc(uid).delete().catch(()=>{});else pushNear();toast(on?'Apareces en "Ciclistas cercanos"':'Ya no apareces en "Ciclistas cercanos"')}
 async function openNearby(){
   if(!db){toast('Sin conexión');return}
-  $('rideBody').innerHTML=sheetHead('Ciclistas cercanos')+`<p style="color:var(--txt2);margin:-8px 0 14px">Ciclistas con RideSafe IA abierto a menos de 2 km en la última media hora. La posición es aproximada.</p><div id="nearList"><div class="empty">Buscando…</div></div>`;
+  $('rideBody').innerHTML=sheetHead('Ciclistas de tu club cerca')+`<p style="color:var(--txt2);margin:-8px 0 14px">Ciclistas de tu club con RideSafe IA abierto a menos de 2 km en la última media hora. La posición es aproximada.</p><div id="nearList"><div class="empty">Buscando…</div></div>`;
   openRideId=null;openSheet('sh-ride');
   let h=null;try{h=await gpsOnce()}catch(e){h=hereLL()}
+  if(!me?.group){$('nearList').innerHTML='<div class="empty">Únete a tu club para ver quién rueda cerca.</div>';return}
   if(!h){$('nearList').innerHTML='<div class="empty">Activa la ubicación del móvil</div>';return}
   try{
-    const s=await db.collection('nearby').where('t','>',Date.now()-1800000).limit(300).get();
-    nearList=s.docs.filter(d=>d.id!==uid).map(d=>({id:d.id,...d.data()})).map(n=>({...n,_d:hav(h,[n.lat,n.lng])})).filter(n=>n._d<=2).sort((a,b)=>a._d-b._d);
+    const s=await db.collection('nearby').where('group','==',me.group).limit(300).get();
+    nearList=s.docs.filter(d=>d.id!==uid).map(d=>({id:d.id,...d.data()})).filter(n=>n.t>Date.now()-1800000).map(n=>({...n,_d:hav(h,[n.lat,n.lng])})).filter(n=>n._d<=2).sort((a,b)=>a._d-b._d);
   }catch(e){console.warn(e);nearList=[]}
   $('nearList').innerHTML=nearList.length?nearList.map(n=>`<div class="li" style="cursor:default;margin-bottom:8px"><span class="face" style="margin:0;width:40px;height:40px;flex-shrink:0;background:${colorOf(n.name)}">${ini(n.name)}</span><div><b>${esc(n.name)}${n.riding?' 🚴':''}</b><small>a ~${kmTxt(Math.max(0.1,n._d))} · ${n.riding?'rodando ahora':'hace '+Math.max(1,Math.round((Date.now()-n.t)/60000))+' min'}${n.group&&n.group===me?.group?' · de tu grupo':''}</small></div></div>`).join('')+
     (myGroup?`<button class="btn btn-lime" style="margin-top:8px" onclick="shareGroup()">👥 Invitar a mi grupo por WhatsApp</button>`:`<button class="btn btn-lime" style="margin-top:8px" onclick="closeSheets();createGroup()">👥 Crear un grupo para rodar juntos</button>`)
@@ -2210,7 +2462,7 @@ function editRide(id){
   if(r.startLL)setPicked('start',r.startLL);if(r.meetLL&&!same)setPicked('meet',r.meetLL);
   const pickChip=(id,v)=>document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.textContent===v));
   pickChip('typeChips',r.type);pickChip('paceChips',r.pace);
-  document.querySelectorAll('#visChips .chip').forEach((c,i)=>c.classList.toggle('on',i===(r.vis==='group'?1:0)));
+  fillVisChips(r.gp||'');
   formRoute=r.route?{...r.route}:null;renderRouteBox();resetPlanForm(r);
 }
 function notifyChange(id){
@@ -2442,7 +2694,9 @@ async function admRes(){
   const bars=(vals,col)=>`<div class="bars" style="height:120px;padding:10px 8px 6px">${vals.map((v,i)=>`<div class="bar"><span class="bv" style="font-size:10px">${v||''}</span><i style="height:${Math.max(2,Math.round(v/mx*70))}px;background:${col}"></i><span class="bl" style="font-size:9px">${days[i].slice(8)}</span></div>`).join('')}</div>`;
   $('admBody').innerHTML=`<div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">${[['👥',n(us),'ciclistas'],['🟢',act,'activos 24 h'],['📅',up,'salidas próximas'],['📰',n(fs),'publicaciones'],['☕',n(ps),'puntos'],['🗺️',n(ros),'rutas'],['👥',n(gs),'grupos'],['🗓️',n(rs),'salidas totales'],['⚠️','…','reportes']].map(([e,v,l],i)=>`<div class="stat"${i===8?' id="admRepCount"':''}><span style="font-size:18px">${e}</span><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
    <div class="sec"><h3 style="font-size:16px">Ciclistas nuevos · últimos 14 días</h3></div>${bars(nu,'var(--lime)')}
-   <div class="sec" style="margin-top:12px"><h3 style="font-size:16px">Salidas creadas · últimos 14 días</h3></div>${bars(nr,'#60A5FA')}`;
+   <div class="sec" style="margin-top:12px"><h3 style="font-size:16px">Salidas creadas · últimos 14 días</h3></div>${bars(nr,'#60A5FA')}
+   <div class="li" style="cursor:default;margin-top:16px"><span class="em">🔒</span><div><b>Clubes privados (v4.0)</b><small>Si hay salidas, rutas, puntos o actividad antiguos sin club, asígnalos al club de quien los creó.</small></div></div>
+   <button class="btn btn-line" style="margin-top:8px" onclick="admMigrate()">🔧 Pasar datos antiguos a su club</button>`;
   db.collection('reports').limit(200).get().then(s=>{const el=$('admRepCount');if(el)el.querySelector('b').textContent=s.docs.length}).catch(()=>{});
 }
 
@@ -2512,7 +2766,7 @@ async function admCont(){
     const l=s.docs.map(d=>({id:d.id,...d.data()}));
     const title=x=>admCol==='feed'?`${x.title} · ${fmtNum(x.km||0,1)} km`:admCol==='pois'?`${(POI_CAT[x.cat]||['📍'])[0]} ${x.name}`:admCol==='routes'?`${x.name} · ${x.km} km`:`${x.name} · código ${x.id} · ${Object.keys(x.members||{}).length} miembros`;
     const who=x=>x.by||x.name||'';
-    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div>${admCol==='groups'?`<div style="display:flex;gap:6px;flex-shrink:0">${x.club?`<button class="mini" onclick="setClubLogo('${x.id}')" title="Escudo">${x.logo?`<img src="${x.logo}" style="width:22px;height:22px;object-fit:contain;background:#fff;border-radius:5px">`:'🖼️'}</button>`:''}<button class="mini" style="${x.club?'background:var(--lime);color:#0E1A2B':''}" onclick="admClub('${x.id}',${!x.club})">🏅${x.club?' Club':''}</button><button class="mini" title="Jefes de pelotón" onclick="admCaptain('${x.id}')">⭐${Object.keys(x.captains||{}).length||''}</button></div>`:''}<button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
+    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div>${admCol==='groups'?`<div style="display:flex;gap:6px;flex-shrink:0">${x.club?`<button class="mini" onclick="setClubLogo('${x.id}')" title="Escudo">${x.logo?`<img src="${x.logo}" style="width:22px;height:22px;object-fit:contain;background:#fff;border-radius:5px">`:'🖼️'}</button>`:''}<button class="mini" style="${x.club?'background:var(--lime);color:#0E1A2B':''}" onclick="admClub('${x.id}',${!x.club})">🏅${x.club?' Club':''}</button><button class="mini" title="Jefes de pelotón" onclick="admCaptain('${x.id}')">⭐${Object.keys(x.captains||{}).length||''}</button><button class="mini" title="Administradores del club" onclick="admClubAdmins('${x.id}')">🛡️${Object.keys(x.admins||{}).length||''}</button></div>`:''}<button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
   }catch(e){$('admCL').innerHTML='<div class="empty">No se pudo cargar</div>'}
 }
 async function admDel(col,id){
@@ -2598,7 +2852,7 @@ const HELP=[
  ['🛰️','¿Qué es el Pelotón en vivo?','El día de la salida pulsa "Empezar salida": todos los apuntados os veis en el mapa y la app avisa si alguien se queda atrás más de 1 km.'],
  ['🗺️','¿Cómo planifico una ruta?','Rutas → Planificar: de A a B, por etapas o circular. Verás km, desnivel y el perfil. Pulsa "▲ Iniciar" para navegar con voz.'],
  ['⏺️','¿Cómo grabo una salida?','Rutas → "Rec · INICIAR". Mantén la pantalla encendida. Al terminar, pulsa ⏹ Terminar y se guarda con sus puntos y su foto.'],
- ['👥','¿Para qué sirve Mi grupo?','Crea un grupo y comparte el código. Podrás hacer salidas "Solo mi grupo" que solo verán ellos.'],
+ ['👥','¿Para qué sirve Mi club?','Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas. Entra con el código de tu club y apúntate a tus grupetas.'],
  ['🔒','¿Cómo no pierdo mis datos?','Perfil → "Guardar mi cuenta con Google". Si cambias de móvil, entra con la misma cuenta.'],
  ['🆘','¿Y si tengo un problema en ruta?','Comunidad → Alertas de seguridad: llamar al 112 o enviar tu ubicación por WhatsApp. Mientras grabas también tienes el botón SOS y 📡 para que tu familia te siga.'],
 ];
@@ -3020,8 +3274,8 @@ function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collecti
 
 /* ===== Más funciones ===== */
 const FEATURES=[
-  ['Rodar en grupo',[['📡','Ciclistas cercanos','Quién rueda a menos de 2 km','fn:openNearby()'],['👥','Mi grupo','Tu grupo habitual de salida','fn:openGroup()'],['🔔','Probar aviso de pinchazo','Escucha la sirena del pelotón','fn:alarmTest()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
-  ['Compartir y descubrir',[['🗺️','Rutas de la comunidad','Rutas compartidas por otros ciclistas','fn:openCommRoutes()'],['☕','Puntos ciclistas','Fuentes, cafés, talleres y más','fn:openPois()'],['📰','Actividad de la comunidad','Últimas salidas','fn:openFeed()'],['🎖️','Logros','Tus medallas','fn:openBadges()']]],
+  ['Rodar en grupo',[['📡','Ciclistas del club cerca','Quién de tu club rueda a menos de 2 km','fn:openNearby()'],['👥','Mi club','Tu club, sus grupetas y sus ciclistas','fn:openGroup()'],['🔔','Probar aviso de pinchazo','Escucha la sirena del pelotón','fn:alarmTest()'],['🛰️','Pelotón en vivo','GPS en vivo de tu grupo','peloton']]],
+  ['Compartir y descubrir',[['🗺️','Rutas del club','Rutas compartidas en tu club','fn:openCommRoutes()'],['☕','Puntos ciclistas','Fuentes, cafés, talleres y más','fn:openPois()'],['📰','Actividad del club','Últimas salidas de tu club','fn:openFeed()'],['🎖️','Logros','Tus medallas','fn:openBadges()']]],
   ['Seguridad',[['🆘','Alertas de seguridad','112, ubicación y WhatsApp','sos']]]
 ];
 $('features').innerHTML=FEATURES.map(([g,items])=>`<div class="grp-t">${g}</div>`+items.map(([e,t,s,p])=>`<button class="li" onclick="${p.startsWith('fn:')?p.slice(3):p==='sos'?'sos()':p==='peloton'?`toast('Se activa al pulsar «Empezar salida» el día de la salida')`:`toast('${t}: próximamente')`}"><span class="em">${e}</span><div><b>${t}</b><small>${s}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`).join('')).join('');
@@ -3344,7 +3598,7 @@ function renderPlan(){
   $('pProf').innerHTML=r&&r.prof?profileSVG(r.prof):'';
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
-  $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&viewingComm.uid===uid?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';
+  $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';
   ['bGo','bSave','bUse'].forEach(i=>$(i).disabled=!r||plan.busy);$('bGo').innerHTML=plan.view&&r&&r.mode==='track'?'▲ Repetir':'▲ Iniciar';
   $('bUse').innerHTML=plan.fromCreate?'✓ Añadir a la salida':'📅 Crear salida con esta ruta';
 }
@@ -3730,8 +3984,8 @@ async function finishLive(save){
   try{await addElevation(r)}catch(e){r.up=L.up}
   const pk=packRoute(r);
   const title=L.rideId?(L.rideTitle||'Salida en grupo'):'Salida en bici';
-  const a={id:Date.now(),name:title,date:iso(new Date(L.startT)),km:+L.km.toFixed(1),up:Math.round(r.up||L.up),mins,group:!!L.rideId,...pk};
-  acts.unshift(a);store.set('acts',acts.slice(0,300));saveActRemote(a);if(!a.up&&a.poly)fixUp(a);
+  const a={id:Date.now(),name:title,date:iso(new Date(L.startT)),km:+L.km.toFixed(1),up:Math.round(r.up||L.up),mins,group:!!L.rideId,gp:(rides.find(x=>x.id===L.rideId)||{}).gp||'',...pk};
+  acts.unshift(a);store.set('acts',acts.slice(0,300));saveActRemote(a);if(!a.up&&a.poly)fixUp(a);addRank(a);
   const gain=Math.min(300,Math.round(L.km))+10+(L.rideId?30:0);
   addPoints(gain,L.rideId?{done:FV.increment(1)}:null);if(L.rideId&&me)me.done=(me.done||0)+1;
   publishAct(a);checkBadges();addKmToBike(L.km);
@@ -3906,7 +4160,7 @@ $('fileIn').onchange=async e=>{
     const name=xml.getElementsByTagName('name')[0]?.textContent||f.name.replace(/\.(gpx|tcx)$/i,'');
     const a={id:Date.now(),name,date:iso(t0),km:+km.toFixed(1),up:Math.round(up),mins,...packRoute({coords:pts.map(p=>[p[0],p[1],isNaN(p[2])?0:p[2]]),km,up,down:0,mins,mode:'track',legs:[]})};a.km=+km.toFixed(1);a.up=Math.round(up);
     if(!confirm(`${name}\n\n📏 ${a.km} km\n⛰️ ${a.up} m de desnivel${mins?`\n⏱️ ${Math.floor(mins/60)} h ${mins%60} min\n⚡ ${(km/(mins/60)).toFixed(1)} km/h de media`:''}\n\n¿Guardar esta actividad?`))return;
-    acts.unshift(a);store.set('acts',acts);saveActRemote(a);
+    acts.unshift(a);store.set('acts',acts);saveActRemote(a);addRank(a);
     const gain=Math.min(300,Math.round(km))+10;addPoints(gain);
     renderActs();publishAct(a);checkBadges();addKmToBike(km);toast(`Actividad guardada · +${gain} puntos`);
   }catch(_){toast('No pudimos leer este archivo. Comprueba que sea GPX o TCX.')}
@@ -3983,22 +4237,15 @@ function startFirebase(){
       checkBadges();
     },e=>console.error(e));
     watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
-    // Salidas próximas (en vivo)
-    db.collection('rides').where('date','>=',iso(new Date())).orderBy('date').limit(150).onSnapshot(s=>{
-      rides=s.docs.map(d=>({id:d.id,...d.data()}));ridesLoaded=true;renderRides();drawRideMarkers();
-      if(openRideId&&$('sh-ride').classList.contains('show'))openRide(openRideId,true);
-    },e=>{console.error(e);ridesLoaded=true;renderRides();toast('No se pudieron cargar las salidas')});
-    // Ranking
-    db.collection('users').orderBy('pts','desc').limit(10).onSnapshot(s=>{
-      ranking=s.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.name);renderRank();
-    },e=>console.error(e));
+    // v4.0 — Salidas, actividad, puntos y ranking: solo los de MI club (se escuchan en watchClubData)
+    watchClubData();
     // Enlace compartido: #salida=ID
     const hm=location.hash.match(/salida=([\w-]+)/);
     if(hm){setTimeout(()=>{go('comunidad');openRide(hm[1])},600);history.replaceState(null,'',location.pathname)}
     const hv=location.hash.match(/vivo=([a-z0-9]{8,20})/i);
     if(hv){location.replace(famUrl(hv[1]));return}
     const hg=location.hash.match(/grupo=([A-Z0-9]{6})/i);
-    if(hg){history.replaceState(null,'',location.pathname);const code=hg[1].toUpperCase();setTimeout(()=>{go('comunidad');if(!me){toast('Pon tu nombre y vuelve a abrir el enlace del grupo');return}if(confirm('¿Unirte al grupo con código '+code+'?'))joinGroup(code)},1500)}
+    if(hg){history.replaceState(null,'',location.pathname);const code=hg[1].toUpperCase();setTimeout(()=>{go('comunidad');if(!me){toast('Pon tu nombre y vuelve a abrir el enlace del club');return}if(confirm('¿Unirte al club con código '+code+'?'))joinGroup(code)},1500)}
   });
 }
 
