@@ -730,7 +730,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1258,12 +1258,13 @@ async function openRide(id,keep){
      <div class="chips qr">${QUICK.map(q=>`<button class="chip" onclick="sendMsg('${q.replace(/'/g,'')}')">${q}</button>`).join('')}</div>
      <div class="chatin"><input class="inp" id="chatIn" maxlength="300" placeholder="Escribe un comentario…" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-lime" style="width:auto;min-height:52px;padding:0 18px" onclick="sendMsg()" aria-label="Enviar">➤</button></div></div>
    <div style="display:flex;flex-direction:column;gap:10px">
-     ${isToday&&inR?`<button class="btn btn-lime" onclick="startRide('${r.id}')">🛰️ Empezar salida</button>`:''}
+     ${inR?(isToday?`<button class="btn btn-lime" onclick="startRide('${r.id}')">🛰️ Empezar salida</button>`:`<button class="btn btn-line" onclick="startRideEarly('${r.id}')">🛰️ Empezar salida <small style="display:block;font-size:12px;opacity:.75">Es el ${fmtDate(r.date)} · puedes probar ya</small></button>`):''}
      ${isOwner(r)?'<div class="joinnote">👑 Organizas esta salida</div>':inR?`<button class="btn joinbig on" onclick="toggleJoin('${r.id}')">Apuntado ✓<small>Toca para cancelar tu asistencia</small></button>`:`<button class="btn btn-lime" onclick="toggleJoin('${r.id}')">✋ Voy a esta salida</button>`}
      <button class="btn btn-line" onclick="openCard('${r.id}')">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar('${r.id}')">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal('${r.id}')">📆 Google Calendar</button></div>`:''}
      ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id==='${r.id}').route.poly),rides.find(x=>x.id==='${r.id}').title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="gpxRide('${r.id}')">⬇️ GPX</button></div>`:''}
-     ${isOwner(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide('${r.id}')">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange('${r.id}')">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide('${r.id}')">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides','${r.id}','${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
+     ${canManage(r)&&!isOwner(r)?'<div class="joinnote" style="color:var(--bronze)">⭐ Puedes gestionar esta salida como jefe de pelotón</div>':''}
+     ${canManage(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide('${r.id}')">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange('${r.id}')">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide('${r.id}')">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides','${r.id}','${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
    </div>`;
   if(!keep)openSheet('sh-ride');
   else{const ci=$('chatIn');if(ci&&draft){ci.value=draft}if(ci&&focused)ci.focus({preventScroll:true});$('sh-ride').scrollTop=_sh}
@@ -1330,7 +1331,7 @@ function publishRide(){
   if(r.route){delete r.route.a;if(!r.km)r.km=Math.round(r.route.km)}
   if(editingId){
     const id=editingId,old=rides.find(x=>x.id===id);editingId=null;
-    const up={...r};['by','byUid','people','createdAt'].forEach(k=>delete up[k]);up.updatedAt=FV.serverTimestamp();
+    const up={...r};['by','byUid','people','createdAt'].forEach(k=>delete up[k]);if(old&&!isOwner(old)){up.group=old.group||null}up.updatedAt=FV.serverTimestamp();
     db.collection('rides').doc(id).update(up).catch(netErr);
     closeSheets();toast('Cambios guardados');
     const changed=old&&(old.date!==r.date||old.hour!==r.hour||old.start!==r.start||old.meet!==r.meet||old.meetHour!==r.meetHour);
@@ -1392,8 +1393,48 @@ async function setClubLogo(gid){
   try{await db.collection('groups').doc(gid).update(isAdmin?{logo:d,club:true}:{logo:d});toast('✅ Escudo guardado');if($('admCL'))admCont()}catch(e){fbErr(e,'guardar el escudo')}
 }
 async function delClubLogo(gid){if(!confirm('¿Quitar el escudo del club?'))return;try{await db.collection('groups').doc(gid).update({logo:FV.delete()});toast('Escudo quitado');if($('admCL'))admCont()}catch(e){netErr(e)}}
+async function admCaptain(gid){
+  try{const d=(await db.collection('groups').doc(gid).get()).data();if(!d)return;
+    const ms=Object.entries(d.members||{}).filter(([k])=>k!==d.byUid);if(!ms.length){toast('Este grupo aún no tiene más ciclistas');return}
+    const i=await askChoice('⭐ Jefes de pelotón de «'+d.name+'»',ms.map(([k,n])=>[(d.captains||{})[k]?'⭐ '+n+' (quitar)':n,'',k]));if(i<0)return;
+    const [k,n]=ms[i];await db.collection('groups').doc(gid).update({['captains.'+k]:(d.captains||{})[k]?FV.delete():n});
+    toast((d.captains||{})[k]?'Ya no es jefe de pelotón':'⭐ '+n+' ya es jefe de pelotón');if($('admCL'))admCont();
+  }catch(e){fbErr(e,'cambiar los jefes')}
+}
 async function admClub(gid,on){
   try{await db.collection('groups').doc(gid).update({club:on});toast(on?'🏅 Ahora es club oficial: ya puede poner su escudo':'Ya no es club oficial');if($('admCL'))admCont()}catch(e){fbErr(e,'cambiar el club')}
+}
+/* ===== v3.1 — Jefes de pelotón: mandan solo en su club/grupo ===== */
+const isBossOf=g=>!!(g&&myGroup&&myGroup.id===g&&(myGroup.byUid===uid||(myGroup.captains||{})[uid]));
+const isCreatorOf=g=>!!(g&&myGroup&&myGroup.id===g&&myGroup.byUid===uid);
+const canManage=r=>!!r&&(isOwner(r)||isBossOf(r.group));
+const roleOf=(g,k)=>k===g.byUid?'👑 Creador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'';
+function askChoice(title,opts){return new Promise(res=>{
+  const d=document.createElement('div');d.className='cfm';
+  d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${i}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${o[0]}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
+  const end=v=>{d.remove();res(v)};
+  d.onclick=e=>{const b=e.target.closest('.cfm-opt');if(b)end(+b.dataset.i);else if(e.target===d||e.target.closest('.cfm-no'))end(-1)};
+  document.body.appendChild(d);
+})}
+async function memberMenu(k){
+  const g=myGroup;if(!g||!isBossOf(g.id)||k===uid)return;
+  const n=g.members[k]||'Ciclista';const cap=!!(g.captains||{})[k];const opts=[];
+  if(isCreatorOf(g.id)||isAdmin)opts.push([cap?'Quitar como jefe de pelotón':'⭐ Nombrar jefe de pelotón','',cap?'uncap':'cap']);
+  if(k!==g.byUid&&(!cap||isCreatorOf(g.id)||isAdmin))opts.push(['🚪 Expulsar del grupo','red','kick']);
+  if(!opts.length){toast('No puedes cambiar a otro jefe de pelotón');return}
+  const i=await askChoice(n,opts);if(i<0)return;const act=opts[i][2];const ref=db.collection('groups').doc(g.id);
+  try{
+    if(act==='cap'){await ref.update({['captains.'+k]:n});toast(`⭐ ${n.split(' ')[0]} ya es jefe de pelotón`)}
+    if(act==='uncap'){await ref.update({['captains.'+k]:FV.delete()});toast('Ya no es jefe de pelotón')}
+    if(act==='kick'){if(!await askConfirm('¿Expulsar del grupo?',`${n} dejará de ver las salidas privadas del grupo. Podrá volver a entrar si le dais el código.`,'Expulsar'))return;
+      const up={['members.'+k]:FV.delete()};if(cap)up['captains.'+k]=FV.delete();await ref.update(up);toast('Expulsado del grupo')}
+    setTimeout(openGroup,400);
+  }catch(e){fbErr(e,'hacer ese cambio')}
+}
+async function groupNotice(){
+  const g=myGroup;if(!g||!isBossOf(g.id))return;
+  const t=(prompt('Aviso para todo el grupo (lo verán en la app).\nDéjalo vacío para quitar el aviso.',g.notice?.text||'')??null);if(t===null)return;
+  try{await db.collection('groups').doc(g.id).update({notice:t.trim()?{text:t.trim().slice(0,200),by:myName(),t:Date.now()}:FV.delete()});toast(t.trim()?'📣 Aviso publicado para el grupo':'Aviso quitado');setTimeout(openGroup,400)}catch(e){fbErr(e,'publicar el aviso')}
 }
 /* ---- Mi grupo ---- */
 function watchGroup(){
@@ -1408,7 +1449,7 @@ function watchGroup(){
 }
 function renderGroup(){
   const g=myGroup;
-  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b></small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
+  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún grupo
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="createGroup()">➕ Crear grupo</button><button class="btn btn-line" onclick="joinGroupAsk()">🔗 Unirme</button></div></div>`;
   $('visRow').style.display=g?'block':'none';
@@ -1462,17 +1503,21 @@ function shareGroup(){
 function openGroup(){
   const g=myGroup;if(!g){renderGroup();toast('Crea un grupo o únete con un código');go('comunidad');return}
   const gr=upcoming().filter(r=>r.group===g.id||(r.byUid&&g.members[r.byUid]));
-  const canLogo=isAdmin||(g.club&&g.byUid===uid);
+  const canLogo=isAdmin||(g.club&&isBossOf(g.id));const boss=isBossOf(g.id);
   $('rideBody').innerHTML=`<h2>${esc(g.name)} <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
    ${g.club?`<div class="clubhead">${clubLogo(g)?`<img src="${clubLogo(g)}" alt="Escudo de ${esc(g.name)}">`:'<div class="empty" style="padding:10px">Este club aún no tiene escudo</div>'}<span class="clubbadge">🏅 CLUB OFICIAL · ${gNames(g).length} ${gNames(g).length===1?"CICLISTA":"CICLISTAS"}</span></div>`:''}
    ${canLogo?`<div style="display:grid;grid-template-columns:${clubLogo(g)?'1fr 1fr':'1fr'};gap:10px;margin-bottom:14px"><button class="btn btn-line" onclick="setClubLogo('${g.id}')">${clubLogo(g)?'🖼️ Cambiar escudo':g.club?'🖼️ Poner escudo del club':'🏅 Hacer club oficial y poner escudo'}</button>${clubLogo(g)?`<button class="btn btn-line" onclick="delClubLogo('${g.id}')">Quitar escudo</button>`:''}</div>`:''}
+   ${g.notice?.text?`<div class="li" style="cursor:default;margin-bottom:12px;border-color:var(--lime)"><span class="em">📣</span><div><small>Aviso de ${esc(g.notice.by||'')} · ${fmtDate(iso(new Date(g.notice.t||Date.now())))}</small><b style="font-weight:600">${esc(g.notice.text)}</b></div></div>`:''}
+   ${boss?`<div class="li" style="cursor:default;margin-bottom:12px;border-color:var(--bronze)"><span class="em">⭐</span><div><b>${isCreatorOf(g.id)?'Creaste este grupo':'Eres jefe de pelotón'}</b><small>Puedes editar y cancelar las salidas del grupo, borrar comentarios${isCreatorOf(g.id)?', nombrar jefes':''} y expulsar ciclistas (toca su nombre).</small></div></div>
+   <button class="btn btn-line" style="margin-bottom:12px" onclick="groupNotice()">📣 ${g.notice?.text?'Cambiar aviso al grupo':'Poner un aviso al grupo'}</button>`:''}
    <div class="codebox"><small>Código del grupo</small><b>${g.id}</b></div>
    <button class="btn btn-lime" style="margin-bottom:10px" onclick="shareGroup()">💬 Invitar por WhatsApp</button>
    <button class="btn btn-line" style="margin-bottom:18px" onclick="closeSheets();openCreate();setTimeout(()=>{const c=document.querySelectorAll('#visChips .chip')[1];c&&c.click()},300)">📅 Crear salida para el grupo</button>
    <div class="sec"><h3 style="font-size:18px">Próximas salidas del grupo</h3></div>
    ${gr.length?gr.map(r=>rideCard(r,true)).join(''):'<div class="empty" style="margin-bottom:14px">No hay salidas del grupo todavía</div>'}
    <div class="sec"><h3 style="font-size:18px">Ciclistas (${gNames(g).length})</h3></div>
-   <div class="chips" style="margin-bottom:20px">${Object.entries(g.members).map(([k,n])=>`<span class="tag" style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}${k===g.byUid?' 👑':''}</span>`).join('')}</div>
+   ${boss?'<small style="display:block;color:var(--txt2);margin:-6px 4px 8px">Toca un nombre para nombrar jefe o expulsar</small>':''}
+   <div class="chips" style="margin-bottom:20px">${Object.entries(g.members).sort((a,b)=>(roleOf(g,b[0])?1:0)-(roleOf(g,a[0])?1:0)).map(([k,n])=>`<button class="tag" ${boss&&k!==uid?`onclick="memberMenu('${k}')"`:''} style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;${roleOf(g,k)?'border:1px solid var(--bronze)':''}"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}${k===g.byUid?' 👑':(g.captains||{})[k]?' ⭐':''}</button>`).join('')}</div>
    <button class="btn" style="color:var(--red)" onclick="leaveGroup()">Salir del grupo</button>`;
   openRideId=null;openSheet('sh-ride');fillWx();
 }
@@ -1802,7 +1847,7 @@ function addToGoogleCal(id){
 /* ---- Editar salida (solo quien organiza) ---- */
 let editingId=null;
 function editRide(id){
-  const r=rides.find(x=>x.id===id);if(!r||!isOwner(r))return;
+  const r=rides.find(x=>x.id===id);if(!r||!canManage(r))return;
   openCreate();editingId=id;
   $('createTitle').textContent='Editar salida';$('pubBtnTxt').textContent='Guardar cambios';
   document.querySelectorAll('#dayChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.d==='x'));$('cDate').style.display='block';$('cDate').value=r.date;
@@ -2112,7 +2157,7 @@ async function admCont(){
     const l=s.docs.map(d=>({id:d.id,...d.data()}));
     const title=x=>admCol==='feed'?`${x.title} · ${fmtNum(x.km||0,1)} km`:admCol==='pois'?`${(POI_CAT[x.cat]||['📍'])[0]} ${x.name}`:admCol==='routes'?`${x.name} · ${x.km} km`:`${x.name} · código ${x.id} · ${Object.keys(x.members||{}).length} miembros`;
     const who=x=>x.by||x.name||'';
-    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div>${admCol==='groups'?`<div style="display:flex;gap:6px;flex-shrink:0">${x.club?`<button class="mini" onclick="setClubLogo('${x.id}')" title="Escudo">${x.logo?`<img src="${x.logo}" style="width:22px;height:22px;object-fit:contain;background:#fff;border-radius:5px">`:'🖼️'}</button>`:''}<button class="mini" style="${x.club?'background:var(--lime);color:#0E1A2B':''}" onclick="admClub('${x.id}',${!x.club})">🏅${x.club?' Club':''}</button></div>`:''}<button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
+    $('admCL').innerHTML=l.map(x=>`<div class="li" style="cursor:default;margin-bottom:8px"><div><b>${esc(title(x))}</b><small>${admCol==='feed'?'por '+esc(x.name):'por '+esc(who(x))}${tsMs(x.createdAt)?' · '+fmtDate(iso(new Date(tsMs(x.createdAt)))):''}</small></div>${admCol==='groups'?`<div style="display:flex;gap:6px;flex-shrink:0">${x.club?`<button class="mini" onclick="setClubLogo('${x.id}')" title="Escudo">${x.logo?`<img src="${x.logo}" style="width:22px;height:22px;object-fit:contain;background:#fff;border-radius:5px">`:'🖼️'}</button>`:''}<button class="mini" style="${x.club?'background:var(--lime);color:#0E1A2B':''}" onclick="admClub('${x.id}',${!x.club})">🏅${x.club?' Club':''}</button><button class="mini" title="Jefes de pelotón" onclick="admCaptain('${x.id}')">⭐${Object.keys(x.captains||{}).length||''}</button></div>`:''}<button class="mini" style="color:var(--red)" onclick="admDel('${admCol}','${x.id}')">🗑️</button></div>`).join('')||'<div class="empty">Nada todavía</div>';
   }catch(e){$('admCL').innerHTML='<div class="empty">No se pudo cargar</div>'}
 }
 async function admDel(col,id){
@@ -2424,7 +2469,7 @@ function msgTime(ts){const d=new Date(ts);const t=String(d.getHours()).padStart(
 function renderChat(){
   const l=$('chatList');if(!l)return;const r=rides.find(x=>x.id===chat.id);
   $('chatCount').textContent=chat.msgs.length?'('+chat.msgs.length+')':'';
-  l.innerHTML=chat.msgs.length?chat.msgs.map(m=>{const mine=m.uid===uid;const canDel=mine||(r&&isOwner(r))||isAdmin;
+  l.innerHTML=chat.msgs.length?chat.msgs.map(m=>{const mine=m.uid===uid;const canDel=mine||(r&&canManage(r))||isAdmin;
     return `<div class="msg${mine?' me':''}">${mine?'':`<span class="face" style="width:30px;height:30px;margin:0;flex-shrink:0;background:${colorOf(m.name)}">${ini(m.name)}</span>`}<div class="bub"><div class="mh"><b>${mine?'Tú':esc(m.name)}</b><small>${msgTime(m.ts)}</small>${canDel?`<button aria-label="Borrar mensaje" onclick="delMsg('${m.id}')">✕</button>`:''}</div><p>${esc(m.text)}</p></div></div>`}).join('')
    :'<div class="empty" style="padding:12px">Aún no hay comentarios. ¡Escribe el primero!</div>';
   l.scrollTop=l.scrollHeight;
@@ -3281,6 +3326,7 @@ function goGoogle(){
   else{o={lat:r.coords[0][0],lng:r.coords[0][1]};d={lat:r.coords.at(-1)[0],lng:r.coords.at(-1)[1]}}
   window.open('https://www.google.com/maps/dir/?api=1&travelmode=bicycling&origin='+f(o)+'&destination='+f(d)+(w.length?'&waypoints='+w.map(f).join('%7C'):''),'_blank');
 }
+async function startRideEarly(id){const r=rides.find(x=>x.id===id);if(!r)return;if(await askConfirm('¿Empezar antes de tiempo?',`Esta salida es el ${fmtDate(r.date)}. Puedes empezarla ahora para probar el pelotón en vivo y los avisos (pinchazo, esperad, ayuda). Al terminar, si no quieres guardarla, elige no guardar.`,'Empezar',true))startRide(id)}
 function startRide(id){
   const r=rides.find(x=>x.id===id);if(!r)return;
   if(!joined(r)){toast('Apúntate primero a la salida');return}
