@@ -1,3 +1,6 @@
+## Versión 3.8.1
+- Tarjeta dedicada al viento: botón «🌬️ Ver previsión del viento por horas» en el detalle de la salida y «🕐 Ver por horas» al crearla. Muestra viento a la hora de salida, consejo, aviso si el viento cambia durante la mañana, previsión hora a hora (suave / moderado / fuerte), botón Actualizar, enlace al mapa del viento (Windy) y la fuente (Open‑Meteo, gratis).
+
 ## Versión 3.8
 - Crear/editar salida: tarjetas «Recorrido previsto» (pueblos por los que se pasa, en orden), «Parada prevista» (café, desayuno, avituallamiento o descanso, hora y notas) y «Planificación con viento».
 - Botón «🌬️ Consultar viento»: velocidad, rachas, dirección con flecha, hora de consulta y consejo (ida con viento en contra, vuelta a favor). Datos gratis de Open-Meteo para el día y hora de la salida.
