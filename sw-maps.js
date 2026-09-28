@@ -1,5 +1,5 @@
-// RideSafe IA — Service Worker (v1.7)
-const CACHE = 'velogo-v280';                 // la app (se renueva con cada versión)
+// RideSafe IA — Service Worker (v3.0)
+const CACHE = 'velogo-v300';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -59,4 +59,32 @@ self.addEventListener('fetch', e => {
     fetch(req).then(r => { const c = r.clone(); caches.open(CACHE).then(ca => ca.put(req, c)); return r; })
       .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
+});
+
+// Al tocar un aviso del pelotón: abrir (o traer al frente) RideSafe
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    const url = (e.notification.data && e.notification.data.url) || './';
+    for (const c of cs) { if ('focus' in c) { if (url !== './' && 'navigate' in c) c.navigate(url).catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow(url);
+  }));
+});
+
+// Notificaciones push (Firebase Cloud Messaging): avisos del pelotón con la app cerrada
+self.addEventListener('push', e => {
+  let d = {};
+  try { const j = e.data ? e.data.json() : {}; d = j.data || j.notification || j; } catch (err) { d = { title: 'RideSafe IA', body: e.data ? e.data.text() : '' }; }
+  const urgent = d.urgent === '1';
+  const title = d.title || 'RideSafe IA';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || '',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: d.tag || 'ridesafe',
+    renotify: true,
+    requireInteraction: urgent,
+    vibrate: urgent ? [800, 200, 800, 200, 800, 200, 800] : [200, 100, 200],
+    data: { url: d.url || './' }
+  }));
 });

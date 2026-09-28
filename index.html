@@ -17,6 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
 <style>
 :root{
   --bg:#0E1A2B; --card:#16263D; --card2:#1C2F4A; --line:#2A3B55;
@@ -719,6 +720,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="flex-wrap:wrap">🔔 Avisos del pelotón con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Pinchazos, «esperad» y «ayuda» de tus salidas, aunque tengas el móvil bloqueado</small></div>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en la comunidad <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Ayuda</h3></div>
@@ -728,7 +730,7 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 2.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1102,9 +1104,9 @@ function renderAll(){
 function openAllRides(){openSheet('sh-all');renderAll()}
 
 /* v2.8 — Ventana de confirmación propia (más clara que la del navegador) */
-function askConfirm(title,text,okTxt){return new Promise(res=>{
+function askConfirm(title,text,okTxt,good){return new Promise(res=>{
   const d=document.createElement('div');d.className='cfm';
-  d.innerHTML=`<div class="cfm-b" role="dialog" aria-modal="true"><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="cfm-r"><button class="cfm-no">Cancelar</button><button class="cfm-ok">${esc(okTxt||'Aceptar')}</button></div></div>`;
+  d.innerHTML=`<div class="cfm-b" role="dialog" aria-modal="true"><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="cfm-r"><button class="cfm-no">Cancelar</button><button class="cfm-ok"${good?' style="background:var(--lime);color:var(--on-lime)"':''}>${esc(okTxt||'Aceptar')}</button></div></div>`;
   const end=v=>{d.remove();res(v)};
   d.onclick=e=>{if(e.target===d||e.target.closest('.cfm-no'))end(false);else if(e.target.closest('.cfm-ok'))end(true)};
   document.body.appendChild(d);
@@ -1120,6 +1122,7 @@ async function toggleJoin(id){
   }else{
     if(r.seats&&names(r).length>=r.seats){toast('No quedan plazas');return}
     ref.update({['people.'+uid]:myName()}).catch(netErr);toast('✅ ¡Apuntado! Nos vemos en el punto de encuentro');vib(40);
+    if(pushReady()&&!store.get('push',0)&&!store.get('pushAsked',0)){store.set('pushAsked',1);setTimeout(async()=>{if(await askConfirm('🔔 ¿Activar avisos?','Si alguien del grupo pincha o pide ayuda durante la salida, te llegará una notificación aunque tengas la app cerrada.','Activar',true))setPush(true)},900)}
   }
 }
 const mapsLink=(p,ll)=>ll?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+ll.lat+','+ll.lng:/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(p)?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+encodeURIComponent(p):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p);
@@ -2473,8 +2476,9 @@ async function sendAlert(kind){
   db.collection('rides').doc(live.rideId).collection('msgs').add({uid,name:myName(),text,ts:now}).catch(()=>{});
   db.collection('rides').doc(live.rideId).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
   vib(200);
-  if(kind==='ok'){alarmClose();toast('✅ Aviso enviado: seguimos');return}
-  alarmShow(kind,'Aviso enviado al grupo',`Todos los que ruedan contigo han recibido: "${ALERTS[kind].msg}"`,[['✅ Solucionado, seguimos','al-main',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
+  live.waText=`${ALERTS[kind].ico} RideSafe · ${live.rideTitle||'Salida en grupo'}\n*${myName()}*: ${ALERTS[kind].msg}\n📍 https://maps.google.com/?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
+  if(kind==='ok'){alarmShow('ok','Aviso enviado: seguimos','¿Lo avisas también en el grupo de WhatsApp?',[['📲 Enviar por WhatsApp','al-main','alertWA();alarmClose()'],['No hace falta','al-sec','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith('Aviso enviado: seguimos'))alarmClose()},12000);return}
+  alarmShow(kind,'Aviso enviado al grupo',`Lo ve quien tenga RideSafe abierto. Para que suene a TODOS aunque tengan la app cerrada, mándalo también por WhatsApp:`,[['📲 Enviar también por WhatsApp','al-main','alertWA()'],['✅ Solucionado, seguimos','al-sec',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
 }
 function checkAlerts(){
   if(!live.on)return;const now=Date.now();const me=live.pts.at(-1);live.alSeen=live.alSeen||{};
@@ -2491,8 +2495,56 @@ function checkAlerts(){
     }
     setTimeout(()=>speak(`Atención. ${name} ${A.say}.${dist!=null&&a.type!=='ok'?' Está '+dtx+'.':''}`),a.type==='ok'?900:2200);
     toast(`${A.ico} ${name} ${A.t}`);
+    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name} ${A.t}`,dtx||'Abre RideSafe para verlo en el mapa',a.type!=='ok');
   });
 }
+async function bgNotify(title,body,urgent){
+  try{if(!('Notification' in window)||Notification.permission!=='granted')return;const reg=await navigator.serviceWorker.ready;
+    reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-alert',renotify:true,requireInteraction:urgent,vibrate:urgent?[700,200,700,200,700,200,700]:[200,100,200]})}catch(e){}
+}
+function groupTips(){
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}catch(e){}
+  if(store.get('noGroupTip',0))return;
+  setTimeout(()=>{if(!live.on)return;
+    const d=document.createElement('div');d.className='cfm';
+    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si vas a llevar el móvil en el bolsillo, ten a mano el <b>grupo de WhatsApp</b> de la grupeta: los avisos también se pueden mandar por ahí y suenan aunque la app esté cerrada.<br><br>🔊 Sube el volumen de multimedia.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
+    d.onclick=e=>{if(e.target.closest('.cfm-ok')){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
+    document.body.appendChild(d)},1200);
+}
+/* ===== v3.0 — Notificaciones push (Firebase Cloud Messaging) ===== */
+// Clave pública «Web Push» de Firebase: Configuración del proyecto → Cloud Messaging → Certificados push web
+const VAPID_KEY='BNWgTtBvXCPt6U27ULgtdsybUTJQwTBzgHn1QuHIQTFbRfi-6mMAsY624JngxlWOdWM4HgGVPSVh6WGJYzHX00A';
+const pushReady=()=>VAPID_KEY&&!VAPID_KEY.startsWith('PON_')&&'Notification' in window&&'serviceWorker' in navigator&&'PushManager' in window&&firebase.messaging&&firebase.messaging.isSupported&&firebase.messaging.isSupported();
+async function pushToken(){
+  const reg=await navigator.serviceWorker.ready;
+  return firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+}
+async function setPush(on){
+  const sw=$('swPush');
+  if(!pushReady()){sw.checked=false;toast(VAPID_KEY.startsWith('PON_')?'Las notificaciones aún no están configuradas en esta versión':'Este móvil o navegador no admite notificaciones. Instala la app en la pantalla de inicio');return}
+  if(!uid||!db){sw.checked=false;toast('Conectando… inténtalo en unos segundos');return}
+  const ref=db.collection('users').doc(uid).collection('private').doc('push');
+  if(!on){
+    try{const t=store.get('pushTok','');if(t){await ref.set({tokens:{[t]:FV.delete()}},{merge:true});await firebase.messaging().deleteToken().catch(()=>{})}}catch(e){}
+    store.set('push',0);store.set('pushTok','');toast('🔕 Avisos desactivados en este móvil');return;
+  }
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){sw.checked=false;alert('Has bloqueado las notificaciones.\n\nPara activarlas: ajustes del móvil → Aplicaciones → Chrome (o RideSafe) → Notificaciones → Permitir.');return}
+    const t=await pushToken();if(!t)throw new Error('sin token');
+    await ref.set({tokens:{[t]:Date.now()},name:myName()},{merge:true});
+    store.set('push',1);store.set('pushTok',t);sw.checked=true;toast('🔔 ¡Listo! Te avisaremos aunque la app esté cerrada');
+  }catch(e){console.error(e);sw.checked=false;alert('No se pudieron activar los avisos.\n('+(e.code||e.message||e)+')')}
+}
+// Al entrar: si ya estaban activados, renueva el token (cambia de vez en cuando)
+async function refreshPush(){
+  const sw=$('swPush');if(sw)sw.checked=!!store.get('push',0);
+  if(!store.get('push',0)||!pushReady()||Notification.permission!=='granted')return;
+  try{const t=await pushToken();if(t&&t!==store.get('pushTok','')){const ref=db.collection('users').doc(uid).collection('private').doc('push');const old=store.get('pushTok','');await ref.set({tokens:{[t]:Date.now(),...(old?{[old]:FV.delete()}:{})},name:myName()},{merge:true});store.set('pushTok',t)}}catch(e){console.warn('push',e)}
+}
+// Si la app está abierta cuando llega el aviso, ya lo muestra el pelotón en pantalla
+function pushForeground(){try{if(pushReady())firebase.messaging().onMessage(()=>{})}catch(e){}}
+function alertWA(){if(!live.waText)return;window.open('https://wa.me/?text='+encodeURIComponent(live.waText),'_blank')}
 function alertGo(id){const v=(live.members||{})[id];if(!v)return;live.follow=false;map.easeTo({center:[v.lng,v.lat],zoom:16})}
 function alarmTest(){alarmUnlock();alarmSound('flat',2);alarmShow('flat','Prueba de aviso','Así sonará cuando alguien del grupo pinche. Sube el volumen del móvil.',[['Parar','al-main','alarmClose()']])}
 async function sendMsg(txt){
@@ -3047,7 +3099,7 @@ async function startLive(opt){
   live.watch=navigator.geolocation.watchPosition(onFix,e=>{if(e.code===1)toast('Activa el permiso de ubicación para grabar')},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   live.timer=setInterval(renderLive,1000);
   keepAwake();
-  if(live.rideId)listenGroup();
+  if(live.rideId){listenGroup();groupTips()}
   renderLive();
   speak(live.nav?'Empezamos. Sigue la línea verde.':'Grabación iniciada. ¡Buena ruta!');
   toast(live.rideId?'¡Salida en marcha! Tu grupo te ve en el mapa':'Grabando… mantén la pantalla encendida');
@@ -3428,7 +3480,7 @@ function startFirebase(){
       if((me?.group||null)!==(myGroup?.id||null)||!groupUnsub)watchGroup();
       checkBadges();
     },e=>console.error(e));
-    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();
+    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();
     // Salidas próximas (en vivo)
     db.collection('rides').where('date','>=',iso(new Date())).orderBy('date').limit(150).onSnapshot(s=>{
       rides=s.docs.map(d=>({id:d.id,...d.data()}));ridesLoaded=true;renderRides();drawRideMarkers();
