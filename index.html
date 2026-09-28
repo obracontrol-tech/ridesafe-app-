@@ -531,6 +531,16 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 .cfm-r button{min-height:46px;border-radius:23px;font-weight:800;font-size:15px}
 .cfm-no{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
 .cfm-ok{background:var(--red);color:#fff}
+
+/* v3.3 — Barra inferior que cabe en cualquier móvil (también con letra grande) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.nav{left:8px!important;right:8px!important;grid-template-columns:1fr 1.15fr 64px 1.15fr 1fr!important}
+.tab{min-width:0;overflow:hidden;gap:3px!important;padding:0 2px}
+.tab svg{width:22px;height:22px;flex-shrink:0}
+.tab .tl{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(8px,3.1vw,12px);letter-spacing:-.02em;line-height:1.1}
+.plus{width:60px!important;height:60px!important;margin-top:-36px!important;border-width:4px!important}
+.plus svg{width:28px!important;height:28px!important}
+@media (max-width:330px){.tab svg{width:20px;height:20px}.nav{left:4px!important;right:4px!important;grid-template-columns:1fr 1.25fr 56px 1.25fr 1fr!important}.plus{width:54px!important;height:54px!important}}
 </style>
 </head>
 <body>
@@ -730,16 +740,16 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
 <nav class="nav" aria-label="Navegación principal">
-  <button class="tab" data-tab="rutas"><svg class="i" viewBox="0 0 24 24"><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14m6-12v14"/></svg>Rutas</button>
-  <button class="tab" data-tab="comunidad"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Comunidad</button>
+  <button class="tab" data-tab="rutas"><svg class="i" viewBox="0 0 24 24"><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14m6-12v14"/></svg><span class="tl">Rutas</span></button>
+  <button class="tab" data-tab="comunidad"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg><span class="tl">Comunidad</span></button>
   <button class="plus" id="plusBtn" aria-label="Crear" onclick="togglePlus()"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button class="tab" data-tab="actividades"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Actividades</button>
-  <button class="tab" data-tab="perfil"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  <button class="tab" data-tab="actividades"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="tl">Actividades</span></button>
+  <button class="tab" data-tab="perfil"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="tl">Perfil</span></button>
 </nav>
 
 <div class="scrim" id="scrim" onclick="closeSheets()"></div>
@@ -987,6 +997,12 @@ const store={
 };
 let toastT;
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function cleanData(v,depth){depth=depth||0;if(v==null)return v;if(depth>30)return null;
+  if(typeof v==='string')return v.startsWith('data:image/')?(SAFE_IMG_RE.test(v)?v:''):v.replace(/[<>]/g,'').replace(/"/g,'”');
+  if(Array.isArray(v))return v.map(x=>cleanData(x,depth+1));
+  if(typeof v==='object'&&Object.getPrototypeOf(v)===Object.prototype){const o={};for(const k of Object.keys(v)){if(/['"<>\\\s`]/.test(k))continue;o[k]=cleanData(v[k],depth+1)}return o}
+  return v}
+const SAFE_IMG_RE=/^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+\/=]+$/;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const COLORS=['#C8DC3C','#E0913A','#60A5FA','#F472B6','#34D399','#A78BFA','#FBBF24'];
 const colorOf=n=>COLORS[[...String(n||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
@@ -1374,7 +1390,8 @@ const newCode=()=>Array.from({length:6},()=>CODE_CH[Math.floor(Math.random()*COD
 const gNames=g=>Object.values(g?.members||{});
 
 /* ===== v2.1 — Club oficial con escudo (solo los grupos que el administrador marca como club) ===== */
-const clubLogo=g=>g&&g.club&&g.logo?g.logo:null;
+const SAFE_IMG=/^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+\/=]+$/;
+const clubLogo=g=>g&&g.club&&typeof g.logo==='string'&&SAFE_IMG.test(g.logo)?g.logo:null;
 const rideLogo=r=>r&&r.group&&myGroup&&r.group===myGroup.id?clubLogo(myGroup):null;
 function pickLogo(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>res(i.files[0]||null);i.click()})}
 async function makeLogo(file){
@@ -3509,6 +3526,8 @@ function startFirebase(){
   if(typeof firebase==='undefined'){toast('Sin conexión. Abre RideSafe IA con internet');ridesLoaded=true;renderRides();if(!me)showOnb();return}
   firebase.initializeApp(FIREBASE_CONFIG);
   db=firebase.firestore();FV=firebase.firestore.FieldValue;
+  // v3.2 — Seguridad: todo lo que llega de la base de datos se limpia antes de mostrarlo (evita que alguien meta código en un texto)
+  try{[firebase.firestore.DocumentSnapshot,firebase.firestore.QueryDocumentSnapshot].forEach(C=>{if(!C||!C.prototype||C.prototype.__clean)return;const o=C.prototype.data;C.prototype.data=function(...a){return cleanData(o.apply(this,a))};C.prototype.__clean=1})}catch(e){console.warn('clean',e)}
   db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
   const auth=firebase.auth();
   auth.getRedirectResult().then(r=>{if(r&&r.user&&!r.user.isAnonymous){toast('✅ Cuenta guardada con Google');setTimeout(renderAccount,500)}}).catch(e=>authErr(e,'link'));

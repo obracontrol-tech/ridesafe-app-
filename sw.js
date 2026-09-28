@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v310';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v330';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
