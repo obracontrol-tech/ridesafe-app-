@@ -564,6 +564,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .wind-top{display:flex;align-items:center;gap:12px}.wind-top small{color:var(--txt2)}
 .wind-arrow{color:var(--lime);display:grid;place-items:center;flex-shrink:0}
 .wind-adv{font-size:13.5px;line-height:1.45}
+.gd-map{height:230px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin:4px 0 12px}
+.gd-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.gd-stats div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}.gd-stats b{font-size:22px;display:block}.gd-stats span{color:var(--txt2);font-size:13px}
+.gd-steps{list-style:none;margin:6px 0 14px;padding:0}.gd-steps li{display:flex;gap:10px;align-items:flex-start;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.35}.gd-steps li i{font-style:normal;font-size:18px;width:26px;text-align:center;flex-shrink:0}.gd-steps li small{color:var(--txt2);display:block;font-size:12.5px}
+.gd-mode{display:flex;gap:8px;margin-bottom:10px}
 .ws-sub{color:var(--txt2);margin:-8px 0 12px;font-size:14px}
 .ws-hours{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin:4px -2px 6px;scrollbar-width:none}
 .ws-h{flex:0 0 74px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -640,7 +644,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <button id="bSave" onclick="plan.view&&viewingComm?saveCommRoute():saveRoute()">💾 Guardar</button>
       <button id="bUse" class="lime" onclick="useRoute()">📅 Crear salida con esta ruta</button>
       <button id="bPub" style="grid-column:1/-1" onclick="publishRoute()">🌍 Compartir en la comunidad</button>
-      <button class="gm-link" onclick="goGoogle()">Abrir en Google Maps</button>
       <button class="gm-link" onclick="plan.route&&saveRouteOffline(plan.route.coords,$('planTitle').textContent)">📥 Guardar mapa para usar sin conexión</button>
       <button class="gm-link" onclick="gpxPlan()">⬇️ Descargar GPX (Garmin, Wahoo…)</button>
       <button class="gm-link" id="bDelComm" style="color:var(--red);display:none" onclick="viewingComm&&delCommRoute(viewingComm.id)">Quitar de la comunidad</button>
@@ -781,7 +784,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.8.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -926,6 +929,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </div>
 
 <!-- Detalle salida -->
+<div class="sheet" id="sh-guide">
+  <div class="grab"></div>
+  <h2>🧭 Cómo llegar <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+  <div id="gdBody"></div>
+</div>
 <div class="sheet" id="sh-wind">
   <div class="grab"></div>
   <h2>🌬️ Viento de la salida <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
@@ -1339,8 +1347,8 @@ async function openRide(id,keep){
    </div>
    ${(r.startLL||r.meetLL||r.route)?'<div class="rmap" id="rideMap"></div>':''}
    ${r.route?`<div class="pstats" style="margin-top:0"><div><b class="num">${r.route.km}</b><span>km</span></div><div><b class="num">+${r.route.up}</b><span>m subida</span></div><div><b class="num">−${r.route.down}</b><span>m bajada</span></div><div><b class="num" style="font-size:16px">${hm(r.route.mins)}</b><span>aprox.</span></div></div>${profileSVG(unpackRoute(r.route).prof)}<button class="btn btn-line" style="margin:8px 0 14px" onclick="showRoute(unpackRoute(rides.find(x=>x.id==='${r.id}').route))">🗺️ Ver la ruta en el mapa grande</button>`:''}
-   <div class="li" style="margin-bottom:10px;cursor:default"><span class="em">🚩</span><div><small>Punto de salida</small><b>${esc(r.start)}</b></div><a class="mini" href="${mapsLink(r.start,r.startLL)}" target="_blank" rel="noopener">Cómo llegar</a></div>
-   <div class="li" style="margin-bottom:16px;cursor:default"><span class="em">📍</span><div><small>Punto de encuentro${r.meetHour?' · '+esc(r.meetHour):''}</small><b>${esc(meetPt)}</b></div><a class="mini" href="${mapsLink(meetPt,r.meetLL||r.startLL)}" target="_blank" rel="noopener">Cómo llegar</a></div>
+   <div class="li" style="margin-bottom:10px;cursor:default"><span class="em">🚩</span><div><small>Punto de salida</small><b>${esc(r.start)}</b></div><button class="mini" onclick="guideKey(${gdKey(r.start,r.startLL)},'${r.id}')">🧭 Cómo llegar</button></div>
+   <div class="li" style="margin-bottom:16px;cursor:default"><span class="em">📍</span><div><small>Punto de encuentro${r.meetHour?' · '+esc(r.meetHour):''}</small><b>${esc(meetPt)}</b></div><button class="mini" onclick="guideKey(${gdKey(meetPt,r.meetLL||(r.meet?null:r.startLL))},'${r.id}')">🧭 Cómo llegar</button></div>
    ${rideLL(r)?'<div class="li" id="wxBox" style="cursor:default;margin-bottom:16px"><span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Consultando…</small></div></div>':''}
    <div class="chips" style="margin-bottom:14px">${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.pace?`<span class="tag">Ritmo ${esc(String(r.pace).toLowerCase())}</span>`:''}<span class="tag">${r.seats?p.length+'/'+r.seats+' plazas':'Sin límite de plazas'}</span><span class="tag">Organiza ${esc(r.by)}</span></div>
    ${r.plan&&r.plan.text?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Recorrido</span><b>🧭 Recorrido previsto</b></div><div class="rp-route">${[...(r.start?[r.start.split(',')[0]]:[]),...(r.plan.points||[]),...(r.plan.back?[r.plan.back]:[])].map((x,i,a)=>`<span class="rp-stop${i===0||i===a.length-1?' end':''}">${esc(x)}</span>`).join('<span class="rp-arr">→</span>')}</div></div>`:''}
@@ -1443,6 +1451,74 @@ function windArrow(deg,size){return `<svg viewBox="0 0 48 48" width="${size||56}
 /* v3.8.1 — Tarjeta dedicada al viento (previsión por horas, Open-Meteo) */
 let windCtx=null;
 const wLevel=v=>v<15?['l1','Suave']:v<25?['l2','Moderado']:['l3','Fuerte'];
+/* v3.9 — «Cómo llegar» dentro de la app con Mapbox (sin Google Maps) */
+const GD=[];const gdKey=(name,ll)=>{GD.push({name:String(name||''),ll:ll&&ll.lat!=null?{lat:+ll.lat,lng:+ll.lng}:null});return GD.length-1};
+let guide={map:null,mode:'cycling'};
+async function geoTo(name,ll){
+  if(ll&&ll.lat!=null)return{lat:+ll.lat,lng:+ll.lng};
+  const m=String(name||'').match(/^\s*(-?\d+\.\d+),\s*(-?\d+\.\d+)\s*$/);if(m)return{lat:+m[1],lng:+m[2]};
+  return await geoPlace(name)||await geoPlace(String(name||'').split(',').pop());
+}
+function myPos(){return new Promise(res=>{
+  const fb=()=>{if(meMarker){const l=meMarker.getLngLat();res({lat:l.lat,lng:l.lng})}else res(null)};
+  if(!navigator.geolocation){fb();return}
+  navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),fb,{enableHighAccuracy:true,timeout:12000,maximumAge:30000})})}
+function otherAppUrl(d){return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?`https://maps.apple.com/?daddr=${d.lat},${d.lng}&dirflg=d`:`geo:${d.lat},${d.lng}?q=${d.lat},${d.lng}`}
+async function guideKey(k,rideId){const g=GD[k];if(g)guideTo(g.name,g.ll,rideId)}
+async function guideTo(name,ll,rideId){
+  if(live.on){liveGuide(name,ll);return}
+  guide.name=name;guide.ll=ll;guide.rideId=rideId||null;
+  openSheet('sh-guide');const B=$('gdBody');
+  const back=rideId?`<button class="btn" style="color:var(--txt2);margin-top:4px" onclick="openRide('${rideId}')">← Volver a la salida</button>`:'';
+  B.innerHTML='<div class="empty">Buscando el camino…</div>';
+  if(!MAPBOX_TOKEN||MAPBOX_TOKEN.startsWith('PON_')){B.innerHTML='<div class="empty">Falta la clave de Mapbox.</div>'+back;return}
+  const dest=await geoTo(name,ll);
+  if(!dest){B.innerHTML=`<div class="plc"><b>No encuentro «${esc(name)}» en el mapa</b><p style="color:var(--txt2);margin-top:4px">Pide al organizador que marque el punto en el mapa.</p></div>${back}`;return}
+  guide.dest=dest;
+  const me=await myPos();
+  if(!me){B.innerHTML=`<div class="plc"><b>Necesito saber dónde estás</b><p style="color:var(--txt2);margin-top:4px">Activa la ubicación del móvil y vuelve a intentarlo.</p><button class="btn btn-line" style="margin-top:10px" onclick="guideTo(guide.name,guide.ll,guide.rideId)">🔄 Reintentar</button></div>${back}`;return}
+  guide.me=me;
+  try{
+    const prof=guide.mode==='driving'?'driving':'cycling';
+    const u=`https://api.mapbox.com/directions/v5/mapbox/${prof}/${me.lng.toFixed(6)},${me.lat.toFixed(6)};${dest.lng.toFixed(6)},${dest.lat.toFixed(6)}?geometries=geojson&overview=full&steps=true&language=es&access_token=${MAPBOX_TOKEN}`;
+    const d=await (await fetch(u)).json();if(d.code!=='Ok'||!d.routes||!d.routes.length)throw d;
+    const rt=d.routes[0];const coords=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+    const steps=[];rt.legs.forEach(l=>l.steps.forEach(st=>steps.push({txt:st.maneuver.instruction,type:st.maneuver.type,mod:st.maneuver.modifier||'straight',loc:[st.maneuver.location[1],st.maneuver.location[0]],dist:st.distance})));
+    guide.coords=coords;guide.steps=steps;
+    const km=rt.distance/1000,min=rt.duration/60;
+    const eta=new Date(Date.now()+rt.duration*1000).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    B.innerHTML=`<p class="ws-sub" style="margin-top:-6px">Hasta <b style="color:var(--txt)">${esc(String(name||'el punto').split(',')[0])}</b></p>
+     <div class="gd-mode chips"><button class="chip${prof==='cycling'?' on':''}" onclick="guide.mode='cycling';guideTo(guide.name,guide.ll,guide.rideId)">🚴 En bici</button><button class="chip${prof==='driving'?' on':''}" onclick="guide.mode='driving';guideTo(guide.name,guide.ll,guide.rideId)">🚗 En coche</button></div>
+     <div class="gd-map" id="gdMap"></div>
+     <div class="gd-stats"><div><b class="num">${km<1?Math.round(km*1000)+' m':fmtNum(km,1)+' km'}</b><span>distancia</span></div><div><b class="num">${hm(min)}</b><span>llegas a las ${eta}</span></div></div>
+     <button class="btn btn-lime" onclick="guideStart()">▶ Guiarme con voz</button>
+     <div class="sec" style="margin-top:14px"><h3 style="font-size:17px">Indicaciones</h3></div>
+     <ol class="gd-steps">${steps.slice(0,40).map(st=>`<li><i>${st.type==='arrive'?'🏁':st.type==='depart'?'🚩':ARROW[st.mod]||'⬆️'}</i><div>${esc(st.txt)}${st.dist>0&&st.type!=='arrive'?`<small>${st.dist<1000?Math.round(st.dist/10)*10+' m':fmtNum(st.dist/1000,1)+' km'}</small>`:''}</div></li>`).join('')}</ol>
+     <a class="btn btn-line" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="${otherAppUrl(dest)}" target="_blank" rel="noopener">📱 Abrir en otra app de mapas</a>
+     ${back}`;
+    try{
+    if(guide.map){try{guide.map.remove()}catch(e){}}
+    guide.map=newMap({container:'gdMap',center:[dest.lng,dest.lat],zoom:13,attributionControl:{compact:true}});
+    const mk=(ll,bg,t)=>{const el=document.createElement('div');el.style.cssText=`width:26px;height:26px;border-radius:50%;background:${bg};border:3px solid #fff;display:grid;place-items:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.4)`;el.textContent=t;new maplibregl.Marker({element:el}).setLngLat([ll.lng,ll.lat]).addTo(guide.map)};
+    mk(me,'#2563EB','');mk(dest,'#C8DC3C','🏁');
+    setLine(guide.map,coords,'plan','#C8DC3C');
+    guide.map.once('load',()=>fitTo(guide.map,coords,{top:30,bottom:30,left:30,right:30}));
+    }catch(e){console.warn('mapa guía',e)}
+  }catch(e){console.warn('guía',e);B.innerHTML=`<div class="plc"><b>No se pudo calcular el camino</b><p style="color:var(--txt2);margin-top:4px">Revisa la conexión e inténtalo otra vez.</p><button class="btn btn-line" style="margin-top:10px" onclick="guideTo(guide.name,guide.ll,guide.rideId)">🔄 Reintentar</button></div>${back}`}
+}
+function guideStart(){
+  if(!guide.coords)return;
+  startLive({route:{coords:guide.coords},title:'Hacia '+String(guide.name||'').split(',')[0]});
+  if(live.on){prepNav(guide.coords,guide.steps);live.wps=[guide.me,guide.dest];speak('Te guío hasta '+String(guide.name||'el punto').split(',')[0]+'. Sigue la línea verde.')}
+}
+// Durante una salida en marcha: la guía se pone en la misma pantalla (p. ej. ir hasta un compañero que ha pinchado)
+async function liveGuide(name,ll){
+  const dest=await geoTo(name,ll);const h=live.pts.at(-1)||hereLL();
+  if(!dest||!h){toast('No se pudo calcular el camino');return}
+  const me={lat:h[0],lng:h[1]};
+  try{const n=await navSteps([me,dest]);prepNav(n.coords,n.steps);live.wps=[me,dest];live.follow=true;speak('Te guío hasta '+String(name||'el punto').split(',')[0]+'.');toast('🧭 Guía activada: sigue la línea verde')}
+  catch(e){toast('No se pudo calcular el camino')}
+}
 async function geoPlace(q){if(!q)return null;try{const j=await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q))).json();if(j&&j[0])return{lat:+j[0].lat,lng:+j[0].lon}}catch(e){}return null}
 async function openWindRide(id){const r=rides.find(x=>x.id===id);if(!r)return;let ll=rideLL(r)||(r.wind&&r.wind.lat!=null?{lat:+r.wind.lat,lng:+r.wind.lng}:null);
   if(!ll){toast('Buscando el punto de salida…');ll=await geoPlace(r.start)||await geoPlace(String(r.start||'').split(',').pop())}
@@ -1917,7 +1993,7 @@ function openPoi(id){
    <p style="color:var(--txt2);margin:-8px 0 14px">${c[1]}${h?' · a '+kmTxt(hav(h,[p.lat,p.lng])):''} · añadido por ${esc(p.by)}</p>
    ${p.note?`<div class="li" style="cursor:default;margin-bottom:14px"><span class="em">💬</span><div><b style="font-weight:500">${esc(p.note)}</b></div></div>`:''}
    <div style="display:flex;flex-direction:column;gap:10px">
-    <a class="btn btn-lime" style="text-decoration:none" href="${mapsLink('',{lat:p.lat,lng:p.lng})}" target="_blank" rel="noopener">🧭 Cómo llegar</a>
+    <button class="btn btn-lime" onclick="guideKey(${gdKey(p.name,{lat:p.lat,lng:p.lng})})">🧭 Cómo llegar</button>
     ${p.uid===uid?`<button class="btn" style="color:var(--red)" onclick="delPoi('${p.id}')">Borrar este punto</button>`:`<button class="btn" style="color:var(--txt2)" onclick="reportContent('pois','${p.id}','${esc(String(p.name).replace(/['"\\]/g,''))}')">⚠️ Reportar (no existe, es incorrecto…)</button>`}
    </div>`;
   openRideId=null;openSheet('sh-ride');
@@ -2047,7 +2123,7 @@ function openViewer(id){
       if(!viewer.mk){const el=document.createElement('div');el.className='mbr';el.innerHTML=`<b style="background:#C8DC3C">${ini(d.name)}</b><span>${esc(String(d.name).split(' ')[0])}</span>`;viewer.mk=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([d.lng,d.lat]).addTo(viewer.map)}
       else viewer.mk.setLngLat([d.lng,d.lat]);
       viewer.map.easeTo({center:[d.lng,d.lat],zoom:Math.max(viewer.map.getZoom(),14),duration:800});
-      $('vMaps').href=mapsLink('',{lat:d.lat,lng:d.lng});
+      $('vMaps').href='#';$('vMaps').onclick=ev=>{ev.preventDefault();closeViewer();guideTo(d.name,{lat:+d.lat,lng:+d.lng})};
     }
   },e=>{$('vInfo').innerHTML='<b>No se pudo cargar</b><small>Revisa la conexión</small>'});
 }
@@ -2809,7 +2885,7 @@ function checkAlerts(){
     if(a.type==='ok'){alarmSound('ok');alarmShow('ok',`${name} ${A.t}`,'Podéis seguir rodando',[['👍 Vale','al-main','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},6000)}
     else{
       alarmSound(a.type);
-      alarmShow(a.type,`${name} ${A.t}`,dtx,[['📍 Ver en el mapa','al-main',`alarmClose();alertGo('${id}')`],['🧭 Cómo llegar','al-sec',`window.open(mapsLink('',{lat:${v.lat},lng:${v.lng}}),'_blank')`],['Entendido','al-sec','alarmClose()']]);
+      alarmShow(a.type,`${name} ${A.t}`,dtx,[['📍 Ver en el mapa','al-main',`alarmClose();alertGo('${id}')`],['🧭 Cómo llegar','al-sec',`alarmClose();guideKey(${gdKey(name,{lat:v.lat,lng:v.lng})})`],['Entendido','al-sec','alarmClose()']]);
     }
     setTimeout(()=>speak(`Atención. ${name} ${A.say}.${dist!=null&&a.type!=='ok'?' Está '+dtx+'.':''}`),a.type==='ok'?900:2200);
     toast(`${A.ico} ${name} ${A.t}`);

@@ -1,3 +1,8 @@
+## Versión 3.9
+- «🧭 Cómo llegar» ya no abre Google Maps: guía dentro de la app con Mapbox (mapa, km, minutos, hora de llegada, indicaciones en español, En bici / En coche y «▶ Guiarme con voz»).
+- Funciona en punto de salida, punto de encuentro, puntos ciclistas, aviso de un compañero (durante la salida, sin cortar la grabación) y en la página de la familia (camino en coche dibujado en el mapa).
+- Quitado el botón «Abrir en Google Maps» del planificador. Queda «📱 Abrir en otra app de mapas» como opción secundaria.
+
 ## Versión 3.8.1
 - Tarjeta dedicada al viento: botón «🌬️ Ver previsión del viento por horas» en el detalle de la salida y «🕐 Ver por horas» al crearla. Muestra viento a la hora de salida, consejo, aviso si el viento cambia durante la mañana, previsión hora a hora (suave / moderado / fuerte), botón Actualizar, enlace al mapa del viento (Windy) y la fuente (Open‑Meteo, gratis).
 
