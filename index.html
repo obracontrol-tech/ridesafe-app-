@@ -551,6 +551,26 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #saver .sv-in{text-align:center;transition:transform 1.5s ease}
 #saver .sv-d{color:#3a3a3a;font-size:22px;font-weight:800;letter-spacing:.02em}
 #saver .sv-h{color:#5a5a5a;font-size:14px;margin-top:14px;line-height:1.5;transition:opacity .6s}
+.planpanel.mini>*:not(.grab):not(.phead):not(#bikeChips):not(#planHint){display:none!important}
+.plc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin:0 0 14px}
+.pc-h{display:flex;align-items:center;gap:8px}.pc-h b{font-size:15.5px}
+.pc-s{display:block;color:var(--txt2);font-size:12.5px;margin-top:4px}
+.pc-tag,.ptag{display:inline-block;background:rgba(200,220,60,.16);color:var(--lime);border:1px solid rgba(200,220,60,.4);font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:8px;flex-shrink:0}
+.rp-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rp-chip{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:4px 6px 4px 8px;font-size:13.5px;font-weight:700}
+.rp-chip b{color:var(--lime)}.rp-chip button{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--txt);font-size:12px;border:0}
+.rp-prev{margin-top:10px;font-size:13.5px;font-weight:700;line-height:1.45}
+.wind-res{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.wind-top{display:flex;align-items:center;gap:12px}.wind-top small{color:var(--txt2)}
+.wind-arrow{color:var(--lime);display:grid;place-items:center;flex-shrink:0}
+.wind-adv{font-size:13.5px;line-height:1.45}
+.pt.pl{align-items:flex-start;gap:8px;font-size:13px;margin-top:3px}
+.pt.pl .ptag{margin-top:1px}
+.clip2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rp-route{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.rp-stop{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px 10px;font-weight:700;font-size:14px}
+.rp-stop.end{border-color:var(--lime);color:var(--lime)}
+.rp-arr{color:var(--txt2);font-weight:800}
 </style>
 </head>
 <body>
@@ -598,9 +618,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
-    <div class="grab"></div>
-    <div class="phead"><div><b id="planTitle">De A a B</b></div><button class="mini" onclick="exitPlanner()" style="min-height:40px">Cancelar</button></div>
-    <small id="planHint" style="display:none;color:var(--lime);font-weight:600;margin:-4px 0 8px"></small>
+    <div class="grab" onclick="togglePlanMini()" style="cursor:pointer"></div>
+    <div class="phead"><div><b id="planTitle">De A a B</b></div><div style="display:flex;gap:6px"><button class="mini" id="pMiniBtn" onclick="togglePlanMini()" style="min-height:40px">🗺️ Ver mapa</button><button class="mini" onclick="exitPlanner()" style="min-height:40px">Cancelar</button></div></div>
+    <div class="chips" id="bikeChips" style="margin:-2px 0 8px;flex-wrap:nowrap"><button class="chip" data-b="road" onclick="setBike(false)">🚴 Carretera</button><button class="chip" data-b="mtb" onclick="setBike(true)">🚵 Montaña</button></div>
+    <small id="planHint" style="display:none;color:var(--lime);font-weight:600;margin:-4px 0 8px;white-space:normal"></small>
     <div id="pRows"></div>
     <div class="chips" id="loopOpts" style="display:none;margin:2px 0 6px">
       <button class="chip" data-km="20" onclick="setLoopKm(20)">20 km</button><button class="chip" data-km="40" onclick="setLoopKm(40)">40 km</button><button class="chip" data-km="60" onclick="setLoopKm(60)">60 km</button><button class="chip" data-km="80" onclick="setLoopKm(80)">80 km</button><button class="chip" data-km="100" onclick="setLoopKm(100)">100 km</button>
@@ -752,7 +773,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 3.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -831,6 +852,30 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div class="f">
     <label class="l">🗺️ Ruta <em>(opcional)</em></label>
     <div id="routeBox"></div>
+  </div>
+
+  <div class="plc">
+    <div class="pc-h"><span class="pc-tag">Recorrido</span><b>🧭 Recorrido previsto</b></div>
+    <small class="pc-s">Pueblos o puntos por los que pasará la salida, en orden</small>
+    <div class="row2" style="margin-top:8px"><input class="inp" id="rpIn" maxlength="40" placeholder="Ej. Arahal" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();rpAdd()}"><button class="mini" onclick="rpAdd()">＋ Añadir</button></div>
+    <div id="rpList" class="rp-list"></div>
+    <label class="l" for="rpBack" style="margin-top:10px">🏁 Regreso a <em>(opcional)</em></label>
+    <input class="inp" id="rpBack" maxlength="40" placeholder="Ej. Parada Marchena" oninput="rpRender()">
+    <div id="rpPreview" class="rp-prev"></div>
+  </div>
+
+  <div class="plc">
+    <div class="pc-h"><span class="pc-tag">Parada</span><b>☕ Parada prevista</b></div>
+    <input class="inp" id="stPlace" maxlength="50" placeholder="Lugar. Ej. El Coronil" style="margin-top:8px">
+    <div class="chips" id="stType" style="margin-top:8px"><button class="chip on">Café</button><button class="chip">Desayuno</button><button class="chip">Avituallamiento</button><button class="chip">Descanso</button></div>
+    <div class="row2" style="margin-top:8px"><input type="time" class="inp" id="stHour" aria-label="Hora aproximada de la parada"><input class="inp" id="stNote" maxlength="80" placeholder="Observaciones (opcional)"></div>
+  </div>
+
+  <div class="plc">
+    <div class="pc-h"><span class="pc-tag">Viento</span><b>🌬️ Planificación con viento</b></div>
+    <small class="pc-s">Sal con el viento de cara, cuando el grupo va fresco, y vuelve con él a favor.</small>
+    <button class="btn btn-line" style="margin-top:10px" onclick="checkWind()">🌬️ Consultar viento</button>
+    <div id="windBox"></div>
   </div>
 
   <div class="f">
@@ -1079,7 +1124,7 @@ function togglePlus(){$('sh-plus').classList.contains('show')?closeSheets():open
 /* ===== Chips ===== */
 function chipGroup(id,cb){$(id).querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');cb&&cb(c)})}
 const chipVal=id=>$(id).querySelector('.chip.on')?.textContent;
-chipGroup('typeChips');chipGroup('paceChips');chipGroup('visChips');
+chipGroup('typeChips');chipGroup('paceChips');chipGroup('visChips');chipGroup('stType');
 chipGroup('dayChips',c=>{$('cDate').style.display=c.dataset.d==='x'?'block':'none'});
 chipGroup('fltChips',()=>renderAll());
 
@@ -1107,6 +1152,9 @@ function rideCard(r,full){
     <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:r.vis==='group'?'<span class="tag">👥 Grupo</span>':''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
+    ${r.plan&&r.plan.text?`<div class="pt pl"><span class="ptag">Recorrido</span><span class="clip2">${esc(r.plan.text)}</span></div>`:''}
+    ${r.stop&&r.stop.place?`<div class="pt pl"><span class="ptag">Parada</span><span>${esc(stopText(r.stop))}</span></div>`:''}
+    ${r.wind&&r.wind.spd!=null?`<div class="pt pl"><span class="ptag">Viento</span><span>${esc(windShort(r.wind))} · <b>${esc(r.wind.short||'')}</b></span></div>`:''}
     ${rideLL(r)?`<span class="tag wx" data-wx="${r.id}" style="display:none;margin-top:4px"></span>`:''}
     <div class="foot">${faces(r)}${isOwner(r)?'<span class="join org">👑 Organizas tú</span>':inR?`<button class="join on" onclick="event.stopPropagation();toggleJoin('${r.id}')">Apuntado ✓<small>Toca para cancelar</small></button>`:`<button class="join" onclick="event.stopPropagation();toggleJoin('${r.id}')">✋ Voy</button>`}</div>
   </div>`;
@@ -1158,7 +1206,7 @@ const PIN_SVG=c=>`<svg viewBox="0 0 40 52" width="40" height="52"><path d="M20 5
 const appUrl=()=>location.origin+location.pathname;
 function shareText(r){
   const meet=r.meet&&r.meet!==r.start?`\n📍 Encuentro: ${r.meet}${r.meetHour?' a las '+r.meetHour:''}`:'';
-  return `🚴 ${r.title||'Salida en grupo'} — RideSafe IA\n📅 ${fmtDate(r.date)} · 🕘 ${r.hour}\n🚩 Salida: ${r.start}${meet}${r.km?'\n📏 '+r.km+' km':''}${r.type?' · '+r.type:''}${r.pace?' · '+r.pace:''}${r.note?'\n💬 '+r.note:''}\n\n¿Te apuntas? ${appUrl()}#salida=${r.id}`;
+  return `🚴 ${r.title||'Salida en grupo'} — RideSafe IA\n📅 ${fmtDate(r.date)} · 🕘 ${r.hour}\n🚩 Salida: ${r.start}${meet}${r.plan&&r.plan.text?'\n🧭 Recorrido: '+r.plan.text:''}${r.stop&&r.stop.place?'\n'+stopText(r.stop):''}${r.wind&&r.wind.spd!=null?'\n🌬️ Viento: '+windShort(r.wind)+' · '+(r.wind.short||''):''}${[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).length?'\n📏 '+[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).join(' · '):''}${r.note?'\n💬 '+r.note:''}\n\n¿Te apuntas? ${appUrl()}#salida=${r.id}`;
 }
 function shareRide(id){const r=rides.find(x=>x.id===id);if(r)window.open('https://wa.me/?text='+encodeURIComponent(shareText(r)),'_blank')}
 /* ===== v1.9 — Tarjeta de la salida para WhatsApp ===== */
@@ -1177,7 +1225,8 @@ async function cardRender(r){
   const pts=[];if(r.startLL)pts.push(['#22C55E',r.startLL]);if(r.meetLL&&(!r.startLL||r.meetLL.lat!==r.startLL.lat||r.meetLL.lng!==r.startLL.lng))pts.push(['#EF4444',r.meetLL]);
   const rc=r.route&&r.route.poly?decodePoly(r.route.poly):null;
   const hasMap=pts.length||(rc&&rc.length>1);
-  const W=1080,H=hasMap?1350:1080,M=60;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const extra=(r.plan&&r.plan.text?1:0)+(r.stop&&r.stop.place?1:0)+(r.wind&&r.wind.spd!=null?1:0);
+  const W=1080,H=hasMap||extra>1?1350:1080,M=60;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const F=(w,sz)=>`${w} ${sz}px "Plus Jakarta Sans", system-ui, sans-serif`;
   const LIME='#C8DC3C',NAVY='#0E1A2B';
   const rr=(x,y,w,h,rad)=>{g.beginPath();g.roundRect?g.roundRect(x,y,w,h,rad):g.rect(x,y,w,h)};
@@ -1206,7 +1255,7 @@ async function cardRender(r){
   g.font=F(800,84);g.fillStyle=LIME;g.fillText(r.hour||'',W-M-36,y+140);g.textAlign='left';
   y+=200;
   // Mapa (Mapbox Outdoors estático + recorrido dibujado aquí)
-  const mh=hasMap?430:0;
+  const mh=hasMap?Math.max(220,430-extra*72):0;
   if(hasMap){
     const mx=M,my=y,mw=W-2*M;
     const all=[...(rc||[]).map(p=>[p[0],p[1]]),...pts.map(([,ll])=>[ll.lat,ll.lng])];
@@ -1236,8 +1285,11 @@ async function cardRender(r){
   const meet=r.meet&&r.meet!==r.start?r.meet:'';
   const rows=[['#22C55E','Salida',r.start]];
   if(meet)rows.push(['#EF4444','Encuentro'+(r.meetHour?' · '+r.meetHour:''),meet]);
+  if(r.plan&&r.plan.text)rows.push(['#60A5FA','Recorrido',r.plan.text]);
+  if(r.stop&&r.stop.place)rows.push(['#F59E0B','Parada',`${r.stop.type} en ${r.stop.place}${r.stop.hour?' · '+r.stop.hour:''}`]);
+  if(r.wind&&r.wind.spd!=null)rows.push(['#A78BFA','Viento · '+(r.wind.short||''),`${r.wind.spd} km/h ${r.wind.txt}`]);
   const det=[r.km?r.km+' km':'',r.type||'',r.pace?'Ritmo '+String(r.pace).toLowerCase():'',(()=>{const n=Object.keys(r.people||{}).length;return r.seats?n+'/'+r.seats+' plazas':n+(n===1?' apuntado':' apuntados')})()].filter(Boolean).join('  ·  ');
-  const rowH=hasMap?92:130;
+  const rowH=hasMap?(extra?84:92):(extra?100:130);
   rows.forEach(([col,lab,val])=>{g.fillStyle=col;g.beginPath();g.arc(M+14,y+26,14,0,7);g.fill();
     g.font=F(600,28);g.fillStyle='rgba(255,255,255,.7)';g.fillText(lab,M+46,y+16);
     g.font=F(800,40);g.fillStyle='#fff';g.fillText(fit(val,W-2*M-46),M+46,y+64);y+=rowH});
@@ -1278,6 +1330,9 @@ async function openRide(id,keep){
    <div class="li" style="margin-bottom:16px;cursor:default"><span class="em">📍</span><div><small>Punto de encuentro${r.meetHour?' · '+esc(r.meetHour):''}</small><b>${esc(meetPt)}</b></div><a class="mini" href="${mapsLink(meetPt,r.meetLL||r.startLL)}" target="_blank" rel="noopener">Cómo llegar</a></div>
    ${rideLL(r)?'<div class="li" id="wxBox" style="cursor:default;margin-bottom:16px"><span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Consultando…</small></div></div>':''}
    <div class="chips" style="margin-bottom:14px">${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.pace?`<span class="tag">Ritmo ${esc(String(r.pace).toLowerCase())}</span>`:''}<span class="tag">${r.seats?p.length+'/'+r.seats+' plazas':'Sin límite de plazas'}</span><span class="tag">Organiza ${esc(r.by)}</span></div>
+   ${r.plan&&r.plan.text?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Recorrido</span><b>🧭 Recorrido previsto</b></div><div class="rp-route">${[...(r.start?[r.start.split(',')[0]]:[]),...(r.plan.points||[]),...(r.plan.back?[r.plan.back]:[])].map((x,i,a)=>`<span class="rp-stop${i===0||i===a.length-1?' end':''}">${esc(x)}</span>`).join('<span class="rp-arr">→</span>')}</div></div>`:''}
+   ${r.stop&&r.stop.place?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Parada</span><b>${STOP_ICO[r.stop.type]||'☕'} Parada prevista</b></div><b style="display:block;font-size:17px;margin-top:6px">${esc(r.stop.type)} en ${esc(r.stop.place)}</b><small style="color:var(--txt2)">${r.stop.hour?'Hora aproximada: '+esc(r.stop.hour):''}${r.stop.note?(r.stop.hour?' · ':'')+esc(r.stop.note):''}</small></div>`:''}
+   ${r.wind&&r.wind.spd!=null?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Viento</span><b>🌬️ Viento previsto</b></div><div class="wind-top" style="margin-top:6px"><span class="wind-arrow">${windArrow(+r.wind.deg||0,48)}</span><div><b class="num" style="font-size:22px">${+r.wind.spd} km/h</b> <small>rachas ${+r.wind.gust||0} km/h</small><b style="display:block">Del ${esc(r.wind.from)} · ${esc(r.wind.txt)}</b></div></div><div class="wind-adv" style="margin-top:8px"><span class="pc-tag">Consejo</span> ${esc(r.wind.adv||'')}</div>${r.wind.ida?`<div class="wind-adv" style="margin-top:6px"><span class="pc-tag">Ruta</span> Ida ${RW[r.wind.ida]||''} · Vuelta ${RW[r.wind.vuelta]||''}</div>`:''}<small style="display:block;margin-top:6px;color:var(--txt2)">Consultado el ${fmtDate(iso(new Date(r.wind.at||Date.now())))} a las ${new Date(r.wind.at||Date.now()).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</small></div>`:''}
    ${r.note?`<div class="li" style="margin-bottom:16px;cursor:default"><span class="em">💬</span><div><small>Nota de ${esc(r.by)}</small><b style="font-weight:500">${esc(r.note)}</b></div></div>`:''}
    <div class="sec"><h3 style="font-size:18px">Apuntados (${p.length})</h3></div>
    <div class="chips" style="margin-bottom:20px">${p.map(n=>`<span class="tag" style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 4px"><span class="face" style="width:26px;height:26px;margin:0;background:${colorOf(n)}">${ini(n)}</span>${esc(n)}</span>`).join('')}</div>
@@ -1316,6 +1371,97 @@ function cancelRide(id){
 }
 
 /* ===== Crear salida ===== */
+/* ===== v3.8 — Recorrido previsto, parada prevista y planificación con viento ===== */
+let rpPoints=[],formWind=null;
+const DIRS=[['norte','N'],['noreste','NE'],['este','E'],['sureste','SE'],['sur','S'],['suroeste','SO'],['oeste','O'],['noroeste','NO']];
+const dirOf=deg=>DIRS[Math.round((((deg%360)+360)%360)/45)%8];
+function windInfo(spd,deg){
+  const f=dirOf(deg),t=dirOf(deg+180);
+  const txt=`${f[1]} → ${t[1]}`;
+  let adv;
+  if(spd<8)adv='Viento flojo: cualquier sentido de ruta vale.';
+  else adv=`Sal hacia el ${f[0]} (viento en contra) y vuelve hacia el ${t[0]} (viento a favor).`;
+  if(spd>=30)adv+=' ⚠️ Viento fuerte: valora acortar la ruta o ir por zonas resguardadas.';
+  const short=spd<8?'Viento flojo':`Ida hacia el ${f[0]}, vuelta a favor`;
+  return{from:f[0],to:t[0],txt,adv,short};
+}
+function bearing(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0]*r),x=Math.cos(a[0]*r)*Math.sin(b[0]*r)-Math.sin(a[0]*r)*Math.cos(b[0]*r)*Math.cos((b[1]-a[1])*r);return(Math.atan2(y,x)/r+360)%360}
+// Para una ruta dibujada: ¿la primera mitad va contra el viento y la segunda a favor?
+function routeWind(coords,deg){
+  if(!coords||coords.length<4)return null;
+  let tot=0;const seg=[];for(let i=1;i<coords.length;i++){const d=hav(coords[i-1],coords[i]);seg.push(d);tot+=d}
+  let acc=0,h1=0,h2=0,l1=0,l2=0;
+  for(let i=1;i<coords.length;i++){const d=seg[i-1];const b=bearing(coords[i-1],coords[i]);const c=Math.cos((b-deg)*Math.PI/180)*d; // >0: vas hacia donde viene el viento = en contra
+    if(acc<tot/2){h1+=c;l1+=d}else{h2+=c;l2+=d}acc+=d}
+  const cls=v=>v>0.25?'contra':v<-0.25?'favor':'lateral';
+  return{ida:cls(h1/(l1||1)),vuelta:cls(h2/(l2||1))};
+}
+const RW={contra:'🟥 en contra',favor:'🟩 a favor',lateral:'🟨 lateral'};
+function formDate(){const dc=$('dayChips').querySelector('.chip.on').dataset.d;return dc==='x'?$('cDate').value:iso(addDays(+dc))}
+async function windLL(){
+  if(pickLL.start)return pickLL.start;
+  if(formRoute&&formRoute.poly){const c=decodePoly(formRoute.poly)[0];return{lat:c[0],lng:c[1]}}
+  const q=$('cStart').value.trim();
+  if(q){try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q));const j=await r.json();if(j&&j[0])return{lat:+j[0].lat,lng:+j[0].lon}}catch(e){}}
+  if(typeof map!=='undefined'&&map&&map.getCenter){const c=map.getCenter();return{lat:c.lat,lng:c.lng}}
+  return null;
+}
+async function checkWind(){
+  const box=$('windBox');const date=formDate(),hour=$('cHour').value||'08:30';
+  if(!date){toast('Elige primero el día');return}
+  const days=(new Date(date+'T12:00')-new Date())/86400000;
+  if(days>15){box.innerHTML='<div class="wind-res"><small>El pronóstico solo llega a 15 días. Consulta el viento más cerca de la fecha.</small></div>';return}
+  box.innerHTML='<div class="wind-res"><small>Consultando el viento…</small></div>';
+  const ll=await windLL();
+  if(!ll){box.innerHTML='<div class="wind-res"><small>Marca primero el punto de salida (📍 en el mapa o «Estoy aquí»).</small></div>';return}
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${ll.lat.toFixed(3)}&longitude=${ll.lng.toFixed(3)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto&start_date=${date}&end_date=${date}`;
+    const d=await (await fetch(u)).json();const h=d.hourly;if(!h)throw 0;
+    const i=Math.max(0,h.time.findIndex(t=>t.slice(11,13)===hour.slice(0,2)));
+    const spd=Math.round(h.wind_speed_10m[i]),deg=Math.round(h.wind_direction_10m[i]),gust=Math.round(h.wind_gusts_10m[i]);
+    const wi=windInfo(spd,deg);
+    formWind={spd,gust,deg,from:wi.from,to:wi.to,txt:wi.txt,adv:wi.adv,short:wi.short,forDate:date,forHour:hour,at:Date.now()};
+    const rc=formRoute&&formRoute.poly?decodePoly(formRoute.poly):null;const rw=rc?routeWind(rc,deg):null;
+    if(rw){formWind.ida=rw.ida;formWind.vuelta=rw.vuelta}
+    renderWindBox();
+  }catch(e){box.innerHTML='<div class="wind-res"><small>No se pudo consultar el viento. Revisa la conexión e inténtalo otra vez.</small></div>'}
+}
+function windArrow(deg,size){return `<svg viewBox="0 0 48 48" width="${size||56}" height="${size||56}" style="transform:rotate(${(deg+180)%360}deg)" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/><path d="M24 6 L33 30 L24 25 L15 30 Z" fill="currentColor"/></svg>`}
+function renderWindBox(){
+  const w=formWind,box=$('windBox');if(!box)return;if(!w){box.innerHTML='';return}
+  box.innerHTML=`<div class="wind-res">
+    <div class="wind-top"><span class="wind-arrow">${windArrow(w.deg)}</span><div><b class="num" style="font-size:26px">${w.spd} km/h</b><small style="display:block;color:var(--txt2)">Rachas de hasta ${w.gust} km/h</small><b style="display:block;margin-top:2px">Viento del ${esc(w.from)} · ${esc(w.txt)}</b></div></div>
+    <div class="wind-adv"><span class="pc-tag">Consejo</span> ${esc(w.adv)}</div>
+    ${w.ida?`<div class="wind-adv" style="margin-top:6px"><span class="pc-tag">Tu ruta</span> Ida ${RW[w.ida]} · Vuelta ${RW[w.vuelta]}${w.ida==='favor'&&w.vuelta==='contra'?' · 💡 Te conviene hacerla al revés':''}</div>`:''}
+    <small style="display:block;margin-top:6px;color:var(--txt2)">Previsión para el ${fmtDate(w.forDate)} a las ${esc(w.forHour)} · consultado a las ${new Date(w.at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</small>
+    <button class="mini" style="margin-top:8px" onclick="formWind=null;renderWindBox()">Quitar</button>
+  </div>`;
+}
+function rpAdd(){const v=$('rpIn').value.trim().slice(0,40);if(!v)return;if(rpPoints.length>=12){toast('Máximo 12 puntos');return}rpPoints.push(v);$('rpIn').value='';rpRender();$('rpIn').focus()}
+function rpDel(i){rpPoints.splice(i,1);rpRender()}
+function rpUp(i){if(i<1)return;[rpPoints[i-1],rpPoints[i]]=[rpPoints[i],rpPoints[i-1]];rpRender()}
+function rpText(){const st=$('cStart').value.trim();const back=$('rpBack').value.trim();const parts=[...(st?[st.split(',')[0]]:[]),...rpPoints,...(back?[back]:[])];return parts.length>1?parts.join(' → '):''}
+function rpRender(){
+  $('rpList').innerHTML=rpPoints.map((p,i)=>`<span class="rp-chip"><b class="num">${i+1}</b>${esc(p)}${i?`<button onclick="rpUp(${i})" aria-label="Subir">↑</button>`:''}<button onclick="rpDel(${i})" aria-label="Quitar">✕</button></span>`).join('');
+  const t=rpText();$('rpPreview').innerHTML=t?`<span class="pc-tag">Recorrido</span> ${esc(t)}`:'';
+}
+function stopChip(){return chipVal('stType')||'Café'}
+function collectPlan(){
+  const points=rpPoints.slice(0,12),back=$('rpBack').value.trim().slice(0,40);
+  const plan=points.length||back?{points,back,text:rpText().slice(0,300)}:null;
+  const place=$('stPlace').value.trim().slice(0,50);
+  const stop=place?{place,type:stopChip(),hour:$('stHour').value||'',note:$('stNote').value.trim().slice(0,80)}:null;
+  return{plan,stop,wind:formWind};
+}
+function resetPlanForm(r){
+  rpPoints=r&&r.plan?[...(r.plan.points||[])]:[];$('rpIn').value='';$('rpBack').value=r&&r.plan?r.plan.back||'':'';
+  $('stPlace').value=r&&r.stop?r.stop.place||'':'';$('stHour').value=r&&r.stop?r.stop.hour||'':'';$('stNote').value=r&&r.stop?r.stop.note||'':'';
+  document.querySelectorAll('#stType .chip').forEach((c,i)=>c.classList.toggle('on',r&&r.stop?c.textContent===r.stop.type:i===0));
+  formWind=r&&r.wind?{...r.wind}:null;rpRender();renderWindBox();
+}
+const STOP_ICO={'Café':'☕','Desayuno':'🥐','Avituallamiento':'🍌','Descanso':'🪑'};
+function stopText(st){return st?`${STOP_ICO[st.type]||'☕'} ${st.type} en ${st.place}${st.hour?' · '+st.hour:''}`:''}
+function windShort(w){return w?`${w.spd} km/h ${w.txt}`:''}
 function openCreate(){
   if(!ready())return;
   editingId=null;$('createTitle').textContent='Crear salida';$('pubBtnTxt').textContent='Publicar salida';
@@ -1323,7 +1469,7 @@ function openCreate(){
   $('cHour').value='08:30';$('cSame').checked=true;$('meetBox').style.display='none';
   ['gpsStart','gpsMeet','mapStart','mapMeet'].forEach(i=>$(i).classList.remove('ok'));
   pickLL.start=pickLL.meet=null;$('okStart').classList.remove('on');$('okMeet').classList.remove('on');
-  formRoute=null;renderRouteBox();
+  formRoute=null;renderRouteBox();resetPlanForm(null);
   document.querySelectorAll('#visChips .chip').forEach((c,i)=>c.classList.toggle('on',i===0));
   document.querySelectorAll('.err').forEach(e=>e.style.display='none');
   $('cDate').value=iso(addDays(1));$('cDate').min=iso(new Date());
@@ -1355,7 +1501,7 @@ function publishRide(){
   const r={title:$('cTitle').value.trim().slice(0,40),date,hour,start,meet,meetHour:same?'':($('cMeetHour').value||''),
     vis:myGroup&&chipVal('visChips')==='Solo mi grupo'?'group':'all',group:myGroup?myGroup.id:null,type:chipVal('typeChips')||'',pace:chipVal('paceChips')||'',km:Math.max(0,Math.min(400,Math.round(+$('cKm').value||0))),seats:+$('cSeats').value||0,
     note:$('cNote').value.trim().slice(0,200),by:myName(),byUid:uid,people:{[uid]:myName()},createdAt:FV.serverTimestamp(),
-    startLL:pickLL.start||null,meetLL:same?(pickLL.start||null):(pickLL.meet||null),route:formRoute?{...formRoute}:null};
+    startLL:pickLL.start||null,meetLL:same?(pickLL.start||null):(pickLL.meet||null),route:formRoute?{...formRoute}:null,...collectPlan()};
   if(r.route){delete r.route.a;if(!r.km)r.km=Math.round(r.route.km)}
   if(editingId){
     const id=editingId,old=rides.find(x=>x.id===id);editingId=null;
@@ -1923,7 +2069,7 @@ function editRide(id){
   const pickChip=(id,v)=>document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.textContent===v));
   pickChip('typeChips',r.type);pickChip('paceChips',r.pace);
   document.querySelectorAll('#visChips .chip').forEach((c,i)=>c.classList.toggle('on',i===(r.vis==='group'?1:0)));
-  formRoute=r.route?{...r.route}:null;renderRouteBox();
+  formRoute=r.route?{...r.route}:null;renderRouteBox();resetPlanForm(r);
 }
 function notifyChange(id){
   const r=rides.find(x=>x.id===id);if(!r)return;
@@ -2886,7 +3032,7 @@ function locateForPlan(){
     redrawPlanMarkers();renderPlan();computeRoute();
   },()=>{},{enableHighAccuracy:true,timeout:10000});
 }
-function exitPlanner(){
+function exitPlanner(){togglePlanMini(false);
   viewingComm=null;plan.active=false;plan.view=false;clearPlan(true);setPlanning(false);
   if(plan.fromCreate){plan.fromCreate=false;reopenCreate()}
 }
@@ -2899,7 +3045,13 @@ async function addPlanPt(ll){
   if(plan.mode==='loop'){plan.start=p}
   else if(!plan.start)plan.start=p;
   else if(!plan.dest)plan.dest=p;
-  else return;
+  else{
+    // Ya hay A y B: el toque añade una parada «pasar por aquí» en el mejor sitio del recorrido
+    if(plan.stops.length>=20){toast('Máximo 20 paradas');return}
+    const w=planWps();let best=0,bd=1e9;
+    for(let i=0;i<w.length-1;i++){const d=hav([w[i].lat,w[i].lng],[p.lat,p.lng])+hav([p.lat,p.lng],[w[i+1].lat,w[i+1].lng])-hav([w[i].lat,w[i].lng],[w[i+1].lat,w[i+1].lng]);if(d<bd){bd=d;best=i}}
+    plan.stops.splice(best,0,p);toast('📍 Parada añadida: la ruta pasará por aquí');vib(30);
+  }
   redrawPlanMarkers();renderPlan();computeRoute();
   p.label=await reverseName(p);renderPlan();
 }
@@ -2971,8 +3123,11 @@ function loopWaypoints(s,km,seed,scale){
   for(let k=1;k<=3;k++){const a=th+Math.PI+k*Math.PI/2;pts.push({lat:C.lat+dLat(R*Math.sin(a)),lng:C.lng+dLng(R*Math.cos(a))})}
   pts.push(s);return pts;
 }
+/* v3.7 — Carretera: solo carreteras asfaltadas (sin caminos ni autovías). Montaña: caminos y pistas */
+const routeProfile=()=>isMtb()?{p:'cycling',x:''}:{p:'driving',x:'&exclude=motorway,unpaved,toll,ferry'};
 async function mbRoute(wps){
-  const url='https://api.mapbox.com/directions/v5/mapbox/cycling/'+wps.map(p=>p.lng.toFixed(6)+','+p.lat.toFixed(6)).join(';')+'?geometries=geojson&overview=full&steps=false&access_token='+MAPBOX_TOKEN;
+  const P=routeProfile();
+  const url='https://api.mapbox.com/directions/v5/mapbox/'+P.p+'/'+wps.map(p=>p.lng.toFixed(6)+','+p.lat.toFixed(6)).join(';')+'?geometries=geojson&overview=full&steps=false'+P.x+'&access_token='+MAPBOX_TOKEN;
   const r=await fetch(url);const d=await r.json();
   if(!r.ok||d.code!=='Ok'||!d.routes?.length)throw d;
   const rt=d.routes[0];
@@ -3023,7 +3178,7 @@ function fieldBtn(key,p,ph){
   return `<button class="pfield${p?'':' ph'}" onclick="openPointSearch('${key}')" ${plan.view?'disabled':''}>${here?'<i class="dotme"></i>':''}<span>${p?esc(p.label):ph}</span></button>`;
 }
 function renderPlan(){
-  if(!plan.active)return;
+  if(!plan.active)return;syncBikeChips();
   const r=plan.route,v=plan.view;
   let rows='';
   if(plan.mode==='loop'){
@@ -3036,7 +3191,7 @@ function renderPlan(){
   $('pRows').innerHTML=rows;
   $('loopOpts').style.display=plan.mode==='loop'&&!v?'flex':'none';
   $('loopOpts').querySelectorAll('.chip[data-km]').forEach(c=>c.classList.toggle('on',+c.dataset.km===plan.loopKm));
-  $('planHint').textContent=plan.busy?'Calculando ruta…':v?'Ruta guardada':'';
+  $('planHint').textContent=plan.busy?'Calculando ruta…':v?'Ruta guardada':plan.mode==='loop'?'':(!plan.start?'👆 Toca el mapa para poner la salida (A)':!plan.dest?'👆 Toca el mapa para poner la llegada (B)':(isMtb()?'👆 Toca el mapa para añadir paradas · 🚵 por caminos':'👆 Toca el mapa para añadir paradas · 🚴 solo asfalto'));
   $('planHint').style.display=$('planHint').textContent?'block':'none';
   $('pStats').innerHTML=r?`
     <div><b class="num">${r.km.toFixed(1)}</b><span>km</span></div>
@@ -3206,7 +3361,10 @@ $('pQ').addEventListener('keydown',async e=>{
 });
 
 function toggleLayer(){if(!map)return;layerMenu(map)}
-function segBike(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(plan.active&&plan.route){plan.route.mins=estMins(plan.route.km,plan.route.up||0);renderPlan()}}
+function togglePlanMini(force){const pp=$('planPanel');const on=force!=null?force:!pp.classList.contains('mini');pp.classList.toggle('mini',on);$('pMiniBtn').textContent=on?'⌃ Detalles':'🗺️ Ver mapa'}
+function setBike(mtb){const b=document.querySelectorAll('.seg button')[mtb?1:0];if(b)segBike(b);syncBikeChips()}
+function syncBikeChips(){document.querySelectorAll('#bikeChips .chip').forEach(c=>c.classList.toggle('on',(c.dataset.b==='mtb')===isMtb()))}
+function segBike(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');syncBikeChips();toast(isMtb()?'🚵 Montaña: ruta por caminos y pistas':'🚴 Carretera: solo asfalto, sin caminos ni autovías');if(plan.active&&!plan.view&&(plan.start||plan.dest))computeRoute()}
 $('placeQ').addEventListener('keydown',async e=>{
   if(e.key!=='Enter'||!e.target.value.trim())return;
   try{
@@ -3234,7 +3392,8 @@ function nearestIdx(c,p,from){
   return[best,bd*1000];
 }
 async function navSteps(wps){
-  const url='https://api.mapbox.com/directions/v5/mapbox/cycling/'+wps.map(p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6)).join(';')+'?geometries=geojson&overview=full&steps=true&language=es&access_token='+MAPBOX_TOKEN;
+  const P=routeProfile();
+  const url='https://api.mapbox.com/directions/v5/mapbox/'+P.p+'/'+wps.map(p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6)).join(';')+'?geometries=geojson&overview=full&steps=true&language=es'+P.x+'&access_token='+MAPBOX_TOKEN;
   const r=await fetch(url);const d=await r.json();if(!r.ok||d.code!=='Ok')throw d;
   const rt=d.routes[0];const coords=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
   const steps=[];rt.legs.forEach(l=>l.steps.forEach(s=>steps.push({txt:s.maneuver.instruction,type:s.maneuver.type,mod:s.maneuver.modifier||'straight',loc:[s.maneuver.location[1],s.maneuver.location[0]]})));
