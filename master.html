@@ -152,9 +152,11 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
     <button class="nav" data-v="rides" onclick="go('rides')">📅 Salidas <span class="ct" id="nRides"></span></button>
     <button class="nav" data-v="cont" onclick="go('cont')">🗂️ Contenido</button>
     <button class="nav" data-v="rep" onclick="go('rep')">⚠️ Reportes <span class="ct" id="nRep"></span></button>
+    <button class="nav" data-v="eth" onclick="go('eth')">⚖️ Ética y sanciones <span class="ct" id="nSan"></span></button>
+    <button class="nav" data-v="news" onclick="go('news')">🚀 Novedades</button>
     <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
     <button class="nav" data-v="mnt" onclick="go('mnt')">🛠️ Copias y restaurar</button>
-    <div class="me">Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
+    <div class="me"><span class="pill lime" style="margin-bottom:8px">👑 Máximo desarrollador</span><br>Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
   </nav>
   <main>
     <div class="top"><div><h2 id="vTitle">Resumen</h2><div class="sub" id="vSub"></div></div><div class="sp"></div>
@@ -204,13 +206,14 @@ auth.onAuthStateChanged(async u=>{
 });
 
 /* ---------- Datos ---------- */
-let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[]},ann={},loadedAt=0,view='res';
-const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank'];
+let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[]},ann={},upd={items:[]},loadedAt=0,view='res';
+const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions'];
 async function loadAll(manual){
   $('view').innerHTML='<div class="empty">Cargando datos de la app…</div>';
   const res=await Promise.all(COLS.map(c=>db.collection(c).limit(5000).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{console.warn(c,e);return[]})));
   COLS.forEach((c,i)=>D[c]=res[i]);
   try{const s=await db.collection('config').doc('announce').get();ann=s.exists?s.data():{}}catch(e){ann={}}
+  try{const s=await db.collection('config').doc('updates').get();upd=s.exists?s.data():{items:[]};upd.items=upd.items||[]}catch(e){upd={items:[]}}
   loadedAt=Date.now();counts();render();if(manual)toast('Datos actualizados');
 }
 const clubName=c=>{const g=D.groups.find(x=>x.id===c);return g?g.name:(c?c:'Sin club')};
@@ -219,12 +222,13 @@ function counts(){
   $('nClubs').textContent=D.groups.length;$('nUsers').textContent=D.users.filter(u=>u.name).length;
   $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
   const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
+  const na=activeSan();$('nSan').textContent=na.length||'';
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],ann:['Aviso general','Mensaje para todos los usuarios'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
+  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,ann:vAnn,mnt:vMnt})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews})[view]();
 }
 
 /* ---------- Gráfica de barras (una serie) con tooltip ---------- */
@@ -275,7 +279,7 @@ function vRes(){
     <div class="box"><h3>Clubes con más ciclistas</h3><div class="d">Miembros por club</div>
      <div class="rank">${topClubs.length?topClubs.map(g=>{const n=Object.keys(g.members||{}).length;return `<div class="row"><div class="n">${esc(g.name)}</div><div class="bw"><i style="width:${Math.round(n/mxc*100)}%"></i></div><div class="c num">${n}</div></div>`}).join(''):'<div class="empty">Aún no hay clubes</div>'}</div></div>
     <div class="box"><h3>Estado de la app</h3><div class="d">Seguridad y datos</div>
-     <div class="kv"><span>Privacidad</span><b>🔒 Clubes privados (reglas v4.0)</b><span>Datos sin club</span><b>${orphan?`<span class="pill warn">${orphan} por asignar</span>`:'<span class="pill ok">Ninguno</span>'}</b><span>Ciclistas bloqueados</span><b>${U.filter(u=>u.banned).length}</b><span>Aviso general</span><b>${ann.active&&ann.text?'<span class="pill lime">Publicado</span>':'<span class="pill mut">Sin aviso</span>'}</b></div>
+     <div class="kv"><span>Privacidad</span><b>🔒 Clubes privados (reglas v4.0)</b><span>Datos sin club</span><b>${orphan?`<span class="pill warn">${orphan} por asignar</span>`:'<span class="pill ok">Ninguno</span>'}</b><span>Sanciones activas</span><b>${activeSan().length?`<span class="pill bad">${activeSan().length}</span>`:'<span class="pill ok">Ninguna</span>'}</b><span>Clubes suspendidos</span><b>${D.groups.filter(g=>g.suspended).length}</b><span>Aviso general</span><b>${ann.active&&ann.text?'<span class="pill lime">Publicado</span>':'<span class="pill mut">Sin aviso</span>'}</b></div>
      ${orphan?`<button class="btn sm" style="margin-top:14px" onclick="migrate()">🔧 Pasar datos antiguos a su club</button>`:''}</div>
    </div>`;
 }
@@ -289,8 +293,8 @@ function vClubs(){
    ${l.map(g=>{const n=Object.keys(g.members||{}).length,gp=Object.keys(g.grupetas||{}).length;const adm=[g.members?.[g.byUid]||g.by||'—',...Object.values(g.admins||{})];
      return `<tr><td><div class="who">${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:`<div class="av" style="background:${colorOf(g.name)}">${esc(ini(g.name))}</div>`}<div><b>${esc(g.name)}</b><small>código ${esc(g.id)}</small></div></div></td>
       <td class="r num">${n}</td><td class="r num hide-m">${gp}</td><td class="hide-m" style="color:var(--txt2)">${adm.map(esc).join(', ')}</td>
-      <td class="hide-m">${g.club?'<span class="pill lime">🏅 Oficial</span>':'<span class="pill mut">Grupo</span>'}</td>
-      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView('${g.id}')">Ver</button><button class="btn sm" onclick="clubOfficial('${g.id}')">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole('${g.id}','admins')">🛡️ Admins</button><button class="btn sm red" onclick="clubDelete('${g.id}')">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
+      <td class="hide-m">${g.suspended?'<span class="pill bad">⛔ Suspendido</span>':g.club?'<span class="pill lime">🏅 Oficial</span>':'<span class="pill mut">Grupo</span>'}${g.warn?' <span class="pill warn">⚠️ Avisado</span>':''}</td>
+      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView('${g.id}')">Ver</button><button class="btn sm" onclick="clubOfficial('${g.id}')">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole('${g.id}','admins')">🛡️ Admins</button>${g.suspended||g.warn?`<button class="btn sm" onclick="liftClub('${g.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionClub('${g.id}')">⚖️ Sancionar</button><button class="btn sm red" onclick="clubDelete('${g.id}')">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
    </tbody></table></div>`;
 }
 function clubView(id){
@@ -326,17 +330,17 @@ async function clubDelete(id){
 let qUser='',fUser='all';
 function vUsers(){
   let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
-  if(fUser==='ban')l=l.filter(u=>u.banned);if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
+  if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
   if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
   l.sort((a,b)=>(b.pts||0)-(a.pts||0));
   $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
-    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Bloqueados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser='${k}';vUsers()">${t}</button>`).join('')}</div>
+    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser='${k}';vUsers()">${t}</button>`).join('')}</div>
     <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button></div>
    <div class="box tw"><table class="tbl"><thead><tr><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
    ${l.slice(0,400).map(u=>`<tr><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
      <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
-     <td class="hide-m">${u.banned?'<span class="pill bad">🚫 Bloqueado</span>':'<span class="pill ok">Activo</span>'}</td>
-     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button><button class="btn sm${u.banned?'':' red'}" onclick="userBan('${u.id}')">${u.banned?'Desbloquear':'🚫 Bloquear'}</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button></div></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Nadie con este filtro</div></td></tr>'}
+     <td class="hide-m">${userState(u.id,u)}</td>
+     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser('${u.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser('${u.id}')">⚖️ Sancionar</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button></div></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Nadie con este filtro</div></td></tr>'}
    </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
 }
 async function userPts(id){const u=D.users.find(x=>x.id===id);const v=prompt('Puntos de '+u.name,u.pts||0);if(v===null)return;const n=Math.max(0,Math.round(+v||0));try{await db.collection('users').doc(id).set({pts:n},{merge:true});u.pts=n;toast('Puntos actualizados');vUsers()}catch(e){err(e)}}
@@ -408,7 +412,7 @@ function vAnn(){
 async function annSave(on){const text=on?$('annT').value.trim().slice(0,200):'';if(on&&!text){toast('Escribe el aviso');return}try{await db.collection('config').doc('announce').set({text,active:on,t:Date.now()});ann={text,active:on,t:Date.now()};toast(on?'📣 Aviso publicado':'Aviso quitado');vAnn()}catch(e){err(e)}}
 
 /* ---------- 🛠️ Copias y restaurar ---------- */
-const BK=['users','groups','rides','feed','routes','pois','rank','reports','config'];
+const BK=['users','groups','rides','feed','routes','pois','rank','reports','config','mod','sanctions'];
 function vMnt(){
   $('view').innerHTML=`<div class="grid2">
    <div class="box"><h3>💾 Copia de seguridad</h3><div class="d">Descarga en tu ordenador todos los datos de la app en un archivo (.json).</div>
@@ -439,7 +443,7 @@ function restorePick(f){
     if(!j||j.app!=='RideSafe IA'||j.kind!=='backup'||!j.collections){toast('Ese archivo no es una copia de RideSafe IA');return}
     RS=j;const cols=Object.keys(j.collections).filter(c=>BK.includes(c));
     dlg(`<h3>♻️ Restaurar copia<button class="x" onclick="closeDlg()">✕</button></h3><p>Copia del <b>${new Date(j.createdAt).toLocaleString('es-ES')}</b>. Marca lo que quieres restaurar:</p>
-     ${cols.map(c=>`<label class="opt"><input type="checkbox" class="rsC" value="${c}" ${c==='reports'?'':'checked'}> <span style="flex:1">${esc({users:'👥 Ciclistas',groups:'🏅 Clubes y grupetas',rides:'📅 Salidas',feed:'📰 Actividad',routes:'🗺️ Rutas',pois:'☕ Puntos ciclistas',rank:'🏆 Rankings',reports:'⚠️ Reportes',config:'📣 Aviso general'}[c]||c)}</span><span class="pill mut">${nf(Object.keys(j.collections[c]).length)}</span></label>`).join('')}
+     ${cols.map(c=>`<label class="opt"><input type="checkbox" class="rsC" value="${c}" ${c==='reports'?'':'checked'}> <span style="flex:1">${esc({users:'👥 Ciclistas',groups:'🏅 Clubes y grupetas',rides:'📅 Salidas',feed:'📰 Actividad',routes:'🗺️ Rutas',pois:'☕ Puntos ciclistas',rank:'🏆 Rankings',reports:'⚠️ Reportes',config:'📣 Aviso y novedades',mod:'⚖️ Sanciones de ciclistas',sanctions:'🗂️ Historial de sanciones'}[c]||c)}</span><span class="pill mut">${nf(Object.keys(j.collections[c]).length)}</span></label>`).join('')}
      <p style="margin-top:10px">Escribe <b>RESTAURAR</b> para confirmar:</p><input class="inp" id="rsOk" style="width:100%" autocomplete="off">
      <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn lime" onclick="restoreRun()">♻️ Restaurar</button></div>`);
   };rd.readAsText(f);$('rsFile').value='';
@@ -460,6 +464,110 @@ async function migrate(){
   toast(`✅ ${n} datos asignados a su club`);loadAll();
 }
 
+
+/* ---------- ⚖️ Ética y sanciones ---------- */
+const ETICA=[
+ ['🚦','Respetar las normas de circulación'],['🤝','Nadie se queda atrás'],['🛡️','La seguridad del grupo primero'],['🗣️','Respeto a las personas'],
+ ['🌿','Respeto al entorno'],['📊','Juego limpio'],['📵','Uso correcto de la app'],['🔒','Privacidad']];
+const LV_U=[['warn','⚠️ Aviso','Le sale un aviso en la app. Puede seguir usándola.'],['s7','⏸️ Suspensión 7 días','No puede publicar, apuntarse ni entrar en clubes durante 7 días.'],['s30','⏸️ Suspensión 30 días','Igual, durante 30 días.'],['exp','🚫 Expulsión','Fuera de la app: se le saca de todos sus clubes y no puede volver a entrar.']];
+const LV_C=[['warn','⚠️ Aviso al club','Los administradores del club ven el aviso.'],['susp','⛔ Suspender club','Nadie del club puede ver ni usar sus datos hasta que lo levantes.']];
+const modOf=id=>D.mod.find(m=>m.id===id)||null;
+const isSan=id=>{const m=modOf(id);return !!(m&&m.banned&&(!m.until||m.until>Date.now()))};
+function userState(id,u){const m=modOf(id);
+  if(isSan(id))return m.expelled||!m.until?'<span class="pill bad">🚫 Expulsado</span>':`<span class="pill bad">⏸️ Hasta ${fDate(m.until)}</span>`;
+  if(u&&u.banned)return '<span class="pill bad">🚫 Bloqueado</span>';
+  if(m&&m.warn&&m.warn.t)return `<span class="pill warn">⚠️ Avisado</span>`;return '<span class="pill ok">Activo</span>'}
+function activeSan(){return [...D.users.filter(u=>isSan(u.id)||u.banned).map(u=>({kind:'user',id:u.id,name:u.name})),...D.groups.filter(g=>g.suspended).map(g=>({kind:'club',id:g.id,name:g.name}))]}
+function sanForm(title,lv,withWipe){
+  return `<h3>${title}<button class="x" onclick="closeDlg()">✕</button></h3>
+   <p style="margin-bottom:6px"><b>Motivo (código ético)</b></p><select class="inp" id="snR" style="width:100%">${ETICA.map(([e,t])=>`<option>${e} ${t}</option>`).join('')}<option>Otro</option></select>
+   <p style="margin:12px 0 6px"><b>Medida</b></p>${lv.map(([k,t,d],i)=>`<label class="opt"><input type="radio" name="snL" value="${k}" ${i?'':'checked'}><span style="flex:1">${t}<br><small style="color:var(--txt3);font-weight:500">${d}</small></span></label>`).join('')}
+   <p style="margin:12px 0 6px"><b>Explicación</b> <small style="color:var(--txt3)">(la verá el afectado)</small></p><textarea class="inp" id="snN" rows="3" maxlength="200" style="width:100%" placeholder="Ej. Conducción peligrosa en la salida del domingo"></textarea>
+   ${withWipe?'<label class="opt" style="margin-top:10px"><input type="checkbox" id="snW"> <span>Si es expulsión, borrar también sus salidas, rutas, actividad y puntos</span></label>':''}
+   <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn red" id="snGo">⚖️ Aplicar sanción</button></div>`;
+}
+async function logSan(o){try{await db.collection('sanctions').add({...o,t:Date.now()})}catch(e){console.warn(e)}}
+function sanctionUser(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;const club=userClub(id);
+  dlg(sanForm('⚖️ Sancionar a '+esc(u.name),LV_U,true));
+  $('snGo').onclick=async()=>{
+    const reason=$('snR').value,note=$('snN').value.trim().slice(0,200),lv=document.querySelector('input[name=snL]:checked').value,now=Date.now(),wipe=!!($('snW')&&$('snW').checked);
+    if(lv==='exp'&&!await confirmDlg('🚫 Expulsar de RideSafe IA',`${esc(u.name)} saldrá de todos sus clubes y no podrá volver a publicar ni entrar en ninguno. Puedes levantarlo más adelante.`,'Expulsar',true))return;
+    try{
+      const ref=db.collection('mod').doc(id);
+      if(lv==='warn')await ref.set({warn:{reason,note,t:now}},{merge:true});
+      if(lv==='s7'||lv==='s30')await ref.set({banned:true,until:now+(lv==='s7'?7:30)*86400000,expelled:false,reason,note,t:now},{merge:true});
+      if(lv==='exp'){
+        await ref.set({banned:true,until:0,expelled:true,reason,note,t:now},{merge:true});
+        for(const g of D.groups.filter(g=>(g.members||{})[id])){const up={['members.'+id]:FV.delete(),['gm.'+id]:FV.delete()};if((g.admins||{})[id])up['admins.'+id]=FV.delete();if((g.captains||{})[id])up['captains.'+id]=FV.delete();try{await db.collection('groups').doc(g.id).update(up)}catch(e){console.warn(e)}}
+        await db.collection('users').doc(id).set({group:null},{merge:true}).catch(()=>{});
+        if(wipe){for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id))await db.collection(c).doc(d.id).delete().catch(()=>{});for(const r of D.rides.filter(x=>x.byUid===id))await db.collection('rides').doc(r.id).delete().catch(()=>{})}
+      }
+      await logSan({kind:'user',targetId:id,name:u.name,club:club?club.name:'',reason,note,level:LV_U.find(x=>x[0]===lv)[1]});
+      closeDlg();toast('⚖️ Sanción aplicada a '+u.name);loadAll();
+    }catch(e){err(e)}
+  };
+}
+async function liftUser(id){
+  const u=D.users.find(x=>x.id===id);if(!await confirmDlg('✓ Levantar sanción',`${esc(u.name)} podrá volver a usar la app con normalidad (tendrá que volver a entrar en su club con el código).`,'Levantar',false))return;
+  try{await db.collection('mod').doc(id).set({banned:false,until:0,expelled:false,warn:FV.delete()},{merge:true});if(u.banned)await db.collection('users').doc(id).set({banned:false},{merge:true});
+    await logSan({kind:'user',targetId:id,name:u.name,club:(userClub(id)||{}).name||'',reason:'—',note:'',level:'✓ Sanción levantada'});toast('Sanción levantada');loadAll()}catch(e){err(e)}
+}
+function sanctionClub(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;
+  dlg(sanForm('⚖️ Sancionar al club '+esc(g.name),LV_C,false)+'<p style="margin-top:10px;font-size:13px">Para eliminarlo del todo usa 🗑️ en la lista de clubes.</p>');
+  $('snGo').onclick=async()=>{
+    const reason=$('snR').value,note=$('snN').value.trim().slice(0,200),lv=document.querySelector('input[name=snL]:checked').value,now=Date.now();
+    try{
+      if(lv==='warn')await db.collection('groups').doc(id).update({warn:{reason,note,t:now}});
+      if(lv==='susp')await db.collection('groups').doc(id).update({suspended:true,suspendReason:reason,suspendNote:note,suspendT:now});
+      await logSan({kind:'club',targetId:id,name:g.name,club:g.name,reason,note,level:LV_C.find(x=>x[0]===lv)[1]});
+      closeDlg();toast('⚖️ Sanción aplicada al club');loadAll();
+    }catch(e){err(e)}
+  };
+}
+async function liftClub(id){
+  const g=D.groups.find(x=>x.id===id);if(!await confirmDlg('✓ Levantar sanción del club',`«${esc(g.name)}» vuelve a funcionar con normalidad y se quita el aviso.`,'Levantar',false))return;
+  try{await db.collection('groups').doc(id).update({suspended:false,suspendReason:FV.delete(),suspendNote:FV.delete(),warn:FV.delete()});
+    await logSan({kind:'club',targetId:id,name:g.name,club:g.name,reason:'—',note:'',level:'✓ Sanción levantada'});toast('Sanción levantada');loadAll()}catch(e){err(e)}
+}
+function vEth(){
+  const act=activeSan();const hist=D.sanctions.slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>📜 Código ético del ciclista</h3><div class="d">Lo ven todos los usuarios en la app (Perfil → Ayuda). Es la base de cada sanción.</div>
+    ${ETICA.map(([e,t])=>`<div class="opt" style="cursor:default">${e} ${t}</div>`).join('')}</div>
+   <div class="box"><h3>⛔ Sanciones activas (${act.length})</h3><div class="d">Ciclistas suspendidos o expulsados y clubes suspendidos</div>
+    ${act.length?act.map(x=>`<div class="opt" style="cursor:default"><span style="flex:1">${x.kind==='club'?'🏅':'👤'} ${esc(x.name)}<br><small style="color:var(--txt3)">${x.kind==='club'?'Club suspendido':userState(x.id,D.users.find(u=>u.id===x.id)).replace(/<[^>]+>/g,'')}</small></span><button class="btn sm" onclick="${x.kind==='club'?'liftClub':'liftUser'}('${x.id}')">✓ Levantar</button></div>`).join(''):'<div class="empty">✅ Ninguna sanción activa</div>'}
+    <p style="color:var(--txt3);font-size:12.5px;margin-top:10px">Para sancionar: ve a <b>Ciclistas</b> o <b>Clubes</b> y pulsa ⚖️ Sancionar.</p></div>
+   </div>
+   <div class="box tw"><h3>🗂️ Historial de sanciones</h3><div class="d">Todo queda registrado: quién, cuándo, por qué y qué medida</div>
+    <table class="tbl"><thead><tr><th>Fecha</th><th>A quién</th><th class="hide-m">Motivo</th><th>Medida</th></tr></thead><tbody>
+    ${hist.map(h=>`<tr><td class="num" style="white-space:nowrap">${fDate(h.t)}</td><td>${h.kind==='club'?'🏅':'👤'} <b>${esc(h.name)}</b>${h.club&&h.kind!=='club'?'<br><small style="color:var(--txt3)">'+esc(h.club)+'</small>':''}</td><td class="hide-m" style="color:var(--txt2)">${esc(h.reason)}${h.note?'<br><small>'+esc(h.note)+'</small>':''}</td><td>${esc(h.level)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty">Sin sanciones todavía</div></td></tr>'}
+    </tbody></table></div>`;
+}
+
+/* ---------- 🚀 Novedades y próximas actualizaciones ---------- */
+function vNews(){
+  const l=(upd.items||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>✍️ Nueva novedad</h3><div class="d">Aparece a todos en la app: aviso en Comunidad y en Perfil → «Novedades y próximas actualizaciones».</div>
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:10px"><input class="inp" id="nwV" placeholder="Versión" maxlength="10"><input class="inp" id="nwT" placeholder="Título (ej. Salidas que se repiten cada domingo)" maxlength="60"></div>
+    <textarea class="inp" id="nwX" rows="3" maxlength="300" style="width:100%;margin-top:10px" placeholder="Explícalo en pocas palabras"></textarea>
+    <div class="chips" id="nwS" style="margin-top:10px"><button class="chip on" data-s="soon" onclick="nwSet(this)">🚀 Próximamente</button><button class="chip" data-s="ready" onclick="nwSet(this)">✅ Ya disponible</button></div>
+    <button class="btn lime" style="margin-top:12px" onclick="newsAdd()">📣 Publicar novedad</button></div>
+   <div class="box"><h3>📋 Publicadas (${l.length})</h3><div class="d">Lo que ven ahora los usuarios</div>
+    ${l.length?l.map(x=>`<div class="opt" style="cursor:default;align-items:flex-start"><span style="flex:1"><span class="pill ${x.status==='soon'?'warn':'ok'}">${x.status==='soon'?'Próximamente':'Ya disponible'}</span> <b>${x.v?'v'+esc(x.v)+' · ':''}${esc(x.title)}</b><br><small style="color:var(--txt3);font-weight:500">${esc(x.text||'')}</small></span><span style="display:flex;flex-direction:column;gap:6px">${x.status==='soon'?`<button class="btn sm" onclick="newsDone('${x.id}')">✅ Ya está</button>`:''}<button class="btn sm red" onclick="newsDel('${x.id}')">🗑️</button></span></div>`).join(''):'<div class="empty">Aún no has publicado novedades</div>'}</div>
+   </div>`;
+}
+function nwSet(b){document.querySelectorAll('#nwS .chip').forEach(c=>c.classList.toggle('on',c===b))}
+async function newsSave(items){await db.collection('config').doc('updates').set({items});upd.items=items}
+async function newsAdd(){
+  const title=$('nwT').value.trim(),text=$('nwX').value.trim(),v=$('nwV').value.trim();if(!title){toast('Pon un título');return}
+  const it={id:'n'+Date.now().toString(36),v,title,text,status:document.querySelector('#nwS .chip.on').dataset.s,t:Date.now()};
+  try{await newsSave([...(upd.items||[]),it].slice(-40));toast('📣 Novedad publicada');vNews()}catch(e){err(e)}
+}
+async function newsDone(id){try{await newsSave((upd.items||[]).map(x=>x.id===id?{...x,status:'ready',t:Date.now()}:x));toast('✅ Marcada como disponible');vNews()}catch(e){err(e)}}
+async function newsDel(id){if(!await confirmDlg('🗑️ Quitar novedad','Dejará de verse en la app.','Quitar',true))return;try{await newsSave((upd.items||[]).filter(x=>x.id!==id));toast('Novedad quitada');vNews()}catch(e){err(e)}}
 /* ---------- Ventanas y utilidades ---------- */
 function dlg(h){$('dlg').innerHTML=h;$('ov').classList.add('show')}
 function closeDlg(){$('ov').classList.remove('show')}

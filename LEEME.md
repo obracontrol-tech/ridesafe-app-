@@ -1,3 +1,21 @@
+## Versión 4.3 — Avisos en el Garmin
+- Avisos nuevos durante la salida (botón «➕ Más»): ⚙️ Avería, 🚑 Caída, 🐢 Me quedo atrás y 📣 Aviso del jefe de ruta (con texto; solo organizador, administrador, jefe de pelotón o responsable de la grupeta).
+- Textos cortos pensados para la pantalla del Garmin o del reloj: «🔧 Toni: PINCHAZO».
+- Perfil → «⌚ Avisos en mi Garmin»: modelos compatibles, pasos para activarlo y botón «Probar aviso en mi Garmin».
+- Función de Firebase avisoPeloton actualizada (hay que volver a desplegarla con cmd_funcion_v4.3.txt en Cloud Shell).
+
+## Versión 4.2 — Máximo desarrollador: ética, sanciones y novedades
+- Código ético del ciclista (8 normas), visible para todos en Perfil → Ayuda.
+- Consola Master → «⚖️ Ética y sanciones»: sancionar ciclistas (aviso, suspensión 7 o 30 días, expulsión con opción de borrar su contenido) y clubes (aviso a sus administradores o suspensión), con motivo del código ético y explicación; levantar sanciones; historial completo.
+- El servidor (reglas v4.2) bloquea a los sancionados: no pueden publicar, apuntarse ni entrar en clubes. Un club suspendido queda bloqueado para sus miembros y su administrador no puede quitarse la sanción.
+- En la app: aviso al ciclista con «Entendido», banner de suspensión o expulsión con el motivo, banner de club suspendido o avisado.
+- Consola Master → «🚀 Novedades»: anunciar próximas actualizaciones y novedades ya disponibles. En la app salen en Comunidad y en Perfil → «Novedades y próximas actualizaciones».
+
+## Versión 4.1 — Consola Master
+- Nueva página privada master.html («Consola Master»), oscura y con la imagen de RideSafe IA, solo para el propietario: Resumen con gráficas, Clubes (oficial, administradores, jefes, ver, borrar), Ciclistas (puntos, bloquear, borrar contenido, Excel), Salidas (todas, limpiar antiguas), Contenido, Reportes, Aviso general y Copias y restaurar (copia de seguridad .json y restauración con confirmación).
+- Acceso: entrar con Google; la comprobación la hacen las reglas de Firebase (v4.1). No está enlazada para los usuarios y no aparece en buscadores.
+- En la app: Panel de administración → «🖥️ Abrir Consola Master».
+
 ## Versión 4.0 — Clubes privados
 - Cada club es un espacio privado: salidas, rutas, actividad, puntos ciclistas, ranking y ciclistas cercanos solo los ven los miembros de ese club. Lo garantizan las reglas de Firebase v4.0 (hay que publicarlas).
 - Grupetas dentro del club (MTB, Carretera adultos, Veteranos, Escuela infantil…) con modalidad, nivel y responsables. Cada ciclista se apunta a las suyas; el administrador del club puede cambiarlo.

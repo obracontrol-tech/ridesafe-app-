@@ -240,9 +240,9 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgroup b{display:block;margin-bottom:6px}
 .gm{display:inline-flex;align-items:center;gap:6px;margin:3px 10px 3px 0;color:var(--txt2)}
 .gm i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:11px;color:#0E1A2B}
-.lvalert{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.lvalert{display:grid;grid-template-columns:1fr 1fr 1fr .8fr;gap:8px;margin-bottom:8px}
 .lvalert button{min-height:50px;border-radius:16px;font-weight:800;font-size:15px;background:var(--card2);color:var(--txt);border:2px solid var(--line)}
-.lvalert .a-flat{border-color:#F59E0B}.lvalert .a-wait{border-color:#60A5FA}.lvalert .a-help{border-color:#EF4444;background:#7F1D1D;color:#fff}
+.lvalert .a-more{border-color:#A78BFA}.lvalert .a-flat{border-color:#F59E0B}.lvalert .a-wait{border-color:#60A5FA}.lvalert .a-help{border-color:#EF4444;background:#7F1D1D;color:#fff}
 #alarmBox{position:fixed;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;color:#fff;animation:alFlash 1s infinite}
 #alarmBox.show{display:flex}
 #alarmBox .al-ico{font-size:110px;line-height:1;margin-bottom:10px;animation:alPulse .8s infinite}
@@ -479,7 +479,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgroup .gm{color:#fff}
 .lvalert{margin-bottom:0!important;gap:6px!important}
 .lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
-.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
+.lvalert .a-more{border-color:rgba(167,139,250,.9)!important}.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
 .lvbtns{gap:6px!important}
 .lvbtns button{min-height:50px!important;font-size:16px!important;border-radius:25px!important}
 .lvbtns .lvs{background:rgba(239,68,68,.88)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.28)}
@@ -626,7 +626,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
-    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button></div>
+    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button></div>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
@@ -668,7 +668,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button class="round" aria-label="Avisos" onclick="toast('No tienes avisos nuevos')"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></button>
   </div>
 
+  <div id="modBox"></div>
   <div id="annBox"></div>
+  <div id="updBox"></div>
   <div id="installBox"></div>
   <div class="hero">
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><circle cx="45" cy="100" r="32"/><circle cx="155" cy="100" r="32"/><path d="M45 100 80 45h55l20 55M80 45l30 55h45M110 100 135 45M70 32h24M128 32h18l-11 13"/></g></svg>
@@ -774,17 +776,20 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
-  <div class="set" style="flex-wrap:wrap">🔔 Avisos del pelotón con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Pinchazos, «esperad» y «ayuda» de tus salidas, aunque tengas el móvil bloqueado</small></div>
+  <div class="set" style="flex-wrap:wrap">🔔 Avisos del pelotón con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Pinchazo, esperad, ayuda, caída… de tus salidas, aunque tengas el móvil bloqueado. También en tu Garmin (ver abajo)</small></div>
+  <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Ayuda</h3></div>
   <div class="list">
     <button class="li" onclick="openHelp()"><span class="em">❓</span><div><b>Cómo funciona</b><small>Preguntas rápidas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="openNews()"><span class="em">🆕</span><div><b>Novedades y próximas actualizaciones</b><small id="newsSub">Lo último de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="openEthics()"><span class="em">📜</span><div><b>Código ético del ciclista</b><small>Las normas de convivencia de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openInvite()"><span class="em">📣</span><div><b>Invitar a amigos</b><small>Código QR, WhatsApp y cartel para el club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1160,7 +1165,7 @@ chipGroup('fltChips',()=>renderAll());
 function ready(){
   if(!db||!uid){toast('Conectando… inténtalo en unos segundos');return false}
   if(!me){toast('Primero pon tu nombre');return false}
-  if(me.banned){alert('Tu cuenta está bloqueada por no respetar las normas de la comunidad. Si crees que es un error escribe a info@ridesafeia.es');return false}
+  const bn=banNow();if(bn){showBan(bn);return false}
   return true;
 }
 function fbErr(e,what){console.error(e);const c=e&&e.code||'';
@@ -1777,6 +1782,68 @@ async function groupNotice(){
   const t=(prompt('Aviso para todo el grupo (lo verán en la app).\nDéjalo vacío para quitar el aviso.',g.notice?.text||'')??null);if(t===null)return;
   try{await db.collection('groups').doc(g.id).update({notice:t.trim()?{text:t.trim().slice(0,200),by:myName(),t:Date.now()}:FV.delete()});toast(t.trim()?'📣 Aviso publicado para el grupo':'Aviso quitado');setTimeout(openGroup,400)}catch(e){fbErr(e,'publicar el aviso')}
 }
+
+/* ===================================================================
+   v4.2 — CÓDIGO ÉTICO, SANCIONES Y NOVEDADES
+   El máximo desarrollador (propietario) puede avisar, suspender o expulsar
+   a ciclistas y clubes que no respeten el código ético, y anunciar novedades.
+   =================================================================== */
+const ETICA=[
+ ['🚦','Respetar las normas de circulación','Semáforos, pasos de peatones y circular en grupo como marca la ley.'],
+ ['🤝','Nadie se queda atrás','Esperar y ayudar al compañero ante pinchazos, averías o caídas.'],
+ ['🛡️','La seguridad del grupo primero','Sin maniobras peligrosas; avisar de obstáculos; casco siempre.'],
+ ['🗣️','Respeto a las personas','Sin insultos, acoso, discriminación ni amenazas, dentro y fuera de la app.'],
+ ['🌿','Respeto al entorno','No tirar basura; respetar caminos, fincas, fauna y a otros usuarios de la vía.'],
+ ['📊','Juego limpio','No falsear kilómetros, actividades ni rankings.'],
+ ['📵','Uso correcto de la app','Sin spam, publicidad, suplantaciones ni contenido inapropiado.'],
+ ['🔒','Privacidad','No compartir datos, ubicación ni fotos de otros sin su permiso.'],
+];
+function openEthics(){
+  $('rideBody').innerHTML=sheetHead('📜 Código ético del ciclista')+`<p style="color:var(--txt2);margin:-8px 0 14px">Todos los que usamos RideSafe IA nos comprometemos a respetar estas normas. Quien no las cumpla puede recibir un aviso, una suspensión temporal o la expulsión de la app, y un club puede ser suspendido.</p>
+   ${ETICA.map(([e,t,d])=>`<div class="li" style="cursor:default;margin-bottom:8px"><span class="em">${e}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}
+   <p style="color:var(--txt2);font-size:13px;margin-top:12px">¿Has visto una conducta contraria a este código? Usa «Reportar» en la salida, ruta o publicación, o escribe a info@ridesafeia.es.</p>`;
+  openRideId=null;openSheet('sh-ride');
+}
+let modDoc=null,modUnsub=null;
+function watchMod(){if(!db||!uid||modUnsub)return;modUnsub=db.collection('mod').doc(uid).onSnapshot(s=>{modDoc=s.exists?s.data():null;renderMod();checkWarn()},()=>{})}
+function banNow(){
+  const m=modDoc;if(m&&m.banned&&(!m.until||m.until>Date.now()))return m;
+  if(me&&me.banned)return{reason:'',legacy:1};
+  return null;
+}
+const banTxt=b=>b.expelled||(!b.until&&!b.legacy)?'Tu cuenta ha sido expulsada de RideSafe IA':b.until?'Tu cuenta está suspendida hasta el '+fmtDate(iso(new Date(b.until))):'Tu cuenta está bloqueada';
+function showBan(b){alert(`${banTxt(b)}${b.reason?'.\n\nMotivo: '+b.reason:''}${b.note?'\n'+b.note:''}\n\nMientras tanto no puedes publicar ni unirte a salidas. Si crees que es un error escribe a info@ridesafeia.es`)}
+function renderMod(){
+  const el=$('modBox');if(!el)return;const b=banNow();let h='';
+  if(b)h+=`<div class="ann" style="border-color:var(--red)"><span style="font-size:22px">🚫</span><p><b>${esc(banTxt(b))}</b>${b.reason?'<br>Motivo: '+esc(b.reason):''}</p></div>`;
+  const g=myGroup;
+  if(g&&g.suspended)h+=`<div class="ann" style="border-color:var(--red)"><span style="font-size:22px">⛔</span><p><b>Tu club «${esc(g.name)}» está suspendido</b> por el equipo de RideSafe IA${g.suspendReason?'<br>Motivo: '+esc(g.suspendReason):''}</p></div>`;
+  if(g&&g.warn&&isClubAdm()&&store.get('clubWarnHide',0)!==g.warn.t)h+=`<div class="ann"><span style="font-size:22px">⚠️</span><p><b>Aviso del equipo de RideSafe IA a tu club</b><br>${esc(g.warn.reason||'')}${g.warn.note?' · '+esc(g.warn.note):''}</p><button class="x" style="width:30px;height:30px;flex-shrink:0" aria-label="Cerrar" onclick="store.set('clubWarnHide',${+g.warn.t||0});renderMod()">✕</button></div>`;
+  el.innerHTML=h;
+}
+async function checkWarn(){
+  const m=modDoc;if(!m||!m.warn||!m.warn.t||(m.ack||0)>=m.warn.t||window.__warnOpen)return;window.__warnOpen=1;
+  const ok=await askConfirm('⚠️ Aviso del equipo de RideSafe IA',`Motivo: ${m.warn.reason||''}${m.warn.note?'. '+m.warn.note:''}. Te pedimos que respetes el código ético del ciclista. Si se repite, tu cuenta puede ser suspendida.`,'Entendido',true);
+  window.__warnOpen=0;if(!ok)return;
+  try{await db.collection('mod').doc(uid).update({ack:Date.now()})}catch(e){}
+  openEthics();
+}
+let updData=null;
+function watchUpdates(){if(!db)return;db.collection('config').doc('updates').onSnapshot(s=>{updData=s.exists?s.data():null;renderUpd()},()=>{})}
+const updItems=()=>((updData&&updData.items)||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+function renderUpd(){
+  const el=$('updBox');if(!el)return;const l=updItems();const last=l[0];
+  if($('newsSub'))$('newsSub').textContent=l.length?`${l.filter(x=>x.status==='soon').length} próximamente · ${l.filter(x=>x.status!=='soon').length} ya disponibles`:'Lo último de RideSafe IA';
+  if(!last||store.get('updSeen',0)>=last.t){el.innerHTML='';return}
+  el.innerHTML=`<button class="ann" style="width:100%;text-align:left;cursor:pointer" onclick="openNews()"><span style="font-size:22px">🆕</span><p><b>${last.status==='soon'?'Próximamente':'Novedad'}${last.v?' · v'+esc(last.v):''}: ${esc(last.title||'')}</b><br><span style="color:var(--txt2)">Toca para ver las novedades</span></p></button>`;
+}
+function openNews(){
+  const l=updItems();if(l.length)store.set('updSeen',l[0].t);renderUpd();
+  const card=x=>`<div class="plc" style="margin-bottom:10px"><div class="pc-h"><span class="pc-tag">${x.status==='soon'?'Próximamente':'Ya disponible'}</span><b>${x.v?'v'+esc(x.v)+' · ':''}${esc(x.title||'')}</b></div><p style="color:var(--txt2);font-size:14px;line-height:1.45;margin-top:6px">${esc(x.text||'')}</p><small style="color:var(--txt2)">${fmtDate(iso(new Date(x.t||Date.now())))}</small></div>`;
+  const soon=l.filter(x=>x.status==='soon'),done=l.filter(x=>x.status!=='soon');
+  $('rideBody').innerHTML=sheetHead('🆕 Novedades')+(l.length?`${soon.length?'<div class="sec"><h3 style="font-size:17px">🚀 Próximamente</h3></div>'+soon.map(card).join(''):''}${done.length?'<div class="sec"><h3 style="font-size:17px">✅ Ya disponible</h3></div>'+done.map(card).join(''):''}`:'<div class="empty">Aún no hay novedades publicadas</div>');
+  openRideId=null;openSheet('sh-ride');
+}
 /* ===================================================================
    v4.0 — CADA CLUB ES UN ESPACIO PRIVADO
    Salidas, rutas, actividad, puntos, ranking y ciclistas cercanos llevan el código del club
@@ -2014,7 +2081,7 @@ function watchGroup(){
       const was=myGroup?myGroup.name:'';myGroup=null;
       if(me&&me.group===code&&s.exists!==undefined){me.group=null;store.set('me',me);db.collection('users').doc(uid).set({group:null},{merge:true}).catch(()=>{});if(was)toast('Ya no formas parte de «'+was+'»');watchClubData()}
     }
-    renderGroup();renderRides();watchRanks();
+    renderGroup();renderRides();watchRanks();renderMod();
   },e=>{console.warn('grupo',e);myGroup=null;renderGroup()});
 }
 function renderGroup(){
@@ -2675,7 +2742,7 @@ let admTab='res',admUsers=[],admQ='';
 const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:(v&&v.seconds?v.seconds*1000:0);
 function admShell(){
   const tabs=[['res','📊 Resumen'],['users','👥 Ciclistas'],['rides','📅 Salidas'],['cont','🗂️ Contenido'],['rep','⚠️ Reportes'],['ann','📣 Aviso']];
-  $('rideBody').innerHTML=sheetHead('🛡️ Administración')+`<a class="btn btn-line" href="master.html" target="_blank" rel="noopener" style="text-decoration:none;margin:-4px 0 12px;display:flex;align-items:center;justify-content:center">🖥️ Abrir Consola Master</a><div class="chips admtabs">${tabs.map(([k,t])=>`<button class="chip${admTab===k?' on':''}" onclick="admGo('${k}')">${t}</button>`).join('')}</div><div id="admBody"><div class="empty">Cargando…</div></div>`;
+  $('rideBody').innerHTML=sheetHead('👑 Máximo desarrollador')+`<a class="btn btn-line" href="master.html" target="_blank" rel="noopener" style="text-decoration:none;margin:-4px 0 12px;display:flex;align-items:center;justify-content:center">🖥️ Abrir Consola Master</a><div class="chips admtabs">${tabs.map(([k,t])=>`<button class="chip${admTab===k?' on':''}" onclick="admGo('${k}')">${t}</button>`).join('')}</div><div id="admBody"><div class="empty">Cargando…</div></div>`;
 }
 async function openAdmin(tab){if(!isAdmin)return;admTab=tab||admTab||'res';admShell();openRideId=null;openSheet('sh-ride');admGo(admTab)}
 function admGo(k){admTab=k;document.querySelectorAll('.admtabs .chip').forEach((c,i)=>c.classList.toggle('on',['res','users','rides','cont','rep','ann'][i]===k));$('admBody').innerHTML='<div class="empty">Cargando…</div>';({res:admRes,users:admUsersTab,rides:admRides,cont:admCont,rep:loadReports,ann:admAnn}[k])()}
@@ -3083,13 +3150,66 @@ function renderChat(){
    :'<div class="empty" style="padding:12px">Aún no hay comentarios. ¡Escribe el primero!</div>';
   l.scrollTop=l.scrollHeight;
 }
+
+/* ===== v4.3 — Avisos del pelotón en el Garmin (vía notificaciones del móvil) ===== */
+const GARMIN_OK=['Edge 130 Plus','Edge 530','Edge 830','Edge 540 / 540 Solar','Edge 840 / 840 Solar','Edge 1040 / 1040 Solar','Edge 1050','Edge Explore 2','Relojes Garmin (Forerunner, Fenix, Venu, Instinct, Vivoactive, Epix…)'];
+const GARMIN_MAYBE=['Edge 520 Plus','Edge 1030','Edge 1000'];
+const GARMIN_NO=['Edge 520 (original)','Edge 130 (original)','Edge 20 / 25','Edge 820','Edge Explore (original)'];
+function openGarmin(){
+  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  const perm='Notification' in window?Notification.permission:'no';
+  $('rideBody').innerHTML=sheetHead('⌚ Avisos en tu Garmin')+`<p style="color:var(--txt2);margin:-8px 0 12px">Cuando alguien del grupo avisa (pinchazo, esperad, ayuda, caída…), RideSafe IA manda una notificación a tu móvil. Si tu Garmin muestra las notificaciones del móvil, el aviso <b>aparece también en su pantalla</b> con pitido y vibración.</p>
+   <button class="btn btn-lime" onclick="garminTest()">⌚ Probar aviso en mi Garmin</button>
+   <small style="display:block;color:var(--txt2);margin:6px 4px 14px">Pulsa, <b>bloquea el móvil</b> y mira el Garmin: en 5 segundos llega una notificación de prueba.</small>
+   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Paso a paso</span><b>Cómo activarlo</b></div>
+    <ol style="margin:8px 0 0 18px;line-height:1.55;font-size:14.5px">
+     <li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos del pelotón con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>
+     <li><b>Tu Garmin</b>: Ajustes → Funciones conectadas → Teléfono → <b>Notificaciones inteligentes</b> → activa la categoría <b>«Otros»</b> (y «Redes sociales» si aparece).</li>
+     <li><b>App Garmin Connect</b> del móvil: Ajustes → Notificaciones → Notificaciones de apps → permite <b>${isIOS?'RideSafe IA':'Chrome'}</b>${isIOS?'':' (en Android los avisos de RideSafe IA llegan a través de Chrome)'}.</li>
+     <li>Durante la salida, el Garmin debe estar <b>conectado al móvil</b> por Bluetooth.</li></ol></div>
+   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Modelos</span><b>¿Funciona con el mío?</b></div>
+    <p style="margin-top:8px;font-size:14px"><b style="color:var(--lime)">✅ Sí</b> (muestran notificaciones de apps): ${GARMIN_OK.join(' · ')}</p>
+    <p style="margin-top:6px;font-size:14px"><b style="color:#FBBF24">⚠️ Depende</b> (pruébalo con el botón): ${GARMIN_MAYBE.join(' · ')}</p>
+    <p style="margin-top:6px;font-size:14px"><b style="color:var(--red)">❌ No</b> (solo llamadas y SMS): ${GARMIN_NO.join(' · ')}</p>
+    <small style="display:block;color:var(--txt2);margin-top:6px">Si tu Garmin no es compatible, el aviso te llega igualmente al móvil con sonido y vibración, y suena la sirena si llevas RideSafe IA abierta en el manillar.</small></div>`;
+  openRideId=null;openSheet('sh-ride');
+}
+async function garminTest(){
+  if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('Este móvil no permite notificaciones');return}
+  let perm=Notification.permission;if(perm==='default'){try{perm=await Notification.requestPermission()}catch(e){}}
+  if(perm!=='granted'){alert('Las notificaciones de RideSafe IA están bloqueadas.\n\nActívalas en: Ajustes del móvil → Aplicaciones → Chrome (o RideSafe IA) → Notificaciones → Permitir.');return}
+  toast('⌚ Bloquea el móvil y mira el Garmin: llega en 5 segundos');
+  setTimeout(async()=>{
+    try{const reg=await navigator.serviceWorker.ready;
+      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:'Prueba de RideSafe IA · si lo ves en tu Garmin, te llegarán los avisos',icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba',renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}})}
+    catch(e){toast('No se pudo lanzar la prueba')}
+    setTimeout(async()=>{if(document.visibilityState!=='visible')await new Promise(r=>{const f=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',f);r()}};document.addEventListener('visibilitychange',f)});
+      const i=await askChoice('¿Te ha salido el aviso en el Garmin?',[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
+      if(i===0){store.set('garminOk',Date.now());toast('¡Perfecto! Te llegarán los avisos del pelotón al Garmin')}
+      if(i===1){openGarmin();setTimeout(()=>toast('Revisa los pasos 2 y 3. Si tu modelo sale en «No», el aviso solo llegará al móvil'),400)}
+    },6500);
+  },5000);
+}
 /* ===== v2.0 — Avisos al pelotón: pinchazo, esperad, ayuda (pantalla + sirena) ===== */
 const ALERTS={
-  flat:{ico:'🔧',t:'ha pinchado',say:'pinchazo',msg:'🔧 He pinchado / avería. ¡Esperadme!',c1:'#D97706',c2:'#7C2D12'},
-  wait:{ico:'✋',t:'pide que esperéis',say:'esperad',msg:'✋ ¡Esperadme, por favor!',c1:'#2563EB',c2:'#1E3A8A'},
-  help:{ico:'🆘',t:'NECESITA AYUDA',say:'necesita ayuda',msg:'🆘 ¡Necesito ayuda!',c1:'#DC2626',c2:'#450A0A'},
-  ok:{ico:'✅',t:'ya está solucionado',say:'solucionado, seguimos',msg:'✅ Solucionado, seguimos',c1:'#15803D',c2:'#14532D'}
+  flat:{s:'PINCHAZO',ico:'🔧',t:'ha pinchado',say:'pinchazo',msg:'🔧 He pinchado / avería. ¡Esperadme!',c1:'#D97706',c2:'#7C2D12'},
+  wait:{s:'ESPERAD',ico:'✋',t:'pide que esperéis',say:'esperad',msg:'✋ ¡Esperadme, por favor!',c1:'#2563EB',c2:'#1E3A8A'},
+  help:{s:'AYUDA',ico:'🆘',t:'NECESITA AYUDA',say:'necesita ayuda',msg:'🆘 ¡Necesito ayuda!',c1:'#DC2626',c2:'#450A0A'},
+  ok:{s:'SOLUCIONADO',ico:'✅',t:'ya está solucionado',say:'solucionado, seguimos',msg:'✅ Solucionado, seguimos',c1:'#15803D',c2:'#14532D'},
+  // v4.3 — avisos nuevos
+  mech:{s:'AVERÍA',ico:'⚙️',t:'tiene una avería',say:'avería',msg:'⚙️ Tengo una avería. ¡Esperadme!',c1:'#B45309',c2:'#451A03'},
+  back:{s:'ME QUEDO ATRÁS',ico:'🐢',t:'se queda atrás',say:'se queda atrás',msg:'🐢 Me quedo atrás, id más despacio',c1:'#0891B2',c2:'#083344'},
+  fall:{s:'CAÍDA',ico:'🚑',t:'SE HA CAÍDO',say:'se ha caído',msg:'🚑 ¡Me he caído!',c1:'#B91C1C',c2:'#3F0A0A'},
+  boss:{s:'JEFE DE RUTA',ico:'📣',t:'(jefe de ruta)',say:'aviso del jefe de ruta',msg:'📣 Aviso del jefe de ruta',c1:'#7C3AED',c2:'#2E1065'}
 };
+// Menú «➕ Más avisos» durante la salida
+async function moreAlerts(){
+  const r=rides.find(x=>x.id===live.rideId);const jefe=!!(r&&(canManage(r)||isOwner(r)));
+  const opts=[['⚙️ Avería','','mech'],['🚑 Caída','red','fall'],['🐢 Me quedo atrás','','back'],...(jefe?[['📣 Aviso del jefe de ruta','','boss']]:[]),['✅ Solucionado, seguimos','','ok']];
+  const i=await askChoice('¿Qué quieres avisar al grupo?',opts);if(i<0)return;const k=opts[i][2];
+  if(k==='boss'){const t=(prompt('Aviso para todo el grupo (corto, se verá en el Garmin):','Reagrupamos en la próxima rotonda')||'').trim().slice(0,60);if(!t)return;sendAlert('boss',t);return}
+  sendAlert(k);
+}
 let AC=null,alarmT=null;
 function alarmUnlock(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain();g.gain.value=0.0001;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+0.05)}catch(e){}}
 function alarmStop(){clearTimeout(alarmT);alarmT=null;try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}}
@@ -3119,18 +3239,19 @@ function alarmShow(kind,title,sub,btns){
   b.classList.add('show');saverOff();
 }
 function alarmClose(){alarmStop();$('alarmBox').classList.remove('show')}
-async function sendAlert(kind){
+async function sendAlert(kind,btext){
   if(!live.on||!live.rideId||!db||!uid){toast('Solo funciona en una salida en grupo');return}
   const me=live.pts.at(-1);const prev=live.lastPushLL;
   const p=me||prev;if(!p){toast('Esperando señal GPS… inténtalo en unos segundos');return}
-  const now=Date.now();const al={type:kind,t:now,id:uid+'_'+now};
+  const now=Date.now();const al={type:kind,t:now,id:uid+'_'+now,...(btext?{text:String(btext).slice(0,60)}:{})};
   live.myAlert=kind==='ok'?null:al;alarmUnlock();
   db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2),alert:al}).catch(netErr);
-  const text=ALERTS[kind].msg+' 📍 https://maps.google.com/?q='+p[0].toFixed(5)+','+p[1].toFixed(5);
+  const bmsg=kind==='boss'&&btext?'📣 Aviso del jefe de ruta: '+btext:ALERTS[kind].msg;
+  const text=bmsg+(kind==='boss'?'':' 📍 https://maps.google.com/?q='+p[0].toFixed(5)+','+p[1].toFixed(5));
   db.collection('rides').doc(live.rideId).collection('msgs').add({uid,name:myName(),text,ts:now}).catch(()=>{});
   db.collection('rides').doc(live.rideId).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
   vib(200);
-  live.waText=`${ALERTS[kind].ico} RideSafe · ${live.rideTitle||'Salida en grupo'}\n*${myName()}*: ${ALERTS[kind].msg}\n📍 https://maps.google.com/?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
+  live.waText=`${ALERTS[kind].ico} RideSafe · ${live.rideTitle||'Salida en grupo'}\n*${myName()}*: ${bmsg}\n📍 https://maps.google.com/?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
   if(kind==='ok'){alarmShow('ok','Aviso enviado: seguimos','¿Lo avisas también en el grupo de WhatsApp?',[['📲 Enviar por WhatsApp','al-main','alertWA();alarmClose()'],['No hace falta','al-sec','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith('Aviso enviado: seguimos'))alarmClose()},12000);return}
   alarmShow(kind,'Aviso enviado al grupo',`Lo ve quien tenga RideSafe abierto. Para que suene a TODOS aunque tengan la app cerrada, mándalo también por WhatsApp:`,[['📲 Enviar también por WhatsApp','al-main','alertWA()'],['✅ Solucionado, seguimos','al-sec',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
 }
@@ -3140,6 +3261,7 @@ function checkAlerts(){
     const a=v.alert;if(!a||!a.id||live.alSeen[a.id])return;live.alSeen[a.id]=1;
     if(now-a.t>600000||!ALERTS[a.type])return;           // avisos de hace más de 10 min: no suenan
     const A=ALERTS[a.type];const name=String(v.name||'Un ciclista').split(' ')[0];
+    if(a.type==='boss'){alarmSound('ok',2);alarmShow('boss',(a.text||'Aviso del jefe de ruta'),'Aviso de '+name+' (jefe de ruta)',[['👍 Entendido','al-main','alarmClose()']]);setTimeout(()=>speak('Aviso del jefe de ruta. '+(a.text||'')),900);toast('📣 '+name+': '+(a.text||''));if(document.visibilityState!=='visible')bgNotify('📣 '+name+': '+(a.text||'Aviso del jefe de ruta'),live.rideTitle||'',true);return}
     const dist=me?hav(me,[v.lat,v.lng]):null;const dtx=dist==null?'':dist<1?`a ${Math.round(dist*1000)} m de ti`:`a ${dist.toFixed(1).replace('.',',')} km de ti`;
     live.alertFocus=id;
     if(a.type==='ok'){alarmSound('ok');alarmShow('ok',`${name} ${A.t}`,'Podéis seguir rodando',[['👍 Vale','al-main','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},6000)}
@@ -3149,7 +3271,7 @@ function checkAlerts(){
     }
     setTimeout(()=>speak(`Atención. ${name} ${A.say}.${dist!=null&&a.type!=='ok'?' Está '+dtx+'.':''}`),a.type==='ok'?900:2200);
     toast(`${A.ico} ${name} ${A.t}`);
-    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name} ${A.t}`,dtx||'Abre RideSafe para verlo en el mapa',a.type!=='ok');
+    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name}: ${A.s}`,(dtx?dtx+' · ':'')+(live.rideTitle||'RideSafe IA'),a.type!=='ok');
   });
 }
 async function bgNotify(title,body,urgent){
@@ -3161,7 +3283,7 @@ function groupTips(){
   if(store.get('noGroupTip',0))return;
   setTimeout(()=>{if(!live.on)return;
     const d=document.createElement('div');d.className='cfm';
-    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si vas a llevar el móvil en el bolsillo, ten a mano el <b>grupo de WhatsApp</b> de la grupeta: los avisos también se pueden mandar por ahí y suenan aunque la app esté cerrada.<br><br>🔊 Sube el volumen de multimedia.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se queda negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
+    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si llevas el móvil en el bolsillo, con <b>🔔 Avisos del pelotón</b> activados (Perfil) te llega una notificación con sonido y vibración, y también a tu <b>Garmin</b> si es compatible (Perfil → ⌚ Avisos en mi Garmin).<br><br>🔊 Sube el volumen de multimedia.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se queda negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
     d.onclick=e=>{if(e.target.closest('.cfm-ok')){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
     document.body.appendChild(d)},1200);
 }
@@ -4236,7 +4358,7 @@ function startFirebase(){
       if((me?.group||null)!==(myGroup?.id||null)||!groupUnsub)watchGroup();
       checkBadges();
     },e=>console.error(e));
-    watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
+    watchMod();watchUpdates();watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
     // v4.0 — Salidas, actividad, puntos y ranking: solo los de MI club (se escuchan en watchClubData)
     watchClubData();
     // Enlace compartido: #salida=ID
