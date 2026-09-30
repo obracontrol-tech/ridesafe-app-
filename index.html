@@ -523,9 +523,10 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 .joinbig{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(200,220,60,.16);border:1.5px solid var(--lime);color:var(--lime)}
 .joinbig small{font-size:12px;font-weight:600;opacity:.85}
 .joinnote{text-align:center;color:var(--txt2);font-weight:600;padding:6px}
-.cfm{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px;animation:lmIn2 .15s ease-out}
+.cfm{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:lmIn2 .15s ease-out}
 @keyframes lmIn2{from{opacity:0}to{opacity:1}}
-.cfm-b{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.cfm-b{width:100%;max-width:340px;margin:auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.cfm-b .cfm-r{position:sticky;bottom:-16px;background:var(--card);padding:10px 0 16px;margin-bottom:-16px;box-shadow:0 -12px 14px -10px var(--card)}
 .cfm-b h3{font-size:19px;font-weight:800;margin:0 0 8px;color:var(--txt)}
 .cfm-b p{color:var(--txt2);font-size:15px;margin:0 0 18px;line-height:1.4}
 .cfm-r{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -803,7 +804,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3473,8 +3474,8 @@ function groupTips(){
   if(store.get('noGroupTip',0))return;
   setTimeout(()=>{if(!live.on)return;
     const d=document.createElement('div');d.className='cfm';
-    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>Deja <b>RideSafe abierto</b> en el soporte del manillar durante la salida: la pantalla se queda encendida y oirás la sirena si alguien pincha o pide ayuda.<br><br>Si llevas el móvil en el bolsillo, con <b>🔔 Avisos del pelotón</b> activados (Perfil) te llega una notificación con sonido y vibración, y también a tu <b>Garmin</b> si es compatible (Perfil → ⌚ Avisos en mi Garmin).<br><br>🔊 Sube el volumen de multimedia.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se queda negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 14px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
-    d.onclick=e=>{if(e.target.closest('.cfm-ok')){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
+    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>📍 Lleva <b>RideSafe abierto</b> en el soporte del manillar: oirás la sirena si alguien pincha o pide ayuda.<br><br>🔔 Si lo llevas en el bolsillo, activa <b>Avisos del pelotón</b> en Perfil (también llegan a tu <b>Garmin</b>).<br><br>🔊 Sube el volumen.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se pone negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 4px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
+    d.onclick=e=>{if(e.target.closest('.cfm-ok')||e.target===d){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
     document.body.appendChild(d)},1200);
 }
 /* ===== v3.0 — Notificaciones push (Firebase Cloud Messaging) ===== */

@@ -1,3 +1,6 @@
+## Versión 4.4.1
+- Arreglado: con la letra grande del móvil, la ventana «Para no perderte ningún aviso» (al empezar una salida) no dejaba ver el botón «Entendido» y la app se quedaba bloqueada. Ahora todas las ventanas de aviso se pueden deslizar, el botón queda siempre a la vista y tocando fuera también se cierra. Texto de la ventana más corto.
+
 ## Versión 4.4 — Alcanza tu grupo
 - Para quien llega tarde a una salida que ya ha empezado. Aparece sola en la ficha de la salida y en Inicio («Tu grupo ya ha salido») si estás apuntado y no estás rodando con ellos.
 - Muy sencilla: «Tu grupo está a 3 km. Llegas en unos 9 minutos», un mapa pequeño (🔵 Tú, 🟢 Tu grupo, 🚩 Os juntáis) y dos botones: «🧭 Llévame con mi grupo» y «📣 Avisar: Voy para allá».
