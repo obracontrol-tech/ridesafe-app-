@@ -1,3 +1,12 @@
+## Versión 4.4 — Alcanza tu grupo
+- Para quien llega tarde a una salida que ya ha empezado. Aparece sola en la ficha de la salida y en Inicio («Tu grupo ya ha salido») si estás apuntado y no estás rodando con ellos.
+- Muy sencilla: «Tu grupo está a 3 km. Llegas en unos 9 minutos», un mapa pequeño (🔵 Tú, 🟢 Tu grupo, 🚩 Os juntáis) y dos botones: «🧭 Llévame con mi grupo» y «📣 Avisar: Voy para allá».
+- Si van muy rápido: «Espera a tu grupo · Espéralos en [sitio]. Pasarán sobre las 10:30». Si no da tiempo: «Hoy no llegas a tiempo» con botón para avisar.
+- Por dentro: sitúa al grupo sobre la ruta con las posiciones en directo (o con la hora de salida si nadie comparte), busca el punto de la ruta POR DELANTE del grupo al que llegas antes que ellos y más cerca de ti (nunca en sentido contrario ni por donde ya han pasado) y te guía con voz sin autovías.
+- Al juntarte con el grupo (a menos de 150 m durante 45 s): «¡Ya estás con tu grupo!», el grupo recibe «✅ Ya está con vosotros» y la guía pasa a la ruta de la salida.
+- Avisos nuevos 🚴 «Voy para allá» y ✅ «Ya está con vosotros» (suaves, sin sirena). Para que lleguen con la app cerrada y al Garmin hay que volver a desplegar la función con cmd_funcion_v4.4.txt en Cloud Shell.
+- Mientras vienes de camino no sales como «descolgado» en los avisos del grupo.
+
 ## Versión 4.3 — Avisos en el Garmin
 - Avisos nuevos durante la salida (botón «➕ Más»): ⚙️ Avería, 🚑 Caída, 🐢 Me quedo atrás y 📣 Aviso del jefe de ruta (con texto; solo organizador, administrador, jefe de pelotón o responsable de la grupeta).
 - Textos cortos pensados para la pantalla del Garmin o del reloj: «🔧 Toni: PINCHAZO».

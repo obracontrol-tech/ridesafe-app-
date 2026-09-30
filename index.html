@@ -583,6 +583,19 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .rp-stop{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px 10px;font-weight:700;font-size:14px}
 .rp-stop.end{border-color:var(--lime);color:var(--lime)}
 .rp-arr{color:var(--txt2);font-weight:800}
+/* v4.4 — Alcanza tu grupo */
+.ctc{background:var(--card);border:2px solid rgba(200,220,60,.55);border-radius:22px;padding:18px;margin:0 0 16px}
+.ctc .ct-t{font-weight:800;font-size:22px;line-height:1.2}
+.ctc .ct-big{font-size:19px;line-height:1.4;margin:10px 0 14px}.ctc .ct-big b{color:var(--lime)}
+.ctc .ct-small{font-size:14px;color:var(--txt2);margin:-6px 0 12px}
+.ctc .ct-map{height:180px;border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px;background:#0C1826}
+.ctc .ct-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--txt2);margin:0 0 4px 2px}
+.ctc .ct-leg span{display:flex;align-items:center;gap:6px}.ctc .ct-leg i{width:12px;height:12px;border-radius:50%;display:block}
+.ctc .btn{font-size:18px;margin-top:10px}
+.ct-me{width:22px;height:22px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.ct-gr{width:24px;height:24px;border-radius:50%;background:#C8DC3C;border:3px solid #0E1A2B;box-shadow:0 0 0 7px rgba(200,220,60,.28)}
+.ct-fl{font-size:24px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.ctc-home{border:2px solid rgba(200,220,60,.55)!important;margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -681,6 +694,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </div>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
+  <div id="catchHome"></div>
   <div class="block">
     <div class="sec"><h3>Próximas salidas</h3><a onclick="openAllRides()">Ver todas <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
     <div class="rides" id="nextRides"></div>
@@ -789,7 +803,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1198,7 +1212,7 @@ function renderRides(){
   else $('nextRides').innerHTML=up.length?up.slice(0,6).map(r=>rideCard(r)).join(''):`<div class="empty" style="flex:1 0 100%">${me?.group?'Aún no hay salidas próximas en tu club.<br>¡Crea la primera y avisa a tu grupeta!':'Únete a tu club para ver sus salidas.<br><button class="btn btn-line" style="max-width:240px;margin-top:8px" onclick="joinGroupAsk()">🔗 Unirme a mi club</button>'}</div>`;
   const mine=up.filter(joined);
   $('myRides').innerHTML=mine.length?mine.map(r=>rideCard(r,true)).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4"/></svg>Todavía no te has apuntado a ninguna salida<button class="btn btn-lime" style="max-width:240px" onclick="openCreate()">Crear salida</button></div>`;
-  renderStats();renderRank();
+  renderStats();renderRank();renderCatchHome();
   if($('sh-all').classList.contains('show'))renderAll();
   fillWx();
 }
@@ -1358,6 +1372,7 @@ async function openRide(id,keep){
      <div class="stat"><b class="num">${esc(r.hour)}</b><span>hora de salida</span></div>
      <div class="stat"><b class="num">${r.km?+r.km:'—'}</b><span>km aprox.</span></div>
    </div>
+   ${catchable(r)?'<div class="ctc" id="catchBox"></div>':''}
    ${(r.startLL||r.meetLL||r.route)?'<div class="rmap" id="rideMap"></div>':''}
    ${r.route?`<div class="pstats" style="margin-top:0"><div><b class="num">${r.route.km}</b><span>km</span></div><div><b class="num">+${r.route.up}</b><span>m subida</span></div><div><b class="num">−${r.route.down}</b><span>m bajada</span></div><div><b class="num" style="font-size:16px">${hm(r.route.mins)}</b><span>aprox.</span></div></div>${profileSVG(unpackRoute(r.route).prof)}<button class="btn btn-line" style="margin:8px 0 14px" onclick="showRoute(unpackRoute(rides.find(x=>x.id==='${r.id}').route))">🗺️ Ver la ruta en el mapa grande</button>`:''}
    <div class="li" style="margin-bottom:10px;cursor:default"><span class="em">🚩</span><div><small>Punto de salida</small><b>${esc(r.start)}</b></div><button class="mini" onclick="guideKey(${gdKey(r.start,r.startLL)},'${r.id}')">🧭 Cómo llegar</button></div>
@@ -1386,7 +1401,177 @@ async function openRide(id,keep){
   if(!keep)openSheet('sh-ride');
   else{const ci=$('chatIn');if(ci&&draft){ci.value=draft}if(ci&&focused)ci.focus({preventScroll:true});$('sh-ride').scrollTop=_sh}
   drawRideMap(r);fillWxDetail(r);watchChat(r.id);
+  if($('catchBox'))fillCatch(r.id);
 }
+/* ===================================================================
+   v4.4 — «ALCANZA TU GRUPO»: para quien llega tarde a una salida ya empezada.
+   Sencillo para el ciclista: dónde está su grupo, cuánto tarda y un botón que le lleva.
+   Por dentro: sitúa al grupo sobre la ruta, busca un punto POR DELANTE del grupo
+   (nunca por donde ya han pasado) al que llegas antes que ellos, y te guía en bici
+   con el mismo guiado de la app (sin autovías).
+   =================================================================== */
+const V_ME=20;                 // km/h a los que calculamos que va quien llega tarde
+let CATCH=null,catchT=null,catchMap=null;
+function rideStartMs(r){return new Date(r.date+'T'+(r.hour||'08:30')+':00').getTime()}
+function rideEndMs(r){return rideStartMs(r)+((r.route&&r.route.mins)||180)*1.3*60000+3600000}
+function catchable(r){
+  if(!r||!joined(r))return false;const n=Date.now();
+  if(n<rideStartMs(r)||n>rideEndMs(r))return false;
+  try{if(live.on&&live.rideId===r.id)return false}catch(e){}
+  return true;
+}
+const ctMed=a=>{const s=[...a].sort((x,y)=>x-y);return s.length?s[Math.floor(s.length/2)]:null};
+const ctKm=k=>k<1?Math.max(100,Math.round(k*1000/50)*50)+' m':(k<10?fmtNum(k,1):Math.round(k))+' km';
+const ctHour=ms=>{const d=new Date(ms);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
+const ctMin=m=>m<=1?'1 minuto':m<60?'unos '+m+' minutos':'unos '+hm(m);
+async function ctPlace(ll){
+  try{const j=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&accept-language=es&lat=${ll.lat}&lon=${ll.lng}`)).json();
+    const a=(j&&j.address)||{};const road=a.road||'',town=a.village||a.town||a.city||a.hamlet||a.suburb||a.municipality||'';
+    return road&&town?road+', '+town:(road||town||null)}catch(e){return null}
+}
+function renderCatchHome(){
+  const B=$('catchHome');if(!B)return;
+  const r=rides.filter(x=>canSeeRideUI(x)&&catchable(x)).sort((a,b)=>rideStartMs(b)-rideStartMs(a))[0];
+  B.innerHTML=r?`<button class="li ctc-home" onclick="openRide('${r.id}')"><span class="em">🚴</span><div><b>Tu grupo ya ha salido</b><small>${esc(r.title||'Salida en grupo')} · toca para alcanzarles</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`:'';
+}
+setInterval(renderCatchHome,60000);
+
+/* Cálculo: dónde está el grupo y dónde os juntáis */
+async function catchCalc(r){
+  const now=Date.now();let mem=[];
+  try{const s=await db.collection('rides').doc(r.id).collection('live').get();
+    mem=s.docs.filter(d=>d.id!==uid).map(d=>d.data()).filter(v=>v&&typeof v.lat==='number'&&typeof v.lng==='number'&&now-(v.t||0)<600000&&!v.late)}catch(e){console.warn('alcanza',e)}
+  const me=await myPos();
+  if(!me)return{st:'gps'};
+  const C=r.route&&r.route.poly?decodePoly(r.route.poly):null;
+  const vR=r.route&&r.route.km&&r.route.mins?Math.min(32,Math.max(14,r.route.km/(r.route.mins/60))):20;
+  let g=null,sG=null,vG=vR,est=false,cum=null;
+  if(C&&C.length>1){
+    cum=cumDist(C);const total=cum.at(-1);
+    const on=mem.map(v=>{const[i,dm]=nearestIdx(C,[v.lat,v.lng],0);return{v,i,dm}}).filter(x=>x.i>=0&&x.dm<600);
+    if(on.length){sG=ctMed(on.map(x=>cum[x.i]));const sp=on.map(x=>+x.v.speed||0).filter(x=>x>8);if(sp.length)vG=Math.min(40,Math.max(12,ctMed(sp)))}
+    else if(!mem.length){sG=Math.min(total,(now-rideStartMs(r))/3600000*vR);est=true}
+    if(sG!=null){const i=cum.findIndex(d=>d>=sG);const q=C[i<0?C.length-1:i];g={lat:q[0],lng:q[1]}}
+  }
+  if(!g&&mem.length){const v=[...mem].sort((a,b)=>b.t-a.t)[0];g={lat:v.lat,lng:v.lng}}
+  if(!g)return{st:'nopos',me};
+  const dG=hav([me.lat,me.lng],[g.lat,g.lng]);
+  const base={me,g,dG:dG*1.25,est,C,n:mem.length};
+  if(!est&&dG<0.15)return{...base,st:'with'};
+  if(sG==null)return{...base,st:'go',P:g,tMe:Math.max(1,Math.round(dG*1.3/V_ME*60))};   // sin ruta: directo hacia ellos
+  // De todos los puntos POR DELANTE del grupo a los que llegas antes que ellos, el más cercano a ti
+  // (así nunca vas en contra del sentido de la ruta ni a un punto por el que ya han pasado)
+  const total=cum.at(-1);let best=null;
+  for(let s=sG+0.3;s<=total;s+=0.25){
+    const i=cum.findIndex(d=>d>=s);const q=C[i<0?C.length-1:i];
+    const tMe=hav([me.lat,me.lng],q)*1.3/V_ME*60,tG=(s-sG)/vG*60;
+    if(tMe+2<=tG&&(!best||tMe<best.tMe-0.5))best={q,s,tMe,tG};
+  }
+  if(!best)return{...base,st:'late'};
+  const wait=best.tG-best.tMe;
+  return{...base,st:wait>8?'wait':'go',P:{lat:best.q[0],lng:best.q[1]},tMe:Math.max(1,Math.round(best.tMe)),passT:now+best.tG*60000,kmP:best.s};
+}
+
+/* Tarjeta en la ficha de la salida */
+async function fillCatch(id,refresh){
+  const B=$('catchBox');const r=rides.find(x=>x.id===id);if(!B||!r)return;
+  if(!refresh&&CATCH&&CATCH.rideId===id&&Date.now()-CATCH.at<30000){drawCatch(CATCH);return}
+  if(!refresh||!CATCH||CATCH.rideId!==id)B.innerHTML='<div class="ct-t">🚴 Alcanza tu grupo</div><p class="ct-big" style="color:var(--txt2)">Buscando a tu grupo…</p>';
+  let c;try{c=await catchCalc(r)}catch(e){console.warn('alcanza',e);c={st:'err'}}
+  if(c.st==='wait'&&c.P){c.place=await ctPlace(c.P)}
+  c.rideId=id;c.at=Date.now();c.sent=CATCH&&CATCH.rideId===id?CATCH.sent:0;CATCH=c;
+  if(openRideId!==id||!$('catchBox'))return;
+  drawCatch(c);
+  if(!catchT)catchT=setInterval(()=>{if(!$('catchBox')||!$('sh-ride').classList.contains('show')||!CATCH){clearInterval(catchT);catchT=null;return}fillCatch(CATCH.rideId,true)},30000);
+}
+function drawCatch(c){
+  const B=$('catchBox');if(!B)return;
+  const legend='<div class="ct-leg"><span><i style="background:#2563EB"></i>Tú</span><span><i style="background:#C8DC3C"></i>Tu grupo</span>'+(c.P?'<span>🚩 Os juntáis</span>':'')+'</div>';
+  const btnGo=t=>`<button class="btn btn-lime" onclick="catchGo()">🧭 ${t}</button>`;
+  const btnAv=(t,msg)=>`<button class="btn btn-line" onclick="catchNotify(${JSON.stringify(msg).replace(/"/g,'&quot;')})">📣 ${t}</button>`;
+  const estN=c.est?'<p class="ct-small">Calculado con la hora de salida: ahora nadie del grupo comparte su posición.</p>':'';
+  let h='';
+  if(c.st==='go')h=`<div class="ct-t">🚴 Alcanza tu grupo</div><p class="ct-big">Tu grupo está a <b>${ctKm(c.dG)}</b>.<br>Llegas en <b>${ctMin(c.tMe)}</b>.</p>${estN}<div class="ct-map" id="ctMap"></div>${legend}${btnGo('Llévame con mi grupo')}${btnAv('Avisar: «Voy para allá»','Voy para allá')}`;
+  else if(c.st==='wait'){const pl=c.place||('el km '+Math.round(c.kmP)+' de la ruta');h=`<div class="ct-t">☕ Espera a tu grupo</div><p class="ct-big">Espéralos en <b>${esc(pl)}</b>.<br>Pasarán sobre las <b>${ctHour(c.passT)}</b>.</p><p class="ct-small">Llegas en ${ctMin(c.tMe)}. Espera en el arcén, en su sentido de marcha.</p>${estN}<div class="ct-map" id="ctMap"></div>${legend}${btnGo('Llévame allí')}${btnAv('Avisar: «Os espero allí»','Os espero en '+String(pl).split(',')[0])}`}
+  else if(c.st==='late')h=`<div class="ct-t">⏰ Hoy no llegas a tiempo</div><p class="ct-big">Tu grupo va muy por delante.</p>${btnAv('Avisar al grupo','No llego a tiempo, ¡buena ruta!')}`;
+  else if(c.st==='with')h=`<div class="ct-t">✅ ¡Ya estás con tu grupo!</div><p class="ct-big" style="font-size:17px;color:var(--txt2)">Pulsa «Empezar salida» para rodar con ellos.</p><button class="btn btn-lime" onclick="startRide('${c.rideId}')">🛰️ Empezar salida</button>`;
+  else if(c.st==='nopos')h=`<div class="ct-t">🚴 Tu grupo ya ha salido</div><p class="ct-big" style="font-size:17px">Ahora nadie del grupo comparte su posición.</p>${btnAv('Avisar: «Voy para allá»','Voy para allá')}`;
+  else if(c.st==='gps')h=`<div class="ct-t">📍 Activa la ubicación</div><p class="ct-big" style="font-size:17px">Necesito saber dónde estás para llevarte con tu grupo.</p><button class="btn btn-line" onclick="fillCatch('${c.rideId}',true)">🔄 Probar otra vez</button>`;
+  else h=`<div class="ct-t">🚴 Alcanza tu grupo</div><p class="ct-big" style="font-size:17px">No se ha podido calcular. Revisa la conexión.</p><button class="btn btn-line" onclick="fillCatch('${c.rideId}',true)">🔄 Probar otra vez</button>`;
+  B.innerHTML=h;
+  if($('ctMap'))drawCatchMap(c);
+}
+function drawCatchMap(c){
+  if(catchMap){try{catchMap.remove()}catch(e){}catchMap=null}
+  if(typeof maplibregl==='undefined')return;
+  try{
+    catchMap=newMap({container:'ctMap',center:[c.g.lng,c.g.lat],zoom:12,attributionControl:false,interactive:false});
+    if(c.C)setLine(catchMap,c.C,'plan','#5B7699');
+    const mk=(ll,cls,txt)=>{const el=document.createElement('div');el.className=cls;if(txt)el.textContent=txt;new maplibregl.Marker({element:el,anchor:cls==='ct-fl'?'bottom-left':'center'}).setLngLat([ll.lng,ll.lat]).addTo(catchMap)};
+    if(c.P&&(c.P.lat!==c.g.lat||c.P.lng!==c.g.lng))mk(c.P,'ct-fl','🚩');
+    mk(c.g,'ct-gr');mk(c.me,'ct-me');
+    const b=new maplibregl.LngLatBounds();[c.me,c.g,c.P].filter(Boolean).forEach(ll=>b.extend([ll.lng,ll.lat]));
+    const fit=()=>{try{catchMap.resize();catchMap.fitBounds(b,{padding:34,maxZoom:15,duration:0})}catch(e){}};
+    fit();setTimeout(fit,350);
+  }catch(e){console.warn('mapa alcanza',e)}
+}
+
+/* «Llévame con mi grupo»: empieza la salida guiándote hasta el punto de unión */
+async function catchGo(){
+  const c=CATCH;if(!c||!c.P)return;const r=rides.find(x=>x.id===c.rideId);if(!r)return;
+  if(!MAPBOX_TOKEN||MAPBOX_TOKEN.startsWith('PON_')){guideTo('Punto de unión',c.P,r.id);return}
+  toast('Calculando el camino…');
+  const me=await myPos()||c.me;let n;
+  try{n=await navSteps([me,c.P])}catch(e){toast('No se pudo calcular el camino. Revisa la conexión');return}
+  startLive({rideId:r.id,title:r.title||'Salida en grupo',route:{coords:n.coords}});
+  if(!live.on)return;
+  prepNav(n.coords,n.steps);live.wps=[me,c.P];live.catchTo={P:c.P,rideId:r.id,near:0};
+  setTimeout(()=>speak(c.st==='wait'?'Te llevo al sitio donde esperarás a tu grupo. Sigue la línea verde.':'Te llevo con tu grupo. Sigue la línea verde.'),600);
+}
+/* Durante el camino: al estar con el grupo (a menos de 150 m durante 45 s) se avisa y se sigue la ruta de la salida */
+function catchCheck(p,now){
+  const t=live.catchTo;if(!t)return;
+  const close=Object.values(live.members||{}).some(v=>now-(v.t||0)<120000&&!v.late&&hav(p,[v.lat,v.lng])<0.15);
+  if(!close){t.near=0;return}
+  if(!t.near){t.near=now;return}
+  if(now-t.near>=45000)catchJoined();
+}
+function catchJoined(){
+  const t=live.catchTo;if(!t)return;live.catchTo=null;
+  const r=rides.find(x=>x.id===t.rideId);
+  speak('¡Ya estás con tu grupo! Buena ruta.');vib([200,100,200]);
+  alarmShow('join','¡Ya estás con tu grupo!','Hemos avisado al grupo. Ahora sigues la ruta de la salida.',[['👍 Vale','al-main','alarmClose()']]);
+  setTimeout(()=>{if($('alTitle').textContent.startsWith('¡Ya estás'))alarmClose()},8000);
+  catchAlert('join');
+  if(r&&r.route){const u=unpackRoute(r.route);prepNav(u.coords,null);live.wps=(r.route.nav||r.route.wps||null);
+    if(live.wps&&live.wps.length>=2&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_'))navSteps(live.wps.slice(0,25)).then(n=>{if(live.on)prepNav(n.coords,n.steps)}).catch(()=>{})}
+  else{live.nav=null;live.wps=null;setLine(map,null,'plan')}
+}
+/* Aviso al grupo (llega al móvil y al Garmin de los apuntados) */
+async function catchAlert(type,text){
+  if(!db||!uid)return false;
+  const rid=live.on&&live.rideId?live.rideId:(CATCH&&CATCH.rideId);if(!rid)return false;
+  let p=live.on?(live.pts.at(-1)||live.lastPushLL):null;
+  if(!p){const m=await myPos()||(CATCH&&CATCH.me);if(m)p=[m.lat,m.lng]}
+  if(!p)return false;
+  const now=Date.now();const al={type,t:now,id:uid+'_'+now,...(text?{text:String(text).slice(0,60)}:{})};
+  try{
+    await db.collection('rides').doc(rid).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.on?live.speed||0:0),t:now,km:live.on?+live.km.toFixed(2):0,alert:al,...(type==='late'||live.catchTo?{late:true}:{})});
+  }catch(e){console.warn('aviso',e);return false}
+  const msg=type==='join'?'✅ Ya estoy con vosotros':'🚴 '+(text||'Llego tarde, voy para allá');
+  db.collection('rides').doc(rid).collection('msgs').add({uid,name:myName(),text:msg,ts:now}).catch(()=>{});
+  db.collection('rides').doc(rid).update({lastMsg:{uid,name:myName(),text:msg.slice(0,60),t:now}}).catch(()=>{});
+  return true;
+}
+async function catchNotify(text){
+  if(CATCH&&Date.now()-(CATCH.sent||0)<120000){toast('Ya has avisado al grupo');return}
+  toast('Avisando al grupo…');
+  const ok=await catchAlert('late',text);
+  if(!ok){toast('No se pudo avisar. Revisa la conexión');return}
+  if(CATCH)CATCH.sent=Date.now();
+  vib(150);toast('📣 Aviso enviado: «'+text+'»');
+}
+
 let rideMap=null;
 function drawRideMap(r){
   if(rideMap){rideMap.remove();rideMap=null}
@@ -3200,8 +3385,12 @@ const ALERTS={
   mech:{s:'AVERÍA',ico:'⚙️',t:'tiene una avería',say:'avería',msg:'⚙️ Tengo una avería. ¡Esperadme!',c1:'#B45309',c2:'#451A03'},
   back:{s:'ME QUEDO ATRÁS',ico:'🐢',t:'se queda atrás',say:'se queda atrás',msg:'🐢 Me quedo atrás, id más despacio',c1:'#0891B2',c2:'#083344'},
   fall:{s:'CAÍDA',ico:'🚑',t:'SE HA CAÍDO',say:'se ha caído',msg:'🚑 ¡Me he caído!',c1:'#B91C1C',c2:'#3F0A0A'},
-  boss:{s:'JEFE DE RUTA',ico:'📣',t:'(jefe de ruta)',say:'aviso del jefe de ruta',msg:'📣 Aviso del jefe de ruta',c1:'#7C3AED',c2:'#2E1065'}
+  boss:{s:'JEFE DE RUTA',ico:'📣',t:'(jefe de ruta)',say:'aviso del jefe de ruta',msg:'📣 Aviso del jefe de ruta',c1:'#7C3AED',c2:'#2E1065'},
+  // v4.4 — «Alcanza tu grupo»
+  late:{s:'VOY PARA ALLÁ',ico:'🚴',t:'llega tarde y viene hacia el grupo',say:'llega tarde y viene hacia el grupo',msg:'🚴 Llego tarde, voy para allá',c1:'#15803D',c2:'#14532D'},
+  join:{s:'YA ESTÁ CON VOSOTROS',ico:'✅',t:'ya está con vosotros',say:'ya está con el grupo',msg:'✅ Ya estoy con vosotros',c1:'#15803D',c2:'#14532D'}
 };
+const SOFT_AL={ok:1,late:1,join:1};
 // Menú «➕ Más avisos» durante la salida
 async function moreAlerts(){
   const r=rides.find(x=>x.id===live.rideId);const jefe=!!(r&&(canManage(r)||isOwner(r)));
@@ -3216,7 +3405,7 @@ function alarmStop(){clearTimeout(alarmT);alarmT=null;try{navigator.vibrate&&nav
 /* Sirena fuerte: dos tonos agudos alternos (como una alarma), varias tandas */
 function alarmSound(kind,rounds){
   alarmStop();alarmUnlock();if(!AC)return;
-  const soft=kind==='ok';rounds=rounds||(soft?1:4);
+  const soft=!!SOFT_AL[kind];rounds=rounds||(soft?1:4);
   const play=()=>{
     const t0=AC.currentTime+0.02;const master=AC.createGain();master.gain.value=1;
     const comp=AC.createDynamicsCompressor();master.connect(comp);comp.connect(AC.destination);
@@ -3264,14 +3453,15 @@ function checkAlerts(){
     if(a.type==='boss'){alarmSound('ok',2);alarmShow('boss',(a.text||'Aviso del jefe de ruta'),'Aviso de '+name+' (jefe de ruta)',[['👍 Entendido','al-main','alarmClose()']]);setTimeout(()=>speak('Aviso del jefe de ruta. '+(a.text||'')),900);toast('📣 '+name+': '+(a.text||''));if(document.visibilityState!=='visible')bgNotify('📣 '+name+': '+(a.text||'Aviso del jefe de ruta'),live.rideTitle||'',true);return}
     const dist=me?hav(me,[v.lat,v.lng]):null;const dtx=dist==null?'':dist<1?`a ${Math.round(dist*1000)} m de ti`:`a ${dist.toFixed(1).replace('.',',')} km de ti`;
     live.alertFocus=id;
-    if(a.type==='ok'){alarmSound('ok');alarmShow('ok',`${name} ${A.t}`,'Podéis seguir rodando',[['👍 Vale','al-main','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},6000)}
+    if(a.type==='ok'||a.type==='join'){alarmSound('ok');alarmShow(a.type,`${name} ${A.t}`,a.type==='ok'?'Podéis seguir rodando':'¡Buena ruta!',[['👍 Vale','al-main','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},6000)}
+    else if(a.type==='late'){alarmSound('ok');alarmShow('late',a.text?`${name}: «${a.text}»`:`${name} ${A.t}`,dtx,[['📍 Ver en el mapa','al-main',`alarmClose();alertGo('${id}')`],['👍 Vale','al-sec','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith(name))alarmClose()},15000)}
     else{
       alarmSound(a.type);
       alarmShow(a.type,`${name} ${A.t}`,dtx,[['📍 Ver en el mapa','al-main',`alarmClose();alertGo('${id}')`],['🧭 Cómo llegar','al-sec',`alarmClose();guideKey(${gdKey(name,{lat:v.lat,lng:v.lng})})`],['Entendido','al-sec','alarmClose()']]);
     }
-    setTimeout(()=>speak(`Atención. ${name} ${A.say}.${dist!=null&&a.type!=='ok'?' Está '+dtx+'.':''}`),a.type==='ok'?900:2200);
+    setTimeout(()=>speak(`Atención. ${name} ${a.type==='late'&&a.text?'dice: '+a.text:A.say}.${dist!=null&&!SOFT_AL[a.type]?' Está '+dtx+'.':a.type==='late'&&dist!=null?' Está '+dtx+'.':''}`),SOFT_AL[a.type]?900:2200);
     toast(`${A.ico} ${name} ${A.t}`);
-    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name}: ${A.s}`,(dtx?dtx+' · ':'')+(live.rideTitle||'RideSafe IA'),a.type!=='ok');
+    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name}: ${a.type==='late'&&a.text?a.text:A.s}`,(dtx?dtx+' · ':'')+(live.rideTitle||'RideSafe IA'),!SOFT_AL[a.type]);
   });
 }
 async function bgNotify(title,body,urgent){
@@ -3977,6 +4167,7 @@ function onFix(pos){
   }
   if(live.nav)navUpdate(p);
   if(live.rideId)pushPos(p,now);
+  if(live.catchTo)catchCheck(p,now);
   if(live.shareId)pushShare();
   renderLive();
 }
@@ -4011,7 +4202,7 @@ function pushPos(p,now){
   const moved=live.lastPushLL?hav(live.lastPushLL,p)*1000:1e9;
   if(now-live.lastPush<8000&&moved<40)return;
   live.lastPush=now;live.lastPushLL=p;
-  db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2)}).catch(e=>console.warn('live',e));
+  db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2),...(live.catchTo?{late:true}:{})}).catch(e=>console.warn('live',e));
 }
 function listenGroup(){
   live.unsub=db.collection('rides').doc(live.rideId).collection('live').onSnapshot(s=>{
@@ -4032,7 +4223,8 @@ function drawMembers(){
 function checkStragglers(){
   const me=live.pts.at(-1);if(!me)return;
   const now=Date.now();
-  const all=[{id:uid,lat:me[0],lng:me[1],name:myName()},...Object.entries(live.members).filter(([,v])=>now-v.t<180000).map(([id,v])=>({id,...v}))];
+  if(live.catchTo)return;
+  const all=[{id:uid,lat:me[0],lng:me[1],name:myName()},...Object.entries(live.members).filter(([,v])=>now-v.t<180000&&!v.late).map(([id,v])=>({id,...v}))];
   if(all.length<3)return;
   const mLat=[...all].map(a=>a.lat).sort((a,b)=>a-b)[Math.floor(all.length/2)],mLng=[...all].map(a=>a.lng).sort((a,b)=>a-b)[Math.floor(all.length/2)];
   all.forEach(a=>{if(a.id===uid)return;const d=hav([a.lat,a.lng],[mLat,mLng]);
