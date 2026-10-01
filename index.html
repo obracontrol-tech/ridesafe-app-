@@ -243,6 +243,10 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvalert{display:grid;grid-template-columns:1fr 1fr 1fr .8fr;gap:8px;margin-bottom:8px}
 .lvalert button{min-height:50px;border-radius:16px;font-weight:800;font-size:15px;background:var(--card2);color:var(--txt);border:2px solid var(--line)}
 .lvalert .a-more{border-color:#A78BFA}.lvalert .a-flat{border-color:#F59E0B}.lvalert .a-wait{border-color:#60A5FA}.lvalert .a-help{border-color:#EF4444;background:#7F1D1D;color:#fff}
+#fallBox{position:fixed;inset:0;z-index:20000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;color:#fff;background:linear-gradient(160deg,#B91C1C,#3F0A0A)}
+#fallBox.show{display:flex}#fallBox h2{font-size:30px;line-height:1.15;margin:0}#fallBox p{font-size:16px;opacity:.95;margin:0;max-width:420px}
+#fallBox .fnum{font-size:84px;font-weight:900;line-height:1}#fallBox .fbtn{width:100%;max-width:420px;min-height:66px;border-radius:16px;border:0;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
+#fallBox .fok{background:#22C55E;color:#0E1A2B}#fallBox .f112{background:#fff;color:#B91C1C}#fallBox .fsec{background:rgba(255,255,255,.16);color:#fff;border:2px solid rgba(255,255,255,.5);font-size:17px;min-height:56px}
 #alarmBox{position:fixed;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;color:#fff;animation:alFlash 1s infinite}
 #alarmBox.show{display:flex}
 #alarmBox .al-ico{font-size:110px;line-height:1;margin-bottom:10px;animation:alPulse .8s infinite}
@@ -959,6 +963,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <h2>🧭 Cómo llegar <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
   <div id="gdBody"></div>
 </div>
+<div id="fallBox" role="alertdialog" aria-live="assertive"></div>
 <div class="sheet" id="sh-wind">
   <div class="grab"></div>
   <h2>🌬️ Viento de la salida <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
@@ -3602,9 +3607,75 @@ function sos(){
   <div style="display:flex;flex-direction:column;gap:12px">
    <a class="btn" style="background:var(--red);color:#fff;min-height:64px;font-size:20px;text-decoration:none" href="tel:112">📞 Llamar al 112</a>
    <button class="btn btn-lime" style="min-height:64px" onclick="sendLoc()">📍 Enviar mi ubicación por WhatsApp</button>
-   <p style="color:var(--txt2);text-align:center;font-size:14px">En caso de emergencia llama siempre al 112.</p></div>`;
+   <p style="color:var(--txt2);text-align:center;font-size:14px">En caso de emergencia llama siempre al 112.</p>
+   <div class="plc"><div class="pc-h"><span class="pc-tag">Caídas</span><b>🚑 Aviso automático de caída</b></div>
+    <small style="color:var(--txt2);display:block;margin:4px 0 8px">Mientras grabas una salida, si el móvil detecta un golpe fuerte y te quedas quieto, suena una alarma. Si no respondes en 30 segundos, se avisa a tu grupo y aparece en pantalla el botón para llamar al 112 y avisar a tu contacto.</small>
+    <label style="display:flex;align-items:center;gap:10px;font-weight:700;margin-bottom:10px"><input type="checkbox" id="fdOn" ${store.get('fallOn',true)?'checked':''} onchange="store.set('fallOn',this.checked);toast(this.checked?'Aviso de caída activado':'Aviso de caída desactivado')" style="width:22px;height:22px"> Activar aviso de caída</label>
+    <label class="l" for="fdName">Contacto de emergencia</label>
+    <input class="inp" id="fdName" placeholder="Nombre (ej. María)" value="${esc((store.get('sosContact',{})||{}).name||'')}">
+    <input class="inp" id="fdTel" type="tel" inputmode="tel" placeholder="Teléfono (ej. 600 123 456)" style="margin-top:8px" value="${esc((store.get('sosContact',{})||{}).tel||'')}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="btn btn-lime" onclick="saveSosContact()">💾 Guardar</button><button class="btn btn-line" onclick="fallTest()">🧪 Probar</button></div>
+   </div></div>`;
   openSheet('sh-ride');
 }
+/* ===== v3.12 — Aviso automático de caída (sin Telegram) ===== */
+let fd={on:false,peakT:0,peakSpd:0,state:'idle',cd:null,rep:null};
+function telNorm(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(d.length===9)d='34'+d;return d}
+function saveSosContact(){const name=$('fdName').value.trim().slice(0,40),tel=$('fdTel').value.trim().slice(0,20);
+  if(tel&&telNorm(tel).length<9){toast('Revisa el teléfono');return}
+  store.set('sosContact',{name,tel});toast(tel?'✅ Contacto de emergencia guardado':'Contacto borrado')}
+function fallMotion(e){
+  if(!live.on||live.paused||fd.state!=='idle')return;
+  const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;
+  const g=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z)/9.81;
+  // Golpe fuerte (> 3,5 g) yendo en marcha
+  if(g>3.5&&(live.speed||0)>=8&&Date.now()-fd.peakT>5000){fd.peakT=Date.now();fd.peakSpd=live.speed||0;fd.state='watch';fd.still=0;
+    // Comprobamos durante 15 s si se queda parado
+    let n=0;fd.watchT=setInterval(()=>{n++;if(!live.on){clearInterval(fd.watchT);fd.state='idle';return}
+      if((live.speed||0)<3)fd.still++;else{clearInterval(fd.watchT);fd.state='idle';return}
+      if(n>=15){clearInterval(fd.watchT);if(fd.still>=12)fallAsk();else fd.state='idle'}},1000)}
+}
+async function fallStart(){
+  fd.state='idle';if(!store.get('fallOn',true)||fd.on)return;
+  try{if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function'){const r=await DeviceMotionEvent.requestPermission();if(r!=='granted'){toast('Sin permiso de movimiento: el aviso de caída no funcionará');return}}}catch(e){}
+  window.addEventListener('devicemotion',fallMotion);fd.on=true;
+  if(!(store.get('sosContact',{})||{}).tel&&!store.get('fdTip')){store.set('fdTip',1);setTimeout(()=>toast('💡 Pon un contacto de emergencia en Seguridad → Alertas de seguridad'),4000)}
+}
+function fallStop(){window.removeEventListener('devicemotion',fallMotion);fd.on=false;clearInterval(fd.watchT);clearInterval(fd.cd);clearInterval(fd.rep);fd.state='idle';const b=$('fallBox');if(b)b.classList.remove('show')}
+function fallAsk(test){
+  fd.state='ask';fd.test=!!test;try{saverOff()}catch(e){}
+  let s=test?10:30;const B=$('fallBox');
+  const draw=()=>{B.innerHTML=`<div style="font-size:52px">🚑</div><h2>¿Estás bien?</h2><p>${test?'Prueba: así se ve si el móvil detecta una caída.':'Hemos notado un golpe fuerte y estás parado.'}</p><div class="fnum">${s}</div><p>Si no respondes, avisamos para pedir ayuda.</p>
+    <button class="fbtn fok" onclick="fallOk()">✅ Estoy bien</button><button class="fbtn fsec" onclick="fallHelp()">🆘 Necesito ayuda ya</button>`};
+  draw();B.classList.add('show');vib([400,200,400,200,400]);
+  alarmSound('fall',2);setTimeout(()=>speak('¿Estás bien? Pulsa estoy bien. Si no respondes, pediremos ayuda.'),1600);
+  if(document.visibilityState!=='visible')bgNotify('🚑 ¿Estás bien?','Hemos detectado una posible caída. Abre RideSafe para responder.',true);
+  clearInterval(fd.cd);fd.cd=setInterval(()=>{s--;if(s<=0){clearInterval(fd.cd);fallHelp(true)}else{const n=B.querySelector('.fnum');if(n)n.textContent=s;if(s%10===0){vib([300,150,300]);alarmSound('fall',1)}}},1000);
+}
+function fallOk(){clearInterval(fd.cd);clearInterval(fd.rep);alarmStop();try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
+  $('fallBox').classList.remove('show');const was=fd.state;fd.state='idle';
+  if(was==='help'&&!fd.test&&live.on&&live.rideId)sendAlert('ok');
+  toast(fd.test?'Prueba terminada':'Perfecto, seguimos. ¡Cuidado!')}
+function fallPos(){const p=live.on&&live.pts&&live.pts.at(-1);return p?'https://maps.google.com/?q='+p[0].toFixed(5)+','+p[1].toFixed(5):''}
+function fallHelp(auto){
+  clearInterval(fd.cd);fd.state='help';
+  const c=store.get('sosContact',{})||{},tel=telNorm(c.tel),nm=c.name||'tu contacto';
+  const loc=fallPos();const msg=`🚑 AVISO DE CAÍDA — RideSafe IA\n${myName()} puede haber sufrido una caída en bici y no responde.${loc?'\n📍 Ubicación: '+loc:''}\nLlámale. Si no contesta, llama al 112.`;
+  if(!fd.test&&live.on&&live.rideId){try{sendAlert('fall')}catch(e){}}
+  const B=$('fallBox');
+  B.innerHTML=`<div style="font-size:52px">🆘</div><h2>${fd.test?'Prueba de emergencia':'Posible caída'}</h2>
+   <p><b>Si encuentras a este ciclista:</b> puede haberse caído. Llama al 112.</p>${loc?`<p style="font-size:14px">📍 ${esc(loc.split('q=')[1])}</p>`:''}
+   ${fd.test?'':live.rideId?'<p style="font-size:14px">✅ Tu grupo ya ha recibido el aviso con alarma.</p>':''}
+   <a class="fbtn f112" href="tel:112">📞 Llamar al 112</a>
+   ${tel?`<a class="fbtn fsec" href="https://wa.me/${tel}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">📲 Avisar a ${esc(nm)} por WhatsApp</a><a class="fbtn fsec" href="tel:+${tel}">📞 Llamar a ${esc(nm)}</a>`
+      :`<a class="fbtn fsec" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">📲 Enviar mi ubicación por WhatsApp</a>`}
+   <button class="fbtn fok" onclick="fallOk()">✅ Estoy bien, cancelar</button>`;
+  B.classList.add('show');
+  if(!fd.test){vib([600,200,600,200,600]);alarmSound('fall',4);setTimeout(()=>speak('Atención. Posible caída. Si encuentras a este ciclista, llama al uno uno dos.'),2500);
+    clearInterval(fd.rep);fd.rep=setInterval(()=>{if(fd.state!=='help'){clearInterval(fd.rep);return}alarmSound('fall',2);vib([600,200,600])},20000);
+    if(document.visibilityState!=='visible')bgNotify('🆘 Posible caída','Abre RideSafe: llama al 112 o avisa a tu contacto.',true)}
+}
+function fallTest(){closeSheets();fallAsk(true)}
 function sendLoc(){
   if(!navigator.geolocation){toast('Ubicación no disponible');return}
   navigator.geolocation.getCurrentPosition(p=>{
@@ -4212,6 +4283,7 @@ async function startLive(opt){
     const w=opt.wps&&opt.wps.length>=2?opt.wps:null;
     if(w&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_')){navSteps(w.slice(0,25)).then(n=>{if(live.on)prepNav(n.coords,n.steps)}).catch(e=>console.warn('pasos',e))}
   }else setLine(map,null,'plan');
+  fallStart();
   live.watch=navigator.geolocation.watchPosition(onFix,e=>{if(e.code===1)toast('Activa el permiso de ubicación para grabar')},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   live.timer=setInterval(renderLive,1000);
   keepAwake();
@@ -4356,7 +4428,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  saverOff();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
+  saverOff();fallStop();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
