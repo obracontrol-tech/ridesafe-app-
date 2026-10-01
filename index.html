@@ -3614,7 +3614,9 @@ function sos(){
     <label class="l" for="fdName">Contacto de emergencia</label>
     <input class="inp" id="fdName" placeholder="Nombre (ej. María)" value="${esc((store.get('sosContact',{})||{}).name||'')}">
     <input class="inp" id="fdTel" type="tel" inputmode="tel" placeholder="Teléfono (ej. 600 123 456)" style="margin-top:8px" value="${esc((store.get('sosContact',{})||{}).tel||'')}">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="btn btn-lime" onclick="saveSosContact()">💾 Guardar</button><button class="btn btn-line" onclick="fallTest()">🧪 Probar</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="btn btn-lime" onclick="saveSosContact()">💾 Guardar</button><button class="btn btn-line" onclick="fallTest()">🧪 Ver pantalla</button></div>
+    <button class="btn btn-line" style="margin-top:8px;min-height:52px" onclick="fallSensorTest()">📳 Probar el sensor de verdad</button>
+    <small id="fdTestMsg" style="display:block;margin-top:6px;color:var(--txt2)">Pulsa y deja caer el móvil sobre la cama o un cojín (con cuidado). No hace falta moverse.</small>
    </div></div>`;
   openSheet('sh-ride');
 }
@@ -3676,6 +3678,20 @@ function fallHelp(auto){
     if(document.visibilityState!=='visible')bgNotify('🆘 Posible caída','Abre RideSafe: llama al 112 o avisa a tu contacto.',true)}
 }
 function fallTest(){closeSheets();fallAsk(true)}
+/* Prueba real del sensor: 30 s, sin necesidad de ir en bici */
+let fdT=null;
+function fallSensorTest(){
+  const m=$('fdTestMsg');if(fdT){toast('La prueba ya está en marcha');return}
+  const go=()=>{let max=0,left=30;
+    const on=e=>{const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;const g=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z)/9.81;if(g>max)max=g;
+      if(g>3.5){end();if(m)m.innerHTML=`✅ <b>Golpe detectado (${g.toFixed(1)} g).</b> El sensor funciona.`;vib(200);setTimeout(()=>{closeSheets();fallAsk(true)},1500)}};
+    const end=()=>{window.removeEventListener('devicemotion',on);clearInterval(fdT);fdT=null};
+    window.addEventListener('devicemotion',on);
+    fdT=setInterval(()=>{left--;if(m&&fdT)m.innerHTML=`⏳ Esperando el golpe… ${left} s · fuerza máxima: <b>${max.toFixed(1)} g</b> (hace falta más de 3,5 g)`;
+      if(left<=0){end();if(m)m.innerHTML=max<1.2?'❌ El móvil no envía datos del sensor de movimiento. Prueba en Chrome y revisa los permisos del navegador.':`⚠️ No llegó a 3,5 g (máximo ${max.toFixed(1)} g). Déjalo caer desde un poco más alto sobre la cama.`}},1000);
+    if(m)m.innerHTML='⏳ Esperando el golpe… 30 s';};
+  if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')DeviceMotionEvent.requestPermission().then(r=>r==='granted'?go():toast('Sin permiso de movimiento')).catch(()=>toast('Sin permiso de movimiento'));else go();
+}
 function sendLoc(){
   if(!navigator.geolocation){toast('Ubicación no disponible');return}
   navigator.geolocation.getCurrentPosition(p=>{
