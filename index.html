@@ -353,6 +353,10 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .pstats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 6px;text-align:center}
 .pstats b{display:block;font-size:20px;font-weight:800}
 .pstats span{font-size:11px;color:var(--txt2)}
+.conf{border:1px solid var(--line);border-left:6px solid var(--cc,#22C55E);border-radius:14px;padding:10px 12px;margin:6px 0;background:var(--card)}
+.conf-h{display:flex;align-items:center;gap:10px}.conf-dot{width:34px;height:34px;border-radius:50%;background:var(--cc,#22C55E);display:grid;place-items:center;font-weight:900;color:#0E1A2B;font-size:13px;flex-shrink:0}
+.conf-h b{display:block;font-size:15px}.conf-h small{color:var(--txt2);font-size:12px}
+.conf ul{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.45}.conf li{margin:2px 0}
 .profwrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 6px 4px;margin:6px 0}
 .proflbl{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);padding:0 4px}
 .stages{display:flex;flex-direction:column;gap:6px;margin:6px 0}
@@ -3908,12 +3912,48 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?hm(r.mins):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  $('pProf').innerHTML=r&&r.prof?profileSVG(r.prof):'';
+  $('pProf').innerHTML=r&&r.prof?profileSVG(r.prof)+confHTML(r):'';if(r&&r.prof&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';
   ['bGo','bSave','bUse'].forEach(i=>$(i).disabled=!r||plan.busy);$('bGo').innerHTML=plan.view&&r&&r.mode==='track'?'▲ Repetir':'▲ Iniciar';
   $('bUse').innerHTML=plan.fromCreate?'✓ Añadir a la salida':'📅 Crear salida con esta ruta';
+}
+/* ===== v3.10 — Semáforo de confianza de la ruta (pendiente + tiempo de ahora + luz) ===== */
+async function computeConf(r){
+  r.confBusy=true;
+  const why=[];let sc=100;
+  // Terreno: pendientes del perfil
+  let maxS=0,steep=0;const tot=r.prof.at(-1).d||1;
+  for(let i=1;i<r.prof.length;i++){const dd=(r.prof[i].d-r.prof[i-1].d);const s=dd>0?(r.prof[i].e-r.prof[i-1].e)/(dd*1000)*100:0;if(s>maxS)maxS=s;if(s>=7)steep+=dd}
+  if(maxS>=12){sc-=20;why.push(`⛰️ Rampa muy dura (máx ${Math.round(maxS)}%): baja con cuidado`)}else if(maxS>=7){sc-=8;why.push(`⛰️ Algún tramo exigente (máx ${Math.round(maxS)}%)`)}
+  if(steep/tot>0.15){sc-=10;why.push(`📈 ${Math.round(steep/tot*100)}% del recorrido por encima del 7%`)}
+  // Tiempo de ahora en la salida (Open-Meteo, gratis)
+  const s=r.coords&&r.coords[0];let wx=false;
+  if(s)try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${s[0].toFixed(3)}&longitude=${s[1].toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&forecast_hours=4&daily=sunset&forecast_days=1&wind_speed_unit=kmh&timezone=auto`;
+    const d=await (await fetch(u)).json();const c=d.current;if(!c)throw 0;wx=true;
+    const w=Math.round(c.wind_speed_10m),g=Math.round(c.wind_gusts_10m),t=Math.round(c.temperature_2m),code=c.weather_code;
+    const pp=Math.max(0,...((d.hourly&&d.hourly.precipitation_probability)||[0]).filter(x=>x!=null));
+    if(code>=95){sc-=40;why.push('⛈️ Tormenta prevista: mejor no salir')}
+    if(code===45||code===48){sc-=15;why.push('🌫️ Niebla: luces encendidas y ropa visible')}
+    if(w>=30||g>=50){sc-=30;why.push(`🌬️ Viento fuerte (${w} km/h, rachas ${g})`)}else if(w>=20||g>=35){sc-=15;why.push(`🌬️ Viento notable (${w} km/h, rachas ${g})`)}else if(w>=12){sc-=5;why.push(`🌬️ Algo de viento (${w} km/h)`)}
+    if(c.precipitation>0.2||pp>=60){sc-=25;why.push(`🌧️ Lluvia${pp?' ('+pp+'% próximas horas)':''}: el asfalto resbala`)}else if(pp>=30){sc-=10;why.push(`🌦️ Puede llover (${pp}%)`)}
+    if(t>=35){sc-=20;why.push(`🥵 Mucho calor (${t}°C): lleva agua extra`)}else if(t>=30){sc-=8;why.push(`☀️ Calor (${t}°C): hidrátate`)}else if(t<=3){sc-=15;why.push(`🧊 ${t}°C: posible hielo en sombras`)}else if(t<=8){sc-=5;why.push(`🧥 Fresco (${t}°C)`)}
+    if(!c.is_day){sc-=20;why.push('🌙 Es de noche: luces delante y detrás')}
+    else if(d.daily&&d.daily.sunset&&r.mins){const ss=new Date(d.daily.sunset[0]);const end=new Date(Date.now()+r.mins*60000);if(end>ss){sc-=15;why.push(`🌇 Llegarías después de anochecer (${d.daily.sunset[0].slice(11,16)}): lleva luces`)}}
+    r.confWx=`${t}°C · viento ${w} km/h`;
+  }catch(e){}
+  if(!wx)why.push('📡 Sin datos del tiempo: solo se ha valorado el terreno');
+  sc=Math.max(0,Math.min(100,sc));
+  r.conf={sc,why,lv:sc>=75?0:sc>=50?1:2};r.confBusy=false;
+  if(plan.route===r)renderPlan();
+}
+function confHTML(r){
+  if(!r.conf)return `<div class="conf" style="--cc:var(--line)"><div class="conf-h"><span class="conf-dot">…</span><div><b>Semáforo de la ruta</b><small>Comprobando el tiempo de ahora…</small></div></div></div>`;
+  const L=[['#22C55E','Buenas condiciones','Ruta recomendable ahora'],['#F59E0B','Con precaución','Revisa los avisos antes de salir'],['#EF4444','Mejor otro momento','Valora una ruta más corta u otro día']][r.conf.lv];
+  const list=r.conf.why.length?r.conf.why:['✅ Sin avisos: buen terreno y buen tiempo'];
+  return `<div class="conf" style="--cc:${L[0]}"><div class="conf-h"><span class="conf-dot">${r.conf.sc}</span><div><b>${L[1]}</b><small>${L[2]}${r.confWx?' · '+esc(r.confWx):''}</small></div></div><ul>${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
 }
 function setLoopKm(km){plan.loopKm=km;computeRoute()}
 function newLoop(){plan.seed++;computeRoute()}
