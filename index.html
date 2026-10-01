@@ -3611,6 +3611,12 @@ function sos(){
    <div class="plc"><div class="pc-h"><span class="pc-tag">Caídas</span><b>🚑 Aviso automático de caída</b></div>
     <small style="color:var(--txt2);display:block;margin:4px 0 8px">Mientras grabas una salida, si el móvil detecta un golpe fuerte y te quedas quieto, suena una alarma. Si no respondes en 30 segundos, se avisa a tu grupo y aparece en pantalla el botón para llamar al 112 y avisar a tu contacto.</small>
     <label style="display:flex;align-items:center;gap:10px;font-weight:700;margin-bottom:10px"><input type="checkbox" id="fdOn" ${store.get('fallOn',true)?'checked':''} onchange="store.set('fallOn',this.checked);toast(this.checked?'Aviso de caída activado':'Aviso de caída desactivado')" style="width:22px;height:22px"> Activar aviso de caída</label>
+    <label class="l" for="fdSens">Sensibilidad</label>
+    <select class="inp" id="fdSens" onchange="store.set('fallSens',this.value);toast('Sensibilidad: '+this.options[this.selectedIndex].text)" style="margin-bottom:10px">
+     <option value="baja" ${store.get('fallSens','normal')==='baja'?'selected':''}>Baja — solo golpes muy fuertes (12 g) · montaña</option>
+     <option value="normal" ${store.get('fallSens','normal')==='normal'?'selected':''}>Normal — recomendada (9 g)</option>
+     <option value="alta" ${store.get('fallSens','normal')==='alta'?'selected':''}>Alta — golpes más suaves (6 g)</option>
+    </select>
     <label class="l" for="fdName">Contacto de emergencia</label>
     <input class="inp" id="fdName" placeholder="Nombre (ej. María)" value="${esc((store.get('sosContact',{})||{}).name||'')}">
     <input class="inp" id="fdTel" type="tel" inputmode="tel" placeholder="Teléfono (ej. 600 123 456)" style="margin-top:8px" value="${esc((store.get('sosContact',{})||{}).tel||'')}">
@@ -3621,6 +3627,9 @@ function sos(){
   openSheet('sh-ride');
 }
 /* ===== v3.12 — Aviso automático de caída (sin Telegram) ===== */
+/* Sensibilidad: baja = golpes muy fuertes; alta = golpes más suaves */
+const FD_LV={baja:12,normal:9,alta:6};
+function fdG(){return FD_LV[store.get('fallSens','normal')]||9}
 let fd={on:false,peakT:0,peakSpd:0,state:'idle',cd:null,rep:null};
 function telNorm(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(d.length===9)d='34'+d;return d}
 function saveSosContact(){const name=$('fdName').value.trim().slice(0,40),tel=$('fdTel').value.trim().slice(0,20);
@@ -3631,7 +3640,7 @@ function fallMotion(e){
   const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;
   const g=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z)/9.81;
   // Golpe fuerte (> 3,5 g) yendo en marcha
-  if(g>3.5&&(live.speed||0)>=8&&Date.now()-fd.peakT>5000){fd.peakT=Date.now();fd.peakSpd=live.speed||0;fd.state='watch';fd.still=0;
+  if(g>fdG()&&(live.speed||0)>=8&&Date.now()-fd.peakT>5000){fd.peakT=Date.now();fd.peakSpd=live.speed||0;fd.state='watch';fd.still=0;
     // Comprobamos durante 15 s si se queda parado
     let n=0;fd.watchT=setInterval(()=>{n++;if(!live.on){clearInterval(fd.watchT);fd.state='idle';return}
       if((live.speed||0)<3)fd.still++;else{clearInterval(fd.watchT);fd.state='idle';return}
@@ -3684,11 +3693,11 @@ function fallSensorTest(){
   const m=$('fdTestMsg');if(fdT){toast('La prueba ya está en marcha');return}
   const go=()=>{let max=0,left=30;
     const on=e=>{const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;const g=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z)/9.81;if(g>max)max=g;
-      if(g>3.5){end();if(m)m.innerHTML=`✅ <b>Golpe detectado (${g.toFixed(1)} g).</b> El sensor funciona.`;vib(200);setTimeout(()=>{closeSheets();fallAsk(true)},1500)}};
+      if(g>fdG()){end();if(m)m.innerHTML=`✅ <b>Golpe detectado (${g.toFixed(1)} g).</b> El sensor funciona.`;vib(200);setTimeout(()=>{closeSheets();fallAsk(true)},1500)}};
     const end=()=>{window.removeEventListener('devicemotion',on);clearInterval(fdT);fdT=null};
     window.addEventListener('devicemotion',on);
-    fdT=setInterval(()=>{left--;if(m&&fdT)m.innerHTML=`⏳ Esperando el golpe… ${left} s · fuerza máxima: <b>${max.toFixed(1)} g</b> (hace falta más de 3,5 g)`;
-      if(left<=0){end();if(m)m.innerHTML=max<1.2?'❌ El móvil no envía datos del sensor de movimiento. Prueba en Chrome y revisa los permisos del navegador.':`⚠️ No llegó a 3,5 g (máximo ${max.toFixed(1)} g). Déjalo caer desde un poco más alto sobre la cama.`}},1000);
+    fdT=setInterval(()=>{left--;if(m&&fdT)m.innerHTML=`⏳ Esperando el golpe… ${left} s · fuerza máxima: <b>${max.toFixed(1)} g</b> (hace falta más de ${fdG()} g)`;
+      if(left<=0){end();if(m)m.innerHTML=max<1.2?'❌ El móvil no envía datos del sensor de movimiento. Prueba en Chrome y revisa los permisos del navegador.':`⚠️ No llegó a ${fdG()} g (máximo ${max.toFixed(1)} g). Déjalo caer desde un poco más alto sobre la cama.`}},1000);
     if(m)m.innerHTML='⏳ Esperando el golpe… 30 s';};
   if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')DeviceMotionEvent.requestPermission().then(r=>r==='granted'?go():toast('Sin permiso de movimiento')).catch(()=>toast('Sin permiso de movimiento'));else go();
 }
