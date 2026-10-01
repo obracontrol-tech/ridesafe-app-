@@ -4093,33 +4093,40 @@ function stopsGaps(r){
 }
 /* ===== v3.10 — Semáforo de confianza de la ruta (pendiente + tiempo de ahora + luz) ===== */
 async function computeConf(r){
-  r.confBusy=true;
+  if(r.confBusy||r.conf)return;r.confBusy=true;
   const why=[];let sc=100;
-  // Terreno: pendientes del perfil
-  let maxS=0,steep=0;const tot=r.prof.at(-1).d||1;
-  for(let i=1;i<r.prof.length;i++){const dd=(r.prof[i].d-r.prof[i-1].d);const s=dd>0?(r.prof[i].e-r.prof[i-1].e)/(dd*1000)*100:0;if(s>maxS)maxS=s;if(s>=7)steep+=dd}
-  if(maxS>=12){sc-=20;why.push(`⛰️ Rampa muy dura (máx ${Math.round(maxS)}%): baja con cuidado`)}else if(maxS>=7){sc-=8;why.push(`⛰️ Algún tramo exigente (máx ${Math.round(maxS)}%)`)}
-  if(steep/tot>0.15){sc-=10;why.push(`📈 ${Math.round(steep/tot*100)}% del recorrido por encima del 7%`)}
-  // Tiempo de ahora en la salida (Open-Meteo, gratis)
-  const s=r.coords&&r.coords[0];let wx=false;
-  if(s)try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${s[0].toFixed(3)}&longitude=${s[1].toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&forecast_hours=4&daily=sunset&forecast_days=1&wind_speed_unit=kmh&timezone=auto`;
-    const d=await (await fetch(u)).json();const c=d.current;if(!c)throw 0;wx=true;
-    const w=Math.round(c.wind_speed_10m),g=Math.round(c.wind_gusts_10m),t=Math.round(c.temperature_2m),code=c.weather_code;
-    const pp=Math.max(0,...((d.hourly&&d.hourly.precipitation_probability)||[0]).filter(x=>x!=null));
+  // Seguro: pase lo que pase, a los 12 s el semáforo da su resultado con lo que tenga
+  let done=false;const finish=wx=>{if(done)return;done=true;
+    if(!wx)why.push('📡 Sin datos del tiempo: solo se ha valorado el terreno');
+    sc=Math.max(0,Math.min(100,sc));r.conf={sc,why:why.slice(),lv:sc>=75?0:sc>=50?1:2};r.confBusy=false;
+    if(plan.active)renderPlan()};
+  const guard=setTimeout(()=>finish(false),12000);
+  try{
+    // Terreno: pendientes del perfil
+    let maxS=0,steep=0;const tot=(r.prof&&r.prof.length?r.prof.at(-1).d:0)||1;
+    for(let i=1;i<(r.prof||[]).length;i++){const dd=(r.prof[i].d-r.prof[i-1].d);const s=dd>0?(r.prof[i].e-r.prof[i-1].e)/(dd*1000)*100:0;if(isFinite(s)){if(s>maxS)maxS=s;if(s>=7)steep+=dd}}
+    if(maxS>=12){sc-=20;why.push(`⛰️ Rampa muy dura (máx ${Math.round(maxS)}%): baja con cuidado`)}else if(maxS>=7){sc-=8;why.push(`⛰️ Algún tramo exigente (máx ${Math.round(maxS)}%)`)}
+    if(steep/tot>0.15){sc-=10;why.push(`📈 ${Math.round(steep/tot*100)}% del recorrido por encima del 7%`)}
+    // Tiempo de ahora en la salida (Open-Meteo, gratis), con límite de 8 s
+    const s=r.coords&&r.coords[0];if(!s)throw new Error('sin salida');
+    const ac=new AbortController();const to=setTimeout(()=>ac.abort(),8000);
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+s[0]).toFixed(3)}&longitude=${(+s[1]).toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&daily=sunset&forecast_days=2&wind_speed_unit=kmh&timezone=auto`;
+    const res=await fetch(u,{signal:ac.signal});clearTimeout(to);
+    if(!res.ok)throw new Error('meteo '+res.status);
+    const d=await res.json();const c=d.current;if(!c)throw new Error('sin datos');
+    const w=Math.round(c.wind_speed_10m||0),g=Math.round(c.wind_gusts_10m||0),t=Math.round(c.temperature_2m??15),code=c.weather_code||0;
+    // Probabilidad de lluvia de las próximas 4 horas
+    let pp=0;const H=d.hourly||{};if(H.time&&H.precipitation_probability){const now=String(c.time||'').slice(0,13);let k=H.time.findIndex(x=>x.slice(0,13)===now);if(k<0)k=0;for(let j=k;j<Math.min(H.time.length,k+4);j++)pp=Math.max(pp,H.precipitation_probability[j]||0)}
     if(code>=95){sc-=40;why.push('⛈️ Tormenta prevista: mejor no salir')}
     if(code===45||code===48){sc-=15;why.push('🌫️ Niebla: luces encendidas y ropa visible')}
     if(w>=30||g>=50){sc-=30;why.push(`🌬️ Viento fuerte (${w} km/h, rachas ${g})`)}else if(w>=20||g>=35){sc-=15;why.push(`🌬️ Viento notable (${w} km/h, rachas ${g})`)}else if(w>=12){sc-=5;why.push(`🌬️ Algo de viento (${w} km/h)`)}
-    if(c.precipitation>0.2||pp>=60){sc-=25;why.push(`🌧️ Lluvia${pp?' ('+pp+'% próximas horas)':''}: el asfalto resbala`)}else if(pp>=30){sc-=10;why.push(`🌦️ Puede llover (${pp}%)`)}
+    if((c.precipitation||0)>0.2||pp>=60){sc-=25;why.push(`🌧️ Lluvia${pp?' ('+pp+'% próximas horas)':''}: el asfalto resbala`)}else if(pp>=30){sc-=10;why.push(`🌦️ Puede llover (${pp}%)`)}
     if(t>=35){sc-=20;why.push(`🥵 Mucho calor (${t}°C): lleva agua extra`)}else if(t>=30){sc-=8;why.push(`☀️ Calor (${t}°C): hidrátate`)}else if(t<=3){sc-=15;why.push(`🧊 ${t}°C: posible hielo en sombras`)}else if(t<=8){sc-=5;why.push(`🧥 Fresco (${t}°C)`)}
     if(!c.is_day){sc-=20;why.push('🌙 Es de noche: luces delante y detrás')}
-    else if(d.daily&&d.daily.sunset&&r.mins){const ss=new Date(d.daily.sunset[0]);const end=new Date(Date.now()+r.mins*60000);if(end>ss){sc-=15;why.push(`🌇 Llegarías después de anochecer (${d.daily.sunset[0].slice(11,16)}): lleva luces`)}}
+    else if(d.daily&&d.daily.sunset&&d.daily.sunset[0]&&r.mins){const ss=new Date(d.daily.sunset[0]);const end=new Date(Date.now()+r.mins*60000);if(end>ss){sc-=15;why.push(`🌇 Llegarías después de anochecer (${d.daily.sunset[0].slice(11,16)}): lleva luces`)}}
     r.confWx=`${t}°C · viento ${w} km/h`;
-  }catch(e){}
-  if(!wx)why.push('📡 Sin datos del tiempo: solo se ha valorado el terreno');
-  sc=Math.max(0,Math.min(100,sc));
-  r.conf={sc,why,lv:sc>=75?0:sc>=50?1:2};r.confBusy=false;
-  if(plan.route===r)renderPlan();
+    clearTimeout(guard);finish(true);
+  }catch(e){console.warn('semáforo',e);clearTimeout(guard);finish(false)}
 }
 function confHTML(r){
   if(!r.conf)return `<div class="conf" style="--cc:var(--line)"><div class="conf-h"><span class="conf-dot">…</span><div><b>Semáforo de la ruta</b><small>Comprobando el tiempo de ahora…</small></div></div></div>`;
