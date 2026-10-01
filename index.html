@@ -861,7 +861,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
   <div class="f">
     <label class="l" for="cHour">🕘 Hora de salida <span class="req">*</span></label>
-    <input type="time" class="inp" id="cHour" value="08:30">
+    <input type="hidden" id="cHour" value="08:30"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select class="inp" id="cHourH" aria-label="Hora" onchange="hourFromSel()" style="font-size:20px;font-weight:800;text-align:center"><option value="00">00 h</option><option value="01">01 h</option><option value="02">02 h</option><option value="03">03 h</option><option value="04">04 h</option><option value="05">05 h</option><option value="06">06 h</option><option value="07">07 h</option><option value="08">08 h</option><option value="09">09 h</option><option value="10">10 h</option><option value="11">11 h</option><option value="12">12 h</option><option value="13">13 h</option><option value="14">14 h</option><option value="15">15 h</option><option value="16">16 h</option><option value="17">17 h</option><option value="18">18 h</option><option value="19">19 h</option><option value="20">20 h</option><option value="21">21 h</option><option value="22">22 h</option><option value="23">23 h</option></select><select class="inp" id="cHourM" aria-label="Minutos" onchange="hourFromSel()" style="font-size:20px;font-weight:800;text-align:center"><option value="00">00 min</option><option value="05">05 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="35">35 min</option><option value="40">40 min</option><option value="45">45 min</option><option value="50">50 min</option><option value="55">55 min</option></select></div><div class="row3" style="margin-top:8px"><button type="button" class="mini" onclick="setHour('08:00')">08:00</button><button type="button" class="mini" onclick="setHour('08:30')">08:30</button><button type="button" class="mini" onclick="setHour('09:00')">09:00</button></div>
   </div>
 
   <div class="f">
@@ -1805,7 +1805,7 @@ function openCreate(){
   if(!ready())return;
   editingId=null;$('createTitle').textContent='Crear salida';$('pubBtnTxt').textContent='Publicar salida';
   ['cStart','cMeet','cTitle','cKm','cNote','cMeetHour'].forEach(i=>$(i).value='');
-  $('cHour').value='08:30';$('cSame').checked=true;$('meetBox').style.display='none';
+  setHour('08:30');$('cSame').checked=true;$('meetBox').style.display='none';
   ['gpsStart','gpsMeet','mapStart','mapMeet'].forEach(i=>$(i).classList.remove('ok'));
   pickLL.start=pickLL.meet=null;$('okStart').classList.remove('on');$('okMeet').classList.remove('on');
   formRoute=null;renderRouteBox();resetPlanForm(null);
@@ -2714,7 +2714,7 @@ function editRide(id){
   openCreate();editingId=id;
   $('createTitle').textContent='Editar salida';$('pubBtnTxt').textContent='Guardar cambios';
   document.querySelectorAll('#dayChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.d==='x'));$('cDate').style.display='block';$('cDate').value=r.date;
-  $('cHour').value=r.hour;$('cStart').value=r.start;$('cTitle').value=r.title||'';$('cKm').value=r.km||'';$('cNote').value=r.note||'';$('cSeats').value=String(r.seats||0);
+  setHour(r.hour);$('cStart').value=r.start;$('cTitle').value=r.title||'';$('cKm').value=r.km||'';$('cNote').value=r.note||'';$('cSeats').value=String(r.seats||0);
   const same=!r.meet||r.meet===r.start;$('cSame').checked=same;$('meetBox').style.display=same?'none':'block';if(!same){$('cMeet').value=r.meet;$('cMeetHour').value=r.meetHour||''}
   if(r.startLL)setPicked('start',r.startLL);if(r.meetLL&&!same)setPicked('meet',r.meetLL);
   const pickChip=(id,v)=>document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.textContent===v));
@@ -3955,6 +3955,11 @@ function confHTML(r){
   const list=r.conf.why.length?r.conf.why:['✅ Sin avisos: buen terreno y buen tiempo'];
   return `<div class="conf" style="--cc:${L[0]}"><div class="conf-h"><span class="conf-dot">${r.conf.sc}</span><div><b>${L[1]}</b><small>${L[2]}${r.confWx?' · '+esc(r.confWx):''}</small></div></div><ul>${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
 }
+/* v3.11 — Hora de salida en formato 24 h con dos desplegables */
+function setHour(v){v=/^\d{1,2}:\d{2}$/.test(v||'')?v:'08:30';let [h,m]=v.split(':').map(Number);m=Math.min(55,Math.round(m/5)*5);const hh=String(h).padStart(2,'0'),mm=String(m).padStart(2,'0');
+  if($('cHourH'))$('cHourH').value=hh;if($('cHourM'))$('cHourM').value=mm;$('cHour').value=hh+':'+mm}
+function hourFromSel(){$('cHour').value=$('cHourH').value+':'+$('cHourM').value}
+setHour('08:30');
 function setLoopKm(km){plan.loopKm=km;computeRoute()}
 function newLoop(){plan.seed++;computeRoute()}
 
@@ -4128,7 +4133,37 @@ $('placeQ').addEventListener('keydown',async e=>{
    =================================================================== */
 let live={on:false};
 const ARROW={left:'⬅️','slight left':'↖️','sharp left':'↩️',right:'➡️','slight right':'↗️','sharp right':'↪️',straight:'⬆️',uturn:'🔄'};
-function speak(t){if(!live.voice||!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+/* v3.11 — Voz de Google (más clara y fiable). Si falla o no hay cobertura, usa la voz del móvil */
+const GOOGLE_TTS_KEY='PON_AQUI_TU_CLAVE_GOOGLE_TTS';
+const TTS_VOICE='es-ES-Neural2-B';
+const ttsCache=new Map();let ttsAudio=null,ttsOff=0;
+function ttsOk(){return GOOGLE_TTS_KEY&&!GOOGLE_TTS_KEY.startsWith('PON_')&&Date.now()>ttsOff}
+// Los móviles solo dejan sonar audio si antes hubo un toque: lo "despertamos" en el primer toque
+document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new Audio();ttsAudio.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA';ttsAudio.play().catch(()=>{})}catch(e){}document.removeEventListener('pointerdown',un)},{once:true});
+function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+async function ttsGet(t){
+  if(ttsCache.has(t))return ttsCache.get(t);
+  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),3500);
+  try{
+    const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+GOOGLE_TTS_KEY,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({input:{text:t},voice:{languageCode:'es-ES',name:TTS_VOICE},audioConfig:{audioEncoding:'MP3',speakingRate:1.0,effectsProfileId:['handset-class-device']}})});
+    if(!r.ok)throw new Error('tts '+r.status);
+    const d=await r.json();if(!d.audioContent)throw new Error('tts vacío');
+    const src='data:audio/mp3;base64,'+d.audioContent;
+    if(ttsCache.size>80)ttsCache.delete(ttsCache.keys().next().value);
+    ttsCache.set(t,src);return src;
+  }finally{clearTimeout(to)}
+}
+async function speak(t){
+  if(!live.voice||!t)return;
+  if(!ttsOk()){speakLocal(t);return}
+  try{
+    const src=await ttsGet(t);
+    try{speechSynthesis.cancel()}catch(e){}
+    ttsAudio=ttsAudio||new Audio();ttsAudio.pause();ttsAudio.src=src;
+    await ttsAudio.play();
+  }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+60000;speakLocal(t)}
+}
 function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 async function keepAwake(){try{if('wakeLock' in navigator&&live.on&&document.visibilityState==='visible')live.wake=await navigator.wakeLock.request('screen')}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(live.on&&document.visibilityState==='visible')keepAwake()});
@@ -4324,7 +4359,7 @@ async function finishLive(save){
   saverOff();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);
   try{L.wake&&L.wake.release()}catch(e){}
-  try{speechSynthesis.cancel()}catch(e){}
+  try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
   if(L.unsub)L.unsub();
   endShare(L);
   Object.values(L.mMarkers||{}).forEach(m=>m.remove());
