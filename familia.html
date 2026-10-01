@@ -38,6 +38,14 @@ html,body{height:100%;background:#0E1A2B;font-family:system-ui,-apple-system,"Se
 .pin b{width:40px;height:40px;border-radius:50%;background:#C8DC3C;border:3px solid #fff;display:grid;place-items:center;color:#0E1A2B;font-weight:900;font-size:17px}
 .pin span{margin-top:3px;background:#0E1A2B;color:#fff;font-size:12px;font-weight:800;padding:2px 8px;border-radius:9px}
 .pulse{animation:pl 1.6s infinite}@keyframes pl{0%{box-shadow:0 0 0 0 rgba(200,220,60,.8)}70%{box-shadow:0 0 0 18px rgba(200,220,60,0)}100%{box-shadow:0 0 0 0 rgba(200,220,60,0)}}
+.alrt{position:fixed;left:10px;right:10px;top:calc(64px + env(safe-area-inset-top));z-index:8;border-radius:22px;padding:16px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none}
+.alrt.fall{display:block;background:linear-gradient(160deg,#DC2626,#7F1D1D);animation:af 1s infinite}
+.alrt.ok{display:block;background:linear-gradient(160deg,#16A34A,#14532D)}
+@keyframes af{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.9)}50%{box-shadow:0 0 0 14px rgba(239,68,68,0)}}
+.alrt h2{font-size:23px;line-height:1.2}.alrt p{font-size:14.5px;margin-top:6px;opacity:.95}
+.alrt .ab{display:grid;gap:8px;margin-top:12px}.alrt .ab a,.alrt .ab button{min-height:52px;border-radius:16px;border:0;font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-family:inherit}
+.a112{background:#fff;color:#B91C1C}.a2{background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.5)!important}
+.snd{margin-top:8px;width:100%;min-height:42px;border-radius:21px;border:1px dashed rgba(255,255,255,.35);background:transparent;color:#C9D3E0;font-weight:700;font-family:inherit;font-size:13.5px}
 .foot{font-size:11px;color:#8FA0B5;text-align:center;margin-top:10px}
 .foot a{color:#C8DC3C}
 </style></head><body>
@@ -47,8 +55,10 @@ html,body{height:100%;background:#0E1A2B;font-family:system-ui,-apple-system,"Se
   <div class="who"><div class="av" id="av">?</div><div><h1 id="nm">…</h1><p id="sub"></p></div></div>
   <span class="st ok" id="st">…</span>
   <div class="btns"><a class="b1" id="gm" href="#" target="_blank" rel="noopener">🧭 Cómo llegar</a><button class="b2" onclick="center()">📍 Centrar</button></div>
+  <button class="snd" id="snd" onclick="sndOn()">🔔 Activar alarma sonora (por si hay una caída)</button>
   <div class="foot">Se actualiza solo. Puedes dejar esta página abierta. · <a href="./">¿Qué es RideSafe IA?</a></div>
 </div>
+<div class="alrt" id="alrt" role="alert" aria-live="assertive"></div>
 <div class="msg" id="msg"><div><div style="font-size:48px">📍</div><h2 id="mt">Cargando la ubicación…</h2><p id="mp">Un momento, por favor.</p></div></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -86,11 +96,39 @@ else{
     }else if(first){$('sub').textContent='Esperando la primera posición del GPS…'}
     $('msg').style.display='none';$('card').style.display='block';
   }
-  let cur=null;setInterval(()=>paint(cur),30000);
+  /* ===== Aviso de caída para la familia ===== */
+  let AC=null,seen=null,ring=null;const T0=document.title;
+  window.sndOn=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume();beep(1)}catch(e){}
+    try{localStorage.setItem('rsSnd','1')}catch(e){}
+    $('snd').textContent='🔔 Alarma sonora activada';$('snd').disabled=true;
+    if('Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})};
+  function beep(n){if(!AC)return;let t=AC.currentTime+.02;for(let k=0;k<(n||6);k++){[1400,950].forEach(fq=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.value=fq;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.6,t+.01);g.gain.setValueAtTime(.6,t+.2);g.gain.linearRampToValueAtTime(0,t+.22);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.23);t+=.24})}}
+  function stopRing(){clearInterval(ring);ring=null;document.title=T0;try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}}
+  window.silence=()=>{stopRing();const b=$('alrt').querySelector('.sil');if(b)b.remove()};
+  function showAlert(d){
+    const a=d.alert,box=$('alrt');const name=esc(String(d.name||'Tu familiar').split(' ')[0]);
+    if(!a||!a.type||Date.now()-(a.t||0)>3*3600000){box.className='alrt';stopRing();return}
+    const key=a.type+a.t;
+    if(a.type==='fall'){
+      const ll=a.lat!=null?a.lat+','+a.lng:(last?last.lat+','+last.lng:'');
+      box.className='alrt fall';
+      box.innerHTML=`<h2>🚑 ${a.test?'PRUEBA · ':''}POSIBLE CAÍDA</h2><p><b>${name}</b> puede haberse caído y no ha respondido (${ago(a.t)}).</p><p>Llámale. Si no contesta, llama al 112 y di dónde está.</p>
+        <div class="ab"><a class="a112" href="tel:112">📞 Llamar al 112</a>${ll?`<a class="a2" href="https://www.google.com/maps/dir/?api=1&destination=${ll}" target="_blank" rel="noopener">🧭 Ir hasta allí</a>`:''}${ring||seen!==key?'<button class="a2 sil" onclick="silence()">🔕 Silenciar alarma</button>':''}</div>`;
+      if(seen!==key){seen=key;if(ll){const [la,lo]=ll.split(',').map(Number);map.easeTo({center:[lo,la],zoom:16,duration:800})}
+        const go=()=>{beep(6);try{navigator.vibrate&&navigator.vibrate([700,300,700,300,700])}catch(e){}document.title=document.title===T0?'🚑 ¡POSIBLE CAÍDA!':T0};
+        stopRing();go();ring=setInterval(go,a.test?4000:8000);if(a.test)setTimeout(stopRing,12000);
+        try{if('Notification' in window&&Notification.permission==='granted')new Notification('🚑 Posible caída de '+String(d.name||'tu familiar'),{body:'No ha respondido. Abre el aviso para ver dónde está.',requireInteraction:true})}catch(e){}}
+    }else if(a.type==='ok'){
+      stopRing();box.className='alrt ok';box.innerHTML=`<h2>✅ ${a.test?'Prueba terminada':'Está bien'}</h2><p><b>${name}</b> ha confirmado que está bien (${ago(a.t)}).</p>`;
+      if(seen!==key){seen=key;setTimeout(()=>{if(box.className==='alrt ok')box.className='alrt'},60000)}
+    }
+  }
+  try{if(localStorage.getItem('rsSnd')==='1'){const u=()=>{window.sndOn();document.removeEventListener('pointerdown',u)};document.addEventListener('pointerdown',u)}}catch(e){}
+  let cur=null;setInterval(()=>{paint(cur);if(cur)showAlert(cur)},30000);
   Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
     firebase.firestore().collection('share').doc(id).onSnapshot(s=>{
       if(!s.exists){fail('Este enlace ya no está activo','Puede que tu familiar haya dejado de compartir su ubicación.');return}
-      cur=s.data();paint(cur);
+      cur=s.data();paint(cur);showAlert(cur);
     },e=>fail('No se pudo cargar','Revisa tu conexión a internet y vuelve a abrir el enlace.'));
   }).catch(()=>fail('No se pudo conectar','Revisa tu conexión a internet y vuelve a abrir el enlace.'));
 }

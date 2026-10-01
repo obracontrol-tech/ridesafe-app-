@@ -3663,9 +3663,18 @@ function fallAsk(test){
   if(document.visibilityState!=='visible')bgNotify('🚑 ¿Estás bien?','Hemos detectado una posible caída. Abre RideSafe para responder.',true);
   clearInterval(fd.cd);fd.cd=setInterval(()=>{s--;if(s<=0){clearInterval(fd.cd);fallHelp(true)}else{const n=B.querySelector('.fnum');if(n)n.textContent=s;if(s%10===0){vib([300,150,300]);alarmSound('fall',1)}}},1000);
 }
+/* Avisa a la familia (página de ubicación en directo) */
+function famAlert(type,test){
+  if(!fam.on||!db||!fam.id)return Promise.resolve(false);
+  const p=live.on&&live.pts&&live.pts.at(-1);
+  const a={type,t:Date.now(),...(test?{test:true}:{}),...(p?{lat:+p[0].toFixed(6),lng:+p[1].toFixed(6)}:{})};
+  const d={alert:a,t:Date.now(),...(p?{lat:a.lat,lng:a.lng}:{})};
+  return db.collection('share').doc(fam.id).set(d,{merge:true}).then(()=>true).catch(e=>{console.warn('famAlert',e);toast('⚠️ No se pudo avisar a la familia');return false});
+}
 function fallOk(){clearInterval(fd.cd);clearInterval(fd.rep);alarmStop();try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
   $('fallBox').classList.remove('show');const was=fd.state;fd.state='idle';
   if(was==='help'&&!fd.test&&live.on&&live.rideId)sendAlert('ok');
+  if(was==='help')famAlert('ok',fd.test);
   toast(fd.test?'Prueba terminada':'Perfecto, seguimos. ¡Cuidado!')}
 function fallPos(){const p=live.on&&live.pts&&live.pts.at(-1);return p?'https://maps.google.com/?q='+p[0].toFixed(5)+','+p[1].toFixed(5):''}
 function fallHelp(auto){
@@ -3673,10 +3682,12 @@ function fallHelp(auto){
   const c=store.get('sosContact',{})||{},tel=telNorm(c.tel),nm=c.name||'tu contacto';
   const loc=fallPos();const msg=`🚑 AVISO DE CAÍDA — RideSafe IA\n${myName()} puede haber sufrido una caída en bici y no responde.${loc?'\n📍 Ubicación: '+loc:''}\nLlámale. Si no contesta, llama al 112.`;
   if(!fd.test&&live.on&&live.rideId){try{sendAlert('fall')}catch(e){}}
+  const famOn=fam.on;famAlert('fall',fd.test);
   const B=$('fallBox');
   B.innerHTML=`<div style="font-size:52px">🆘</div><h2>${fd.test?'Prueba de emergencia':'Posible caída'}</h2>
    <p><b>Si encuentras a este ciclista:</b> puede haberse caído. Llama al 112.</p>${loc?`<p style="font-size:14px">📍 ${esc(loc.split('q=')[1])}</p>`:''}
    ${fd.test?'':live.rideId?'<p style="font-size:14px">✅ Tu grupo ya ha recibido el aviso con alarma.</p>':''}
+   ${famOn?`<p style="font-size:14px">✅ Tu familia ${fd.test?'verá el aviso de PRUEBA':'ya ve el aviso'} en su enlace de ubicación.</p>`:''}
    <a class="fbtn f112" href="tel:112">📞 Llamar al 112</a>
    ${tel?`<a class="fbtn fsec" href="https://wa.me/${tel}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">📲 Avisar a ${esc(nm)} por WhatsApp</a><a class="fbtn fsec" href="tel:+${tel}">📞 Llamar a ${esc(nm)}</a>`
       :`<a class="fbtn fsec" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">📲 Enviar mi ubicación por WhatsApp</a>`}
