@@ -193,7 +193,8 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .planpanel{display:none;position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);border-radius:28px 28px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));max-height:62%;overflow-y:auto;box-shadow:0 -10px 30px rgba(0,0,0,.35)}
 #s-rutas.planning .planpanel{display:block}
 #s-rutas.planning .rec,#s-rutas.planning .mbottom,#s-rutas.planning .mtop{display:none}
-#app.planning .nav{display:none}
+/* v3.14 — La barra de abajo sigue visible al planificar: puedes ir a otro apartado y volver sin perder la ruta */
+#s-rutas.planning .planpanel{bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom));max-height:calc(62% - var(--nav-h));border-radius:28px;padding-bottom:14px}
 #s-rutas.planning .mside{top:calc(16px + env(safe-area-inset-top))}
 .prow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .pic{width:30px;display:grid;place-items:center;color:var(--txt);flex-shrink:0}
