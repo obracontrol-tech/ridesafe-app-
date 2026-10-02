@@ -3127,6 +3127,17 @@ const HELP=[
  ['👥','¿Para qué sirve Mi club?','Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas. Entra con el código de tu club y apúntate a tus grupetas.'],
  ['🔒','¿Cómo no pierdo mis datos?','Perfil → "Guardar mi cuenta con Google". Si cambias de móvil, entra con la misma cuenta.'],
  ['🆘','¿Y si tengo un problema en ruta?','Comunidad → Alertas de seguridad: llamar al 112 o enviar tu ubicación por WhatsApp. Mientras grabas también tienes el botón SOS y 📡 para que tu familia te siga.'],
+
+ ['🚦','¿Qué es el semáforo de la ruta?','Al planificar una ruta, debajo del perfil sale una nota de 0 a 100: 🟢 buenas condiciones, 🟠 con precaución, 🔴 mejor otro momento. Valora las pendientes, el tiempo de ahora (viento, lluvia, calor, frío) y si llegarías de noche. Si no hay conexión, valora solo el terreno.','semaforo nota color verde rojo naranja comprobando tiempo meteo lluvia viento'],
+ ['☕','¿Cómo veo fuentes y bares en la ruta?','Planifica la ruta y pulsa "☕ Ver paradas en la ruta". Verás fuentes, bares, farmacias, talleres y tiendas a menos de 300 m, ordenados por kilómetro. Te avisa si hay muchos km sin agua. Si guardas la ruta, las paradas se guardan con ella.','paradas parada fuente fuentes agua bar bares cafe farmacia taller tienda comer'],
+ ['🚑','¿Cómo funciona el aviso de caída?','Mientras grabas una salida, si el móvil nota un golpe fuerte yendo a más de 8 km/h y luego te quedas quieto, sale "¿Estás bien?" con 30 segundos de cuenta atrás. Si no respondes, avisa a tu grupo y a tu familia (si les compartes la ubicación) y muestra el botón del 112. Se configura en Seguridad → Alertas de seguridad.','caida caidas golpe sensor accidente alarma contacto emergencia sensibilidad'],
+ ['🧪','El aviso de caída no salta al probarlo','Es normal si estás parado: en ruta solo salta si ibas a más de 8 km/h antes del golpe y luego te quedas quieto 15 segundos. Así se evitan falsas alarmas. Para probar el sensor sin moverte usa Seguridad → Alertas de seguridad → "📳 Probar el sensor de verdad".','caida no salta prueba probar parado sensible sensibilidad funciona detecta'],
+ ['👨‍👩‍👧','¿Cómo ve mi familia dónde estoy?','Pulsa "📍 Ubicación para la familia" (o 📡 mientras grabas) y envíales el enlace por WhatsApp. Lo abren sin instalar nada. Si sufres una caída, en su pantalla sale una alerta roja; deben pulsar una vez "🔔 Activar alarma sonora" para que suene.','familia ubicacion compartir enlace seguir donde estoy alarma sonora'],
+ ['🔊','No oigo la voz de la navegación','Toca la pantalla una vez después de abrir la app, comprueba que el botón de voz está en 🔊 y sube el volumen multimedia del móvil (no el del timbre). Si el móvil está en silencio, puede no sonar.','voz sonido oigo suena silencio volumen audio navegacion habla'],
+ ['🔄','No veo los cambios nuevos de la app','Cierra la app del todo (quítala de recientes) y vuelve a abrirla. Si sigue igual, abre en Chrome app.ridesafeia.es/?v=2 para forzar la versión nueva.','actualizar actualizacion version nueva cambios novedades aparece antigua vieja cache'],
+ ['💻','¿Puedo usarla en el ordenador?','Sí. Abre app.ridesafeia.es en Chrome o Edge y pulsa el icono de instalar de la barra de direcciones. Entra con la misma cuenta que en el móvil. En el PC puedes crear salidas y planificar rutas; grabar y navegar se hace con el móvil.','ordenador pc portatil windows instalar escritorio jefe'],
+ ['🧭','¿Cómo voy a un sitio concreto?','En Rutas pulsa "🧭 Ir a un destino", escribe el sitio y elígelo. La app calcula la ruta en bici desde donde estás. Pulsa "▲ Iniciar" para que te guíe con voz.','destino ir llegar navegar guiar buscar sitio'],
+ ['📍','El GPS no me sitúa bien','Activa la ubicación del móvil en modo "alta precisión" y da permiso de ubicación al navegador (Chrome → ⋮ → Configuración → Configuración de sitios → Ubicación). Al aire libre funciona mucho mejor que dentro de casa.','gps ubicacion localizacion permiso situa posicion precision'],
 ];
 function openHelp(){
   $('rideBody').innerHTML=sheetHead('❓ Cómo funciona')+HELP.map(([e,q,a])=>`<details class="faq"><summary><span>${e}</span>${q}</summary><p>${a}</p></details>`).join('')+
@@ -3737,13 +3748,29 @@ function openSupport(){
     <button class="mini" data-t="Sugerencia" onclick="supPick(this)">💡 Sugerencia</button>
    </div>
    <label class="l" for="supTxt">Cuéntanos</label>
-   <textarea class="inp" id="supTxt" rows="5" maxlength="800" placeholder="Ej.: Al planificar una ruta circular no me aparece el semáforo…" style="resize:vertical"></textarea>
+   <textarea class="inp" id="supTxt" rows="5" maxlength="800" placeholder="Ej.: Al planificar una ruta circular no me aparece el semáforo…" style="resize:vertical" oninput="supSuggest()"></textarea>
+   <div id="supSug"></div>
    <small style="display:block;color:var(--txt2);margin:6px 0 12px">Si es una incidencia, haz una captura de pantalla y adjúntala en el chat de WhatsApp.</small>
    <button class="btn btn-lime" style="min-height:56px" onclick="supSend('wa')">📲 Enviar por WhatsApp</button>
    <button class="btn btn-line" style="margin-top:8px" onclick="supSend('mail')">✉️ Enviar por correo</button>
    <p style="color:var(--txt2);text-align:center;font-size:13px;margin-top:12px">⚠️ Para emergencias llama siempre al <b>112</b>. Este canal no es de emergencias.</p>`;
   openSheet('sh-ride');
 }
+/* Asistente: mientras escribes, busca respuestas en «Cómo funciona» */
+const supNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ');
+const SUP_STOP=new Set('como para pero cuando donde porque esta este esto estoy tengo tiene hace hacer puedo quiero sale salen cosa algo nada todo muy mas que una uno unos unas los las del con por sin sobre entre desde hasta app aplicacion'.split(' '));
+let supT=null;
+function supSuggest(){clearTimeout(supT);supT=setTimeout(()=>{
+  const box=$('supSug');if(!box)return;
+  const w=[...new Set(supNorm($('supTxt').value).split(/\s+/).filter(x=>x.length>=4&&!SUP_STOP.has(x)))];
+  if(!w.length){box.innerHTML='';return}
+  let sc=HELP.map((it,i)=>{const kw=supNorm(it[3]||''),txt=supNorm(it[1]+' '+it[2]);let s=0;
+    w.forEach(x=>{const r=x.slice(0,Math.max(4,x.length-2));if(kw.includes(r))s+=3;else if(supNorm(it[1]).includes(r))s+=2;else if(txt.includes(r))s+=1});return[s,i]})
+    .filter(x=>x[0]>=2).sort((a,b)=>b[0]-a[0]);const best=sc0=>sc0.length?sc0[0][0]:0;const top=best(sc);sc=sc.filter(x=>x[0]>=Math.max(2,top*0.6)).slice(0,3);
+  box.innerHTML=sc.length?`<div class="plc" style="margin:4px 0 12px"><div class="pc-h"><span class="pc-tag">Asistente</span><b>💡 Quizá esto te ayude</b></div>
+    ${sc.map(([,i],k)=>{const [e,q,a]=HELP[i];return `<details class="faq"${k===0?' open':''}><summary><span>${e}</span>${q}</summary><p>${a}</p></details>`}).join('')}
+    <small style="display:block;color:var(--txt2);margin-top:6px">¿No se resuelve? Envíanos tu mensaje con los botones de abajo.</small></div>`:'';
+},350)}
 function supPick(b){document.querySelectorAll('#supType button').forEach(x=>x.classList.toggle('on',x===b))}
 function supSend(how){
   const t=(document.querySelector('#supType button.on')||{}).dataset?.t||'Consulta';
