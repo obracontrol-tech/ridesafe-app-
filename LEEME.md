@@ -1,3 +1,7 @@
+## Versión 4.5.1 — Brújula en el mapa
+- Brújula arriba en la barra del mapa y en la pantalla de la salida: la aguja roja apunta siempre al norte aunque gires el mapa.
+- 1 toque: norte arriba. Con el norte arriba, otro toque: el mapa gira según hacia dónde miras con el móvil (borde verde); otro toque vuelve al norte. En iPhone pide permiso la primera vez.
+
 ## Versión 4.5 — Dibujar ruta (como Strava)
 - «Planificar» abre directamente el modo «✏️ Dibujar ruta»: tocas el mapa punto a punto y la ruta sigue las carreteras sola (Carretera: asfalto sin autovías · Montaña: caminos).
 - Abajo, siempre a la vista: km, subida, bajada y tiempo, y tres botones grandes: ↶ Deshacer, 🔁 Volver al inicio (cierra la vuelta) y 🗑️ Borrar. «📍 Empezar desde donde estoy» para el primer punto.
