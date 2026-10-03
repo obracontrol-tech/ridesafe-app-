@@ -1,3 +1,9 @@
+## Versión 4.5.4 — Brújula mejorada con el rumbo
+- Brújula más clara: letras N (roja), E, S y O alrededor y aguja más grande.
+- Al activarla (segundo toque, con el norte arriba) aparece arriba en grande hacia dónde vas: «NE · Vas hacia el noreste · 47°», y la voz lo dice una vez (si la voz está activada).
+- Movimiento suavizado (sin temblores). Si el móvil no da señal de brújula en 4 s, avisa: «Mueve el móvil haciendo un ocho».
+- Funciona en el mapa de Rutas y durante la salida.
+
 ## Versión 4.5.3 — Alcanzar al grupo cuando ya has empezado la salida
 - Si llegas tarde y pulsas «Empezar salida», en la pantalla de la salida aparece «🚴 Tu grupo va a X km · Alcánzalos» (cuando el compañero más cercano está a más de 800 m).
 - Al tocarlo, alternativas: 🧭 Ir al mejor punto para juntarme (o ☕ Esperarles más adelante), 📍 Ir directo hacia donde están ahora, ✋ Pedirles que me esperen (aviso «Esperad» al móvil y al Garmin) y 📣 Avisar «Voy para allá».

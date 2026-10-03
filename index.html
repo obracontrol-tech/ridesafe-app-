@@ -645,6 +645,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .lvgroup:has(.lvcatch){max-height:150px}
 .lvcatch{display:block;width:100%;margin:2px 0 8px;min-height:48px;border-radius:14px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px}
 .lvcatch.going{background:rgba(200,220,60,.15);color:var(--lime);border:1px solid var(--lime)}
+/* v4.5.4 — Brújula mejorada: letras N E S O y rumbo en grande */
+#cmpBtn svg,.cmpb svg{width:42px;height:42px}
+#cmpInfo{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 74px);z-index:40;display:none;align-items:center;gap:10px;background:rgba(11,20,34,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:2px solid var(--lime);color:#fff;border-radius:999px;padding:8px 16px 8px 10px;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap}
+#cmpInfo.show{display:flex}
+#cmpInfo .ci-ar{width:34px;height:34px;border-radius:50%;background:var(--lime);color:var(--on-lime);display:grid;place-items:center;font-weight:900;font-size:13px}
+#cmpInfo b{font-size:18px;font-weight:900;letter-spacing:.02em}
+#cmpInfo small{font-size:13px;color:var(--txt2);font-weight:700}
+#app.live #cmpInfo{top:calc(env(safe-area-inset-top) + 118px)}
 </style>
 </head>
 <body>
@@ -653,6 +661,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <!-- ============ RUTAS ============ -->
 <section class="screen" id="s-rutas">
   <div id="map"></div>
+  <div id="cmpInfo" aria-live="polite"><span class="ci-ar" id="ciAb">N</span><span><b id="ciTx">Norte</b> <small id="ciDeg">0°</small></span></div>
   <div class="mtop">
     <div class="search">
       <svg class="i" viewBox="0 0 24 24" style="color:var(--txt2)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -668,7 +677,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </div>
   <div class="mside">
-    <button id="cmpBtn" class="cmpb" aria-label="Brújula: toca para poner el norte arriba" onclick="compassTap()"><svg viewBox="0 0 40 40" class="cmpNd" id="cmpNd"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/><path d="M20 4 L25 20 L15 20 Z" fill="#EF4444"/><path d="M20 36 L15 20 L25 20 Z" fill="#E8EDF3"/><circle cx="20" cy="20" r="2.2" fill="#0E1A2B"/><text x="20" y="13.5" font-size="6.5" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif">N</text></svg></button>
+    <button id="cmpBtn" class="cmpb" aria-label="Brújula: toca para poner el norte arriba" onclick="compassTap()"><svg viewBox="0 0 40 40" class="cmpNd" id="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button>
     <button aria-label="Capas" onclick="toggleLayer()"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button>
     <button aria-label="Mi ubicación" onclick="locateMe()"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button>
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
@@ -680,7 +689,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button onclick="toggleRec()" id="recBtn">INICIAR</button>
   </div>
   <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div></div>
-  <div class="lv lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/><path d="M20 4 L25 20 L15 20 Z" fill="#EF4444"/><path d="M20 36 L15 20 L25 20 Z" fill="#E8EDF3"/><circle cx="20" cy="20" r="2.2" fill="#0E1A2B"/><text x="20" y="13.5" font-size="6.5" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif">N</text></svg></button><button onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
+  <div class="lv lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
   <div class="lv lvpanel">
     <span class="lvstate" id="lvState">● GRABANDO</span>
     <div class="lvstats">
@@ -854,7 +863,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3866,25 +3875,28 @@ function openMapFilters(){
 /* v4.5.1 — Brújula: la aguja roja apunta al norte. 1 toque = norte arriba. Con el norte arriba, otro toque = el mapa gira según hacia dónde miras con el móvil */
 let cmpFollow=false,cmpLast=null;
 function compassDraw(){if(!map)return;const t=`rotate(${-map.getBearing()}deg)`;document.querySelectorAll('.cmpNd').forEach(n=>n.style.transform=t)}
-function compassStop(){cmpFollow=false;document.querySelectorAll('.cmpb').forEach(b=>b.classList.remove('on'));window.removeEventListener('deviceorientationabsolute',compassEv,true);window.removeEventListener('deviceorientation',compassEv,true)}
+function compassStop(){cmpFollow=false;$('cmpInfo')&&$('cmpInfo').classList.remove('show');document.querySelectorAll('.cmpb').forEach(b=>b.classList.remove('on'));window.removeEventListener('deviceorientationabsolute',compassEv,true);window.removeEventListener('deviceorientation',compassEv,true)}
 function compassEv(e){
   let h=null;
   if(e.webkitCompassHeading!=null)h=e.webkitCompassHeading;                 // iPhone
   else if(e.absolute&&e.alpha!=null)h=360-e.alpha;                           // Android
   if(h==null||!map)return;
   const so=(screen.orientation&&screen.orientation.angle)||window.orientation||0;h=(h+so+360)%360;
-  if(cmpLast!=null&&Math.abs(((h-cmpLast+540)%360)-180)<3)return;
-  cmpLast=h;map.rotateTo(h,{duration:250});
+  if(cmpLast!=null){const d=((h-cmpLast+540)%360)-180;if(Math.abs(d)<2.5)return;h=(cmpLast+d*0.5+360)%360}   // suavizado: sin temblores
+  cmpLast=h;map.rotateTo(h,{duration:250});compassInfo(h);
 }
+function compassInfo(h){const d=dirOf(h);const ab=d[1];$('ciAb').textContent=ab;$('ciTx').textContent='Vas hacia el '+d[0];$('ciDeg').textContent=Math.round(h)+'°';$('cmpInfo').classList.add('show');
+  if(!compassInfo.said){compassInfo.said=1;if(live.on?live.voice:store.get('voice',true)){const v=live.voice;live.voice=true;speak('Brújula activada. Vas hacia el '+d[0]+'.');live.voice=v}}}
 async function compassTap(){
   if(!map)return;
   if(cmpFollow||Math.abs(map.getBearing())>1){compassStop();map.easeTo({bearing:0,pitch:0,duration:500});toast('🧭 Norte arriba');return}
   // Ya está el norte arriba: girar el mapa con el móvil
   try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){toast('Sin permiso para usar la brújula del móvil');return}}}catch(e){}
   if(!('ondeviceorientationabsolute' in window)&&!('ondeviceorientation' in window)){toast('Este móvil no tiene brújula');return}
-  cmpFollow=true;cmpLast=null;document.querySelectorAll('.cmpb').forEach(b=>b.classList.add('on'));
+  cmpFollow=true;cmpLast=null;compassInfo.said=0;document.querySelectorAll('.cmpb').forEach(b=>b.classList.add('on'));
   if('ondeviceorientationabsolute' in window)window.addEventListener('deviceorientationabsolute',compassEv,true);else window.addEventListener('deviceorientation',compassEv,true);
-  toast('🧭 El mapa gira según hacia dónde miras · toca la brújula para volver al norte');
+  toast('🧭 Brújula activada · toca otra vez para volver al norte');
+  setTimeout(()=>{if(cmpFollow&&cmpLast==null){toast('No llega señal de la brújula del móvil. Mueve el móvil haciendo un ocho')}},4000);
 }
 let rideMarkers=[];
 function drawRideMarkers(){
