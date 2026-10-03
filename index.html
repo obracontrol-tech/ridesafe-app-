@@ -648,7 +648,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button aria-label="Capas" onclick="toggleLayer()"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button>
     <button aria-label="Mi ubicación" onclick="locateMe()"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button>
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
-    <button aria-label="Añadir punto ciclista" onclick="addPoi()" style="font-size:22px">☕</button>
+    <button aria-label="Fuentes, bares y farmacias" onclick="poiMenu()" style="font-size:22px">☕</button>
     <button aria-label="Guardar esta zona sin conexión" onclick="saveViewOffline()" style="font-size:22px">📥</button>
   </div>
   <div class="rec" id="recBox">
@@ -830,7 +830,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4103,6 +4103,7 @@ async function computeRoute(){
     try{await addElevation(r)}catch(e){console.warn('desnivel',e);r.profFail=true}
     if(id!==plan.reqId)return;
     r.mins=estMins(r.km,r.up);renderPlan();
+    if(id===plan.reqId&&!r.stopsList&&!r.stopsBusy)loadStops();
   }catch(e){
     if(id!==plan.reqId)return;console.error(e);
     plan.route=null;setLine(map,null);
@@ -4183,17 +4184,54 @@ function drawStops(){
 function osmType(t){if(t.amenity==='drinking_water'||t.man_made==='water_tap'||t.natural==='spring'&&t.drinking_water==='yes')return'agua';if(t.amenity==='pharmacy')return'farm';
   if(t.shop==='bicycle'||t.amenity==='bicycle_repair_station')return'taller';if(t.amenity==='cafe'||t.amenity==='bar'||t.amenity==='restaurant')return'cafe';
   if(['supermarket','convenience','bakery','general'].includes(t.shop)||t.amenity==='fuel')return'tienda';return null}
+/* v4.4.4 — Consulta a OpenStreetMap (Overpass) con 4 servidores de respaldo */
+async function overpassQ(q){
+  for(const u of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']){
+    try{const ac=new AbortController();const to=setTimeout(()=>ac.abort(),20000);const res=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});clearTimeout(to);if(res.ok)return await res.json()}catch(x){}
+  }
+  throw new Error('overpass');
+}
+const OSM_Q=bb=>`[out:json][timeout:25];(nwr["amenity"~"^(drinking_water|pharmacy|cafe|bar|restaurant|bicycle_repair_station|fuel)$"](${bb});nwr["man_made"="water_tap"](${bb});nwr["shop"~"^(bicycle|supermarket|convenience|bakery|general)$"](${bb}););out center 1500;`;
+/* v4.4.4 — «☕» del mapa: ver fuentes, bares y farmacias de la zona que estás mirando, o añadir un punto ciclista */
+let osmMk=[],osmOn=false,osmList=[];
+function osmClear(){osmMk.forEach(m=>m.remove());osmMk=[];osmOn=false}
+async function poiMenu(){
+  const opts=[[osmOn?'🙈 Quitar fuentes, bares y farmacias del mapa':'💧☕💊 Ver fuentes, bares y farmacias aquí','','near'],['⭐ Añadir un punto ciclista (lo verá tu club)','','add']];
+  const i=await askChoice('¿Qué quieres hacer?',opts);if(i<0)return;
+  if(opts[i][2]==='add'){addPoi();return}
+  if(osmOn){osmClear();toast('Quitados del mapa');return}
+  osmShow();
+}
+async function osmShow(){
+  if(!map){toast('El mapa necesita conexión a internet');return}
+  let c=map.getCenter(),b=map.getBounds();let s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast();
+  // Zona máxima ~6 × 6 km alrededor del centro (si estás muy alejado, se acerca)
+  if(n-s>0.055||e-w>0.07){s=c.lat-0.027;n=c.lat+0.027;w=c.lng-0.034;e=c.lng+0.034;map.easeTo({center:c,zoom:Math.max(map.getZoom(),13),duration:500})}
+  toast('🔎 Buscando fuentes, bares y farmacias…');
+  let d;try{d=await overpassQ(OSM_Q(`${s.toFixed(4)},${w.toFixed(4)},${n.toFixed(4)},${e.toFixed(4)}`))}catch(err){toast('No se pudo buscar ahora. Revisa la conexión e inténtalo otra vez');return}
+  osmClear();const L=[];
+  (d.elements||[]).forEach(el=>{const t=el.tags||{};const ty=osmType(t);if(!ty)return;const lat=el.lat??(el.center&&el.center.lat),lng=el.lon??(el.center&&el.center.lon);if(lat==null)return;
+    if(!L.some(y=>y.t===ty&&hav([y.lat,y.lng],[lat,lng])<0.04))L.push({t:ty,n:t.name||'',lat,lng})});
+  osmList=L.slice(0,250);
+  if(!osmList.length){toast('No hay fuentes, bares ni farmacias conocidas en esta zona');return}
+  osmList.forEach((x,i)=>{const el=document.createElement('div');el.className='stpm';el.textContent=STOP_T[x.t][0];el.title=x.n||STOP_T[x.t][1];
+    el.onclick=ev=>{ev.stopPropagation();osmTap(i)};osmMk.push(new maplibregl.Marker({element:el}).setLngLat([x.lng,x.lat]).addTo(map))});
+  osmOn=true;
+  const cnt={};osmList.forEach(x=>cnt[x.t]=(cnt[x.t]||0)+1);
+  toast(Object.entries(cnt).map(([k,v])=>STOP_T[k][0]+' '+v).join('  ·  ')+'  — toca uno para ir');
+}
+async function osmTap(i){
+  const x=osmList[i];if(!x)return;const name=x.n||STOP_T[x.t][1];
+  const k=await askChoice(`${STOP_T[x.t][0]} ${name}`,[['🧭 Cómo llegar','','go'],['🙈 Quitar todos del mapa','','off']]);
+  if(k===0)guideTo(name,{lat:x.lat,lng:x.lng});else if(k===1)osmClear();
+}
 async function loadStops(){
   const r=plan.route;if(!r||!r.coords)return;r.stopsBusy=true;r.stopsErr=false;renderPlan();
   try{
     const c=r.coords;let s=90,w=180,n=-90,e=-180;c.forEach(p=>{s=Math.min(s,p[0]);n=Math.max(n,p[0]);w=Math.min(w,p[1]);e=Math.max(e,p[1])});
     const pd=0.004,bb=`${(s-pd).toFixed(4)},${(w-pd).toFixed(4)},${(n+pd).toFixed(4)},${(e+pd).toFixed(4)}`;
-    const q=`[out:json][timeout:25];(nwr["amenity"~"^(drinking_water|pharmacy|cafe|bar|restaurant|bicycle_repair_station|fuel)$"](${bb});nwr["man_made"="water_tap"](${bb});nwr["shop"~"^(bicycle|supermarket|convenience|bakery|general)$"](${bb}););out center 1500;`;
-    let d=null;
-    for(const u of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']){
-      try{const ac=new AbortController();const to=setTimeout(()=>ac.abort(),20000);const res=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});clearTimeout(to);if(res.ok){d=await res.json();break}}catch(x){}
-    }
-    if(!d)throw new Error('overpass');
+    const q=OSM_Q(bb);
+    const d=await overpassQ(q);
     // Muestras de la ruta (~cada 100 m) con su km
     const cd=cumDist(c),samp=[];let lastD=-1;for(let i=0;i<c.length;i++){if(cd[i]-lastD>=0.1||i===c.length-1){samp.push([c[i][0],c[i][1],cd[i]]);lastD=cd[i]}}
     const near=(lat,lng)=>{let best=1e9,km=0;for(const p of samp){if(Math.abs(p[0]-lat)>0.01||Math.abs(p[1]-lng)>0.014)continue;const dd=hav([lat,lng],[p[0],p[1]]);if(dd<best){best=dd;km=p[2]}}return[best,km]};

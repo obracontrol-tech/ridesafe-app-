@@ -1,3 +1,7 @@
+## Versión 4.4.4 — Fuentes, bares y farmacias a la vista
+- Botón ☕ del mapa: ahora pregunta «¿Qué quieres hacer?» → «Ver fuentes, bares y farmacias aquí» (salen en el mapa de la zona que miras: 💧 agua, ☕ bares, 🛒 tiendas, 💊 farmacias, 🔧 talleres; toca uno → «Cómo llegar») o «Añadir un punto ciclista». Antes ese botón solo servía para añadir.
+- Al planificar una ruta, las paradas en la ruta se cargan solas (ya no hay que bajar hasta el final y pulsar «Ver paradas»).
+
 ## Versión 4.4.3 — El viento y el semáforo ya no fallan si un servicio no responde
 - Antes, si Open‑Meteo (el servicio gratuito del tiempo) no respondía, desaparecían a la vez el perfil de desnivel, el semáforo de la ruta y el botón «☕ Ver paradas», y el viento daba «No se pudo consultar».
 - Ahora se reintenta y, si sigue sin responder, se usan servicios gratuitos de respaldo: desnivel con OpenTopoData; viento y tiempo con MET Norway (instituto meteorológico de Noruega). La tarjeta del viento indica qué fuente se ha usado.
