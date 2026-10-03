@@ -1,3 +1,7 @@
+## Versión 4.4.2
+- Planificador «De A a B»: al buscar la salida o la llegada, la pantalla queda limpia. Se esconde el panel de la ruta que asomaba por detrás, el mapa se ve claro (solo se oscurece un poco abajo) y la ventana muestra en grande qué punto eliges: 🟢 A salida, 🔴 B llegada o ➕ parada.
+- sw-maps.js igualado con sw.js (copia de seguridad del service worker).
+
 ## Versión 4.4.1
 - Arreglado: con la letra grande del móvil, la ventana «Para no perderte ningún aviso» (al empezar una salida) no dejaba ver el botón «Entendido» y la app se quedaba bloqueada. Ahora todas las ventanas de aviso se pueden deslizar, el botón queda siempre a la vista y tocando fuera también se cierra. Texto de la ventana más corto.
 

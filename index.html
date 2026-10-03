@@ -614,6 +614,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ct-gr{width:24px;height:24px;border-radius:50%;background:#C8DC3C;border:3px solid #0E1A2B;box-shadow:0 0 0 7px rgba(200,220,60,.28)}
 .ct-fl{font-size:24px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .ctc-home{border:2px solid rgba(200,220,60,.55)!important;margin-bottom:14px}
+/* v4.4.2 — Buscar un punto de la ruta: pantalla limpia (sin el panel de la ruta detrás y con el mapa a la vista) */
+#app.psearch .planpanel{display:none!important}
+#app.psearch .scrim{background:linear-gradient(to top,rgba(3,8,16,.6) 0%,rgba(3,8,16,.18) 50%,rgba(3,8,16,0) 75%)}
+#sh-search h2{align-items:center}
+.s-who{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;color:#fff;font-weight:900;font-size:16px;border:3px solid #fff;margin-right:10px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#sh-search .s-sub{color:var(--txt2);font-size:14px;margin:-6px 0 12px 2px}
+#sh-search .sopt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
+#sh-search .sopt .mini{min-height:52px;font-size:15px;border-radius:16px}
 </style>
 </head>
 <body>
@@ -822,7 +830,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -984,7 +992,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <!-- Buscar punto de la ruta -->
 <div class="sheet" id="sh-search" style="z-index:75">
   <div class="grab"></div>
-  <h2><span id="sTitle">¿A dónde vas?</span> <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+  <h2><span style="display:flex;align-items:center"><span class="s-who" id="sWho">B</span><span id="sTitle">¿A dónde vas?</span></span> <button class="x" onclick="closeSheets()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+  <p class="s-sub" id="sSub">Escribe el sitio o elige una opción</p>
   <div class="search" style="background:var(--card)"><svg class="i" viewBox="0 0 24 24" style="color:var(--txt2)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="sQ" placeholder="Pueblo, calle, bar, lugar…" enterkeyhint="search" autocomplete="off" aria-label="Buscar lugar"></div>
   <div class="sopt"><button class="mini" style="justify-content:center" onclick="searchUseHere()">📍 Mi ubicación</button><button class="mini" style="justify-content:center" onclick="searchOnMap()">🗺️ Elegir en el mapa</button></div>
   <div id="sRes"></div>
@@ -1158,7 +1167,7 @@ function go(tab){
 }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{closeSheets();go(t.dataset.tab)});
 function openSheet(id){closeSheets(true);$('scrim').classList.add('show');$(id).classList.add('show');$(id).scrollTop=0;if(id==='sh-plus')$('plusBtn').classList.add('open')}
-function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null;if(typeof stopChat==='function')stopChat()}}
+function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('app').classList.remove('psearch');$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null;if(typeof stopChat==='function')stopChat()}}
 /* v2.3 — Cerrar cualquier ventana: botón ✕ siempre visible, botón "atrás" del móvil y deslizar hacia abajo */
 (function(){
   const X='<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -3971,7 +3980,9 @@ function openPointSearch(key){
   searchKey=key;
   const ttl={start:'¿Desde dónde sales?',dest:'¿A dónde vas?',new:'Añadir parada'}[key]||'Cambiar parada';
   $('sTitle').textContent=ttl;$('sQ').value='';$('sRes').innerHTML='';
-  openSheet('sh-search');setTimeout(()=>$('sQ').focus(),250);
+  const who={start:['A','#22C55E','Punto de salida (A)'],dest:['B','#EF4444','Punto de llegada (B)']}[key]||['+','#C8DC3C','Parada en el camino'];
+  $('sWho').textContent=who[0];$('sWho').style.background=who[1];$('sSub').textContent=who[2];
+  openSheet('sh-search');if(plan.active)$('app').classList.add('psearch');setTimeout(()=>$('sQ').focus(),250);
 }
 $('sQ').addEventListener('input',()=>{clearTimeout(searchT);const q=$('sQ').value.trim();if(q.length<3){$('sRes').innerHTML='';return}searchT=setTimeout(()=>searchPlaces(q),450)});
 $('sQ').addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(searchT);searchPlaces($('sQ').value.trim())}});
