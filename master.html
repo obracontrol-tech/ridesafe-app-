@@ -327,7 +327,7 @@ async function clubDelete(id){
 }
 
 /* ---------- 👥 Ciclistas ---------- */
-let qUser='',fUser='all';
+let qUser='',fUser='all';const selU=new Set();
 function vUsers(){
   let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
   if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
@@ -335,12 +335,13 @@ function vUsers(){
   l.sort((a,b)=>(b.pts||0)-(a.pts||0));
   $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
     <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser='${k}';vUsers()">${t}</button>`).join('')}</div>
-    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button></div>
-   <div class="box tw"><table class="tbl"><thead><tr><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
-   ${l.slice(0,400).map(u=>`<tr><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
+    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
+   <p style="color:var(--txt3);font-size:12.5px;margin:-4px 2px 10px">Marca la casilla de los nombres de prueba para eliminarlos de golpe. «✏️ Nombre» cambia el nombre en todos los sitios (club, salidas, ranking y su móvil).</p>
+   <div class="box tw"><table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(u=>`<tr><td><input type="checkbox" data-id="${u.id}" ${selU.has(u.id)?'checked':''} onclick="userSel('${u.id}',this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
      <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
      <td class="hide-m">${userState(u.id,u)}</td>
-     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser('${u.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser('${u.id}')">⚖️ Sancionar</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button></div></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Nadie con este filtro</div></td></tr>'}
+     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser('${u.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser('${u.id}')">⚖️ Sancionar</button><button class="btn sm" onclick="userRename('${u.id}')">✏️ Nombre</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button><button class="btn sm red" onclick="userDel('${u.id}')">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
    </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
 }
 async function userPts(id){const u=D.users.find(x=>x.id===id);const v=prompt('Puntos de '+u.name,u.pts||0);if(v===null)return;const n=Math.max(0,Math.round(+v||0));try{await db.collection('users').doc(id).set({pts:n},{merge:true});u.pts=n;toast('Puntos actualizados');vUsers()}catch(e){err(e)}}
@@ -350,6 +351,62 @@ async function userWipe(id){
   let n=0;for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id)){try{await db.collection(c).doc(d.id).delete();n++}catch(e){}}
   for(const r of D.rides.filter(x=>x.byUid===id)){try{await db.collection('rides').doc(r.id).delete();n++}catch(e){}}
   toast(n+' elementos borrados');loadAll();
+}
+function userSel(id,on){on?selU.add(id):selU.delete(id);vUsers()}
+function userSelAll(on){const vis=[...document.querySelectorAll('#view tbody input[data-id]')].map(c=>c.dataset.id);vis.forEach(id=>on?selU.add(id):selU.delete(id));vUsers()}
+/* v4.4 — Cambiar el nombre de un ciclista en TODOS los sitios (su ficha, club, salidas, ranking, actividad y puntos). Su móvil lo recibe solo. */
+async function userRename(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;
+  const v=prompt('Nombre real de este ciclista:',u.name||'');if(v===null)return;
+  const n=v.replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
+  if(n.length<2){toast('Escribe un nombre de al menos 2 letras');return}
+  if(n===u.name){toast('Es el mismo nombre');return}
+  toast('Cambiando el nombre…');let k=0;const W=async(ref,data)=>{try{await ref.update(data);k++}catch(e){console.warn(e)}};
+  try{await db.collection('users').doc(id).set({name:n},{merge:true});k++}catch(e){err(e);return}
+  for(const g of D.groups){const up={};
+    if(g.members&&g.members[id]!==undefined)up['members.'+id]=n;
+    if(g.admins&&g.admins[id]!==undefined)up['admins.'+id]=n;
+    if(g.captains&&g.captains[id]!==undefined)up['captains.'+id]=n;
+    if(g.byUid===id)up.by=n;
+    Object.entries(g.grupetas||{}).forEach(([gid,gp])=>{if(gp&&gp.resp&&gp.resp[id]!==undefined)up['grupetas.'+gid+'.resp.'+id]=n});
+    if(Object.keys(up).length)await W(db.collection('groups').doc(g.id),up)}
+  for(const r of D.rides){const up={};if(r.people&&r.people[id]!==undefined)up['people.'+id]=n;if(r.byUid===id)up.by=n;if(Object.keys(up).length)await W(db.collection('rides').doc(r.id),up)}
+  for(const r of D.rank){if(r.s&&r.s[id])await W(db.collection('rank').doc(r.id),{['s.'+id+'.n']:n})}
+  for(const f of D.feed.filter(x=>x.uid===id))await W(db.collection('feed').doc(f.id),{name:n});
+  for(const c of ['routes','pois'])for(const d of D[c].filter(x=>x.uid===id&&x.by!==undefined))await W(db.collection(c).doc(d.id),{by:n});
+  if(D.nearby&&D.nearby.some(x=>x.id===id))await W(db.collection('nearby').doc(id),{name:n});
+  toast('✅ Ahora se llama «'+n+'» ('+k+' sitios actualizados)');loadAll();
+}
+/* v4.4 — Eliminar ciclistas de la lista (p. ej. nombres de prueba): ficha, contenido y rastro en clubes, salidas y ranking */
+async function userPurge(id){
+  const u=D.users.find(x=>x.id===id)||{};let k=0;const DEL=async ref=>{try{await ref.delete();k++}catch(e){console.warn(e)}};const UP=async(ref,data)=>{try{await ref.update(data);k++}catch(e){console.warn(e)}};
+  for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id))await DEL(db.collection(c).doc(d.id));
+  for(const r of D.rides){if(r.byUid===id){await DEL(db.collection('rides').doc(r.id));continue}if(r.people&&r.people[id]!==undefined)await UP(db.collection('rides').doc(r.id),{['people.'+id]:FV.delete()})}
+  for(const g of D.groups){if(g.byUid===id)continue;const up={};
+    ['members','admins','captains'].forEach(f=>{if(g[f]&&g[f][id]!==undefined)up[f+'.'+id]=FV.delete()});
+    if(g.gm&&g.gm[id]!==undefined)up['gm.'+id]=FV.delete();
+    Object.entries(g.grupetas||{}).forEach(([gid,gp])=>{if(gp&&gp.resp&&gp.resp[id]!==undefined)up['grupetas.'+gid+'.resp.'+id]=FV.delete()});
+    if(Object.keys(up).length)await UP(db.collection('groups').doc(g.id),up)}
+  for(const r of D.rank){if(r.s&&r.s[id])await UP(db.collection('rank').doc(r.id),{['s.'+id]:FV.delete()})}
+  try{const a=await db.collection('users').doc(id).collection('acts').get();for(const d of a.docs)await DEL(d.ref)}catch(e){}
+  await DEL(db.collection('users').doc(id).collection('private').doc('push'));
+  await DEL(db.collection('nearby').doc(id));await DEL(db.collection('mod').doc(id));
+  await DEL(db.collection('users').doc(id));
+  return k;
+}
+function ownsClub(id){return D.groups.filter(g=>g.byUid===id)}
+const isMe=id=>!!(auth.currentUser&&auth.currentUser.uid===id);
+async function userDel(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;if(isMe(id)){toast('Esa es tu propia cuenta: no se puede eliminar desde aquí');return}const cl=ownsClub(id);
+  if(!await confirmDlg('❌ Eliminar a '+esc(u.name),`Desaparece de la lista de ciclistas, de su club, de las salidas y del ranking, y se borra todo su contenido.${cl.length?`<br><br>⚠️ Es el creador del club «${esc(cl.map(g=>g.name).join(', '))}»: el club NO se borra (bórralo en Clubes si también era de prueba).`:''}<br><br>Si esa persona vuelve a abrir la app en su móvil, entrará como ciclista nuevo. No se puede deshacer.`,'Eliminar',true))return;
+  toast('Eliminando…');const k=await userPurge(id);selU.delete(id);toast('✅ «'+u.name+'» eliminado ('+k+' datos borrados)');loadAll();
+}
+async function userDelSel(){
+  const ids=[...selU].filter(id=>D.users.some(u=>u.id===id)&&!isMe(id));if(!ids.length){selU.clear();vUsers();return}
+  const names=ids.map(id=>esc(D.users.find(u=>u.id===id).name));const cl=ids.flatMap(ownsClub);
+  if(!await confirmDlg(`❌ Eliminar ${ids.length} ciclista${ids.length===1?'':'s'}`,`Se eliminarán de la lista, de sus clubes, de las salidas y del ranking, con todo su contenido:<br><br><b>${names.slice(0,25).join(', ')}${names.length>25?' y '+(names.length-25)+' más':''}</b>${cl.length?`<br><br>⚠️ Alguno es creador de un club («${esc(cl.map(g=>g.name).join(', '))}»): esos clubes NO se borran.`:''}<br><br>No se puede deshacer.`,'Eliminar',true))return;
+  let i=0,k=0;for(const id of ids){i++;toast(`Eliminando ${i} de ${ids.length}…`);k+=await userPurge(id)}
+  selU.clear();toast(`✅ ${ids.length} ciclista${ids.length===1?'':'s'} eliminado${ids.length===1?'':'s'}`);loadAll();
 }
 function csvUsers(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Nombre','Club','Puntos','Desde','Google','Bloqueado']].concat(D.users.filter(u=>u.name).map(u=>[u.name,(userClub(u.id)||{}).name||'',u.pts||0,fDate(u.since),u.google?'sí':'no',u.banned?'sí':'no']));download('ciclistas-ridesafe.csv','﻿'+rows.map(r=>r.map(q).join(';')).join('\n'),'text/csv')}
 
