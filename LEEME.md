@@ -1,3 +1,8 @@
+## Versión 4.5.3 — Alcanzar al grupo cuando ya has empezado la salida
+- Si llegas tarde y pulsas «Empezar salida», en la pantalla de la salida aparece «🚴 Tu grupo va a X km · Alcánzalos» (cuando el compañero más cercano está a más de 800 m).
+- Al tocarlo, alternativas: 🧭 Ir al mejor punto para juntarme (o ☕ Esperarles más adelante), 📍 Ir directo hacia donde están ahora, ✋ Pedirles que me esperen (aviso «Esperad» al móvil y al Garmin) y 📣 Avisar «Voy para allá».
+- Guía con voz; al juntarte (150 m durante 45 s): «¡Ya estás con tu grupo!», aviso al grupo y la guía pasa a la ruta de la salida. «Yendo a por tu grupo · toca para dejarlo» para cancelar.
+
 ## Versión 4.5.2 — Dibujar ruta: botón «Listo» y paradas que se pueden quitar
 - Botón grande «✓ Listo · ¿qué hago con la ruta?»: Empezar a rodar, Guardar, Crear salida, Compartir con el club, GPX o ver perfil/semáforo/paradas. Antes había que abrir «Detalles».
 - Interruptor «💧☕ Bares y fuentes en el mapa» en el panel para quitarlos o ponerlos. Además se esconden solos al alejar mucho el mapa.

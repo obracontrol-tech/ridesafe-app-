@@ -641,6 +641,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .drw-tg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 2px;font-weight:700;font-size:14px;color:var(--txt2)}
 .pstats b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #map.zfar .stpm{display:none}
+/* v4.5.3 — Alcanzar al grupo durante la salida */
+.lvgroup:has(.lvcatch){max-height:150px}
+.lvcatch{display:block;width:100%;margin:2px 0 8px;min-height:48px;border-radius:14px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px}
+.lvcatch.going{background:rgba(200,220,60,.15);color:var(--lime);border:1px solid var(--lime)}
 </style>
 </head>
 <body>
@@ -850,7 +854,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4765,8 +4769,44 @@ function renderLive(){
   if(live.rideId){
     const now=Date.now();const ms=Object.values(live.members).filter(v=>now-v.t<600000);
     const me=live.pts.at(-1);
-    $('lvGroup').innerHTML=`<b>🛰️ Pelotón: ${ms.length+1} conectados</b>`+ms.map(v=>`<span class="gm"><i style="background:${colorOf(v.name)}">${ini(v.name)}</i>${esc(String(v.name).split(' ')[0])} · ${me?(hav(me,[v.lat,v.lng])*1000<1000?Math.round(hav(me,[v.lat,v.lng])*1000)+' m':hav(me,[v.lat,v.lng]).toFixed(1)+' km'):'—'}${now-v.t>120000?' · sin señal':''}</span>`).join('');
+    $('lvGroup').innerHTML=`<b>🛰️ Pelotón: ${ms.length+1} conectados</b>`+liveCatchBtn(ms,me,now)+ms.map(v=>`<span class="gm"><i style="background:${colorOf(v.name)}">${ini(v.name)}</i>${esc(String(v.name).split(' ')[0])} · ${me?(hav(me,[v.lat,v.lng])*1000<1000?Math.round(hav(me,[v.lat,v.lng])*1000)+' m':hav(me,[v.lat,v.lng]).toFixed(1)+' km'):'—'}${now-v.t>120000?' · sin señal':''}</span>`).join('');
   }
+}
+/* v4.5.3 — Si llegas tarde y ya has empezado: botón para alcanzar al grupo */
+function liveCatchBtn(ms,me,now){
+  if(live.catchTo)return `<button class="lvcatch going" onclick="liveCatchStop()">🧭 Yendo a por tu grupo · toca para dejarlo</button>`;
+  const f=ms.filter(v=>now-v.t<180000&&!v.late);if(!me||!f.length)return '';
+  const d=Math.min(...f.map(v=>hav(me,[v.lat,v.lng])));if(d<0.8)return '';
+  return `<button class="lvcatch" onclick="liveCatchMenu()">🚴 Tu grupo va a ${d<10?d.toFixed(1).replace('.',','):Math.round(d)} km · Alcánzalos</button>`;
+}
+async function liveCatchMenu(){
+  const r=rides.find(x=>x.id===live.rideId);if(!r)return;
+  toast('Buscando a tu grupo…');
+  let c;try{c=await catchCalc(r)}catch(e){c={st:'err'}}
+  if(c.st==='with'){toast('✅ Ya estás con tu grupo');return}
+  const o=[];
+  if(c.P&&(c.st==='go'||c.st==='wait'))o.push([c.st==='wait'?`☕ Esperarles más adelante (llegas en ${ctMin(c.tMe)})`:`🧭 Ir al mejor punto para juntarme (${ctMin(c.tMe)})`,'','pt']);
+  if(c.g)o.push([`📍 Ir directo hacia donde están ahora (${ctKm(c.dG||0)})`,'','dir']);
+  o.push(['✋ Pedirles que me esperen','','wait'],['📣 Avisar: «Voy para allá»','','late']);
+  const t=c.st==='late'?'Tu grupo va muy por delante. ¿Qué hacemos?':c.st==='nopos'||c.st==='err'?'No veo a tu grupo ahora mismo. ¿Qué hacemos?':'¿Cómo quieres alcanzar a tu grupo?';
+  const i=await askChoice(t,o);if(i<0)return;const k=o[i][2];
+  if(k==='pt')liveCatchGo(c.P,c.st==='wait'?'Te llevo al sitio donde esperarás a tu grupo.':'Te llevo al mejor punto para juntarte con tu grupo.');
+  else if(k==='dir')liveCatchGo(c.g,'Te llevo hacia donde está tu grupo ahora.');
+  else if(k==='wait')sendAlert('wait');
+  else catchNotify('Voy para allá');
+}
+async function liveCatchGo(P,msg){
+  const h=live.pts.at(-1)||hereLL();if(!h||!P){toast('Esperando señal GPS… inténtalo en unos segundos');return}
+  const me={lat:h[0],lng:h[1]};
+  try{const n=await navSteps([me,P]);prepNav(n.coords,n.steps);live.wps=[me,P];live.follow=true;live.catchTo={P,rideId:live.rideId,near:0};speak(msg+' Sigue la línea verde.');toast('🧭 '+msg);renderLive()}
+  catch(e){toast('No se pudo calcular el camino. Revisa la conexión')}
+}
+function liveCatchStop(){
+  if(!live.catchTo)return;live.catchTo=null;const r=rides.find(x=>x.id===live.rideId);
+  if(r&&r.route){const u=unpackRoute(r.route);prepNav(u.coords,null);live.wps=(r.route.nav||r.route.wps||null);
+    if(live.wps&&live.wps.length>=2&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_'))navSteps(live.wps.slice(0,25)).then(n=>{if(live.on)prepNav(n.coords,n.steps)}).catch(()=>{})}
+  else{live.nav=null;live.wps=null;setLine(map,null,'plan')}
+  toast('Has dejado de ir a por el grupo');renderLive();
 }
 function togglePause(){
   if(!live.on)return;
