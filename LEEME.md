@@ -1,3 +1,8 @@
+## Versión 4.5.2 — Dibujar ruta: botón «Listo» y paradas que se pueden quitar
+- Botón grande «✓ Listo · ¿qué hago con la ruta?»: Empezar a rodar, Guardar, Crear salida, Compartir con el club, GPX o ver perfil/semáforo/paradas. Antes había que abrir «Detalles».
+- Interruptor «💧☕ Bares y fuentes en el mapa» en el panel para quitarlos o ponerlos. Además se esconden solos al alejar mucho el mapa.
+- El tiempo de la ruta ya no se corta con la letra grande («10 h 31»).
+
 ## Versión 4.5.1 — Brújula en el mapa
 - Brújula arriba en la barra del mapa y en la pantalla de la salida: la aguja roja apunta siempre al norte aunque gires el mapa.
 - 1 toque: norte arriba. Con el norte arriba, otro toque: el mapa gira según hacia dónde miras con el móvil (borde verde); otro toque vuelve al norte. En iPhone pide permiso la primera vez.

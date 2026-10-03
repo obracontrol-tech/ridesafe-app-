@@ -636,6 +636,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* v4.5.1 — Brújula del mapa */
 #cmpBtn svg,.cmpb svg{width:34px;height:34px;transition:transform .15s linear}
 .cmpb.on{background:rgba(200,220,60,.18);box-shadow:inset 0 0 0 3px var(--lime)}
+/* v4.5.2 — Dibujar ruta: botón «Listo», paradas que se pueden quitar, cifras que no se cortan */
+.drw-ok{width:100%;min-height:58px;border-radius:18px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:18px;margin:8px 0 6px;box-shadow:0 4px 14px rgba(200,220,60,.25)}
+.drw-tg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 2px;font-weight:700;font-size:14px;color:var(--txt2)}
+.pstats b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#map.zfar .stpm{display:none}
 </style>
 </head>
 <body>
@@ -845,7 +850,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.5.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3824,6 +3829,7 @@ function initMap(){
   locateMe(true);
   map.on('load',()=>{drawRideMarkers();drawPois()});
   map.on('rotate',compassDraw);
+  const zf=()=>$('map').classList.toggle('zfar',map.getZoom()<11.5);map.on('zoomend',zf);map.on('load',zf);
   map.on('click',e=>{if(plan.active&&!plan.view)addPlanPt({lat:e.lngLat.lat,lng:e.lngLat.lng})});
   map.on('dragstart',()=>{if(live.on)live.follow=false});
 }
@@ -4070,6 +4076,12 @@ async function addPlanPt(ll){
   p.label=await reverseName(p);renderPlan();
 }
 /* v4.5 — Botones del modo «Dibujar ruta» */
+async function drawDone(){
+  if(!plan.route||plan.busy)return;
+  const o=[['▲ Empezar a rodar ahora','','go'],['💾 Guardar en mis rutas','','save'],['📅 Crear una salida con esta ruta','','use'],['👥 Compartir con mi club','','pub'],['⬇️ Descargar GPX (Garmin, Wahoo…)','','gpx'],['📊 Ver perfil, semáforo y paradas','','det']];
+  const i=await askChoice('¿Qué quieres hacer con la ruta?',o);if(i<0)return;
+  ({go:goNav,save:saveRoute,use:useRoute,pub:()=>publishRoute(),gpx:gpxPlan,det:()=>togglePlanMini(false)})[o[i][2]]();
+}
 function drawUndo(){if(plan.view)return;if(plan.dest){plan.dest=plan.stops.length?plan.stops.pop():null}else plan.start=null;vib(15);redrawPlanMarkers();computeRoute();renderPlan()}
 function drawHome(){if(plan.view||!plan.start||!plan.dest)return;plan.stops.push(plan.dest);plan.dest={...plan.start};vib(15);redrawPlanMarkers();computeRoute();toast('🔁 La ruta vuelve al punto de salida')}
 async function drawClear(){if(plan.view||!planWps().length)return;if(planWps().length>2&&!await askConfirm('¿Borrar toda la ruta dibujada?','Se quitan todos los puntos y empiezas de cero.','Borrar'))return;clearPlan();redrawPlanMarkers();renderPlan()}
@@ -4212,7 +4224,7 @@ function renderPlan(){
   if(plan.mode==='draw'&&!v){
     const n=planWps().length;
     rows=(!plan.start?`<button class="drw-here" onclick="drawHere()">📍 Empezar desde donde estoy</button>`:'')+
-      `<div class="drw"><button onclick="drawUndo()" ${n?'':'disabled'}><span>↶</span>Deshacer</button><button onclick="drawHome()" ${n>=2?'':'disabled'}><span>🔁</span>Volver al inicio</button><button onclick="drawClear()" ${n?'':'disabled'}><span>🗑️</span>Borrar</button></div>`+(n?'':`<button class="gm-link" style="margin:0 0 6px" onclick="openSheet('sh-plan')">Otros modos: de A a B, circular por kilómetros…</button>`);
+      `<div class="drw"><button onclick="drawUndo()" ${n?'':'disabled'}><span>↶</span>Deshacer</button><button onclick="drawHome()" ${n>=2?'':'disabled'}><span>🔁</span>Volver al inicio</button><button onclick="drawClear()" ${n?'':'disabled'}><span>🗑️</span>Borrar</button></div>`+(r&&!plan.busy?`<button class="drw-ok" onclick="drawDone()">✓ Listo · ¿qué hago con la ruta?</button>`:'')+(r&&r.stopsList&&r.stopsList.length?`<label class="drw-tg">💧☕ Bares y fuentes en el mapa (${r.stopsList.length})<span class="sw"><input type="checkbox" ${store.get('stopsOn',true)?'checked':''} onchange="store.set('stopsOn',this.checked);drawStops()"><span></span></span></label>`:'')+(n?'':`<button class="gm-link" style="margin:0 0 6px" onclick="openSheet('sh-plan')">Otros modos: de A a B, circular por kilómetros…</button>`);
   }else if(plan.mode==='loop'){
     rows=`<div class="prow"><span class="pic">${IC.start}</span>${fieldBtn('start',plan.start,'Elige el punto de salida y llegada')}</div>`;
   }else{
@@ -4229,7 +4241,7 @@ function renderPlan(){
     <div><b class="num">${r.km.toFixed(1)}</b><span>km</span></div>
     <div><b class="num">${r.prof?'+'+Math.round(r.up):'…'}</b><span>m subida</span></div>
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
-    <div><b class="num" style="font-size:17px">${r.mins?hm(r.mins):'…'}</b><span>aprox.</span></div>`:'';
+    <div><b class="num" style="font-size:17px">${r.mins?(r.mins<60?Math.round(r.mins)+' min':Math.floor(r.mins/60)+' h '+String(Math.round(r.mins%60)).padStart(2,'0')):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
   const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
@@ -4256,7 +4268,7 @@ function stopsHTML(r){
 }
 function goStop(i){const s=plan.route&&plan.route.stopsList&&plan.route.stopsList[i];if(!s||!map)return;map.flyTo({center:[s.lng,s.lat],zoom:16,duration:700});vib(20)}
 function drawStops(){
-  stopsClear();const r=plan.route;if(!map||!r||!r.stopsList)return;
+  stopsClear();const r=plan.route;if(!map||!r||!r.stopsList||!store.get('stopsOn',true))return;
   r.stopsList.forEach((s,i)=>{if(stopFilter!=='all'&&s.t!==stopFilter)return;const el=document.createElement('div');el.className='stpm';el.textContent=STOP_T[s.t][0];el.title=s.n||STOP_T[s.t][1];
     el.onclick=e=>{e.stopPropagation();toast(`${STOP_T[s.t][0]} ${s.n||STOP_T[s.t][1]} · km ${Math.round(s.km)}`)};
     stopMk.push(new maplibregl.Marker({element:el}).setLngLat([s.lng,s.lat]).addTo(map))});
