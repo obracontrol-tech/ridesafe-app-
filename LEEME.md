@@ -1,3 +1,10 @@
+## Versión 4.6 — Recorrido en 3D animado (como Suunto)
+- Actividades → abrir una salida → «▶ Ver recorrido en 3D».
+- Satélite inclinado con relieve, línea fina (3 px) coloreada por altitud (amarillo bajo → rojo alto) y carteles MÁX / MÍN.
+- ▶ Reproducir: un punto recorre la ruta y la cámara lo sigue; barra para avanzar o retroceder; km, tiempo, altitud y media.
+- Botones: 2D/3D (plano si el móvil va lento) y 🗺️/🛰️ (mapa o satélite). ✕ vuelve a la actividad.
+- Gratis: satélite de Esri (el mismo de «Capas») y relieve de Terrain Tiles (AWS).
+
 ## Versión 4.5.4 — Brújula mejorada con el rumbo
 - Brújula más clara: letras N (roja), E, S y O alrededor y aguja más grande.
 - Al activarla (segundo toque, con el norte arriba) aparece arriba en grande hacia dónde vas: «NE · Vas hacia el noreste · 47°», y la voz lo dice una vez (si la voz está activada).
