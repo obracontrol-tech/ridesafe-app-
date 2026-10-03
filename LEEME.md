@@ -1,3 +1,11 @@
+## Versión 4.5 — Dibujar ruta (como Strava)
+- «Planificar» abre directamente el modo «✏️ Dibujar ruta»: tocas el mapa punto a punto y la ruta sigue las carreteras sola (Carretera: asfalto sin autovías · Montaña: caminos).
+- Abajo, siempre a la vista: km, subida, bajada y tiempo, y tres botones grandes: ↶ Deshacer, 🔁 Volver al inicio (cierra la vuelta) y 🗑️ Borrar. «📍 Empezar desde donde estoy» para el primer punto.
+- Los puntos se pueden arrastrar para mover la ruta. Los intermedios son puntos blancos pequeños (A salida, B llegada).
+- Hasta 60 puntos (se calcula por tramos de 25).
+- «⌃ Detalles» muestra perfil, semáforo, paradas, Iniciar, Guardar, Crear salida, GPX…
+- Los otros modos (De A a B, por etapas, circular por km) siguen en «Otros modos» y en el botón «+».
+
 ## Versión 4.4.5 — Botón de filtros del mapa
 - El botón ☰ junto a «Buscar lugar» (antes decía «Filtros: próximamente») abre «Qué ver en el mapa» con tres interruptores: 🚩 Salidas del club, ⭐ Puntos ciclistas del club y 💧 Fuentes, bares y farmacias de la zona. La elección se guarda en el móvil.
 
