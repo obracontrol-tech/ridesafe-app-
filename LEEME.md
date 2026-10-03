@@ -1,3 +1,9 @@
+## Versión 4.4.3 — El viento y el semáforo ya no fallan si un servicio no responde
+- Antes, si Open‑Meteo (el servicio gratuito del tiempo) no respondía, desaparecían a la vez el perfil de desnivel, el semáforo de la ruta y el botón «☕ Ver paradas», y el viento daba «No se pudo consultar».
+- Ahora se reintenta y, si sigue sin responder, se usan servicios gratuitos de respaldo: desnivel con OpenTopoData; viento y tiempo con MET Norway (instituto meteorológico de Noruega). La tarjeta del viento indica qué fuente se ha usado.
+- El semáforo y «Ver paradas» se muestran siempre que haya ruta. Sin ningún dato, el semáforo sale en gris «Sin datos ahora» con botón «Volver a intentarlo» (antes salía en verde sin haber comprobado nada).
+- Paradas (fuentes, bares, farmacias, talleres): 4 servidores de mapas en vez de 2, con 20 s de espera cada uno.
+
 ## Versión 4.4.2
 - Planificador «De A a B»: al buscar la salida o la llegada, la pantalla queda limpia. Se esconde el panel de la ruta que asomaba por detrás, el mapa se ve claro (solo se oscurece un poco abajo) y la ventana muestra en grande qué punto eliges: 🟢 A salida, 🔴 B llegada o ➕ parada.
 - sw-maps.js igualado con sw.js (copia de seguridad del service worker).

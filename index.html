@@ -830,7 +830,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1663,8 +1663,7 @@ async function checkWind(){
   const ll=await windLL();
   if(!ll){box.innerHTML='<div class="wind-res"><small>Marca primero el punto de salida (📍 en el mapa o «Estoy aquí»).</small></div>';return}
   try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${ll.lat.toFixed(3)}&longitude=${ll.lng.toFixed(3)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto&start_date=${date}&end_date=${date}`;
-    const d=await (await fetch(u)).json();const h=d.hourly;if(!h)throw 0;
+    const X=await wxHourly(ll.lat,ll.lng,date);const h={time:X.time,wind_speed_10m:X.spd,wind_direction_10m:X.dir,wind_gusts_10m:X.gust};
     const i=Math.max(0,h.time.findIndex(t=>t.slice(11,13)===hour.slice(0,2)));
     const spd=Math.round(h.wind_speed_10m[i]),deg=Math.round(h.wind_direction_10m[i]),gust=Math.round(h.wind_gusts_10m[i]);
     const wi=windInfo(spd,deg);
@@ -1761,8 +1760,7 @@ async function openWind(c){
   if(days>15){B.innerHTML=`<div class="plc"><b>Todavía es pronto</b><p style="color:var(--txt2);margin-top:4px">La previsión del viento llega hasta 15 días. Vuelve a mirarla unos días antes de la salida.</p></div>${back}`;return}
   if(days<-1){B.innerHTML=`<div class="plc"><b>Esta salida ya pasó</b></div>${back}`;return}
   try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat.toFixed(3)}&longitude=${c.lng.toFixed(3)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto&start_date=${c.date}&end_date=${c.date}`;
-    const h=(await (await fetch(u)).json()).hourly;if(!h||!h.time)throw 0;
+    const X=await wxHourly(c.lat,c.lng,c.date);const h={time:X.time,wind_speed_10m:X.spd,wind_direction_10m:X.dir,wind_gusts_10m:X.gust};c.src=X.src;
     const H=+String(c.hour).slice(0,2)||8;
     const at=Math.max(0,h.time.findIndex(t=>+t.slice(11,13)===H));
     const spd=Math.round(h.wind_speed_10m[at]),deg=Math.round(h.wind_direction_10m[at]),gust=Math.round(h.wind_gusts_10m[at]);
@@ -1786,7 +1784,7 @@ async function openWind(c){
        <button class="btn btn-line" onclick="openWind(windCtx)">🔄 Actualizar</button>
        <a class="btn btn-line" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="https://www.windy.com/?${c.lat.toFixed(3)},${c.lng.toFixed(3)},10" target="_blank" rel="noopener">🗺️ Ver mapa</a>
      </div>
-     <p class="ws-src">La previsión es para el día y la hora de la salida, en el punto de salida. Datos gratuitos de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a> · consultado a las ${now}. Se actualiza cada hora; mírala otra vez la víspera.</p>
+     <p class="ws-src">La previsión es para el día y la hora de la salida, en el punto de salida. Datos gratuitos de ${c.src==='MET Norway'?'<a href="https://www.met.no/" target="_blank" rel="noopener">MET Norway</a> (Open‑Meteo no respondía)':'<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a>'} · consultado a las ${now}. Se actualiza cada hora; mírala otra vez la víspera.</p>
      ${back}`;
   }catch(e){B.innerHTML=`<div class="plc"><b>No se pudo consultar el viento</b><p style="color:var(--txt2);margin-top:4px">Revisa la conexión e inténtalo otra vez.</p><button class="btn btn-line" style="margin-top:10px" onclick="openWind(windCtx)">🔄 Reintentar</button></div>${back}`}
 }
@@ -3854,18 +3852,71 @@ const hm=m=>m>=60?Math.floor(m/60)+' h '+String(Math.round(m%60)).padStart(2,'0'
 function cumDist(c){const d=[0];for(let i=1;i<c.length;i++)d.push(d[i-1]+hav(c[i-1],c[i]));return d}
 
 /* Desnivel: muestrea ~cada 150 m y pide la altitud (gratis, sin clave) */
+/* ===== v4.4.3 — Tiempo y desnivel con plan B =====
+   Open-Meteo es el servicio principal (gratis). Si no responde, se reintenta y,
+   si sigue sin responder, se usan servicios gratuitos de respaldo:
+   desnivel → OpenTopoData · viento y tiempo → MET Norway (instituto meteorológico de Noruega). */
+async function getJSON(u,ms,opt){const ac=new AbortController();const to=setTimeout(()=>ac.abort(),ms||9000);
+  try{const r=await fetch(u,{...(opt||{}),signal:ac.signal});if(!r.ok)throw new Error('http '+r.status);return await r.json()}finally{clearTimeout(to)}}
+async function omJSON(u){try{return await getJSON(u,9000)}catch(e){await new Promise(r=>setTimeout(r,1200));return await getJSON(u,12000)}}
+const pad2=n=>String(n).padStart(2,'0');
+const locH=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':00';
+let metCache={};
+async function metNo(lat,lng){
+  const k=(+lat).toFixed(2)+','+(+lng).toFixed(2);const c=metCache[k];if(c&&Date.now()-c.t<15*60000)return c.d;
+  const d=await getJSON(`https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${(+lat).toFixed(3)}&lon=${(+lng).toFixed(3)}`,12000);
+  metCache[k]={t:Date.now(),d};return d;
+}
+/* Viento por horas de un día: {time[], spd[], dir[], gust[], src} (km/h, grados) */
+async function wxHourly(lat,lng,date){
+  try{
+    const h=(await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto&start_date=${date}&end_date=${date}`)).hourly;
+    if(!h||!h.time||!h.time.length)throw new Error('vacío');
+    return{time:h.time,spd:h.wind_speed_10m,dir:h.wind_direction_10m,gust:h.wind_gusts_10m,src:'Open‑Meteo'};
+  }catch(e){console.warn('Open-Meteo viento: uso MET Norway',e)}
+  const d=await metNo(lat,lng);const out={time:[],spd:[],dir:[],gust:[],src:'MET Norway'};
+  ((d.properties||{}).timeseries||[]).forEach(ts=>{const t=new Date(ts.time);const lt=locH(t);if(lt.slice(0,10)!==date)return;const i=(ts.data.instant||{}).details||{};
+    if(i.wind_speed==null)return;out.time.push(lt);out.spd.push(i.wind_speed*3.6);out.dir.push(i.wind_from_direction||0);out.gust.push((i.wind_speed_of_gust!=null?i.wind_speed_of_gust:i.wind_speed*1.5)*3.6)});
+  if(!out.time.length)throw new Error('sin previsión para ese día');
+  return out;
+}
+/* Tiempo de ahora (para el semáforo) */
+async function wxNow(lat,lng){
+  try{
+    const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&daily=sunset&forecast_days=2&wind_speed_unit=kmh&timezone=auto`);
+    const c=d.current;if(!c)throw new Error('sin datos');
+    let pp=0;const H=d.hourly||{};if(H.time&&H.precipitation_probability){const now=String(c.time||'').slice(0,13);let k=H.time.findIndex(x=>x.slice(0,13)===now);if(k<0)k=0;for(let j=k;j<Math.min(H.time.length,k+4);j++)pp=Math.max(pp,H.precipitation_probability[j]||0)}
+    return{t:Math.round(c.temperature_2m??15),w:Math.round(c.wind_speed_10m||0),g:Math.round(c.wind_gusts_10m||0),code:c.weather_code||0,rain:c.precipitation||0,pp,day:!!c.is_day,sunset:d.daily&&d.daily.sunset&&d.daily.sunset[0]||null,src:'Open‑Meteo'};
+  }catch(e){console.warn('Open-Meteo ahora: uso MET Norway',e)}
+  const d=await metNo(lat,lng);const ts=((d.properties||{}).timeseries||[]);if(!ts.length)throw new Error('sin datos');
+  const now=Date.now();let k=ts.findIndex(x=>new Date(x.time).getTime()>now-3600e3);if(k<0)k=0;
+  const i=ts[k].data.instant.details||{};const n1=ts[k].data.next_1_hours||{};const sym=String((n1.summary||{}).symbol_code||(ts[k].data.next_6_hours||{}).summary?.symbol_code||'');
+  let pp=0;for(let j=k;j<Math.min(ts.length,k+4);j++){const x=(ts[j].data.next_1_hours||{}).details||{};pp=Math.max(pp,x.probability_of_precipitation??((x.precipitation_amount||0)>0.2?70:0))}
+  return{t:Math.round(i.air_temperature??15),w:Math.round((i.wind_speed||0)*3.6),g:Math.round((i.wind_speed_of_gust??(i.wind_speed||0)*1.5)*3.6),
+    code:/thunder/.test(sym)?95:/fog/.test(sym)?45:0,rain:((n1.details||{}).precipitation_amount)||0,pp,day:!/night/.test(sym),sunset:null,src:'MET Norway'};
+}
+/* Altitudes de una lista de puntos [{lat,lng}] */
+async function elevations(pts){
+  const eles=[];
+  try{
+    for(let k=0;k<pts.length;k+=100){const ch=pts.slice(k,k+100);
+      const d=await omJSON('https://api.open-meteo.com/v1/elevation?latitude='+ch.map(p=>p.lat.toFixed(5)).join(',')+'&longitude='+ch.map(p=>p.lng.toFixed(5)).join(','));
+      if(!d||!d.elevation)throw new Error('ele');eles.push(...d.elevation)}
+    return eles;
+  }catch(e){console.warn('Open-Meteo desnivel: uso OpenTopoData',e)}
+  const out=[];
+  for(let k=0;k<pts.length;k+=100){if(k)await new Promise(r=>setTimeout(r,1100));const ch=pts.slice(k,k+100);
+    const d=await getJSON('https://api.opentopodata.org/v1/srtm90m?locations='+ch.map(p=>p.lat.toFixed(5)+','+p.lng.toFixed(5)).join('|'),15000);
+    if(!d||!d.results)throw new Error('ele2');out.push(...d.results.map(x=>x.elevation??0))}
+  return out;
+}
 async function addElevation(route){
   const c=route.coords,cd=cumDist(c),tot=cd.at(-1);
   const n=Math.max(2,Math.min(300,Math.round(tot/0.15)));
   const samp=[];let j=0;
   for(let k=0;k<n;k++){const t=tot*k/(n-1);while(j<cd.length-2&&cd[j+1]<t)j++;const f=cd[j+1]>cd[j]?(t-cd[j])/(cd[j+1]-cd[j]):0;
     samp.push({lat:c[j][0]+(c[j+1][0]-c[j][0])*f,lng:c[j][1]+(c[j+1][1]-c[j][1])*f,d:t})}
-  const eles=[];
-  for(let k=0;k<samp.length;k+=100){
-    const ch=samp.slice(k,k+100);
-    const r=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+ch.map(p=>p.lat.toFixed(5)).join(',')+'&longitude='+ch.map(p=>p.lng.toFixed(5)).join(','));
-    if(!r.ok)throw new Error('ele');const d=await r.json();eles.push(...d.elevation);
-  }
+  const eles=await elevations(samp);
   samp.forEach((p,i)=>p.e=eles[i]??0);
   // Suavizado ligero para no sumar "ruido"
   const sm=samp.map((p,i)=>{const a=samp.slice(Math.max(0,i-1),i+2);return a.reduce((s,x)=>s+x.e,0)/a.length});
@@ -4049,7 +4100,7 @@ async function computeRoute(){
     r.mode=plan.stops.length&&plan.mode!=='loop'?'stages':plan.mode;r.up=0;r.down=0;
     r.wps=plan.mode==='loop'?[plan.start]:wps;
     setLine(map,r.coords);plan.route=r;renderPlan();fitTo(map,r.coords,{top:60,bottom:Math.round(window.innerHeight*0.58),left:40,right:90});
-    try{await addElevation(r)}catch(e){console.warn('desnivel',e)}
+    try{await addElevation(r)}catch(e){console.warn('desnivel',e);r.profFail=true}
     if(id!==plan.reqId)return;
     r.mins=estMins(r.km,r.up);renderPlan();
   }catch(e){
@@ -4099,7 +4150,7 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?hm(r.mins):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  $('pProf').innerHTML=r&&r.prof?profileSVG(r.prof)+confHTML(r)+stopsHTML(r):'';if(r&&r.prof&&!r.conf&&!r.confBusy)computeConf(r);
+  const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';
@@ -4139,8 +4190,8 @@ async function loadStops(){
     const pd=0.004,bb=`${(s-pd).toFixed(4)},${(w-pd).toFixed(4)},${(n+pd).toFixed(4)},${(e+pd).toFixed(4)}`;
     const q=`[out:json][timeout:25];(nwr["amenity"~"^(drinking_water|pharmacy|cafe|bar|restaurant|bicycle_repair_station|fuel)$"](${bb});nwr["man_made"="water_tap"](${bb});nwr["shop"~"^(bicycle|supermarket|convenience|bakery|general)$"](${bb}););out center 1500;`;
     let d=null;
-    for(const u of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
-      try{const ac=new AbortController();const to=setTimeout(()=>ac.abort(),30000);const res=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});clearTimeout(to);if(res.ok){d=await res.json();break}}catch(x){}
+    for(const u of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']){
+      try{const ac=new AbortController();const to=setTimeout(()=>ac.abort(),20000);const res=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});clearTimeout(to);if(res.ok){d=await res.json();break}}catch(x){}
     }
     if(!d)throw new Error('overpass');
     // Muestras de la ruta (~cada 100 m) con su km
@@ -4170,9 +4221,9 @@ async function computeConf(r){
   // Seguro: pase lo que pase, a los 12 s el semáforo da su resultado con lo que tenga
   let done=false;const finish=wx=>{if(done)return;done=true;
     if(!wx)why.push('📡 Sin datos del tiempo: solo se ha valorado el terreno');
-    sc=Math.max(0,Math.min(100,sc));r.conf={sc,why:why.slice(),lv:sc>=75?0:sc>=50?1:2};r.confBusy=false;
+    sc=Math.max(0,Math.min(100,sc));r.conf=(!wx&&!r.prof)?{sc:'—',why:['📡 No se ha podido comprobar ni el tiempo ni el desnivel (sin conexión o servicios caídos)'],lv:3}:{sc,why:why.slice(),lv:sc>=75?0:sc>=50?1:2};r.confBusy=false;
     if(plan.active)renderPlan()};
-  const guard=setTimeout(()=>finish(false),12000);
+  const guard=setTimeout(()=>finish(false),30000);
   try{
     // Terreno: pendientes del perfil
     let maxS=0,steep=0;const tot=(r.prof&&r.prof.length?r.prof.at(-1).d:0)||1;
@@ -4181,30 +4232,24 @@ async function computeConf(r){
     if(steep/tot>0.15){sc-=10;why.push(`📈 ${Math.round(steep/tot*100)}% del recorrido por encima del 7%`)}
     // Tiempo de ahora en la salida (Open-Meteo, gratis), con límite de 8 s
     const s=r.coords&&r.coords[0];if(!s)throw new Error('sin salida');
-    const ac=new AbortController();const to=setTimeout(()=>ac.abort(),8000);
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+s[0]).toFixed(3)}&longitude=${(+s[1]).toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&daily=sunset&forecast_days=2&wind_speed_unit=kmh&timezone=auto`;
-    const res=await fetch(u,{signal:ac.signal});clearTimeout(to);
-    if(!res.ok)throw new Error('meteo '+res.status);
-    const d=await res.json();const c=d.current;if(!c)throw new Error('sin datos');
-    const w=Math.round(c.wind_speed_10m||0),g=Math.round(c.wind_gusts_10m||0),t=Math.round(c.temperature_2m??15),code=c.weather_code||0;
-    // Probabilidad de lluvia de las próximas 4 horas
-    let pp=0;const H=d.hourly||{};if(H.time&&H.precipitation_probability){const now=String(c.time||'').slice(0,13);let k=H.time.findIndex(x=>x.slice(0,13)===now);if(k<0)k=0;for(let j=k;j<Math.min(H.time.length,k+4);j++)pp=Math.max(pp,H.precipitation_probability[j]||0)}
+    const W=await wxNow(s[0],s[1]);
+    const w=W.w,g=W.g,t=W.t,code=W.code,pp=W.pp;
     if(code>=95){sc-=40;why.push('⛈️ Tormenta prevista: mejor no salir')}
     if(code===45||code===48){sc-=15;why.push('🌫️ Niebla: luces encendidas y ropa visible')}
     if(w>=30||g>=50){sc-=30;why.push(`🌬️ Viento fuerte (${w} km/h, rachas ${g})`)}else if(w>=20||g>=35){sc-=15;why.push(`🌬️ Viento notable (${w} km/h, rachas ${g})`)}else if(w>=12){sc-=5;why.push(`🌬️ Algo de viento (${w} km/h)`)}
-    if((c.precipitation||0)>0.2||pp>=60){sc-=25;why.push(`🌧️ Lluvia${pp?' ('+pp+'% próximas horas)':''}: el asfalto resbala`)}else if(pp>=30){sc-=10;why.push(`🌦️ Puede llover (${pp}%)`)}
+    if((W.rain||0)>0.2||pp>=60){sc-=25;why.push(`🌧️ Lluvia${pp?' ('+pp+'% próximas horas)':''}: el asfalto resbala`)}else if(pp>=30){sc-=10;why.push(`🌦️ Puede llover (${pp}%)`)}
     if(t>=35){sc-=20;why.push(`🥵 Mucho calor (${t}°C): lleva agua extra`)}else if(t>=30){sc-=8;why.push(`☀️ Calor (${t}°C): hidrátate`)}else if(t<=3){sc-=15;why.push(`🧊 ${t}°C: posible hielo en sombras`)}else if(t<=8){sc-=5;why.push(`🧥 Fresco (${t}°C)`)}
-    if(!c.is_day){sc-=20;why.push('🌙 Es de noche: luces delante y detrás')}
-    else if(d.daily&&d.daily.sunset&&d.daily.sunset[0]&&r.mins){const ss=new Date(d.daily.sunset[0]);const end=new Date(Date.now()+r.mins*60000);if(end>ss){sc-=15;why.push(`🌇 Llegarías después de anochecer (${d.daily.sunset[0].slice(11,16)}): lleva luces`)}}
-    r.confWx=`${t}°C · viento ${w} km/h`;
+    if(!W.day){sc-=20;why.push('🌙 Es de noche: luces delante y detrás')}
+    else if(W.sunset&&r.mins){const ss=new Date(W.sunset);const end=new Date(Date.now()+r.mins*60000);if(end>ss){sc-=15;why.push(`🌇 Llegarías después de anochecer (${W.sunset.slice(11,16)}): lleva luces`)}}
+    r.confWx=`${t}°C · viento ${w} km/h`;if(!r.prof)why.push('⛰️ Sin datos de desnivel: no se han valorado las cuestas');
     clearTimeout(guard);finish(true);
   }catch(e){console.warn('semáforo',e);clearTimeout(guard);finish(false)}
 }
 function confHTML(r){
   if(!r.conf)return `<div class="conf" style="--cc:var(--line)"><div class="conf-h"><span class="conf-dot">…</span><div><b>Semáforo de la ruta</b><small>Comprobando el tiempo de ahora…</small></div></div></div>`;
-  const L=[['#22C55E','Buenas condiciones','Ruta recomendable ahora'],['#F59E0B','Con precaución','Revisa los avisos antes de salir'],['#EF4444','Mejor otro momento','Valora una ruta más corta u otro día']][r.conf.lv];
+  const L=[['#22C55E','Buenas condiciones','Ruta recomendable ahora'],['#F59E0B','Con precaución','Revisa los avisos antes de salir'],['#EF4444','Mejor otro momento','Valora una ruta más corta u otro día'],['#7B8BA1','Sin datos ahora','Comprueba la conexión y vuelve a intentarlo']][r.conf.lv];
   const list=r.conf.why.length?r.conf.why:['✅ Sin avisos: buen terreno y buen tiempo'];
-  return `<div class="conf" style="--cc:${L[0]}"><div class="conf-h"><span class="conf-dot">${r.conf.sc}</span><div><b>${L[1]}</b><small>${L[2]}${r.confWx?' · '+esc(r.confWx):''}</small></div></div><ul>${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  return `<div class="conf" style="--cc:${L[0]}"><div class="conf-h"><span class="conf-dot">${r.conf.sc}</span><div><b>${L[1]}</b><small>${L[2]}${r.confWx?' · '+esc(r.confWx):''}</small></div></div><ul>${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.conf.lv===3?'<button class="btn btn-line" style="margin-top:8px;min-height:44px" onclick="computeRoute()">🔄 Volver a intentarlo</button>':''}</div>`;
 }
 /* v3.11 — Hora de salida en formato 24 h con dos desplegables */
 function setHour(v){v=/^\d{1,2}:\d{2}$/.test(v||'')?v:'08:30';let [h,m]=v.split(':').map(Number);m=Math.min(55,Math.round(m/5)*5);const hh=String(h).padStart(2,'0'),mm=String(m).padStart(2,'0');
