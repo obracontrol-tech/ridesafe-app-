@@ -1,3 +1,6 @@
+## Versión 4.4.5 — Botón de filtros del mapa
+- El botón ☰ junto a «Buscar lugar» (antes decía «Filtros: próximamente») abre «Qué ver en el mapa» con tres interruptores: 🚩 Salidas del club, ⭐ Puntos ciclistas del club y 💧 Fuentes, bares y farmacias de la zona. La elección se guarda en el móvil.
+
 ## Versión 4.4.4 — Fuentes, bares y farmacias a la vista
 - Botón ☕ del mapa: ahora pregunta «¿Qué quieres hacer?» → «Ver fuentes, bares y farmacias aquí» (salen en el mapa de la zona que miras: 💧 agua, ☕ bares, 🛒 tiendas, 💊 farmacias, 🔧 talleres; toca uno → «Cómo llegar») o «Añadir un punto ciclista». Antes ese botón solo servía para añadir.
 - Al planificar una ruta, las paradas en la ruta se cargan solas (ya no hay que bajar hasta el final y pulsar «Ver paradas»).

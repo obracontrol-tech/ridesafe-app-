@@ -634,7 +634,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="search">
       <svg class="i" viewBox="0 0 24 24" style="color:var(--txt2)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="placeQ" placeholder="Buscar lugar…" enterkeyhint="search" aria-label="Buscar lugar">
-      <button class="flt" aria-label="Filtros" onclick="toast('Filtros: próximamente')"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button>
+      <button class="flt" aria-label="Qué ver en el mapa" onclick="openMapFilters()"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button>
     </div>
     <div class="mrow">
       <button class="zone" onclick="toast('Buscando salidas en esta zona…')"><svg class="i" viewBox="0 0 24 24" style="width:20px"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Buscar en esta zona</button>
@@ -830,7 +830,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.4.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3820,9 +3820,25 @@ function locateMe(silent){
   },()=>{if(!silent)toast('Activa la ubicación del móvil')},{enableHighAccuracy:true,timeout:10000});
 }
 /* Salidas en el mapa de Rutas */
+/* v4.4.5 — Botón de filtros (☰ junto a «Buscar lugar»): qué se ve en el mapa */
+function openMapFilters(){
+  const d=document.createElement('div');d.className='cfm';
+  const row=(id,ico,t,sub,on)=>`<div class="set" style="margin-bottom:8px;gap:10px"><span style="font-size:22px">${ico}</span><span style="flex:1;min-width:0"><b style="display:block;font-size:15px">${t}</b><small style="color:var(--txt2);font-weight:500">${sub}</small></span><label class="sw"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label></div>`;
+  d.innerHTML=`<div class="cfm-b"><h3>🗺️ Qué ver en el mapa</h3>
+    ${row('mfRides','🚩','Salidas del club','Dónde empiezan las próximas salidas',store.get('showRides',true))}
+    ${row('mfPois','⭐','Puntos ciclistas del club','Los que habéis añadido vosotros',poiShow)}
+    ${row('mfOsm','💧','Fuentes, bares y farmacias','De la zona que estás mirando',osmOn)}
+    <div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Listo</button></div></div>`;
+  d.addEventListener('change',e=>{const t=e.target;
+    if(t.id==='mfRides'){store.set('showRides',t.checked);drawRideMarkers()}
+    if(t.id==='mfPois'){poiShow=t.checked;store.set('poiShow',poiShow);drawPois()}
+    if(t.id==='mfOsm'){if(t.checked)osmShow();else osmClear()}});
+  d.onclick=e=>{if(e.target.closest('.cfm-ok')||e.target===d)d.remove()};
+  document.body.appendChild(d);
+}
 let rideMarkers=[];
 function drawRideMarkers(){
-  if(!map)return;rideMarkers.forEach(m=>m.remove());rideMarkers=[];if(plan.active)return;
+  if(!map)return;rideMarkers.forEach(m=>m.remove());rideMarkers=[];if(plan.active||!store.get('showRides',true))return;
   upcoming().filter(r=>r.startLL).forEach(r=>{
     const el=document.createElement('div');el.className='mk';el.innerHTML=PIN_SVG(joined(r)?'#C8DC3C':'#22C55E');el.title=r.title||'Salida';
     el.onclick=()=>openRide(r.id);
