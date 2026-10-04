@@ -178,6 +178,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
    =================================================================== */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jsq=s=>esc(JSON.stringify(String(s??'')));
 const SAFE_IMG=/^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
 const COLORS=['#C8DC3C','#60A5FA','#F59E0B','#34D399','#F472B6','#A78BFA','#FB7185','#22D3EE'];
 const colorOf=n=>{let h=0;for(const c of String(n||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
@@ -240,7 +241,7 @@ function barChart(id,vals,labels,color,unit){
   let g='';for(let k=0;k<=4;k++){const y=pt+(H-pt-pb)*(1-k/4);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1F3350" stroke-width="1"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#6F8199">${step*k}</text>`}
   let b='';vals.forEach((v,i)=>{const h=(H-pt-pb)*(v/top),x=pl+i*bw+gap/2,y=H-pb-h,w=Math.max(1,bw-gap);
     if(v>0)b+=`<path d="M${x},${H-pb}V${y+Math.min(4,h)}Q${x},${y} ${x+Math.min(4,w/2)},${y}H${x+w-Math.min(4,w/2)}Q${x+w},${y} ${x+w},${y+Math.min(4,h)}V${H-pb}Z" fill="${color}"/>`;
-    b+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="transparent" data-c="${id}" data-i="${i}"/>`;
+    b+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="transparent" data-c="${esc(id)}" data-i="${esc(i)}"/>`;
     if(i%5===0||i===n-1)b+=`<text x="${pl+i*bw+bw/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="#6F8199">${labels[i].slice(8)}/${labels[i].slice(5,7)}</text>`});
   return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gráfica de barras">${g}<line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" stroke="#2A4468"/>${b}</svg></div>`;
 }
@@ -294,7 +295,7 @@ function vClubs(){
      return `<tr><td><div class="who">${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:`<div class="av" style="background:${colorOf(g.name)}">${esc(ini(g.name))}</div>`}<div><b>${esc(g.name)}</b><small>código ${esc(g.id)}</small></div></div></td>
       <td class="r num">${n}</td><td class="r num hide-m">${gp}</td><td class="hide-m" style="color:var(--txt2)">${adm.map(esc).join(', ')}</td>
       <td class="hide-m">${g.suspended?'<span class="pill bad">⛔ Suspendido</span>':g.club?'<span class="pill lime">🏅 Oficial</span>':'<span class="pill mut">Grupo</span>'}${g.warn?' <span class="pill warn">⚠️ Avisado</span>':''}</td>
-      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView('${g.id}')">Ver</button><button class="btn sm" onclick="clubOfficial('${g.id}')">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole('${g.id}','admins')">🛡️ Admins</button>${g.suspended||g.warn?`<button class="btn sm" onclick="liftClub('${g.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionClub('${g.id}')">⚖️ Sancionar</button><button class="btn sm red" onclick="clubDelete('${g.id}')">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
+      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView(${jsq(g.id)})">Ver</button><button class="btn sm" onclick="clubOfficial(${jsq(g.id)})">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole(${jsq(g.id)},'admins')">🛡️ Admins</button>${g.suspended||g.warn?`<button class="btn sm" onclick="liftClub(${jsq(g.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionClub(${jsq(g.id)})">⚖️ Sancionar</button><button class="btn sm red" onclick="clubDelete(${jsq(g.id)})">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
    </tbody></table></div>`;
 }
 function clubView(id){
@@ -306,7 +307,7 @@ function clubView(id){
    <h3 style="font-size:15px">🏷️ Grupetas (${gps.length})</h3>${gps.length?gps.map(([k,x])=>`<div class="opt" style="cursor:default">${esc(x.name)} <span class="pill mut">${esc(x.mod||'')}</span>${Object.keys(x.resp||{}).length?' · 🎯 '+Object.values(x.resp).map(esc).join(', '):''}</div>`).join(''):'<p>Sin grupetas.</p>'}
    <h3 style="font-size:15px;margin-top:10px">👥 Ciclistas (${Object.keys(g.members||{}).length})</h3>
    ${Object.entries(g.members||{}).map(([k,n])=>`<div class="opt" style="cursor:default"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}<br><small style="color:var(--txt3)">${role(k)}</small></div></div>`).join('')}
-   <div class="row"><button class="btn sm" onclick="clubRole('${id}','captains')">⭐ Jefes de pelotón</button><button class="btn sm" onclick="clubRole('${id}','admins')">🛡️ Administradores</button></div>`);
+   <div class="row"><button class="btn sm" onclick="clubRole(${jsq(id)},'captains')">⭐ Jefes de pelotón</button><button class="btn sm" onclick="clubRole(${jsq(id)},'admins')">🛡️ Administradores</button></div>`);
 }
 async function clubOfficial(id){const g=D.groups.find(x=>x.id===id);try{await db.collection('groups').doc(id).update({club:!g.club});g.club=!g.club;toast(g.club?'🏅 Ahora es club oficial':'Ya no es club oficial');render()}catch(e){err(e)}}
 async function clubRole(id,field){
@@ -314,7 +315,7 @@ async function clubRole(id,field){
   const T=field==='admins'?'🛡️ Administradores':'⭐ Jefes de pelotón';
   if(!ms.length){toast('Este club aún no tiene más ciclistas');return}
   dlg(`<h3>${T} · ${esc(g.name)}<button class="x" onclick="closeDlg()">✕</button></h3><p>Toca un ciclista para darle o quitarle el cargo. El creador ya manda en su club.</p>
-   ${ms.map(([k,n])=>{const on=!!(g[field]||{})[k];return `<button class="opt" onclick="roleToggle('${id}','${field}','${k}')"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}</div>${on?'<span class="pill lime">Sí · quitar</span>':'<span class="pill mut">Nombrar</span>'}</button>`}).join('')}`);
+   ${ms.map(([k,n])=>{const on=!!(g[field]||{})[k];return `<button class="opt" onclick="roleToggle(${jsq(id)},${jsq(field)},${jsq(k)})"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}</div>${on?'<span class="pill lime">Sí · quitar</span>':'<span class="pill mut">Nombrar</span>'}</button>`}).join('')}`);
 }
 async function roleToggle(id,field,k){
   const g=D.groups.find(x=>x.id===id);const on=!!(g[field]||{})[k];
@@ -334,14 +335,14 @@ function vUsers(){
   if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
   l.sort((a,b)=>(b.pts||0)-(a.pts||0));
   $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
-    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser='${k}';vUsers()">${t}</button>`).join('')}</div>
+    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
     <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
    <p style="color:var(--txt3);font-size:12.5px;margin:-4px 2px 10px">Marca la casilla de los nombres de prueba para eliminarlos de golpe. «✏️ Nombre» cambia el nombre en todos los sitios (club, salidas, ranking y su móvil).</p>
    <div class="box tw"><table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
-   ${l.slice(0,400).map(u=>`<tr><td><input type="checkbox" data-id="${u.id}" ${selU.has(u.id)?'checked':''} onclick="userSel('${u.id}',this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
+   ${l.slice(0,400).map(u=>`<tr><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
      <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
      <td class="hide-m">${userState(u.id,u)}</td>
-     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts('${u.id}')">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser('${u.id}')">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser('${u.id}')">⚖️ Sancionar</button><button class="btn sm" onclick="userRename('${u.id}')">✏️ Nombre</button><button class="btn sm red" onclick="userWipe('${u.id}')">🗑️ Contenido</button><button class="btn sm red" onclick="userDel('${u.id}')">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
+     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts(${jsq(u.id)})">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser(${jsq(u.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser(${jsq(u.id)})">⚖️ Sancionar</button><button class="btn sm" onclick="userRename(${jsq(u.id)})">✏️ Nombre</button><button class="btn sm red" onclick="userWipe(${jsq(u.id)})">🗑️ Contenido</button><button class="btn sm red" onclick="userDel(${jsq(u.id)})">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
    </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
 }
 async function userPts(id){const u=D.users.find(x=>x.id===id);const v=prompt('Puntos de '+u.name,u.pts||0);if(v===null)return;const n=Math.max(0,Math.round(+v||0));try{await db.collection('users').doc(id).set({pts:n},{merge:true});u.pts=n;toast('Puntos actualizados');vUsers()}catch(e){err(e)}}
@@ -417,13 +418,13 @@ function vRides(){
   if(fRide==='up')l=l.filter(r=>r.date>=t);if(fRide==='past')l=l.filter(r=>r.date<t);if(cRide)l=l.filter(r=>(r.group||'')===cRide);
   l.sort((a,b)=>fRide==='past'?(b.date+b.hour).localeCompare(a.date+a.hour):(a.date+a.hour).localeCompare(b.date+b.hour));
   const old=D.rides.filter(r=>r.date<iso(Date.now()-60*86400000)).length;
-  $('view').innerHTML=`<div class="bar"><div class="chips">${[['up','Próximas'],['past','Pasadas'],['all','Todas']].map(([k,x])=>`<button class="chip${fRide===k?' on':''}" onclick="fRide='${k}';vRides()">${x}</button>`).join('')}</div>
+  $('view').innerHTML=`<div class="bar"><div class="chips">${[['up','Próximas'],['past','Pasadas'],['all','Todas']].map(([k,x])=>`<button class="chip${fRide===k?' on':''}" onclick="fRide=${jsq(k)};vRides()">${x}</button>`).join('')}</div>
     <select class="inp" onchange="cRide=this.value;vRides()"><option value="">Todos los clubes</option>${D.groups.map(g=>`<option value="${esc(g.id)}"${cRide===g.id?' selected':''}>${esc(g.name)}</option>`).join('')}</select>
     <div style="flex:1"></div>${old?`<button class="btn sm red" onclick="cleanOld()">🧹 Borrar ${old} salidas de hace más de 60 días</button>`:''}</div>
    <div class="box tw"><table class="tbl"><thead><tr><th>Fecha</th><th>Salida</th><th class="hide-m">Club</th><th class="r hide-m">Apuntados</th><th class="r">Acciones</th></tr></thead><tbody>
    ${l.slice(0,400).map(r=>`<tr><td class="num" style="white-space:nowrap">${fDate(r.date)}<br><small style="color:var(--txt3)">${esc(r.hour||'')}</small></td><td><b>${esc(r.title||'Salida')}</b><br><small style="color:var(--txt3)">${esc(r.start||'')} · organiza ${esc(r.by||'')}</small></td>
     <td class="hide-m" style="color:var(--txt2)">${r.group?esc(clubName(r.group)):'<span class="pill warn">Sin club</span>'}${r.gp&&D.groups.find(g=>g.id===r.group)?.grupetas?.[r.gp]?'<br><small>🏷️ '+esc(D.groups.find(g=>g.id===r.group).grupetas[r.gp].name)+'</small>':''}</td><td class="r num hide-m">${Object.keys(r.people||{}).length}</td>
-    <td class="r"><div class="acts"><a class="btn sm" style="text-decoration:none" href="./#salida=${esc(r.id)}" target="_blank" rel="noopener">Ver</a><button class="btn sm red" onclick="delDoc('rides','${r.id}','la salida «${esc(r.title||'Salida')}»')">🗑️</button></div></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">No hay salidas con este filtro</div></td></tr>'}
+    <td class="r"><div class="acts"><a class="btn sm" style="text-decoration:none" href="./#salida=${esc(r.id)}" target="_blank" rel="noopener">Ver</a><button class="btn sm red" onclick="delDoc('rides',${jsq(r.id)},${jsq('la salida «'+(r.title||'Salida')+'»')})">🗑️</button></div></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">No hay salidas con este filtro</div></td></tr>'}
    </tbody></table></div>`;
 }
 async function cleanOld(){
@@ -439,14 +440,14 @@ function vCont(){
   const T={routes:'🗺️ Rutas',feed:'📰 Actividad',pois:'☕ Puntos ciclistas'};
   const l=D[cTab].slice().sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
   const title=x=>cTab==='routes'?`${x.name} · ${nf(Math.round(x.km||0))} km`:cTab==='feed'?`${x.title} · ${String(Number(x.km||0).toFixed(1)).replace('.',',')} km`:x.name;
-  $('view').innerHTML=`<div class="bar"><div class="chips">${Object.entries(T).map(([k,t])=>`<button class="chip${cTab===k?' on':''}" onclick="cTab='${k}';vCont()">${t} (${D[k].length})</button>`).join('')}</div></div>
+  $('view').innerHTML=`<div class="bar"><div class="chips">${Object.entries(T).map(([k,t])=>`<button class="chip${cTab===k?' on':''}" onclick="cTab=${jsq(k)};vCont()">${t} (${D[k].length})</button>`).join('')}</div></div>
    <div class="box tw"><table class="tbl"><thead><tr><th>${T[cTab]}</th><th class="hide-m">Club</th><th class="hide-m">Autor</th><th class="hide-m">Fecha</th><th class="r">Acciones</th></tr></thead><tbody>
    ${l.slice(0,400).map(x=>`<tr><td><b>${esc(title(x))}</b></td><td class="hide-m" style="color:var(--txt2)">${x.club?esc(clubName(x.club)):'<span class="pill warn">Sin club</span>'}</td><td class="hide-m" style="color:var(--txt2)">${esc(x.by||x.name||'')}</td><td class="hide-m" style="color:var(--txt2)">${fDate(x.createdAt)}</td>
-    <td class="r"><button class="btn sm red" onclick="delDoc('${cTab}','${x.id}','este elemento')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">Nada por aquí</div></td></tr>'}
+    <td class="r"><button class="btn sm red" onclick="delDoc(${jsq(cTab)},${jsq(x.id)},'este elemento')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">Nada por aquí</div></td></tr>'}
    </tbody></table></div>`;
 }
 async function delDoc(col,id,what){
-  if(!await confirmDlg('🗑️ Borrar',`¿Seguro que quieres borrar ${what}? Esta acción no se puede deshacer.`,'Borrar',true))return;
+  if(!await confirmDlg('🗑️ Borrar',`¿Seguro que quieres borrar ${esc(what)}? Esta acción no se puede deshacer.`,'Borrar',true))return;
   try{await db.collection(col).doc(id).delete();D[col]=D[col].filter(x=>x.id!==id);counts();toast('Borrado');render()}catch(e){err(e)}
 }
 
@@ -454,9 +455,9 @@ async function delDoc(col,id,what){
 function vRep(){
   const C={feed:'Actividad',pois:'Punto ciclista',routes:'Ruta',rides:'Salida'};
   $('view').innerHTML=D.reports.length?D.reports.sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt)).map(r=>`<div class="box" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><span class="pill warn">${esc(C[r.type]||r.type)}</span><h3 style="margin-top:6px">${esc(r.title||'(sin título)')}</h3><div class="d" style="margin:2px 0 0">Reportado por ${esc(r.byName||'')} · ${fDate(r.createdAt)} · «${esc(r.reason||'')}»</div></div>
-    <div class="acts" style="display:flex;gap:8px"><button class="btn sm red" onclick="repDel('${r.id}')">🗑️ Borrar contenido</button><button class="btn sm" onclick="repDismiss('${r.id}')">✓ Descartar</button></div></div>`).join(''):'<div class="box"><div class="empty">✅ No hay reportes pendientes</div></div>';
+    <div class="acts" style="display:flex;gap:8px"><button class="btn sm red" onclick="repDel(${jsq(r.id)})">🗑️ Borrar contenido</button><button class="btn sm" onclick="repDismiss(${jsq(r.id)})">✓ Descartar</button></div></div>`).join(''):'<div class="box"><div class="empty">✅ No hay reportes pendientes</div></div>';
 }
-async function repDel(id){const r=D.reports.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar contenido reportado',`Se borrará «${esc(r.title||'')}» para todos.`,'Borrar',true))return;try{if(r.refId)await db.collection(r.type).doc(r.refId).delete().catch(()=>{});await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Contenido borrado');vRep()}catch(e){err(e)}}
+async function repDel(id){const r=D.reports.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar contenido reportado',`Se borrará «${esc(r.title||'')}» para todos.`,'Borrar',true))return;try{if(r.refId&&['feed','pois','routes','rides'].includes(r.type)&&/^[A-Za-z0-9_-]{1,120}$/.test(r.refId))await db.collection(r.type).doc(r.refId).delete().catch(()=>{});await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Contenido borrado');vRep()}catch(e){err(e)}}
 async function repDismiss(id){try{await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Reporte descartado');vRep()}catch(e){err(e)}}
 
 /* ---------- 📣 Aviso general ---------- */
@@ -594,7 +595,7 @@ function vEth(){
    <div class="box"><h3>📜 Código ético del ciclista</h3><div class="d">Lo ven todos los usuarios en la app (Perfil → Ayuda). Es la base de cada sanción.</div>
     ${ETICA.map(([e,t])=>`<div class="opt" style="cursor:default">${e} ${t}</div>`).join('')}</div>
    <div class="box"><h3>⛔ Sanciones activas (${act.length})</h3><div class="d">Ciclistas suspendidos o expulsados y clubes suspendidos</div>
-    ${act.length?act.map(x=>`<div class="opt" style="cursor:default"><span style="flex:1">${x.kind==='club'?'🏅':'👤'} ${esc(x.name)}<br><small style="color:var(--txt3)">${x.kind==='club'?'Club suspendido':userState(x.id,D.users.find(u=>u.id===x.id)).replace(/<[^>]+>/g,'')}</small></span><button class="btn sm" onclick="${x.kind==='club'?'liftClub':'liftUser'}('${x.id}')">✓ Levantar</button></div>`).join(''):'<div class="empty">✅ Ninguna sanción activa</div>'}
+    ${act.length?act.map(x=>`<div class="opt" style="cursor:default"><span style="flex:1">${x.kind==='club'?'🏅':'👤'} ${esc(x.name)}<br><small style="color:var(--txt3)">${x.kind==='club'?'Club suspendido':userState(x.id,D.users.find(u=>u.id===x.id)).replace(/<[^>]+>/g,'')}</small></span><button class="btn sm" onclick="${x.kind==='club'?'liftClub':'liftUser'}(${jsq(x.id)})">✓ Levantar</button></div>`).join(''):'<div class="empty">✅ Ninguna sanción activa</div>'}
     <p style="color:var(--txt3);font-size:12.5px;margin-top:10px">Para sancionar: ve a <b>Ciclistas</b> o <b>Clubes</b> y pulsa ⚖️ Sancionar.</p></div>
    </div>
    <div class="box tw"><h3>🗂️ Historial de sanciones</h3><div class="d">Todo queda registrado: quién, cuándo, por qué y qué medida</div>
@@ -613,7 +614,7 @@ function vNews(){
     <div class="chips" id="nwS" style="margin-top:10px"><button class="chip on" data-s="soon" onclick="nwSet(this)">🚀 Próximamente</button><button class="chip" data-s="ready" onclick="nwSet(this)">✅ Ya disponible</button></div>
     <button class="btn lime" style="margin-top:12px" onclick="newsAdd()">📣 Publicar novedad</button></div>
    <div class="box"><h3>📋 Publicadas (${l.length})</h3><div class="d">Lo que ven ahora los usuarios</div>
-    ${l.length?l.map(x=>`<div class="opt" style="cursor:default;align-items:flex-start"><span style="flex:1"><span class="pill ${x.status==='soon'?'warn':'ok'}">${x.status==='soon'?'Próximamente':'Ya disponible'}</span> <b>${x.v?'v'+esc(x.v)+' · ':''}${esc(x.title)}</b><br><small style="color:var(--txt3);font-weight:500">${esc(x.text||'')}</small></span><span style="display:flex;flex-direction:column;gap:6px">${x.status==='soon'?`<button class="btn sm" onclick="newsDone('${x.id}')">✅ Ya está</button>`:''}<button class="btn sm red" onclick="newsDel('${x.id}')">🗑️</button></span></div>`).join(''):'<div class="empty">Aún no has publicado novedades</div>'}</div>
+    ${l.length?l.map(x=>`<div class="opt" style="cursor:default;align-items:flex-start"><span style="flex:1"><span class="pill ${x.status==='soon'?'warn':'ok'}">${x.status==='soon'?'Próximamente':'Ya disponible'}</span> <b>${x.v?'v'+esc(x.v)+' · ':''}${esc(x.title)}</b><br><small style="color:var(--txt3);font-weight:500">${esc(x.text||'')}</small></span><span style="display:flex;flex-direction:column;gap:6px">${x.status==='soon'?`<button class="btn sm" onclick="newsDone(${jsq(x.id)})">✅ Ya está</button>`:''}<button class="btn sm red" onclick="newsDel(${jsq(x.id)})">🗑️</button></span></div>`).join(''):'<div class="empty">Aún no has publicado novedades</div>'}</div>
    </div>`;
 }
 function nwSet(b){document.querySelectorAll('#nwS .chip').forEach(c=>c.classList.toggle('on',c===b))}

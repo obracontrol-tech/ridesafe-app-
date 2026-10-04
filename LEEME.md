@@ -1,3 +1,17 @@
+## Versión 4.7 — Cámara en ruta y salida que no se pierde
+- Durante la salida, botón 📷 junto a «Terminar»: fotos y vídeos (hasta 2 min) sin salir de la app. El GPS, la voz, el pelotón y los avisos siguen funcionando.
+- Cada foto queda marcada en el mapa donde se hizo y guardada con la salida (Actividades → la salida → «📷 Fotos y vídeos»). También se guarda en Descargas del móvil (en iPhone, con «Compartir → Guardar»).
+- En «Foto con tus datos» se puede usar una foto hecha durante la salida.
+- Copia de seguridad de la salida cada 15 s: si el móvil cierra la app, al volver pregunta «Seguir grabando / Terminarla y guardarla / Descartarla».
+- Si la app estuvo en segundo plano, los km de ese tramo ya se suman al volver.
+- Incluye la revisión de seguridad 4.6.1.
+
+## Versión 4.6.1 — Revisión de seguridad
+- Corregidos fallos que permitían meter código dañino con nombres o identificadores raros (salidas, grupetas, miembros, reportes, escudo del club, enlace familiar).
+- La consola Master y el panel de reportes solo borran contenidos válidos.
+- Al dejar de compartir con la familia se borra la posición y el recorrido guardados.
+- El service worker no guarda errores ni la vuelta de Strava, y los avisos solo abren páginas de la app.
+
 ## Versión 4.6 — Recorrido en 3D animado (como Suunto)
 - Actividades → abrir una salida → «▶ Ver recorrido en 3D».
 - Satélite inclinado con relieve, línea fina (3 px) coloreada por altitud (amarillo bajo → rojo alto) y carteles MÁX / MÍN.

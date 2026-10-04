@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v460';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v470';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -57,7 +57,7 @@ self.addEventListener('fetch', e => {
   // La app: red primero (siempre la última versión); caché si no hay conexión
   e.respondWith(
     // v442: 'no-cache' obliga a pedir siempre la última versión (evita que el móvil muestre una versión vieja)
-    fetch(req, { cache: 'no-cache' }).then(r => { const c = r.clone(); caches.open(CACHE).then(ca => ca.put(req, c)); return r; })
+    fetch(req, { cache: 'no-cache' }).then(r => { if (r.ok && !/[?&](code|state)=/.test(u.search)) { const c = r.clone(); caches.open(CACHE).then(ca => ca.put(req, c)); } return r; })
       .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
 });
@@ -66,7 +66,8 @@ self.addEventListener('fetch', e => {
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-    const url = (e.notification.data && e.notification.data.url) || './';
+    let url = (e.notification.data && e.notification.data.url) || './';
+    try { if (new URL(url, self.location).origin !== self.location.origin) url = './'; } catch (_) { url = './'; }
     for (const c of cs) { if ('focus' in c) { if (url !== './' && 'navigate' in c) c.navigate(url).catch(() => {}); return c.focus(); } }
     return self.clients.openWindow(url);
   }));
