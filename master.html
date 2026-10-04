@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#070D17">
+<title>RideSafe IA · Consola Master</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#070D17;--bg2:#0B1422;--panel:#0E1A2B;--card:#122238;--card2:#16294A;--line:#1F3350;--line2:#2A4468;
+  --txt:#EEF3F8;--txt2:#A7B4C6;--txt3:#6F8199;--lime:#C8DC3C;--lime2:#A9BD2E;--on-lime:#0E1A2B;--blue:#60A5FA;
+  --ok:#4ADE80;--warn:#FBBF24;--bad:#F87171;--r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(1200px 600px at 85% -10%,rgba(200,220,60,.07),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(96,165,250,.06),transparent 60%),var(--bg);background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--lime)}
+.num{font-variant-numeric:tabular-nums}
+/* Acceso */
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gbox{width:100%;max-width:420px;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:28px;padding:34px 28px;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.gbox .bike{position:absolute;right:-60px;top:-40px;width:260px;opacity:.07}
+.gbox img{width:78px;height:78px;border-radius:20px;margin-bottom:14px}
+.gbox h1{font-size:26px;font-weight:800;letter-spacing:-.01em}.gbox h1 span{color:var(--lime)}
+.gbox .tag{display:inline-block;margin:8px 0 18px;font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);border:1px solid rgba(200,220,60,.35);border-radius:20px;padding:4px 12px}
+.gbox p{color:var(--txt2);font-size:14.5px;line-height:1.5;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:23px;border:1px solid var(--line2);background:var(--card);font-weight:700;font-size:14.5px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--card2);border-color:var(--txt3)}
+.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}.btn.lime:hover{background:#D6E85A}
+.btn.red{color:var(--bad);border-color:rgba(248,113,113,.45)}.btn.red:hover{background:rgba(248,113,113,.1)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13px;border-radius:17px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+/* Estructura */
+#app{display:none;min-height:100vh}
+.side{position:fixed;left:0;top:0;bottom:0;width:236px;background:rgba(9,17,29,.92);backdrop-filter:blur(10px);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
+.brand img{width:40px;height:40px;border-radius:11px}
+.brand b{font-size:17px;font-weight:800;display:block;line-height:1.1}.brand b span{color:var(--lime)}
+.brand small{font-size:10.5px;font-weight:800;letter-spacing:.16em;color:var(--lime)}
+.nav{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:0;background:none;color:var(--txt2);font-weight:700;font-size:14.5px;text-align:left;width:100%}
+.nav:hover{background:var(--card);color:var(--txt)}
+.nav.on{background:rgba(200,220,60,.12);color:var(--lime)}
+.nav .ct{margin-left:auto;font-size:11.5px;background:var(--card2);color:var(--txt2);border-radius:10px;padding:1px 8px}
+.nav .ct.alert{background:rgba(248,113,113,.18);color:var(--bad)}
+.side .me{margin-top:auto;border-top:1px solid var(--line);padding:14px 8px 0;font-size:12.5px;color:var(--txt3)}
+.side .me b{display:block;color:var(--txt2);font-size:13px;word-break:break-all}
+main{margin-left:236px;padding:26px 30px 60px;max-width:1320px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.top h2{font-size:25px;font-weight:800;letter-spacing:-.01em}
+.top .sub{color:var(--txt3);font-size:13px}
+.top .sp{flex:1}
+/* Tarjetas */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpi .l{color:var(--txt2);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:32px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
+.kpi .h{color:var(--txt3);font-size:12px;margin-top:2px}
+.kpi.alert{border-color:rgba(248,113,113,.45)}.kpi.alert .v{color:var(--bad)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;min-width:0}
+.box h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.box .d{color:var(--txt3);font-size:12.5px;margin-bottom:12px}
+/* Tablas */
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.search{flex:1;min-width:200px;background:var(--card);border:1px solid var(--line2);border-radius:23px;padding:11px 16px;outline:none}
+.search:focus,.inp:focus{border-color:var(--lime)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line2);background:var(--card);border-radius:17px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--txt2)}
+.chip.on{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:10px 12px;outline:none}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.tbl th{text-align:left;color:var(--txt3);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.tw{overflow-x:auto}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0E1A2B;flex-shrink:0}
+.logo{width:34px;height:34px;border-radius:9px;object-fit:cover;background:#fff;flex-shrink:0}
+.who b{display:block;font-weight:700}.who small{color:var(--txt3);font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:10px;padding:2px 8px;white-space:nowrap}
+.pill.lime{background:rgba(200,220,60,.15);color:var(--lime)}.pill.ok{background:rgba(74,222,128,.14);color:var(--ok)}
+.pill.bad{background:rgba(248,113,113,.15);color:var(--bad)}.pill.mut{background:var(--card2);color:var(--txt2)}.pill.warn{background:rgba(251,191,36,.15);color:var(--warn)}
+.empty{color:var(--txt3);text-align:center;padding:26px 10px;font-size:14px}
+/* Gráficas */
+.chart{position:relative;height:200px;margin-top:6px}
+.chart svg{width:100%;height:100%;display:block;overflow:visible}
+.tip{position:fixed;pointer-events:none;background:#0A1320;border:1px solid var(--line2);border-radius:10px;padding:7px 10px;font-size:12.5px;z-index:50;display:none;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.tip b{font-size:15px}
+.rank{display:flex;flex-direction:column;gap:8px}
+.rank .row{display:flex;align-items:center;gap:10px}
+.rank .row .bw{flex:1;height:8px;background:var(--card2);border-radius:4px;overflow:hidden}
+.rank .row .bw i{display:block;height:100%;background:var(--lime);border-radius:4px}
+.rank .row .n{width:40%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:13.5px}
+.rank .row .c{width:44px;text-align:right;color:var(--txt2);font-size:13px}
+/* Ventanas */
+.ov{position:fixed;inset:0;background:rgba(3,7,13,.72);backdrop-filter:blur(4px);z-index:40;display:none;align-items:center;justify-content:center;padding:18px}
+.ov.show{display:flex}
+.dlg{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);border-radius:24px;padding:22px}
+.dlg h3{font-size:19px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dlg h3 .x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:var(--card)}
+.dlg p{color:var(--txt2);font-size:14px;line-height:1.5;margin-bottom:12px}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line2);border-radius:14px;margin-bottom:8px;background:var(--card);width:100%;text-align:left;font-weight:600}
+.opt:hover{border-color:var(--lime)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--lime);color:var(--on-lime);font-weight:800;border-radius:22px;padding:11px 18px;opacity:0;transition:.25s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.prog{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;width:0;background:var(--lime);transition:width .2s}
+.list li{margin:0 0 6px 18px;color:var(--txt2);font-size:14px;line-height:1.45}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}.kv span{color:var(--txt3)}
+@media (max-width:980px){
+  .side{position:sticky;top:0;bottom:auto;width:auto;height:auto;flex-direction:row;overflow-x:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line);gap:6px;align-items:center}
+  .brand{padding:0 8px 0 0;flex-shrink:0}.brand div{display:none}
+  .nav{width:auto;white-space:nowrap;padding:9px 12px;flex-shrink:0}.nav .ct{display:none}
+  .side .me{display:none}
+  main{margin-left:0;padding:18px 16px 60px}
+  .kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
+  .kpi .v{font-size:26px}
+  .tbl .hide-m{display:none}
+}
+</style></head><body>
+
+<!-- ===== Acceso ===== -->
+<div id="gate"><div class="gbox">
+  <svg class="bike" viewBox="0 0 24 24" fill="none" stroke="#C8DC3C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3"/></svg>
+  <img src="icons/icon-512.png" alt="RideSafe IA">
+  <h1>RideSafe <span>IA</span></h1>
+  <div class="tag">CONSOLA MASTER</div>
+  <p id="gMsg">Acceso exclusivo del creador y desarrollador de la app.</p>
+  <button class="btn lime wide" id="gBtn" onclick="signIn()" style="display:none">Entrar con Google</button>
+  <button class="btn wide" id="gOut" onclick="signOut()" style="display:none;margin-top:10px">Cambiar de cuenta</button>
+</div></div>
+
+<!-- ===== Consola ===== -->
+<div id="app">
+  <nav class="side" id="side">
+    <div class="brand"><img src="icons/icon-192.png" alt=""><div><b>RideSafe <span>IA</span></b><small>MASTER</small></div></div>
+    <button class="nav on" data-v="res" onclick="go('res')">📊 Resumen</button>
+    <button class="nav" data-v="clubs" onclick="go('clubs')">🏅 Clubes <span class="ct" id="nClubs"></span></button>
+    <button class="nav" data-v="users" onclick="go('users')">👥 Ciclistas <span class="ct" id="nUsers"></span></button>
+    <button class="nav" data-v="rides" onclick="go('rides')">📅 Salidas <span class="ct" id="nRides"></span></button>
+    <button class="nav" data-v="cont" onclick="go('cont')">🗂️ Contenido</button>
+    <button class="nav" data-v="rep" onclick="go('rep')">⚠️ Reportes <span class="ct" id="nRep"></span></button>
+    <button class="nav" data-v="eth" onclick="go('eth')">⚖️ Ética y sanciones <span class="ct" id="nSan"></span></button>
+    <button class="nav" data-v="news" onclick="go('news')">🚀 Novedades</button>
+    <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
+    <button class="nav" data-v="mnt" onclick="go('mnt')">🛠️ Copias y restaurar</button>
+    <div class="me"><span class="pill lime" style="margin-bottom:8px">👑 Máximo desarrollador</span><br>Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
+  </nav>
+  <main>
+    <div class="top"><div><h2 id="vTitle">Resumen</h2><div class="sub" id="vSub"></div></div><div class="sp"></div>
+      <button class="btn sm" onclick="loadAll(true)">🔄 Actualizar</button><a class="btn sm" href="./" target="_blank" rel="noopener" style="text-decoration:none">📱 Abrir la app</a></div>
+    <div id="view"><div class="empty">Cargando datos de la app…</div></div>
+  </main>
+</div>
+
+<div class="ov" id="ov"><div class="dlg" id="dlg"></div></div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================================================================
+   RideSafe IA — Consola Master (solo el creador y desarrollador)
+   La seguridad real la ponen las reglas de Firebase: solo la cuenta del
+   propietario puede leer y escribir estos datos. Esta página no guarda
+   ninguna clave privada ni el correo del propietario.
+   =================================================================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jsq=s=>esc(JSON.stringify(String(s??'')));
+const SAFE_IMG=/^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
+const COLORS=['#C8DC3C','#60A5FA','#F59E0B','#34D399','#F472B6','#A78BFA','#FB7185','#22D3EE'];
+const colorOf=n=>{let h=0;for(const c of String(n||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
+const ini=n=>String(n||'?').trim().charAt(0).toUpperCase()||'?';
+const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:(v&&v.seconds?v.seconds*1000:0);
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const fDate=v=>{const t=typeof v==='string'?new Date(v+'T12:00'):new Date(tsMs(v));return isNaN(t)||!tsMs(v)&&typeof v!=='string'?'—':t.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})};
+const nf=n=>Number(n||0).toLocaleString('es-ES');
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+
+firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
+const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue,TS=firebase.firestore.Timestamp;
+
+/* ---------- Acceso: Google + comprobación en el servidor ---------- */
+function gate(msg,showIn,showOut){$('gate').style.display='grid';$('app').style.display='none';$('gMsg').innerHTML=msg;$('gBtn').style.display=showIn?'flex':'none';$('gOut').style.display=showOut?'flex':'none'}
+function signIn(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(/popup/.test(e.code||''))auth.signInWithRedirect(p);else gate('No se pudo entrar: '+esc(e.code||e.message),true,false)})}
+function signOut(){auth.signOut().then(()=>gate('Sesión cerrada.',true,false))}
+auth.getRedirectResult().catch(()=>{});
+auth.onAuthStateChanged(async u=>{
+  if(!u||u.isAnonymous){gate('Acceso exclusivo del creador y desarrollador de la app.<br>Entra con tu cuenta de Google.',true,false);return}
+  gate('Comprobando permisos…',false,false);
+  try{await db.collection('reports').limit(1).get();}      // solo el propietario puede leer los reportes (reglas de Firebase)
+  catch(e){gate('🔒 <b>Acceso restringido.</b><br>Esta cuenta no es la del propietario de RideSafe IA.',false,true);return}
+  $('gate').style.display='none';$('app').style.display='block';$('meMail').textContent=u.email||'';
+  loadAll();
+});
+
+/* ---------- Datos ---------- */
+let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[]},ann={},upd={items:[]},loadedAt=0,view='res';
+const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions'];
+async function loadAll(manual){
+  $('view').innerHTML='<div class="empty">Cargando datos de la app…</div>';
+  const res=await Promise.all(COLS.map(c=>db.collection(c).limit(5000).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{console.warn(c,e);return[]})));
+  COLS.forEach((c,i)=>D[c]=res[i]);
+  try{const s=await db.collection('config').doc('announce').get();ann=s.exists?s.data():{}}catch(e){ann={}}
+  try{const s=await db.collection('config').doc('updates').get();upd=s.exists?s.data():{items:[]};upd.items=upd.items||[]}catch(e){upd={items:[]}}
+  loadedAt=Date.now();counts();render();if(manual)toast('Datos actualizados');
+}
+const clubName=c=>{const g=D.groups.find(x=>x.id===c);return g?g.name:(c?c:'Sin club')};
+const userClub=uid=>{const g=D.groups.find(x=>(x.members||{})[uid]);return g||null};
+function counts(){
+  $('nClubs').textContent=D.groups.length;$('nUsers').textContent=D.users.filter(u=>u.name).length;
+  $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
+  const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
+  const na=activeSan();$('nSan').textContent=na.length||'';
+}
+function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
+function render(){
+  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
+  $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews})[view]();
+}
+
+/* ---------- Gráfica de barras (una serie) con tooltip ---------- */
+const CH={};
+function barChart(id,vals,labels,color,unit){
+  CH[id]={vals,labels,unit};
+  const W=600,H=200,pl=30,pr=6,pt=12,pb=26,n=vals.length,mx=Math.max(1,...vals);
+  const step=Math.ceil(mx/4)||1,top=step*4,bw=(W-pl-pr)/n,gap=2;
+  let g='';for(let k=0;k<=4;k++){const y=pt+(H-pt-pb)*(1-k/4);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1F3350" stroke-width="1"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#6F8199">${step*k}</text>`}
+  let b='';vals.forEach((v,i)=>{const h=(H-pt-pb)*(v/top),x=pl+i*bw+gap/2,y=H-pb-h,w=Math.max(1,bw-gap);
+    if(v>0)b+=`<path d="M${x},${H-pb}V${y+Math.min(4,h)}Q${x},${y} ${x+Math.min(4,w/2)},${y}H${x+w-Math.min(4,w/2)}Q${x+w},${y} ${x+w},${y+Math.min(4,h)}V${H-pb}Z" fill="${color}"/>`;
+    b+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="transparent" data-c="${esc(id)}" data-i="${esc(i)}"/>`;
+    if(i%5===0||i===n-1)b+=`<text x="${pl+i*bw+bw/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="#6F8199">${labels[i].slice(8)}/${labels[i].slice(5,7)}</text>`});
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gráfica de barras">${g}<line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" stroke="#2A4468"/>${b}</svg></div>`;
+}
+document.addEventListener('mouseleave',()=>{$('tip').style.display='none'});
+document.addEventListener('scroll',()=>{$('tip').style.display='none'},true);
+document.addEventListener('mousemove',e=>{const t=e.target;const tip=$('tip');
+  if(t&&t.dataset&&t.dataset.c&&CH[t.dataset.c]){const c=CH[t.dataset.c],i=+t.dataset.i;tip.innerHTML=`<span style="color:#A7B4C6">${fDate(c.labels[i])}</span><br><b>${c.vals[i]}</b> ${c.vals[i]===1?c.unit[0]:c.unit[1]}`;tip.style.display='block';tip.style.left=Math.min(innerWidth-160,e.clientX+14)+'px';tip.style.top=(e.clientY-50)+'px'}else tip.style.display='none'});
+
+/* ---------- 📊 Resumen ---------- */
+function vRes(){
+  const today=iso(Date.now()),day=86400000;
+  const U=D.users.filter(u=>u.name),act=D.nearby.filter(n=>n.t>Date.now()-day).length;
+  const up=D.rides.filter(r=>r.date>=today).length;
+  const days=[...Array(30)].map((_,i)=>iso(Date.now()-(29-i)*day));
+  const byDay=(arr,f)=>days.map(d=>arr.filter(x=>{const t=tsMs(x[f]);return t&&iso(t)===d}).length);
+  const noClub={rides:D.rides.filter(r=>!r.group).length,feed:D.feed.filter(x=>!x.club).length,routes:D.routes.filter(x=>!x.club).length,pois:D.pois.filter(x=>!x.club).length};
+  const orphan=Object.values(noClub).reduce((a,b)=>a+b,0);
+  const topClubs=[...D.groups].sort((a,b)=>Object.keys(b.members||{}).length-Object.keys(a.members||{}).length).slice(0,6);const mxc=Math.max(1,...topClubs.map(g=>Object.keys(g.members||{}).length));
+  const noClubUsers=U.filter(u=>!userClub(u.id)).length;
+  $('view').innerHTML=`
+   <div class="kpis">
+    <div class="kpi"><div class="l">🏅 Clubes</div><div class="v num">${nf(D.groups.length)}</div><div class="h">${D.groups.filter(g=>g.club).length} oficiales</div></div>
+    <div class="kpi"><div class="l">👥 Ciclistas</div><div class="v num">${nf(U.length)}</div><div class="h">${U.filter(u=>u.google).length} con Google · ${noClubUsers} sin club</div></div>
+    <div class="kpi"><div class="l">🟢 Activos 24 h</div><div class="v num">${nf(act)}</div><div class="h">con la app abierta</div></div>
+    <div class="kpi"><div class="l">📅 Salidas próximas</div><div class="v num">${nf(up)}</div><div class="h">${nf(D.rides.length)} en total</div></div>
+    <div class="kpi"><div class="l">🗺️ Rutas</div><div class="v num">${nf(D.routes.length)}</div><div class="h">compartidas en clubes</div></div>
+    <div class="kpi"><div class="l">📰 Actividad</div><div class="v num">${nf(D.feed.length)}</div><div class="h">salidas publicadas</div></div>
+    <div class="kpi"><div class="l">☕ Puntos ciclistas</div><div class="v num">${nf(D.pois.length)}</div><div class="h">fuentes, cafés, talleres…</div></div>
+    <div class="kpi${D.reports.length?' alert':''}"><div class="l">⚠️ Reportes</div><div class="v num">${nf(D.reports.length)}</div><div class="h">${D.reports.length?'pendientes de revisar':'todo en orden'}</div></div>
+   </div>
+   <div class="grid2">
+    <div class="box"><h3>Ciclistas nuevos</h3><div class="d">Altas por día · últimos 30 días</div>${barChart('u',byDay(U,'since'),days,'#C8DC3C',['ciclista nuevo','ciclistas nuevos'])}</div>
+    <div class="box"><h3>Salidas creadas</h3><div class="d">Salidas por día · últimos 30 días</div>${barChart('r',byDay(D.rides,'createdAt'),days,'#60A5FA',['salida creada','salidas creadas'])}</div>
+   </div>
+   <div class="grid2">
+    <div class="box"><h3>Clubes con más ciclistas</h3><div class="d">Miembros por club</div>
+     <div class="rank">${topClubs.length?topClubs.map(g=>{const n=Object.keys(g.members||{}).length;return `<div class="row"><div class="n">${esc(g.name)}</div><div class="bw"><i style="width:${Math.round(n/mxc*100)}%"></i></div><div class="c num">${n}</div></div>`}).join(''):'<div class="empty">Aún no hay clubes</div>'}</div></div>
+    <div class="box"><h3>Estado de la app</h3><div class="d">Seguridad y datos</div>
+     <div class="kv"><span>Privacidad</span><b>🔒 Clubes privados (reglas v4.0)</b><span>Datos sin club</span><b>${orphan?`<span class="pill warn">${orphan} por asignar</span>`:'<span class="pill ok">Ninguno</span>'}</b><span>Sanciones activas</span><b>${activeSan().length?`<span class="pill bad">${activeSan().length}</span>`:'<span class="pill ok">Ninguna</span>'}</b><span>Clubes suspendidos</span><b>${D.groups.filter(g=>g.suspended).length}</b><span>Aviso general</span><b>${ann.active&&ann.text?'<span class="pill lime">Publicado</span>':'<span class="pill mut">Sin aviso</span>'}</b></div>
+     ${orphan?`<button class="btn sm" style="margin-top:14px" onclick="migrate()">🔧 Pasar datos antiguos a su club</button>`:''}</div>
+   </div>`;
+}
+
+/* ---------- 🏅 Clubes ---------- */
+let qClub='';
+function vClubs(){
+  const l=D.groups.filter(g=>!qClub||(g.name+' '+g.id).toLowerCase().includes(qClub.toLowerCase())).sort((a,b)=>Object.keys(b.members||{}).length-Object.keys(a.members||{}).length);
+  $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar club o código…" value="${esc(qClub)}" oninput="qClub=this.value;vClubs();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)"></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Club</th><th class="r">Ciclistas</th><th class="r hide-m">Grupetas</th><th class="hide-m">Administradores</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.map(g=>{const n=Object.keys(g.members||{}).length,gp=Object.keys(g.grupetas||{}).length;const adm=[g.members?.[g.byUid]||g.by||'—',...Object.values(g.admins||{})];
+     return `<tr><td><div class="who">${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:`<div class="av" style="background:${colorOf(g.name)}">${esc(ini(g.name))}</div>`}<div><b>${esc(g.name)}</b><small>código ${esc(g.id)}</small></div></div></td>
+      <td class="r num">${n}</td><td class="r num hide-m">${gp}</td><td class="hide-m" style="color:var(--txt2)">${adm.map(esc).join(', ')}</td>
+      <td class="hide-m">${g.suspended?'<span class="pill bad">⛔ Suspendido</span>':g.club?'<span class="pill lime">🏅 Oficial</span>':'<span class="pill mut">Grupo</span>'}${g.warn?' <span class="pill warn">⚠️ Avisado</span>':''}</td>
+      <td class="r"><div class="acts"><button class="btn sm" onclick="clubView(${jsq(g.id)})">Ver</button><button class="btn sm" onclick="clubOfficial(${jsq(g.id)})">${g.club?'Quitar oficial':'🏅 Oficial'}</button><button class="btn sm" onclick="clubRole(${jsq(g.id)},'admins')">🛡️ Admins</button>${g.suspended||g.warn?`<button class="btn sm" onclick="liftClub(${jsq(g.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionClub(${jsq(g.id)})">⚖️ Sancionar</button><button class="btn sm red" onclick="clubDelete(${jsq(g.id)})">🗑️</button></div></td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">No hay clubes</div></td></tr>'}
+   </tbody></table></div>`;
+}
+function clubView(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;const gps=Object.entries(g.grupetas||{});
+  const role=k=>k===g.byUid?'👑 Creador':(g.admins||{})[k]?'🛡️ Administrador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'🚴 Ciclista';
+  const cr=D.rides.filter(r=>r.group===id);
+  dlg(`<h3>${g.logo&&SAFE_IMG.test(g.logo)?`<img class="logo" src="${g.logo}" alt="">`:'🏅'} ${esc(g.name)}<button class="x" onclick="closeDlg()">✕</button></h3>
+   <div class="kv" style="margin-bottom:14px"><span>Código</span><b>${esc(g.id)}</b><span>Creado</span><b>${fDate(g.createdAt)}</b><span>Salidas</span><b>${cr.length} (${cr.filter(r=>r.date>=iso(Date.now())).length} próximas)</b><span>Rutas</span><b>${D.routes.filter(r=>r.club===id).length}</b></div>
+   <h3 style="font-size:15px">🏷️ Grupetas (${gps.length})</h3>${gps.length?gps.map(([k,x])=>`<div class="opt" style="cursor:default">${esc(x.name)} <span class="pill mut">${esc(x.mod||'')}</span>${Object.keys(x.resp||{}).length?' · 🎯 '+Object.values(x.resp).map(esc).join(', '):''}</div>`).join(''):'<p>Sin grupetas.</p>'}
+   <h3 style="font-size:15px;margin-top:10px">👥 Ciclistas (${Object.keys(g.members||{}).length})</h3>
+   ${Object.entries(g.members||{}).map(([k,n])=>`<div class="opt" style="cursor:default"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}<br><small style="color:var(--txt3)">${role(k)}</small></div></div>`).join('')}
+   <div class="row"><button class="btn sm" onclick="clubRole(${jsq(id)},'captains')">⭐ Jefes de pelotón</button><button class="btn sm" onclick="clubRole(${jsq(id)},'admins')">🛡️ Administradores</button></div>`);
+}
+async function clubOfficial(id){const g=D.groups.find(x=>x.id===id);try{await db.collection('groups').doc(id).update({club:!g.club});g.club=!g.club;toast(g.club?'🏅 Ahora es club oficial':'Ya no es club oficial');render()}catch(e){err(e)}}
+async function clubRole(id,field){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;const ms=Object.entries(g.members||{}).filter(([k])=>k!==g.byUid);
+  const T=field==='admins'?'🛡️ Administradores':'⭐ Jefes de pelotón';
+  if(!ms.length){toast('Este club aún no tiene más ciclistas');return}
+  dlg(`<h3>${T} · ${esc(g.name)}<button class="x" onclick="closeDlg()">✕</button></h3><p>Toca un ciclista para darle o quitarle el cargo. El creador ya manda en su club.</p>
+   ${ms.map(([k,n])=>{const on=!!(g[field]||{})[k];return `<button class="opt" onclick="roleToggle(${jsq(id)},${jsq(field)},${jsq(k)})"><div class="av" style="background:${colorOf(n)}">${esc(ini(n))}</div><div style="flex:1">${esc(n)}</div>${on?'<span class="pill lime">Sí · quitar</span>':'<span class="pill mut">Nombrar</span>'}</button>`}).join('')}`);
+}
+async function roleToggle(id,field,k){
+  const g=D.groups.find(x=>x.id===id);const on=!!(g[field]||{})[k];
+  try{await db.collection('groups').doc(id).update({[field+'.'+k]:on?FV.delete():g.members[k]});g[field]=g[field]||{};if(on)delete g[field][k];else g[field][k]=g.members[k];toast(on?'Cargo quitado':'Cargo asignado');clubRole(id,field);if(view==='clubs')vClubs()}catch(e){err(e)}
+}
+async function clubDelete(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;
+  const ok=await typed('🗑️ Borrar club',`Se borrará el club «${esc(g.name)}». Sus ciclistas se quedarán sin club. Las salidas, rutas y rankings del club no se borran (puedes limpiarlos después). Esta acción no se puede deshacer.`,g.id);
+  if(!ok)return;try{await db.collection('groups').doc(id).delete();D.groups=D.groups.filter(x=>x.id!==id);counts();toast('Club borrado');render()}catch(e){err(e)}
+}
+
+/* ---------- 👥 Ciclistas ---------- */
+let qUser='',fUser='all';const selU=new Set();
+function vUsers(){
+  let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
+  if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
+  if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
+  l.sort((a,b)=>(b.pts||0)-(a.pts||0));
+  $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
+    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
+    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
+   <p style="color:var(--txt3);font-size:12.5px;margin:-4px 2px 10px">Marca la casilla de los nombres de prueba para eliminarlos de golpe. «✏️ Nombre» cambia el nombre en todos los sitios (club, salidas, ranking y su móvil).</p>
+   <div class="box tw"><table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(u=>`<tr><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
+     <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
+     <td class="hide-m">${userState(u.id,u)}</td>
+     <td class="r"><div class="acts"><button class="btn sm" onclick="userPts(${jsq(u.id)})">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser(${jsq(u.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser(${jsq(u.id)})">⚖️ Sancionar</button><button class="btn sm" onclick="userRename(${jsq(u.id)})">✏️ Nombre</button><button class="btn sm red" onclick="userWipe(${jsq(u.id)})">🗑️ Contenido</button><button class="btn sm red" onclick="userDel(${jsq(u.id)})">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
+   </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
+}
+async function userPts(id){const u=D.users.find(x=>x.id===id);const v=prompt('Puntos de '+u.name,u.pts||0);if(v===null)return;const n=Math.max(0,Math.round(+v||0));try{await db.collection('users').doc(id).set({pts:n},{merge:true});u.pts=n;toast('Puntos actualizados');vUsers()}catch(e){err(e)}}
+async function userBan(id){const u=D.users.find(x=>x.id===id);const on=!u.banned;if(!await confirmDlg(on?'🚫 Bloquear ciclista':'Desbloquear ciclista',on?`${esc(u.name)} no podrá publicar salidas, rutas, puntos ni comentarios.`:`${esc(u.name)} podrá volver a publicar.`,on?'Bloquear':'Desbloquear',on))return;try{await db.collection('users').doc(id).set({banned:on},{merge:true});u.banned=on;toast(on?'Ciclista bloqueado':'Ciclista desbloqueado');vUsers()}catch(e){err(e)}}
+async function userWipe(id){
+  const u=D.users.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar su contenido',`Se borrarán las salidas que organiza ${esc(u.name)}, sus rutas, su actividad y sus puntos ciclistas. Su cuenta sigue existiendo. Esta acción no se puede deshacer.`,'Borrar',true))return;
+  let n=0;for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id)){try{await db.collection(c).doc(d.id).delete();n++}catch(e){}}
+  for(const r of D.rides.filter(x=>x.byUid===id)){try{await db.collection('rides').doc(r.id).delete();n++}catch(e){}}
+  toast(n+' elementos borrados');loadAll();
+}
+function userSel(id,on){on?selU.add(id):selU.delete(id);vUsers()}
+function userSelAll(on){const vis=[...document.querySelectorAll('#view tbody input[data-id]')].map(c=>c.dataset.id);vis.forEach(id=>on?selU.add(id):selU.delete(id));vUsers()}
+/* v4.4 — Cambiar el nombre de un ciclista en TODOS los sitios (su ficha, club, salidas, ranking, actividad y puntos). Su móvil lo recibe solo. */
+async function userRename(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;
+  const v=prompt('Nombre real de este ciclista:',u.name||'');if(v===null)return;
+  const n=v.replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
+  if(n.length<2){toast('Escribe un nombre de al menos 2 letras');return}
+  if(n===u.name){toast('Es el mismo nombre');return}
+  toast('Cambiando el nombre…');let k=0;const W=async(ref,data)=>{try{await ref.update(data);k++}catch(e){console.warn(e)}};
+  try{await db.collection('users').doc(id).set({name:n},{merge:true});k++}catch(e){err(e);return}
+  for(const g of D.groups){const up={};
+    if(g.members&&g.members[id]!==undefined)up['members.'+id]=n;
+    if(g.admins&&g.admins[id]!==undefined)up['admins.'+id]=n;
+    if(g.captains&&g.captains[id]!==undefined)up['captains.'+id]=n;
+    if(g.byUid===id)up.by=n;
+    Object.entries(g.grupetas||{}).forEach(([gid,gp])=>{if(gp&&gp.resp&&gp.resp[id]!==undefined)up['grupetas.'+gid+'.resp.'+id]=n});
+    if(Object.keys(up).length)await W(db.collection('groups').doc(g.id),up)}
+  for(const r of D.rides){const up={};if(r.people&&r.people[id]!==undefined)up['people.'+id]=n;if(r.byUid===id)up.by=n;if(Object.keys(up).length)await W(db.collection('rides').doc(r.id),up)}
+  for(const r of D.rank){if(r.s&&r.s[id])await W(db.collection('rank').doc(r.id),{['s.'+id+'.n']:n})}
+  for(const f of D.feed.filter(x=>x.uid===id))await W(db.collection('feed').doc(f.id),{name:n});
+  for(const c of ['routes','pois'])for(const d of D[c].filter(x=>x.uid===id&&x.by!==undefined))await W(db.collection(c).doc(d.id),{by:n});
+  if(D.nearby&&D.nearby.some(x=>x.id===id))await W(db.collection('nearby').doc(id),{name:n});
+  toast('✅ Ahora se llama «'+n+'» ('+k+' sitios actualizados)');loadAll();
+}
+/* v4.4 — Eliminar ciclistas de la lista (p. ej. nombres de prueba): ficha, contenido y rastro en clubes, salidas y ranking */
+async function userPurge(id){
+  const u=D.users.find(x=>x.id===id)||{};let k=0;const DEL=async ref=>{try{await ref.delete();k++}catch(e){console.warn(e)}};const UP=async(ref,data)=>{try{await ref.update(data);k++}catch(e){console.warn(e)}};
+  for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id))await DEL(db.collection(c).doc(d.id));
+  for(const r of D.rides){if(r.byUid===id){await DEL(db.collection('rides').doc(r.id));continue}if(r.people&&r.people[id]!==undefined)await UP(db.collection('rides').doc(r.id),{['people.'+id]:FV.delete()})}
+  for(const g of D.groups){if(g.byUid===id)continue;const up={};
+    ['members','admins','captains'].forEach(f=>{if(g[f]&&g[f][id]!==undefined)up[f+'.'+id]=FV.delete()});
+    if(g.gm&&g.gm[id]!==undefined)up['gm.'+id]=FV.delete();
+    Object.entries(g.grupetas||{}).forEach(([gid,gp])=>{if(gp&&gp.resp&&gp.resp[id]!==undefined)up['grupetas.'+gid+'.resp.'+id]=FV.delete()});
+    if(Object.keys(up).length)await UP(db.collection('groups').doc(g.id),up)}
+  for(const r of D.rank){if(r.s&&r.s[id])await UP(db.collection('rank').doc(r.id),{['s.'+id]:FV.delete()})}
+  try{const a=await db.collection('users').doc(id).collection('acts').get();for(const d of a.docs)await DEL(d.ref)}catch(e){}
+  await DEL(db.collection('users').doc(id).collection('private').doc('push'));
+  await DEL(db.collection('nearby').doc(id));await DEL(db.collection('mod').doc(id));
+  await DEL(db.collection('users').doc(id));
+  return k;
+}
+function ownsClub(id){return D.groups.filter(g=>g.byUid===id)}
+const isMe=id=>!!(auth.currentUser&&auth.currentUser.uid===id);
+async function userDel(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;if(isMe(id)){toast('Esa es tu propia cuenta: no se puede eliminar desde aquí');return}const cl=ownsClub(id);
+  if(!await confirmDlg('❌ Eliminar a '+esc(u.name),`Desaparece de la lista de ciclistas, de su club, de las salidas y del ranking, y se borra todo su contenido.${cl.length?`<br><br>⚠️ Es el creador del club «${esc(cl.map(g=>g.name).join(', '))}»: el club NO se borra (bórralo en Clubes si también era de prueba).`:''}<br><br>Si esa persona vuelve a abrir la app en su móvil, entrará como ciclista nuevo. No se puede deshacer.`,'Eliminar',true))return;
+  toast('Eliminando…');const k=await userPurge(id);selU.delete(id);toast('✅ «'+u.name+'» eliminado ('+k+' datos borrados)');loadAll();
+}
+async function userDelSel(){
+  const ids=[...selU].filter(id=>D.users.some(u=>u.id===id)&&!isMe(id));if(!ids.length){selU.clear();vUsers();return}
+  const names=ids.map(id=>esc(D.users.find(u=>u.id===id).name));const cl=ids.flatMap(ownsClub);
+  if(!await confirmDlg(`❌ Eliminar ${ids.length} ciclista${ids.length===1?'':'s'}`,`Se eliminarán de la lista, de sus clubes, de las salidas y del ranking, con todo su contenido:<br><br><b>${names.slice(0,25).join(', ')}${names.length>25?' y '+(names.length-25)+' más':''}</b>${cl.length?`<br><br>⚠️ Alguno es creador de un club («${esc(cl.map(g=>g.name).join(', '))}»): esos clubes NO se borran.`:''}<br><br>No se puede deshacer.`,'Eliminar',true))return;
+  let i=0,k=0;for(const id of ids){i++;toast(`Eliminando ${i} de ${ids.length}…`);k+=await userPurge(id)}
+  selU.clear();toast(`✅ ${ids.length} ciclista${ids.length===1?'':'s'} eliminado${ids.length===1?'':'s'}`);loadAll();
+}
+function csvUsers(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Nombre','Club','Puntos','Desde','Google','Bloqueado']].concat(D.users.filter(u=>u.name).map(u=>[u.name,(userClub(u.id)||{}).name||'',u.pts||0,fDate(u.since),u.google?'sí':'no',u.banned?'sí':'no']));download('ciclistas-ridesafe.csv','﻿'+rows.map(r=>r.map(q).join(';')).join('\n'),'text/csv')}
+
+/* ---------- 📅 Salidas ---------- */
+let fRide='up',cRide='';
+function vRides(){
+  const t=iso(Date.now());let l=D.rides.slice();
+  if(fRide==='up')l=l.filter(r=>r.date>=t);if(fRide==='past')l=l.filter(r=>r.date<t);if(cRide)l=l.filter(r=>(r.group||'')===cRide);
+  l.sort((a,b)=>fRide==='past'?(b.date+b.hour).localeCompare(a.date+a.hour):(a.date+a.hour).localeCompare(b.date+b.hour));
+  const old=D.rides.filter(r=>r.date<iso(Date.now()-60*86400000)).length;
+  $('view').innerHTML=`<div class="bar"><div class="chips">${[['up','Próximas'],['past','Pasadas'],['all','Todas']].map(([k,x])=>`<button class="chip${fRide===k?' on':''}" onclick="fRide=${jsq(k)};vRides()">${x}</button>`).join('')}</div>
+    <select class="inp" onchange="cRide=this.value;vRides()"><option value="">Todos los clubes</option>${D.groups.map(g=>`<option value="${esc(g.id)}"${cRide===g.id?' selected':''}>${esc(g.name)}</option>`).join('')}</select>
+    <div style="flex:1"></div>${old?`<button class="btn sm red" onclick="cleanOld()">🧹 Borrar ${old} salidas de hace más de 60 días</button>`:''}</div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Fecha</th><th>Salida</th><th class="hide-m">Club</th><th class="r hide-m">Apuntados</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(r=>`<tr><td class="num" style="white-space:nowrap">${fDate(r.date)}<br><small style="color:var(--txt3)">${esc(r.hour||'')}</small></td><td><b>${esc(r.title||'Salida')}</b><br><small style="color:var(--txt3)">${esc(r.start||'')} · organiza ${esc(r.by||'')}</small></td>
+    <td class="hide-m" style="color:var(--txt2)">${r.group?esc(clubName(r.group)):'<span class="pill warn">Sin club</span>'}${r.gp&&D.groups.find(g=>g.id===r.group)?.grupetas?.[r.gp]?'<br><small>🏷️ '+esc(D.groups.find(g=>g.id===r.group).grupetas[r.gp].name)+'</small>':''}</td><td class="r num hide-m">${Object.keys(r.people||{}).length}</td>
+    <td class="r"><div class="acts"><a class="btn sm" style="text-decoration:none" href="./#salida=${esc(r.id)}" target="_blank" rel="noopener">Ver</a><button class="btn sm red" onclick="delDoc('rides',${jsq(r.id)},${jsq('la salida «'+(r.title||'Salida')+'»')})">🗑️</button></div></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">No hay salidas con este filtro</div></td></tr>'}
+   </tbody></table></div>`;
+}
+async function cleanOld(){
+  const lim=iso(Date.now()-60*86400000);const l=D.rides.filter(r=>r.date<lim);
+  if(!await confirmDlg('🧹 Limpiar salidas antiguas',`Se borrarán ${l.length} salidas de hace más de 60 días de <b>toda la app</b> (todos los clubes). Las actividades de cada ciclista no se tocan. Esta acción no se puede deshacer.`,'Borrar',true))return;
+  const bar=progress('Borrando salidas antiguas…');let n=0;for(const r of l){try{await db.collection('rides').doc(r.id).delete()}catch(e){}n++;bar(n/l.length)}
+  closeDlg();toast(n+' salidas borradas');loadAll();
+}
+
+/* ---------- 🗂️ Contenido ---------- */
+let cTab='routes';
+function vCont(){
+  const T={routes:'🗺️ Rutas',feed:'📰 Actividad',pois:'☕ Puntos ciclistas'};
+  const l=D[cTab].slice().sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
+  const title=x=>cTab==='routes'?`${x.name} · ${nf(Math.round(x.km||0))} km`:cTab==='feed'?`${x.title} · ${String(Number(x.km||0).toFixed(1)).replace('.',',')} km`:x.name;
+  $('view').innerHTML=`<div class="bar"><div class="chips">${Object.entries(T).map(([k,t])=>`<button class="chip${cTab===k?' on':''}" onclick="cTab=${jsq(k)};vCont()">${t} (${D[k].length})</button>`).join('')}</div></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>${T[cTab]}</th><th class="hide-m">Club</th><th class="hide-m">Autor</th><th class="hide-m">Fecha</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map(x=>`<tr><td><b>${esc(title(x))}</b></td><td class="hide-m" style="color:var(--txt2)">${x.club?esc(clubName(x.club)):'<span class="pill warn">Sin club</span>'}</td><td class="hide-m" style="color:var(--txt2)">${esc(x.by||x.name||'')}</td><td class="hide-m" style="color:var(--txt2)">${fDate(x.createdAt)}</td>
+    <td class="r"><button class="btn sm red" onclick="delDoc(${jsq(cTab)},${jsq(x.id)},'este elemento')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="5"><div class="empty">Nada por aquí</div></td></tr>'}
+   </tbody></table></div>`;
+}
+async function delDoc(col,id,what){
+  if(!await confirmDlg('🗑️ Borrar',`¿Seguro que quieres borrar ${esc(what)}? Esta acción no se puede deshacer.`,'Borrar',true))return;
+  try{await db.collection(col).doc(id).delete();D[col]=D[col].filter(x=>x.id!==id);counts();toast('Borrado');render()}catch(e){err(e)}
+}
+
+/* ---------- ⚠️ Reportes ---------- */
+function vRep(){
+  const C={feed:'Actividad',pois:'Punto ciclista',routes:'Ruta',rides:'Salida'};
+  $('view').innerHTML=D.reports.length?D.reports.sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt)).map(r=>`<div class="box" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><span class="pill warn">${esc(C[r.type]||r.type)}</span><h3 style="margin-top:6px">${esc(r.title||'(sin título)')}</h3><div class="d" style="margin:2px 0 0">Reportado por ${esc(r.byName||'')} · ${fDate(r.createdAt)} · «${esc(r.reason||'')}»</div></div>
+    <div class="acts" style="display:flex;gap:8px"><button class="btn sm red" onclick="repDel(${jsq(r.id)})">🗑️ Borrar contenido</button><button class="btn sm" onclick="repDismiss(${jsq(r.id)})">✓ Descartar</button></div></div>`).join(''):'<div class="box"><div class="empty">✅ No hay reportes pendientes</div></div>';
+}
+async function repDel(id){const r=D.reports.find(x=>x.id===id);if(!await confirmDlg('🗑️ Borrar contenido reportado',`Se borrará «${esc(r.title||'')}» para todos.`,'Borrar',true))return;try{if(r.refId&&['feed','pois','routes','rides'].includes(r.type)&&/^[A-Za-z0-9_-]{1,120}$/.test(r.refId))await db.collection(r.type).doc(r.refId).delete().catch(()=>{});await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Contenido borrado');vRep()}catch(e){err(e)}}
+async function repDismiss(id){try{await db.collection('reports').doc(id).delete();D.reports=D.reports.filter(x=>x.id!==id);counts();toast('Reporte descartado');vRep()}catch(e){err(e)}}
+
+/* ---------- 📣 Aviso general ---------- */
+function vAnn(){
+  $('view').innerHTML=`<div class="grid2"><div class="box"><h3>Escribir aviso</h3><div class="d">Aparece arriba en Comunidad para <b>todos</b> los usuarios de todos los clubes.</div>
+    <textarea class="inp" id="annT" rows="4" maxlength="200" style="width:100%;resize:vertical" placeholder="Ej. 🎉 Nueva versión: clubes privados y grupetas">${esc(ann.active?ann.text:'')}</textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn lime" onclick="annSave(true)">📣 Publicar aviso</button>${ann.active?'<button class="btn red" onclick="annSave(false)">Quitar aviso</button>':''}</div></div>
+    <div class="box"><h3>Estado</h3><div class="d">${ann.active&&ann.text?'Publicado el '+fDate(ann.t):'No hay ningún aviso publicado'}</div>${ann.active&&ann.text?`<div class="opt" style="cursor:default;border-color:var(--lime)">📣 ${esc(ann.text)}</div>`:''}</div></div>`;
+}
+async function annSave(on){const text=on?$('annT').value.trim().slice(0,200):'';if(on&&!text){toast('Escribe el aviso');return}try{await db.collection('config').doc('announce').set({text,active:on,t:Date.now()});ann={text,active:on,t:Date.now()};toast(on?'📣 Aviso publicado':'Aviso quitado');vAnn()}catch(e){err(e)}}
+
+/* ---------- 🛠️ Copias y restaurar ---------- */
+const BK=['users','groups','rides','feed','routes','pois','rank','reports','config','mod','sanctions'];
+function vMnt(){
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>💾 Copia de seguridad</h3><div class="d">Descarga en tu ordenador todos los datos de la app en un archivo (.json).</div>
+    <ul class="list"><li>Incluye: ciclistas, clubes y grupetas, salidas, actividad, rutas, puntos, rankings, reportes y aviso.</li><li>No incluye los códigos de notificación de los móviles ni los comentarios del chat.</li><li>Guárdala en un sitio seguro: contiene nombres de ciclistas.</li></ul>
+    <button class="btn lime" style="margin-top:10px" onclick="backup()">⬇️ Descargar copia completa</button></div>
+   <div class="box"><h3>♻️ Restaurar desde una copia</h3><div class="d">Vuelve a poner los datos de una copia descargada antes.</div>
+    <ul class="list"><li>Solo reescribe los documentos que están en la copia; lo nuevo que no esté en la copia no se borra.</li><li>Puedes elegir qué partes restaurar.</li><li>Pide escribir RESTAURAR para confirmar.</li></ul>
+    <input type="file" id="rsFile" accept=".json,application/json" style="display:none" onchange="restorePick(this.files[0])"><button class="btn" style="margin-top:10px" onclick="$('rsFile').click()">📂 Elegir archivo de copia…</button></div>
+   </div>
+   <div class="grid2">
+   <div class="box"><h3>🔧 Datos antiguos sin club</h3><div class="d">Asigna salidas, rutas, actividad y puntos sin club al club de quien los creó.</div><button class="btn" onclick="migrate()">🔧 Pasar datos antiguos a su club</button></div>
+   <div class="box"><h3>🔒 Seguridad</h3><div class="d">Cómo está protegida esta consola</div><ul class="list"><li>Solo tu cuenta de Google verificada puede leer y escribir aquí: lo comprueban las reglas de Firebase en el servidor.</li><li>Esta página no está enlazada en la app para los usuarios y no aparece en buscadores.</li><li>Si alguien la abre con otra cuenta, ve «Acceso restringido».</li></ul></div>
+   </div>`;
+}
+const ser=v=>{if(v&&typeof v.toMillis==='function')return{__ts:v.toMillis()};if(Array.isArray(v))return v.map(ser);if(v&&typeof v==='object'){const o={};for(const k in v)o[k]=ser(v[k]);return o}return v};
+const des=v=>{if(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===1&&typeof v.__ts==='number')return TS.fromMillis(v.__ts);if(Array.isArray(v))return v.map(des);if(v&&typeof v==='object'){const o={};for(const k in v)o[k]=des(v[k]);return o}return v};
+async function backup(){
+  toast('Preparando la copia…');const out={app:'RideSafe IA',kind:'backup',version:1,createdAt:Date.now(),collections:{}};
+  for(const c of BK){try{const s=await db.collection(c).limit(20000).get();out.collections[c]={};s.docs.forEach(d=>out.collections[c][d.id]=ser(d.data()))}catch(e){console.warn(c,e)}}
+  const n=Object.values(out.collections).reduce((a,c)=>a+Object.keys(c).length,0);
+  const d=new Date();download(`ridesafe-copia-${iso(d)}-${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.json`,JSON.stringify(out),'application/json');
+  toast(`💾 Copia descargada (${nf(n)} documentos)`);
+}
+let RS=null;
+function restorePick(f){
+  if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{let j;try{j=JSON.parse(rd.result)}catch(e){toast('Ese archivo no es una copia válida');return}
+    if(!j||j.app!=='RideSafe IA'||j.kind!=='backup'||!j.collections){toast('Ese archivo no es una copia de RideSafe IA');return}
+    RS=j;const cols=Object.keys(j.collections).filter(c=>BK.includes(c));
+    dlg(`<h3>♻️ Restaurar copia<button class="x" onclick="closeDlg()">✕</button></h3><p>Copia del <b>${new Date(j.createdAt).toLocaleString('es-ES')}</b>. Marca lo que quieres restaurar:</p>
+     ${cols.map(c=>`<label class="opt"><input type="checkbox" class="rsC" value="${c}" ${c==='reports'?'':'checked'}> <span style="flex:1">${esc({users:'👥 Ciclistas',groups:'🏅 Clubes y grupetas',rides:'📅 Salidas',feed:'📰 Actividad',routes:'🗺️ Rutas',pois:'☕ Puntos ciclistas',rank:'🏆 Rankings',reports:'⚠️ Reportes',config:'📣 Aviso y novedades',mod:'⚖️ Sanciones de ciclistas',sanctions:'🗂️ Historial de sanciones'}[c]||c)}</span><span class="pill mut">${nf(Object.keys(j.collections[c]).length)}</span></label>`).join('')}
+     <p style="margin-top:10px">Escribe <b>RESTAURAR</b> para confirmar:</p><input class="inp" id="rsOk" style="width:100%" autocomplete="off">
+     <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn lime" onclick="restoreRun()">♻️ Restaurar</button></div>`);
+  };rd.readAsText(f);$('rsFile').value='';
+}
+async function restoreRun(){
+  if($('rsOk').value.trim().toUpperCase()!=='RESTAURAR'){toast('Escribe RESTAURAR para confirmar');return}
+  const cols=[...document.querySelectorAll('.rsC:checked')].map(i=>i.value);if(!cols.length){toast('Marca algo para restaurar');return}
+  const jobs=[];cols.forEach(c=>Object.entries(RS.collections[c]).forEach(([id,d])=>jobs.push([c,id,d])));
+  const bar=progress('Restaurando '+nf(jobs.length)+' documentos…');let ok=0,ko=0;
+  for(let i=0;i<jobs.length;i+=400){const b=db.batch();jobs.slice(i,i+400).forEach(([c,id,d])=>b.set(db.collection(c).doc(id),des(d)));try{await b.commit();ok+=Math.min(400,jobs.length-i)}catch(e){console.warn(e);ko+=Math.min(400,jobs.length-i)}bar((i+400)/jobs.length)}
+  closeDlg();toast(ko?`Restaurados ${nf(ok)} · fallaron ${nf(ko)}`:`♻️ Restaurados ${nf(ok)} documentos`);loadAll();
+}
+async function migrate(){
+  if(!await confirmDlg('🔧 Pasar datos antiguos a su club','Las salidas, rutas, puntos ciclistas y actividad sin club se asignarán al club de quien los creó. Lo de ciclistas sin club se queda como está.','Asignar',false))return;
+  const clubOf={};D.groups.forEach(g=>Object.keys(g.members||{}).forEach(k=>{if(!clubOf[k])clubOf[k]=g.id}));
+  let n=0;for(const r of D.rides.filter(r=>!r.group&&clubOf[r.byUid])){try{await db.collection('rides').doc(r.id).update({group:clubOf[r.byUid]});n++}catch(e){}}
+  for(const c of ['feed','routes','pois'])for(const x of D[c].filter(x=>!x.club&&clubOf[x.uid])){try{await db.collection(c).doc(x.id).update({club:clubOf[x.uid]});n++}catch(e){}}
+  toast(`✅ ${n} datos asignados a su club`);loadAll();
+}
+
+
+/* ---------- ⚖️ Ética y sanciones ---------- */
+const ETICA=[
+ ['🚦','Respetar las normas de circulación'],['🤝','Nadie se queda atrás'],['🛡️','La seguridad del grupo primero'],['🗣️','Respeto a las personas'],
+ ['🌿','Respeto al entorno'],['📊','Juego limpio'],['📵','Uso correcto de la app'],['🔒','Privacidad']];
+const LV_U=[['warn','⚠️ Aviso','Le sale un aviso en la app. Puede seguir usándola.'],['s7','⏸️ Suspensión 7 días','No puede publicar, apuntarse ni entrar en clubes durante 7 días.'],['s30','⏸️ Suspensión 30 días','Igual, durante 30 días.'],['exp','🚫 Expulsión','Fuera de la app: se le saca de todos sus clubes y no puede volver a entrar.']];
+const LV_C=[['warn','⚠️ Aviso al club','Los administradores del club ven el aviso.'],['susp','⛔ Suspender club','Nadie del club puede ver ni usar sus datos hasta que lo levantes.']];
+const modOf=id=>D.mod.find(m=>m.id===id)||null;
+const isSan=id=>{const m=modOf(id);return !!(m&&m.banned&&(!m.until||m.until>Date.now()))};
+function userState(id,u){const m=modOf(id);
+  if(isSan(id))return m.expelled||!m.until?'<span class="pill bad">🚫 Expulsado</span>':`<span class="pill bad">⏸️ Hasta ${fDate(m.until)}</span>`;
+  if(u&&u.banned)return '<span class="pill bad">🚫 Bloqueado</span>';
+  if(m&&m.warn&&m.warn.t)return `<span class="pill warn">⚠️ Avisado</span>`;return '<span class="pill ok">Activo</span>'}
+function activeSan(){return [...D.users.filter(u=>isSan(u.id)||u.banned).map(u=>({kind:'user',id:u.id,name:u.name})),...D.groups.filter(g=>g.suspended).map(g=>({kind:'club',id:g.id,name:g.name}))]}
+function sanForm(title,lv,withWipe){
+  return `<h3>${title}<button class="x" onclick="closeDlg()">✕</button></h3>
+   <p style="margin-bottom:6px"><b>Motivo (código ético)</b></p><select class="inp" id="snR" style="width:100%">${ETICA.map(([e,t])=>`<option>${e} ${t}</option>`).join('')}<option>Otro</option></select>
+   <p style="margin:12px 0 6px"><b>Medida</b></p>${lv.map(([k,t,d],i)=>`<label class="opt"><input type="radio" name="snL" value="${k}" ${i?'':'checked'}><span style="flex:1">${t}<br><small style="color:var(--txt3);font-weight:500">${d}</small></span></label>`).join('')}
+   <p style="margin:12px 0 6px"><b>Explicación</b> <small style="color:var(--txt3)">(la verá el afectado)</small></p><textarea class="inp" id="snN" rows="3" maxlength="200" style="width:100%" placeholder="Ej. Conducción peligrosa en la salida del domingo"></textarea>
+   ${withWipe?'<label class="opt" style="margin-top:10px"><input type="checkbox" id="snW"> <span>Si es expulsión, borrar también sus salidas, rutas, actividad y puntos</span></label>':''}
+   <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn red" id="snGo">⚖️ Aplicar sanción</button></div>`;
+}
+async function logSan(o){try{await db.collection('sanctions').add({...o,t:Date.now()})}catch(e){console.warn(e)}}
+function sanctionUser(id){
+  const u=D.users.find(x=>x.id===id);if(!u)return;const club=userClub(id);
+  dlg(sanForm('⚖️ Sancionar a '+esc(u.name),LV_U,true));
+  $('snGo').onclick=async()=>{
+    const reason=$('snR').value,note=$('snN').value.trim().slice(0,200),lv=document.querySelector('input[name=snL]:checked').value,now=Date.now(),wipe=!!($('snW')&&$('snW').checked);
+    if(lv==='exp'&&!await confirmDlg('🚫 Expulsar de RideSafe IA',`${esc(u.name)} saldrá de todos sus clubes y no podrá volver a publicar ni entrar en ninguno. Puedes levantarlo más adelante.`,'Expulsar',true))return;
+    try{
+      const ref=db.collection('mod').doc(id);
+      if(lv==='warn')await ref.set({warn:{reason,note,t:now}},{merge:true});
+      if(lv==='s7'||lv==='s30')await ref.set({banned:true,until:now+(lv==='s7'?7:30)*86400000,expelled:false,reason,note,t:now},{merge:true});
+      if(lv==='exp'){
+        await ref.set({banned:true,until:0,expelled:true,reason,note,t:now},{merge:true});
+        for(const g of D.groups.filter(g=>(g.members||{})[id])){const up={['members.'+id]:FV.delete(),['gm.'+id]:FV.delete()};if((g.admins||{})[id])up['admins.'+id]=FV.delete();if((g.captains||{})[id])up['captains.'+id]=FV.delete();try{await db.collection('groups').doc(g.id).update(up)}catch(e){console.warn(e)}}
+        await db.collection('users').doc(id).set({group:null},{merge:true}).catch(()=>{});
+        if(wipe){for(const c of ['feed','routes','pois'])for(const d of D[c].filter(x=>x.uid===id))await db.collection(c).doc(d.id).delete().catch(()=>{});for(const r of D.rides.filter(x=>x.byUid===id))await db.collection('rides').doc(r.id).delete().catch(()=>{})}
+      }
+      await logSan({kind:'user',targetId:id,name:u.name,club:club?club.name:'',reason,note,level:LV_U.find(x=>x[0]===lv)[1]});
+      closeDlg();toast('⚖️ Sanción aplicada a '+u.name);loadAll();
+    }catch(e){err(e)}
+  };
+}
+async function liftUser(id){
+  const u=D.users.find(x=>x.id===id);if(!await confirmDlg('✓ Levantar sanción',`${esc(u.name)} podrá volver a usar la app con normalidad (tendrá que volver a entrar en su club con el código).`,'Levantar',false))return;
+  try{await db.collection('mod').doc(id).set({banned:false,until:0,expelled:false,warn:FV.delete()},{merge:true});if(u.banned)await db.collection('users').doc(id).set({banned:false},{merge:true});
+    await logSan({kind:'user',targetId:id,name:u.name,club:(userClub(id)||{}).name||'',reason:'—',note:'',level:'✓ Sanción levantada'});toast('Sanción levantada');loadAll()}catch(e){err(e)}
+}
+function sanctionClub(id){
+  const g=D.groups.find(x=>x.id===id);if(!g)return;
+  dlg(sanForm('⚖️ Sancionar al club '+esc(g.name),LV_C,false)+'<p style="margin-top:10px;font-size:13px">Para eliminarlo del todo usa 🗑️ en la lista de clubes.</p>');
+  $('snGo').onclick=async()=>{
+    const reason=$('snR').value,note=$('snN').value.trim().slice(0,200),lv=document.querySelector('input[name=snL]:checked').value,now=Date.now();
+    try{
+      if(lv==='warn')await db.collection('groups').doc(id).update({warn:{reason,note,t:now}});
+      if(lv==='susp')await db.collection('groups').doc(id).update({suspended:true,suspendReason:reason,suspendNote:note,suspendT:now});
+      await logSan({kind:'club',targetId:id,name:g.name,club:g.name,reason,note,level:LV_C.find(x=>x[0]===lv)[1]});
+      closeDlg();toast('⚖️ Sanción aplicada al club');loadAll();
+    }catch(e){err(e)}
+  };
+}
+async function liftClub(id){
+  const g=D.groups.find(x=>x.id===id);if(!await confirmDlg('✓ Levantar sanción del club',`«${esc(g.name)}» vuelve a funcionar con normalidad y se quita el aviso.`,'Levantar',false))return;
+  try{await db.collection('groups').doc(id).update({suspended:false,suspendReason:FV.delete(),suspendNote:FV.delete(),warn:FV.delete()});
+    await logSan({kind:'club',targetId:id,name:g.name,club:g.name,reason:'—',note:'',level:'✓ Sanción levantada'});toast('Sanción levantada');loadAll()}catch(e){err(e)}
+}
+function vEth(){
+  const act=activeSan();const hist=D.sanctions.slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>📜 Código ético del ciclista</h3><div class="d">Lo ven todos los usuarios en la app (Perfil → Ayuda). Es la base de cada sanción.</div>
+    ${ETICA.map(([e,t])=>`<div class="opt" style="cursor:default">${e} ${t}</div>`).join('')}</div>
+   <div class="box"><h3>⛔ Sanciones activas (${act.length})</h3><div class="d">Ciclistas suspendidos o expulsados y clubes suspendidos</div>
+    ${act.length?act.map(x=>`<div class="opt" style="cursor:default"><span style="flex:1">${x.kind==='club'?'🏅':'👤'} ${esc(x.name)}<br><small style="color:var(--txt3)">${x.kind==='club'?'Club suspendido':userState(x.id,D.users.find(u=>u.id===x.id)).replace(/<[^>]+>/g,'')}</small></span><button class="btn sm" onclick="${x.kind==='club'?'liftClub':'liftUser'}(${jsq(x.id)})">✓ Levantar</button></div>`).join(''):'<div class="empty">✅ Ninguna sanción activa</div>'}
+    <p style="color:var(--txt3);font-size:12.5px;margin-top:10px">Para sancionar: ve a <b>Ciclistas</b> o <b>Clubes</b> y pulsa ⚖️ Sancionar.</p></div>
+   </div>
+   <div class="box tw"><h3>🗂️ Historial de sanciones</h3><div class="d">Todo queda registrado: quién, cuándo, por qué y qué medida</div>
+    <table class="tbl"><thead><tr><th>Fecha</th><th>A quién</th><th class="hide-m">Motivo</th><th>Medida</th></tr></thead><tbody>
+    ${hist.map(h=>`<tr><td class="num" style="white-space:nowrap">${fDate(h.t)}</td><td>${h.kind==='club'?'🏅':'👤'} <b>${esc(h.name)}</b>${h.club&&h.kind!=='club'?'<br><small style="color:var(--txt3)">'+esc(h.club)+'</small>':''}</td><td class="hide-m" style="color:var(--txt2)">${esc(h.reason)}${h.note?'<br><small>'+esc(h.note)+'</small>':''}</td><td>${esc(h.level)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty">Sin sanciones todavía</div></td></tr>'}
+    </tbody></table></div>`;
+}
+
+/* ---------- 🚀 Novedades y próximas actualizaciones ---------- */
+function vNews(){
+  const l=(upd.items||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  $('view').innerHTML=`<div class="grid2">
+   <div class="box"><h3>✍️ Nueva novedad</h3><div class="d">Aparece a todos en la app: aviso en Comunidad y en Perfil → «Novedades y próximas actualizaciones».</div>
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:10px"><input class="inp" id="nwV" placeholder="Versión" maxlength="10"><input class="inp" id="nwT" placeholder="Título (ej. Salidas que se repiten cada domingo)" maxlength="60"></div>
+    <textarea class="inp" id="nwX" rows="3" maxlength="300" style="width:100%;margin-top:10px" placeholder="Explícalo en pocas palabras"></textarea>
+    <div class="chips" id="nwS" style="margin-top:10px"><button class="chip on" data-s="soon" onclick="nwSet(this)">🚀 Próximamente</button><button class="chip" data-s="ready" onclick="nwSet(this)">✅ Ya disponible</button></div>
+    <button class="btn lime" style="margin-top:12px" onclick="newsAdd()">📣 Publicar novedad</button></div>
+   <div class="box"><h3>📋 Publicadas (${l.length})</h3><div class="d">Lo que ven ahora los usuarios</div>
+    ${l.length?l.map(x=>`<div class="opt" style="cursor:default;align-items:flex-start"><span style="flex:1"><span class="pill ${x.status==='soon'?'warn':'ok'}">${x.status==='soon'?'Próximamente':'Ya disponible'}</span> <b>${x.v?'v'+esc(x.v)+' · ':''}${esc(x.title)}</b><br><small style="color:var(--txt3);font-weight:500">${esc(x.text||'')}</small></span><span style="display:flex;flex-direction:column;gap:6px">${x.status==='soon'?`<button class="btn sm" onclick="newsDone(${jsq(x.id)})">✅ Ya está</button>`:''}<button class="btn sm red" onclick="newsDel(${jsq(x.id)})">🗑️</button></span></div>`).join(''):'<div class="empty">Aún no has publicado novedades</div>'}</div>
+   </div>`;
+}
+function nwSet(b){document.querySelectorAll('#nwS .chip').forEach(c=>c.classList.toggle('on',c===b))}
+async function newsSave(items){await db.collection('config').doc('updates').set({items});upd.items=items}
+async function newsAdd(){
+  const title=$('nwT').value.trim(),text=$('nwX').value.trim(),v=$('nwV').value.trim();if(!title){toast('Pon un título');return}
+  const it={id:'n'+Date.now().toString(36),v,title,text,status:document.querySelector('#nwS .chip.on').dataset.s,t:Date.now()};
+  try{await newsSave([...(upd.items||[]),it].slice(-40));toast('📣 Novedad publicada');vNews()}catch(e){err(e)}
+}
+async function newsDone(id){try{await newsSave((upd.items||[]).map(x=>x.id===id?{...x,status:'ready',t:Date.now()}:x));toast('✅ Marcada como disponible');vNews()}catch(e){err(e)}}
+async function newsDel(id){if(!await confirmDlg('🗑️ Quitar novedad','Dejará de verse en la app.','Quitar',true))return;try{await newsSave((upd.items||[]).filter(x=>x.id!==id));toast('Novedad quitada');vNews()}catch(e){err(e)}}
+/* ---------- Ventanas y utilidades ---------- */
+function dlg(h){$('dlg').innerHTML=h;$('ov').classList.add('show')}
+function closeDlg(){$('ov').classList.remove('show')}
+$('ov').addEventListener('click',e=>{if(e.target.id==='ov')closeDlg()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDlg()});
+function confirmDlg(t,txt,ok,danger){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn ${danger?'red':'lime'}" id="cOk">${esc(ok)}</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{closeDlg();res(true)}})}
+function typed(t,txt,word){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><p>Escribe <b>${esc(word)}</b> para confirmar:</p><input class="inp" id="tyI" style="width:100%" autocomplete="off"><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn red" id="cOk">Borrar</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{if($('tyI').value.trim().toUpperCase()!==String(word).toUpperCase()){toast('No coincide');return}closeDlg();res(true)}})}
+function progress(t){dlg(`<h3>${t}</h3><div class="prog"><i id="pgI"></i></div>`);return p=>{const i=$('pgI');if(i)i.style.width=Math.min(100,Math.round(p*100))+'%'}}
+function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function err(e){console.error(e);toast(/permission/.test(e&&e.code||'')?'Firebase no lo permite: ¿reglas v4.0 publicadas?':'No se pudo: '+(e&&(e.code||e.message)||'error'))}
+</script>
+</body></html>
