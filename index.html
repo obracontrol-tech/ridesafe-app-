@@ -653,6 +653,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #cmpInfo b{font-size:18px;font-weight:900;letter-spacing:.02em}
 #cmpInfo small{font-size:13px;color:var(--txt2);font-weight:700}
 #app.live #cmpInfo{top:calc(env(safe-area-inset-top) + 118px)}
+/* v4.8.1 — Botones más rápidos al tocar */
+button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 /* v4.7 — Cámara dentro de la app (la ruta sigue grabando) */
 .lvbtns{grid-template-columns:1fr 1fr auto auto!important}
 .lvbtns .lvcam{width:50px;padding:0;font-size:22px!important;background:rgba(11,20,34,.52)!important;color:#fff;border:1px solid rgba(255,255,255,.18)}
@@ -932,7 +934,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.8.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -953,7 +955,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div class="qa">
     <button class="main" onclick="openCreate()"><span class="em">📅</span><div><b>Crear salida</b><small>Día, hora, punto de salida y encuentro</small></div></button>
     <button onclick="closeSheets();go('rutas');setTimeout(()=>openSheet('sh-plan'),250)"><span class="em">🗺️</span><div><b>Nueva ruta</b><small>De A a B, por etapas o circular</small></div></button>
-    <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir archivo</b><small>GPX o TCX de tu reloj</small></div></button>
+    <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
   </div>
 </div>
 
@@ -3792,11 +3794,12 @@ async function stravaDisconnect(){
   try{await callFn('stravaDisconnect');strava=null;renderStrava();toast('Strava desconectado')}catch(e){toast('No se pudo desconectar ahora')}
 }
 /* ===== v3.6 — Modo ahorro: pantalla negra con el GPS grabando ===== */
-let saverT=null,saverTap=0;
+let saverT=null,saverTap=0,saverTaps=0;
 function saverOn(){
   if(!live.on)return;
-  let d=$('saver');if(!d){d=document.createElement('div');d.id='saver';d.innerHTML='<div class="sv-in"><div class="sv-d" id="svData"></div><div class="sv-h" id="svHint">🌙 Modo ahorro · el GPS sigue grabando<br>Toca dos veces para volver</div></div>';document.body.appendChild(d);
-    d.addEventListener('click',()=>{const n=Date.now();if(n-saverTap<450){saverOff();return}saverTap=n;const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,2500)})}
+  let d=$('saver');if(!d){d=document.createElement('div');d.id='saver';d.innerHTML='<div class="sv-in"><div class="sv-d" id="svData"></div><div class="sv-h" id="svHint">🌙 Modo ahorro · el GPS sigue grabando<br>Toca 3 veces seguidas para volver</div></div>';document.body.appendChild(d);
+    d.addEventListener('click',()=>{const n=Date.now();saverTaps=(n-saverTap<700)?saverTaps+1:1;saverTap=n;if(saverTaps>=3){saverTaps=0;saverOff();return}   // v4.8.1: 3 toques (evita encenderla sin querer)
+      const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,2500)})}
   d.classList.add('show');const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,4000);
   saverTick();clearInterval(saverT);saverT=setInterval(saverTick,1000);
   try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}
@@ -4608,9 +4611,9 @@ async function useRoute(){
 /* Mis rutas */
 function openRoutes(pick){
   const list=store.get('routes',[]);
-  $('routesList').innerHTML=list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
+  $('routesList').innerHTML=(pick?'':'<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="closeSheets();pickFile()">📂 Subir una ruta GPX</button>')+(list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
     <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button>`}<button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
-    :`<div class="empty">Aún no tienes rutas guardadas.<br>Planifica una y pulsa "Guardar".</div>`;
+    :`<div class="empty">Aún no tienes rutas guardadas.<br>Planifica una y pulsa "Guardar".</div>`);
   openSheet('sh-routes');
 }
 function delSaved(id,pick){if(!confirm('¿Borrar esta ruta?'))return;store.set('routes',store.get('routes',[]).filter(r=>r.id!==id));openRoutes(pick)}
@@ -4935,7 +4938,7 @@ function renderLive(){
   $('lvTime').textContent=clock(elapsed());
   $('lvAlt').textContent=live.alt!=null?Math.round(live.alt):'—';
   $('lvUp').textContent=Math.round(live.up);
-  $('lvPause').innerHTML=live.paused?'▶ Seguir':'⏸ Pausa';
+  {const t=live.paused?'▶ Seguir':'⏸ Pausa',b=$('lvPause');if(b.textContent!==t)b.textContent=t}
   $('lvState').textContent=live.paused?'EN PAUSA':live.rideId?'🛰️ '+(live.rideTitle||'SALIDA EN GRUPO'):'● GRABANDO';
   $('lvState').classList.toggle('paused',live.paused);
   const n=live.nav;
@@ -4956,7 +4959,7 @@ function renderLive(){
   if(live.rideId){
     const now=Date.now();const ms=Object.values(live.members).filter(v=>now-v.t<600000);
     const me=live.pts.at(-1);
-    $('lvGroup').innerHTML=`<b>🛰️ Pelotón: ${ms.length+1} conectados</b>`+liveCatchBtn(ms,me,now)+ms.map(v=>`<span class="gm"><i style="background:${colorOf(v.name)}">${ini(v.name)}</i>${esc(String(v.name).split(' ')[0])} · ${me?(hav(me,[v.lat,v.lng])*1000<1000?Math.round(hav(me,[v.lat,v.lng])*1000)+' m':hav(me,[v.lat,v.lng]).toFixed(1)+' km'):'—'}${now-v.t>120000?' · sin señal':''}</span>`).join('');
+    {const ge=$('lvGroup');if(!ge.querySelector('#lvGm'))ge.innerHTML='<b id="lvGh"></b><div id="lvCs"></div><div id="lvGm"></div>';const gh='🛰️ Pelotón: '+(ms.length+1)+' conectados';if($('lvGh').textContent!==gh)$('lvGh').textContent=gh;const cb=liveCatchBtn(ms,me,now),cs=$('lvCs');if(cs.__h!==cb){cs.__h=cb;cs.innerHTML=cb}$('lvGm').innerHTML=ms.map(v=>`<span class="gm"><i style="background:${colorOf(v.name)}">${ini(v.name)}</i>${esc(String(v.name).split(' ')[0])} · ${me?(hav(me,[v.lat,v.lng])*1000<1000?Math.round(hav(me,[v.lat,v.lng])*1000)+' m':hav(me,[v.lat,v.lng]).toFixed(1)+' km'):'—'}${now-v.t>120000?' · sin señal':''}</span>`).join('')}
   }
 }
 /* v4.5.3 — Si llegas tarde y ya has empezado: botón para alcanzar al grupo */
@@ -5364,11 +5367,11 @@ async function phRender(){
   // Icono de bici + título
   const baseY=H-(phFmt==='story'?560:phFmt==='square'?450:470);
   g.save();g.translate(70,baseY-58);g.scale(2.6,2.6);g.strokeStyle='#fff';g.lineWidth=2;g.lineCap='round';g.lineJoin='round';g.shadowBlur=0;
-  g.stroke(new Path2D('M5.5 20.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3'));g.restore();
-  if(a.group){g.font=F(700,32);g.fillStyle='#C8DC3C';g.fillText('SALIDA EN GRUPO',150,baseY-18)}
+  g.stroke(new Path2D(a.sport==='hike'?'M15 4a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM11 22l2-7 3 3v4M9 11l3-4 3 3 3 1M12 7l-2 6-3 2M18 9l1 13':'M5.5 20.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3'));g.restore();
+  if(a.group){g.font=F(700,32);g.fillStyle='#C8DC3C';g.fillText(a.sport==='hike'?'RUTA EN GRUPO':'SALIDA EN GRUPO',150,baseY-18)}
   g.font=F(800,68);g.fillStyle='#fff';
-  let title=a.name||'Salida en bici';while(g.measureText(title).width>W-140&&title.length>4)title=title.slice(0,-2);
-  if(title!==(a.name||'Salida en bici'))title+='…';
+  let title=a.name||(a.sport==='hike'?'Ruta a pie':'Salida en bici');while(g.measureText(title).width>W-140&&title.length>4)title=title.slice(0,-2);
+  if(title!==(a.name||(a.sport==='hike'?'Ruta a pie':'Salida en bici')))title+='…';
   g.fillText(title,70,baseY+70);
   // Datos
   const vm=a.mins>0?a.km/(a.mins/60):0;
@@ -5398,6 +5401,18 @@ function phDownload(){
 
 /* ===== Actividades: GPX / TCX (se guardan en el móvil) ===== */
 function pickFile(){go('actividades');$('fileIn').click()}
+/* v4.8.1 — Subir un GPX como RUTA (para guardarla, crear una salida o compartirla con el club) */
+function importRouteGpx(pts,km,up,name){
+  const coords=pts.map(p=>[p[0],p[1],isNaN(p[2])?0:p[2]]);const hasE=pts.some(p=>!isNaN(p[2]));
+  let d=0,down=0;const prof=[];
+  for(let i=0;i<coords.length;i++){if(i){d+=hav(coords[i-1],coords[i]);const dz=coords[i][2]-coords[i-1][2];if(dz<0)down-=dz}if(hasE)prof.push({d,e:coords[i][2]})}
+  const r={coords,km,up,down,mins:estMins(km,up),mode:'track',legs:[],prof,
+    wps:[{lat:coords[0][0],lng:coords[0][1],label:'Salida'},{lat:coords.at(-1)[0],lng:coords.at(-1)[1],label:'Llegada'}]};
+  const it={id:'rt'+Date.now().toString(36),name:String(name||'Ruta GPX').slice(0,40),date:iso(new Date()),...packRoute(r)};
+  const list=store.get('routes',[]);list.unshift(it);store.set('routes',list.slice(0,50));
+  showRoute(unpackRoute(it));
+  setTimeout(()=>toast('🗺️ Ruta guardada en «Mis rutas». Abajo puedes compartirla con tu club'),700);
+}
 function hav(a,b){const R=6371,r=Math.PI/180,dLa=(b[0]-a[0])*r,dLo=(b[1]-a[1])*r;const x=Math.sin(dLa/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 $('fileIn').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -5414,7 +5429,13 @@ $('fileIn').onchange=async e=>{
     const mins=t1?Math.round((t1-t0)/60000):0;
     const name=xml.getElementsByTagName('name')[0]?.textContent||f.name.replace(/\.(gpx|tcx)$/i,'');
     const a={id:Date.now(),name,date:iso(t0),km:+km.toFixed(1),up:Math.round(up),mins,...packRoute({coords:pts.map(p=>[p[0],p[1],isNaN(p[2])?0:p[2]]),km,up,down:0,mins,mode:'track',legs:[]})};a.km=+km.toFixed(1);a.up=Math.round(up);
-    if(!confirm(`${name}\n\n📏 ${a.km} km\n⛰️ ${a.up} m de desnivel${mins?`\n⏱️ ${Math.floor(mins/60)} h ${mins%60} min\n⚡ ${(km/(mins/60)).toFixed(1)} km/h de media`:''}\n\n¿Guardar esta actividad?`))return;
+    // v4.8.1: el GPX puede ser una RUTA para hacer o una SALIDA ya hecha
+    const done=mins>0;
+    const op=[['🗺️ Una ruta para hacer: guardarla, crear una salida o compartirla con el club','','route'],['✅ Una salida que ya hice: guardarla en Actividades','','act']];
+    if(done)op.reverse();
+    const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m${mins?' · '+Math.floor(mins/60)+' h '+mins%60+' min':''}. ¿Qué es este archivo?`,op);
+    if(k<0)return;
+    if(op[k][2]==='route'){importRouteGpx(pts,km,up,name);return}
     acts.unshift(a);store.set('acts',acts);saveActRemote(a);addRank(a);
     const gain=Math.min(300,Math.round(km))+10;addPoints(gain);
     renderActs();publishAct(a);checkBadges();addKmToBike(km);toast(`Actividad guardada · +${gain} puntos`);

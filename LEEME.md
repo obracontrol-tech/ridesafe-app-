@@ -1,3 +1,9 @@
+## Versión 4.8.1 — Arreglos tras la prueba
+- La foto con tus datos de una ruta a pie sale con el icono de senderista 🥾 (antes salía una bici).
+- Subir GPX: ahora pregunta si es una ruta para hacer (se guarda en «Mis rutas», se puede crear una salida o compartirla con el club) o una salida ya hecha (Actividades). Botón «📂 Subir una ruta GPX» también en «Mis rutas».
+- Modo ahorro (pantalla negra): hay que tocar 3 veces seguidas para volver, así no se enciende sin querer.
+- Botones más rápidos al tocar; el panel del pelotón ya no rehace sus botones cada segundo.
+
 ## Versión 4.8 — Senderismo
 - Nuevo modo 🥾 «A pie» junto a Carretera y Montaña (en Rutas, arriba, y al planificar): las rutas van por senderos y caminos, con tiempo a pie (4,5 km/h y +1 h cada 500 m de subida).
 - Nueva modalidad «Senderismo» al crear una salida y para las grupetas.
