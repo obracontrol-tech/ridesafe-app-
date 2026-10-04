@@ -464,10 +464,20 @@ async function repDismiss(id){try{await db.collection('reports').doc(id).delete(
 function vAnn(){
   $('view').innerHTML=`<div class="grid2"><div class="box"><h3>Escribir aviso</h3><div class="d">Aparece arriba en Comunidad para <b>todos</b> los usuarios de todos los clubes.</div>
     <textarea class="inp" id="annT" rows="4" maxlength="200" style="width:100%;resize:vertical" placeholder="Ej. 🎉 Nueva versión: clubes privados y grupetas">${esc(ann.active?ann.text:'')}</textarea>
+    <label style="display:flex;gap:10px;align-items:center;margin-top:12px;font-weight:700;cursor:pointer"><input type="checkbox" id="annPush" checked style="width:22px;height:22px;accent-color:#C8DC3C"> 📲 Enviar también como notificación al móvil</label>
+    <div class="d" style="margin-top:4px">Les llega a todos los ciclistas que tienen las notificaciones activadas, aunque tengan la app cerrada.</div>
     <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn lime" onclick="annSave(true)">📣 Publicar aviso</button>${ann.active?'<button class="btn red" onclick="annSave(false)">Quitar aviso</button>':''}</div></div>
-    <div class="box"><h3>Estado</h3><div class="d">${ann.active&&ann.text?'Publicado el '+fDate(ann.t):'No hay ningún aviso publicado'}</div>${ann.active&&ann.text?`<div class="opt" style="cursor:default;border-color:var(--lime)">📣 ${esc(ann.text)}</div>`:''}</div></div>`;
+    <div class="box"><h3>Estado</h3><div class="d">${ann.active&&ann.text?'Publicado el '+fDate(ann.t):'No hay ningún aviso publicado'}${ann.active&&ann.push?(ann.sent?` · 📲 Notificación enviada a ${Number(ann.sent.ok)||0} móviles`:' · 📲 Enviando notificación…'):''}</div>${ann.active&&ann.text?`<div class="opt" style="cursor:default;border-color:var(--lime)">📣 ${esc(ann.text)}</div>`:''}</div></div>`;
 }
-async function annSave(on){const text=on?$('annT').value.trim().slice(0,200):'';if(on&&!text){toast('Escribe el aviso');return}try{await db.collection('config').doc('announce').set({text,active:on,t:Date.now()});ann={text,active:on,t:Date.now()};toast(on?'📣 Aviso publicado':'Aviso quitado');vAnn()}catch(e){err(e)}}
+async function annSave(on){
+  const text=on?$('annT').value.trim().slice(0,200):'';if(on&&!text){toast('Escribe el aviso');return}
+  const push=on&&!!($('annPush')&&$('annPush').checked);
+  if(push&&!await confirmDlg('📲 Enviar notificación','Se enviará este aviso como notificación al móvil de <b>todos</b> los ciclistas. ¿Seguir?','Enviar'))return;
+  const t=Date.now();
+  try{await db.collection('config').doc('announce').set({text,active:on,t,push});ann={text,active:on,t,push};toast(on?(push?'📣 Aviso publicado y notificación en camino':'📣 Aviso publicado'):'Aviso quitado');vAnn();
+    if(push)setTimeout(async()=>{try{const s=await db.collection('config').doc('announce').get();const d=s.data()||{};if(d.t===t){ann=d;if(document.querySelector('#annT'))vAnn();if(d.sent)toast('📲 Notificación enviada a '+(Number(d.sent.ok)||0)+' móviles')}}catch(e){}},12000)
+  }catch(e){err(e)}
+}
 
 /* ---------- 🛠️ Copias y restaurar ---------- */
 const BK=['users','groups','rides','feed','routes','pois','rank','reports','config','mod','sanctions'];
