@@ -1,3 +1,10 @@
+## Versión 4.8 — Senderismo
+- Nuevo modo 🥾 «A pie» junto a Carretera y Montaña (en Rutas, arriba, y al planificar): las rutas van por senderos y caminos, con tiempo a pie (4,5 km/h y +1 h cada 500 m de subida).
+- Nueva modalidad «Senderismo» al crear una salida y para las grupetas.
+- Grabar a pie: la salida se guarda como «Ruta a pie» 🥾, no suma km a la bici ni al ranking ciclista del club (sí al de una grupeta de senderismo).
+- «Alcanza tu grupo», el aviso de caída y la navegación se adaptan a la velocidad a pie.
+- Todo lo demás (pelotón en vivo, avisos, cámara, familia, 3D) funciona igual.
+
 ## Versión 4.7 — Cámara en ruta y salida que no se pierde
 - Durante la salida, botón 📷 junto a «Terminar»: fotos y vídeos (hasta 2 min) sin salir de la app. El GPS, la voz, el pelotón y los avisos siguen funcionando.
 - Cada foto queda marcada en el mapa donde se hizo y guardada con la salida (Actividades → la salida → «📷 Fotos y vídeos»). También se guarda en Descargas del móvil (en iPhone, con «Compartir → Guardar»).
