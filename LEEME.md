@@ -1,3 +1,9 @@
+## Versión 5.0.2 — Más mapa en el diseñador
+- Botón «⌄ Ver más mapa» arriba de la tarjeta (o deslizarla hacia abajo): la tarjeta se queda en una barra fina abajo y se ve casi todo el mapa (también se oculta la barra de menús).
+- La barra muestra km y desnivel y tiene ↶ Deshacer, 🛣️/📏 Caminos o Recta y 🚵 Senderos. Se sigue tocando el mapa para añadir puntos.
+- «⌃ Abrir» vuelve a mostrar la tarjeta entera.
+- El título es más corto («Diseñador») para que se vean bien «Detalles» y «Cancelar».
+
 ## Versión 5.0.1 — Avisos de las salidas programadas
 - Con «🔔 Avisos con la app cerrada» activado (Perfil), llegan al móvil:
   · 🚴 Salida nueva de tu club (o de tu grupeta).

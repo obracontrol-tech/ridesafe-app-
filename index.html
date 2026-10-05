@@ -569,7 +569,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #saver .sv-in{text-align:center;transition:transform 1.5s ease}
 #saver .sv-d{color:#3a3a3a;font-size:22px;font-weight:800;letter-spacing:.02em}
 #saver .sv-h{color:#5a5a5a;font-size:14px;margin-top:14px;line-height:1.5;transition:opacity .6s}
-.planpanel.mini>*:not(.grab):not(.phead):not(#bikeChips):not(#planHint){display:none!important}
+.planpanel.mini>*:not(.grab):not(.pdown):not(.phead):not(#bikeChips):not(#planHint){display:none!important}
 .plc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin:0 0 14px}
 .pc-h{display:flex;align-items:center;gap:8px}.pc-h b{font-size:15.5px}
 .pc-s{display:block;color:var(--txt2);font-size:12.5px;margin-top:4px}
@@ -624,6 +624,22 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #sh-search .sopt .mini{min-height:52px;font-size:15px;border-radius:16px}
 /* v4.5 — Dibujar ruta (como Strava) */
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
+.pdown{display:block;margin:-4px auto 6px;min-height:30px;padding:2px 18px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--txt2);font-family:inherit;font-weight:800;font-size:13.5px;touch-action:manipulation}
+#pTiny{display:none}
+/* v5.0.2 — Tarjeta recogida: solo una barra fina abajo y el mapa casi entero */
+#s-rutas.planning #planPanel.tiny{bottom:calc(10px + env(safe-area-inset-bottom));left:10px;right:10px;padding:8px;border-radius:22px;overflow:visible;max-height:none}
+#s-rutas #planPanel.tiny.tiny.tiny.tiny>*:not(#pTiny){display:none!important}
+#s-rutas #planPanel.tiny #pTiny{display:flex!important;align-items:center;gap:8px}
+#app.ptiny .nav{display:none!important}
+#pTiny .tup{min-width:54px;min-height:54px;border-radius:16px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:22px;line-height:1;touch-action:manipulation}
+#pTiny .tup small{display:block;font-size:11px;font-weight:800}
+#pTiny .tinf{flex:1;min-width:0;text-align:left;background:none;border:0;color:var(--txt);font-family:inherit;padding:0 2px}
+#pTiny .tinf b{display:block;font-size:17px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pTiny .tinf small{display:block;font-size:12.5px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pTiny .tbt{min-width:54px;min-height:54px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;touch-action:manipulation}
+#pTiny .tbt span{font-size:20px;line-height:1}
+#pTiny .tbt:disabled{opacity:.35}
+#pTiny .tbt.on{border-color:var(--lime);color:var(--lime)}
 #s-rutas #planPanel.mini.draw>#pStats[style*="grid"]{display:grid!important}
 #s-rutas #planPanel.mini.draw>#pStats{margin:0 0 4px}
 .drw2{margin:0 0 8px;display:flex;flex-direction:column;gap:6px}
@@ -817,7 +833,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
-    <div class="grab" onclick="togglePlanMini()" style="cursor:pointer"></div>
+    <button class="pdown" onclick="planTiny(true)" aria-label="Bajar la tarjeta para ver el mapa">⌄ Ver más mapa</button>
+    <div id="pTiny"></div>
     <div class="phead"><div><b id="planTitle">De A a B</b></div><div style="display:flex;gap:6px"><button class="mini" id="pMiniBtn" onclick="togglePlanMini()" style="min-height:40px">🗺️ Ver mapa</button><button class="mini" onclick="exitPlanner()" style="min-height:40px">Cancelar</button></div></div>
     <div class="chips" id="bikeChips" style="margin:-2px 0 8px;flex-wrap:nowrap"><button class="chip" data-b="road" onclick="setBike(false)">🚴 Carretera</button><button class="chip" data-b="mtb" onclick="setBike(true)">🚵 Montaña</button><button class="chip" data-b="hike" onclick="setSport(2)">🥾 A pie</button></div>
     <small id="planHint" style="display:none;color:var(--lime);font-weight:600;margin:-4px 0 8px;white-space:normal"></small>
@@ -979,7 +996,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.0.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.0.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4293,7 +4310,7 @@ function drawRideMarkers(){
    PLANIFICADOR DE RUTAS (Fase 3) — Mapbox Directions (bici) + desnivel Open-Meteo
    =================================================================== */
 const MAPBOX_TOKEN='pk.eyJ1Ijoiam1wZWxsZWlkYSIsImEiOiJjbXVpYjFvdGExNGgxMndzYWFpb3dvam5sIn0.kjsEtPRpABc5pTvYUAA5zw';
-const PLAN_T={draw:'Diseñador de rutas',ab:'De A a B',stages:'Por etapas',loop:'Ruta circular',track:'Recorrido'};
+const PLAN_T={draw:'Diseñador',ab:'De A a B',stages:'Por etapas',loop:'Ruta circular',track:'Recorrido'};
 let plan={active:false,view:false,mode:'ab',start:null,stops:[],dest:null,markers:[],route:null,loopKm:40,seed:1,busy:false,reqId:0,fromCreate:false};
 let formRoute=null;
 
@@ -4449,7 +4466,7 @@ function locateForPlan(){
     redrawPlanMarkers();renderPlan();computeRoute();
   },()=>{},{enableHighAccuracy:true,timeout:10000});
 }
-function exitPlanner(){togglePlanMini(false);$('planPanel').classList.remove('draw');
+function exitPlanner(){planTiny(false);togglePlanMini(false);$('planPanel').classList.remove('draw');
   viewingComm=null;plan.active=false;plan.view=false;clearPlan(true);setPlanning(false);
   if(plan.fromCreate){plan.fromCreate=false;reopenCreate()}
 }
@@ -4491,6 +4508,24 @@ function drawHere(){const l=myLL();if(l){addPlanPt(l);map.easeTo({center:[l.lng,
 function swapPts(){if(plan.view)return;[plan.start,plan.dest]=[plan.dest,plan.start];plan.stops.reverse();redrawPlanMarkers();computeRoute()}
 function removeStop(i){plan.stops.splice(i,1);redrawPlanMarkers();computeRoute()}
 function clearDest(){plan.dest=null;redrawPlanMarkers();computeRoute()}
+
+/* v5.0.2 — Bajar la tarjeta del planificador a una barra fina (más mapa a la vista) */
+function planTiny(on){const pp=$('planPanel');if(!pp)return;pp.classList.toggle('tiny',!!on);$('app').classList.toggle('ptiny',!!on);if(on){vib(15);renderTiny();if(!store.get('tinyTip',0)){store.set('tinyTip',1);setTimeout(()=>toast('Toca ⌃ para volver a abrir la tarjeta'),300)}}}
+function renderTiny(){
+  const el=$('pTiny');if(!el||!$('planPanel').classList.contains('tiny'))return;
+  const r=plan.route,draw=plan.mode==='draw'&&!plan.view,n=planWps().length,fr=store.get('drawFree',false);
+  const top=plan.busy?'Calculando…':r?`${r.km.toFixed(1).replace('.',',')} km${r.prof?' · +'+Math.round(r.up)+' m':''}`:(PLAN_T[plan.mode]||'Ruta');
+  const sub=draw?(!plan.start?'👆 Toca el mapa donde empiezas':'👆 Toca el mapa para seguir'):$('planTitle').textContent;
+  el.innerHTML=`<button class="tup" onclick="planTiny(false)" aria-label="Abrir la tarjeta">⌃<small>Abrir</small></button>
+    <button class="tinf" onclick="planTiny(false)"><b>${esc(top)}</b><small>${esc(sub)}</small></button>`+
+    (draw?`<button class="tbt" onclick="drawUndo()" ${n?'':'disabled'} aria-label="Deshacer"><span>↶</span>Deshacer</button>
+    <button class="tbt${fr?' on':''}" onclick="drawSetFree(!store.get('drawFree',false))" aria-label="Cambiar entre caminos y línea recta"><span>${fr?'📏':'🛣️'}</span>${fr?'Recta':'Caminos'}</button>`:'')+
+    `<button class="tbt${trailsOn()?' on':''}" onclick="trailsToggle(!trailsOn())" aria-label="Ver senderos"><span>${isHike()?'🥾':'🚵'}</span>Senderos</button>`;
+}
+// Deslizar la tarjeta hacia abajo también la recoge
+(()=>{const pp=$('planPanel');if(!pp)return;let y0=null;
+  pp.addEventListener('touchstart',e=>{y0=(pp.scrollTop<=0&&!pp.classList.contains('tiny')&&e.target.closest('.phead,.pdown,#bikeChips,#planHint'))?e.touches[0].clientY:null},{passive:true});
+  pp.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;if(dy>60)planTiny(true)},{passive:true});})();
 
 /* ===== v5.0 — DISEÑADOR DE RUTAS (como gpx.studio / Trailforks) =====
    · Cada tramo puede ir «por caminos» (sigue carreteras/pistas) o «en línea recta» (senderos que no salen en el mapa).
@@ -4749,7 +4784,7 @@ function fieldBtn(key,p,ph){
   return `<button class="pfield${p?'':' ph'}" onclick="openPointSearch(${jsq(key)})" ${plan.view?'disabled':''}>${here?'<i class="dotme"></i>':''}<span>${p?esc(p.label):ph}</span></button>`;
 }
 function renderPlan(){
-  if(!plan.active)return;syncBikeChips();if(trailsOn()&&map&&map.__wmt&&map.__wmt!==trailsKind())trailsSet(map,true);
+  if(!plan.active)return;setTimeout(renderTiny,0);syncBikeChips();if(trailsOn()&&map&&map.__wmt&&map.__wmt!==trailsKind())trailsSet(map,true);
   const r=plan.route,v=plan.view;
   let rows='';
   if(plan.mode==='draw'&&!v){
@@ -4930,7 +4965,7 @@ function packRoute(r){
   return{nav:(r.nav||[]).slice(0,25).map(p=>({lat:+(+p.lat).toFixed(6),lng:+(+p.lng).toFixed(6)})),wps:(r.wps||[]).map(p=>({lat:+(+p.lat).toFixed(6),lng:+(+p.lng).toFixed(6),label:String(p.label||'').slice(0,60)})),poly:encodePoly(pts),pd:pr.map(p=>+p.d.toFixed(2)),pe:pr.map(p=>Math.round(p.e)),km:+r.km.toFixed(1),up:Math.round(r.up||0),down:Math.round(r.down||0),mins:r.mins||estMins(r.km,r.up||0),mode:r.mode,legs:(r.legs||[]).map(x=>+x.toFixed(1)),...(r.fixed?{fx:1}:{}),...(r.stopsList&&r.stopsList.length?{stops:r.stopsList.slice(0,80).map(s=>({t:s.t,n:String(s.n||'').slice(0,40),lat:+s.lat.toFixed(5),lng:+s.lng.toFixed(5),km:+s.km.toFixed(1),off:Math.round(s.off*1000)}))}:{})};
 }
 function unpackRoute(p){const c=decodePoly(p.poly);return{nav:p.fx?null:(p.nav||null),fixed:!!p.fx,wps:p.wps||[],coords:c,km:p.km,up:p.up,down:p.down,mins:p.mins,mode:p.mode,legs:p.legs||[],prof:(p.pd||[]).map((d,i)=>({d,e:p.pe[i]})),...(p.stops?{stopsList:p.stops.map(s=>({...s,off:(s.off||0)/1000}))}:{})}}
-const routeName=r=>(PLAN_T[r.mode]||'Ruta')+' · '+r.km.toFixed(0)+' km';
+const routeName=r=>(r.mode==='draw'?'Ruta dibujada':PLAN_T[r.mode]||'Ruta')+' · '+r.km.toFixed(0)+' km';
 function saveRoute(){
   if(!plan.route)return;
   const name=prompt('Nombre de la ruta',routeName(plan.route));if(name===null)return;
