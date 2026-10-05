@@ -1,3 +1,10 @@
+## Versión 5.0.1 — Avisos de las salidas programadas
+- Con «🔔 Avisos con la app cerrada» activado (Perfil), llegan al móvil:
+  · 🚴 Salida nueva de tu club (o de tu grupeta).
+  · ⚠️ Cambio de día, hora o lugar, y ❌ salida cancelada (a los apuntados).
+  · Recordatorio la víspera (a partir de las 20:00) y ⏰ 1 hora antes (a los apuntados).
+- Necesita subir las funciones «salidaAviso» y «recordatorioSalidas» (cmd_funcion_v5.0.1.txt).
+
 ## Versión 5.0 — Diseñador de rutas (como gpx.studio / Trailforks)
 - Rutas → «Planificar» o «✏️ Diseñador de rutas»: tocas el mapa punto a punto.
 - Nuevo selector: «🛣️ Por caminos» (sigue carreteras y pistas) o «📏 Línea recta» (para senderos y trialeras que no salen en el mapa). Se pueden mezclar en la misma ruta.

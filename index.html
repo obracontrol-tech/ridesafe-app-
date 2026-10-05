@@ -965,7 +965,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
-  <div class="set" style="flex-wrap:wrap">🔔 Avisos del pelotón con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Pinchazo, esperad, ayuda, caída… de tus salidas, aunque tengas el móvil bloqueado. También en tu Garmin (ver abajo)</small></div>
+  <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin (ver abajo)</small></div>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -979,7 +979,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.0.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1446,7 +1446,7 @@ async function toggleJoin(id){
   }else{
     if(r.seats&&names(r).length>=r.seats){toast('No quedan plazas');return}
     ref.update({['people.'+uid]:myName()}).catch(netErr);toast('✅ ¡Apuntado! Nos vemos en el punto de encuentro');vib(40);
-    if(pushReady()&&!store.get('push',0)&&!store.get('pushAsked',0)){store.set('pushAsked',1);setTimeout(async()=>{if(await askConfirm('🔔 ¿Activar avisos?','Si alguien del grupo pincha o pide ayuda durante la salida, te llegará una notificación aunque tengas la app cerrada.','Activar',true))setPush(true)},900)}
+    if(pushReady()&&!store.get('push',0)&&!store.get('pushAsked',0)){store.set('pushAsked',1);setTimeout(async()=>{if(await askConfirm('🔔 ¿Activar avisos?','Te recordaremos la salida la víspera y 1 hora antes, y te avisaremos si cambia la hora o se cancela. En ruta, si alguien pincha o pide ayuda. Aunque tengas la app cerrada.','Activar',true))setPush(true)},900)}
   }
 }
 const mapsLink=(p,ll)=>ll?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+ll.lat+','+ll.lng:/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(p)?'https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+encodeURIComponent(p):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p);
