@@ -1,3 +1,13 @@
+## Versión 5.0 — Diseñador de rutas (como gpx.studio / Trailforks)
+- Rutas → «Planificar» o «✏️ Diseñador de rutas»: tocas el mapa punto a punto.
+- Nuevo selector: «🛣️ Por caminos» (sigue carreteras y pistas) o «📏 Línea recta» (para senderos y trialeras que no salen en el mapa). Se pueden mezclar en la misma ruta.
+- «🚵 Ver senderos»: pinta encima del mapa las rutas marcadas de OpenStreetMap (Waymarked Trails): BTT en Montaña, senderismo en A pie, cicloturismo en Carretera. También en «Capas».
+- «⇄ Invertir»: la ruta al revés.
+- Retocar cualquier ruta o GPX: al verla, «✏️ Editar esta ruta en el diseñador». Se convierte en puntos que se arrastran; lo que no tocas mantiene el trazado original.
+- Perfil: al tocarlo (o pasar el dedo) sale en el mapa ese punto, con km, altitud y % de pendiente.
+- El GPX descargado lleva la altitud.
+- Navegar un GPX o una ruta en línea recta ya no la cambia por la de Mapbox; si te sales, te lleva de vuelta al trazado un poco más adelante.
+
 ## Versión 4.9.3 — Privacidad
 - En Perfil el correo de la cuenta sale tapado (pe•••@gmail.com). También en la Consola Master.
 
