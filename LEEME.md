@@ -1,3 +1,6 @@
+## Versión 4.9.3 — Privacidad
+- En Perfil el correo de la cuenta sale tapado (pe•••@gmail.com). También en la Consola Master.
+
 ## Versión 4.9.2 — Consultas con respuesta dentro de la app
 - Perfil → «💬 Consultas e incidencias» → «📨 Enviar a RideSafe IA»: la consulta llega a la Consola Master (💬 Consultas).
 - Tú contestas en la consola y al ciclista le llega un aviso al móvil; ve la respuesta en «📬 Mis consultas» (y «Respuesta nueva» en Perfil).

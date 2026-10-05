@@ -964,7 +964,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2925,11 +2925,13 @@ function gpxRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)downloadGPX(
    v1.1 — CUENTA CON GOOGLE · ACTIVIDADES EN LA NUBE · FICHA DE ACTIVIDAD · OBJETIVO
    =================================================================== */
 /* ---- Guardar la cuenta con Google (opcional) ---- */
+/* v4.9.3 — el correo se muestra tapado (pe•••@gmail.com) */
+function maskMail(m){m=String(m||'');const i=m.indexOf('@');if(i<1)return '';return m.slice(0,Math.min(2,i))+'•••'+m.slice(i)}
 function renderAccount(){
   const u=firebase?.auth?.().currentUser;const el=$('acctBox');if(!el)return;
   if(u&&!u.isAnonymous){
     if(db&&uid&&me&&!me.google){me.google=true;db.collection('users').doc(uid).set({google:true},{merge:true}).catch(()=>{})}
-    el.innerHTML=`<div class="li" style="cursor:default;border-color:var(--lime)"><span class="em">✅</span><div><b>Cuenta guardada con Google</b><small>${esc(u.email||u.displayName||'')}</small></div></div>
+    el.innerHTML=`<div class="li" style="cursor:default;border-color:var(--lime)"><span class="em">✅</span><div><b>Cuenta guardada con Google</b><small>${esc(maskMail(u.email)||'Tu cuenta de Google')}</small></div></div>
      <p style="color:var(--txt2);font-size:13px;margin:8px 4px 0">Si cambias de móvil, entra con esta misma cuenta y recuperarás tus puntos y actividades.</p>`;
   }else{
     el.innerHTML=`<button class="li" onclick="linkGoogle()"><span class="em">🔒</span><div><b>Guardar mi cuenta con Google</b><small>Para no perder puntos ni actividades si cambias de móvil</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>

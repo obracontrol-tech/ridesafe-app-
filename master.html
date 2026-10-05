@@ -203,7 +203,7 @@ auth.onAuthStateChanged(async u=>{
   gate('Comprobando permisos…',false,false);
   try{await db.collection('reports').limit(1).get();}      // solo el propietario puede leer los reportes (reglas de Firebase)
   catch(e){gate('🔒 <b>Acceso restringido.</b><br>Esta cuenta no es la del propietario de RideSafe IA.',false,true);return}
-  $('gate').style.display='none';$('app').style.display='block';$('meMail').textContent=u.email||'';
+  $('gate').style.display='none';$('app').style.display='block';$('meMail').textContent=(e=>{const i=e.indexOf('@');return i>0?e.slice(0,2)+'•••'+e.slice(i):''})(u.email||'');
   loadAll();
 });
 
