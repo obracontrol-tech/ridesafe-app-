@@ -1,3 +1,9 @@
+## Versión 4.9.2 — Consultas con respuesta dentro de la app
+- Perfil → «💬 Consultas e incidencias» → «📨 Enviar a RideSafe IA»: la consulta llega a la Consola Master (💬 Consultas).
+- Tú contestas en la consola y al ciclista le llega un aviso al móvil; ve la respuesta en «📬 Mis consultas» (y «Respuesta nueva» en Perfil).
+- WhatsApp y correo siguen disponibles (para mandar capturas).
+- Necesita las reglas v4.4 y la función «consultaAviso».
+
 ## Versión 4.9.1 — Por dónde pasaste y velocidad en el 3D
 - Arriba sale por dónde vas en cada momento: «📍 A-364 · Arahal» (carretera y pueblo).
 - Abajo, «Pasaste por:» con los pueblos de la ruta; al tocar uno, el 3D salta a ese punto.

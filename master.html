@@ -151,6 +151,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
     <button class="nav" data-v="users" onclick="go('users')">👥 Ciclistas <span class="ct" id="nUsers"></span></button>
     <button class="nav" data-v="rides" onclick="go('rides')">📅 Salidas <span class="ct" id="nRides"></span></button>
     <button class="nav" data-v="cont" onclick="go('cont')">🗂️ Contenido</button>
+    <button class="nav" data-v="sup" onclick="go('sup')">💬 Consultas <span class="ct" id="nSup"></span></button>
     <button class="nav" data-v="rep" onclick="go('rep')">⚠️ Reportes <span class="ct" id="nRep"></span></button>
     <button class="nav" data-v="eth" onclick="go('eth')">⚖️ Ética y sanciones <span class="ct" id="nSan"></span></button>
     <button class="nav" data-v="news" onclick="go('news')">🚀 Novedades</button>
@@ -207,8 +208,8 @@ auth.onAuthStateChanged(async u=>{
 });
 
 /* ---------- Datos ---------- */
-let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[]},ann={},upd={items:[]},loadedAt=0,view='res';
-const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions'];
+let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[],support:[]},ann={},upd={items:[]},loadedAt=0,view='res';
+const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions','support'];
 async function loadAll(manual){
   $('view').innerHTML='<div class="empty">Cargando datos de la app…</div>';
   const res=await Promise.all(COLS.map(c=>db.collection(c).limit(5000).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{console.warn(c,e);return[]})));
@@ -224,12 +225,13 @@ function counts(){
   $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
   const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
   const na=activeSan();$('nSan').textContent=na.length||'';
+  const ns=D.support.filter(x=>!x.reply&&x.status!=='closed').length;const nsu=$('nSup');if(nsu){nsu.textContent=ns||'';nsu.classList.toggle('alert',ns>0)}
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
+  const T={res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews})[view]();
 }
 
 /* ---------- Gráfica de barras (una serie) con tooltip ---------- */
@@ -451,6 +453,29 @@ async function delDoc(col,id,what){
   try{await db.collection(col).doc(id).delete();D[col]=D[col].filter(x=>x.id!==id);counts();toast('Borrado');render()}catch(e){err(e)}
 }
 
+
+/* ---------- 💬 Consultas e incidencias (v4.9.2) ---------- */
+function vSup(){
+  const L=D.support.slice().sort((a,b)=>{const pa=(!a.reply&&a.status!=='closed')?0:1,pb=(!b.reply&&b.status!=='closed')?0:1;return pa-pb||(b.createdAt||0)-(a.createdAt||0)});
+  const ic={Consulta:'❓',Incidencia:'🐞',Sugerencia:'💡'};
+  $('view').innerHTML=L.length?L.map(x=>{const pend=!x.reply&&x.status!=='closed';return `<div class="box" style="${pend?'border-color:var(--lime)':''}">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill ${pend?'warn':'lime'}">${pend?'⏳ Pendiente':x.status==='closed'?'Cerrada':'✅ Contestada'}</span><b>${ic[x.type]||'💬'} ${esc(x.type||'Consulta')}</b><span class="d" style="margin:0">de <b>${esc(x.name||'—')}</b> · ${x.createdAt?new Date(x.createdAt).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span></div>
+    <p style="margin:10px 0;white-space:pre-wrap;font-size:15px">${esc(x.text||'')}</p>
+    <div class="d" style="margin:0 0 10px">📱 ${esc(x.device||'')} · sección: ${esc(x.sec||'')}</div>
+    ${x.reply?`<div class="opt" style="cursor:default;border-color:var(--lime);display:block"><b>Tu respuesta</b>${x.replyAt?' · '+new Date(x.replyAt).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}${x.seen?' · 👀 leída':''}<p style="margin:6px 0 0;white-space:pre-wrap">${esc(x.reply)}</p></div>`:''}
+    <textarea class="inp" id="supR_${esc(x.id)}" rows="3" maxlength="1000" style="width:100%;margin-top:10px;resize:vertical" placeholder="Escribe la respuesta…">${x.reply?esc(x.reply):''}</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn lime" data-id="${esc(x.id)}" onclick="supReply(this.dataset.id)">📨 ${x.reply?'Cambiar respuesta':'Enviar respuesta'}</button>
+    ${x.status!=='closed'?`<button class="btn" data-id="${esc(x.id)}" onclick="supCloseIt(this.dataset.id)">✓ Cerrar</button>`:''}<button class="btn red" data-id="${esc(x.id)}" onclick="supDelIt(this.dataset.id)">🗑️</button></div></div>`}).join('')
+   :'<div class="box"><div class="empty">✅ No hay consultas</div></div>';
+}
+async function supReply(id){
+  const t=($('supR_'+id)||{}).value||'';const reply=t.trim().slice(0,1000);if(!reply){toast('Escribe la respuesta');return}
+  const up={reply,replyAt:Date.now(),status:'answered',seen:false};
+  try{await db.collection('support').doc(id).update(up);const x=D.support.find(y=>y.id===id);if(x)Object.assign(x,up);counts();toast('📨 Respuesta enviada: le llegará un aviso');vSup()}catch(e){err(e)}
+}
+async function supCloseIt(id){try{await db.collection('support').doc(id).update({status:'closed'});const x=D.support.find(y=>y.id===id);if(x)x.status='closed';counts();vSup()}catch(e){err(e)}}
+async function supDelIt(id){if(!await confirmDlg('🗑️ Borrar consulta','¿Borrar esta consulta? El ciclista ya no la verá.','Borrar',true))return;try{await db.collection('support').doc(id).delete();D.support=D.support.filter(y=>y.id!==id);counts();vSup()}catch(e){err(e)}}
+
 /* ---------- ⚠️ Reportes ---------- */
 function vRep(){
   const C={feed:'Actividad',pois:'Punto ciclista',routes:'Ruta',rides:'Salida'};
@@ -480,7 +505,7 @@ async function annSave(on){
 }
 
 /* ---------- 🛠️ Copias y restaurar ---------- */
-const BK=['users','groups','rides','feed','routes','pois','rank','reports','config','mod','sanctions'];
+const BK=['users','groups','rides','feed','routes','pois','rank','reports','config','mod','sanctions','support'];
 function vMnt(){
   $('view').innerHTML=`<div class="grid2">
    <div class="box"><h3>💾 Copia de seguridad</h3><div class="d">Descarga en tu ordenador todos los datos de la app en un archivo (.json).</div>

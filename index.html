@@ -703,6 +703,13 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .mv-bar .lime{background:#C8DC3C;color:#0E1A2B;border:0}
 .camPin{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#0E1A2B center/cover no-repeat;box-shadow:0 2px 8px rgba(0,0,0,.45);display:grid;place-items:center;font-size:14px;cursor:pointer}
 
+
+/* v4.9.2 — Consultas con respuesta */
+.sup-dot{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:800;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.sup-it{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.sup-q{margin:6px 0 0;color:var(--txt);font-size:14.5px;white-space:pre-wrap}
+.sup-a{margin-top:10px;background:rgba(200,220,60,.1);border:1px solid rgba(200,220,60,.35);border-radius:12px;padding:10px 12px}
+.sup-a b{color:var(--lime);font-size:13.5px}.sup-a p{margin:4px 0 0;white-space:pre-wrap;font-size:14.5px}
 /* v4.9.1 — Pueblos y velocidad en el 3D */
 .r3-here{font-size:13px;font-weight:800;color:var(--lime);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
 .r3-here:empty{display:none}
@@ -949,7 +956,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Ayuda</h3></div>
   <div class="list">
-    <button class="li" onclick="openSupport()"><span class="em">💬</span><div><b>Consultas e incidencias</b><small>Escríbenos por WhatsApp o correo</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="openSupport()"><span class="em">💬</span><div><b>Consultas e incidencias <span class="sup-dot" id="supDot" style="display:none">Respuesta nueva</span></b><small>Pregúntanos y te contestamos aquí, en la app</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openHelp()"><span class="em">❓</span><div><b>Cómo funciona</b><small>Preguntas rápidas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openNews()"><span class="em">🆕</span><div><b>Novedades y próximas actualizaciones</b><small id="newsSub">Lo último de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openEthics()"><span class="em">📜</span><div><b>Código ético del ciclista</b><small>Las normas de convivencia de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -957,7 +964,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4110,11 +4117,13 @@ function openSupport(){
    <label class="l" for="supTxt">Cuéntanos</label>
    <textarea class="inp" id="supTxt" rows="5" maxlength="800" placeholder="Ej.: Al planificar una ruta circular no me aparece el semáforo…" style="resize:vertical" oninput="supSuggest()"></textarea>
    <div id="supSug"></div>
-   <small style="display:block;color:var(--txt2);margin:6px 0 12px">Si es una incidencia, haz una captura de pantalla y adjúntala en el chat de WhatsApp.</small>
-   <button class="btn btn-lime" style="min-height:56px" onclick="supSend('wa')">📲 Enviar por WhatsApp</button>
-   <button class="btn btn-line" style="margin-top:8px" onclick="supSend('mail')">✉️ Enviar por correo</button>
+   <button class="btn btn-lime" style="min-height:58px;margin-top:10px" onclick="supSendApp()">📨 Enviar a RideSafe IA</button>
+   <small style="display:block;color:var(--txt2);margin:8px 0 6px;text-align:center">Te contestamos <b>aquí, en la app</b>, y te llega un aviso al móvil.</small>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><button class="btn btn-line" style="font-size:14px" onclick="supSend('wa')">📲 Por WhatsApp</button><button class="btn btn-line" style="font-size:14px" onclick="supSend('mail')">✉️ Por correo</button></div>
+   <small style="display:block;color:var(--txt2);margin:6px 0 0;text-align:center">Para mandar una captura de pantalla, usa WhatsApp.</small>
+   <div id="supMine" style="margin-top:18px"></div>
    <p style="color:var(--txt2);text-align:center;font-size:13px;margin-top:12px">⚠️ Para emergencias llama siempre al <b>112</b>. Este canal no es de emergencias.</p>`;
-  openSheet('sh-ride');
+  openSheet('sh-ride');supMineRender();supMarkSeen();
 }
 /* Asistente: mientras escribes, busca respuestas en «Cómo funciona» */
 const supNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ');
@@ -4132,6 +4141,41 @@ function supSuggest(){clearTimeout(supT);supT=setTimeout(()=>{
     <small style="display:block;color:var(--txt2);margin-top:6px">¿No se resuelve? Envíanos tu mensaje con los botones de abajo.</small></div>`:'';
 },350)}
 function supPick(b){document.querySelectorAll('#supType button').forEach(x=>x.classList.toggle('on',x===b))}
+
+/* ===== v4.9.2 — Consultas con respuesta DENTRO de la app =====
+   El ciclista envía su consulta; el propietario la contesta desde la Consola Master;
+   al ciclista le llega un aviso y ve la respuesta aquí. (Colección «support», reglas v4.4) */
+let supList=[],supUnsub=null;
+function watchSupport(){if(!db||!uid||supUnsub)return;
+  supUnsub=db.collection('support').where('uid','==',uid).onSnapshot(s=>{
+    const before=new Set(supList.filter(x=>x.reply).map(x=>x.id+'_'+x.replyAt));
+    supList=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const nu=supList.filter(x=>x.reply&&!x.seen);
+    const d=$('supDot');if(d)d.style.display=nu.length?'inline-block':'none';
+    if(nu.some(x=>!before.has(x.id+'_'+x.replyAt))&&before.size+supList.length>0&&document.visibilityState==='visible'&&!$('supMine'))toast('💬 Tienes una respuesta en Perfil → Consultas');
+    if($('supMine')){supMineRender();supMarkSeen()}
+  },e=>console.warn('consultas',e))}
+function supMineRender(){const b=$('supMine');if(!b)return;
+  if(!supList.length){b.innerHTML='';return}
+  const st=x=>x.status==='closed'?'<span class="tag">Cerrada</span>':x.reply?'<span class="tag lime">✅ Contestada</span>':'<span class="tag">⏳ Pendiente</span>';
+  b.innerHTML='<h3 style="font-size:17px;margin-bottom:8px">📬 Mis consultas</h3>'+supList.slice(0,10).map(x=>`<div class="sup-it">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(x.type||'Consulta')}</b>${st(x)}</div>
+    <small style="color:var(--txt2)">${x.createdAt?new Date(x.createdAt).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</small>
+    <p class="sup-q">${esc(x.text||'')}</p>
+    ${x.reply?`<div class="sup-a"><b>💬 RideSafe IA te responde:</b><p>${esc(x.reply)}</p></div>`:''}</div>`).join('');
+}
+function supMarkSeen(){supList.filter(x=>x.reply&&!x.seen).forEach(x=>{x.seen=true;db.collection('support').doc(x.id).update({seen:true}).catch(()=>{})});const d=$('supDot');if(d)d.style.display='none'}
+async function supSendApp(){
+  const t=(document.querySelector('#supType button.on')||{}).dataset?.t||'Consulta';
+  const txt=$('supTxt').value.trim();
+  if(!txt){toast('Escribe primero tu mensaje');$('supTxt').focus();return}
+  if(!db||!uid){toast('Sin conexión: usa WhatsApp o correo');return}
+  const id=db.collection('support').doc().id;
+  try{await db.collection('support').doc(id).set({uid,name:myName(),type:t,text:txt.slice(0,800),device:supDevice().slice(0,120),sec:String(store.get('tab','rutas')).slice(0,20),status:'open',seen:false,createdAt:Date.now()});
+    $('supTxt').value='';$('supSug').innerHTML='';toast('✅ Enviada. Te avisaremos cuando te contestemos');watchSupport();
+    if(!store.get('push',0))setTimeout(()=>toast('🔔 Activa los avisos en Perfil para enterarte de la respuesta'),2800);
+  }catch(e){console.warn(e);toast('No se pudo enviar. Prueba por WhatsApp')}
+}
 function supSend(how){
   const t=(document.querySelector('#supType button.on')||{}).dataset?.t||'Consulta';
   const txt=$('supTxt').value.trim();
@@ -5662,10 +5706,11 @@ function startFirebase(){
       if((me?.group||null)!==(myGroup?.id||null)||!groupUnsub)watchGroup();
       checkBadges();
     },e=>console.error(e));
-    watchMod();watchUpdates();watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
+    watchMod();watchSupport();watchUpdates();watchFeed();watchPois();startNear();syncActs();renderAccount();checkAdmin();watchAnnounce();refreshPush();pushForeground();stravaReturn().then(loadStrava);
     // v4.0 — Salidas, actividad, puntos y ranking: solo los de MI club (se escuchan en watchClubData)
     watchClubData();
     // Enlace compartido: #salida=ID
+    if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
     const hm=location.hash.match(/salida=([\w-]+)/);
     if(hm){setTimeout(()=>{go('comunidad');openRide(hm[1])},600);history.replaceState(null,'',location.pathname)}
     const hv=location.hash.match(/vivo=([a-z0-9]{8,20})/i);
