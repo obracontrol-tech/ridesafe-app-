@@ -498,6 +498,14 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
 .lvalert .a-more{border-color:rgba(167,139,250,.9)!important}.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
 .lvbtns{gap:6px!important}
+.lvwind{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border-radius:18px;padding:6px 12px;font-family:inherit;color:#fff;background:rgba(11,20,34,.52);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.16);touch-action:manipulation}
+.lvwind .lwa{color:#A5B4FC;display:grid;place-items:center;flex-shrink:0}
+.lvwind .lwt{flex:1;min-width:0}.lvwind b{display:block;font-size:15px;font-weight:900}
+.lvwind small{display:block;font-size:12px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lvwind .lws{font-size:16px;opacity:.7}
+.lvwind.fav{border-color:rgba(34,197,94,.8)}.lvwind.fav .lwa{color:#4ADE80}
+.lvwind.bad{border-color:rgba(249,115,22,.85)}.lvwind.bad .lwa{color:#FB923C}
+.lvwind.warn{background:rgba(127,29,29,.7);border-color:rgba(239,68,68,.95)}
 .lvbtns button{min-height:50px!important;font-size:16px!important;border-radius:25px!important}
 .lvbtns .lvs{background:rgba(239,68,68,.88)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .lvbtns .lvsos{width:50px!important;background:rgba(127,29,29,.85)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -827,6 +835,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
     </div>
+    <button class="lvwind" id="lvWind" style="display:none" onclick="lwSay(true)" aria-label="Viento: toca para oírlo"></button>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
     <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button></div>
@@ -996,7 +1005,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.0.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3998,7 +4007,7 @@ function saverOn(){
 }
 function saverTick(){
   const d=$('svData');if(!d||!live.on){saverOff();return}
-  d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`;
+  d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`+(live.wx?` · 🌬️ ${live.wx.spd} km/h ${(REL_T[windRel(live.wx,live.hdg??null)]||[""])[0]}`:"");
   if(Math.floor(Date.now()/1000)%30===0){const i=$('saver').querySelector('.sv-in');i.style.transform=`translate(${Math.round(Math.random()*60-30)}px,${Math.round(Math.random()*160-80)}px)`}
 }
 function saverOff(){clearInterval(saverT);const d=$('saver');if(d)d.classList.remove('show');try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}
@@ -5209,12 +5218,105 @@ async function startLive(opt){
   live.watch=navigator.geolocation.watchPosition(onFix,e=>{if(e.code===1)toast('Activa el permiso de ubicación para grabar')},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   live.timer=setInterval(renderLive,1000);
   live.bkTimer=setInterval(liveBackup,15000);setTimeout(liveBackup,1500);
+  lwStart();
   keepAwake();
   if(live.rideId){listenGroup();groupTips()}
   renderLive();
   speak(live.nav?'Empezamos. Sigue la línea verde.':'Grabación iniciada. ¡Buena ruta!');
   toast(live.rideId?'¡Salida en marcha! Tu grupo te ve en el mapa':'Grabando… mantén la pantalla encendida');
 }
+
+
+/* ===== v5.1 — VIENTO EN RUTA, AVISOS DEL TIEMPO Y AHORRO DE BATERÍA =====
+   · Cada 15 min (o al avanzar 8 km) se mira el tiempo donde estás (Open‑Meteo; si falla, MET Norway).
+   · Con tu rumbo de los últimos 250 m: viento en contra, a favor o de costado. Lo dice en voz.
+   · Avisos: rachas fuertes, lluvia en la próxima hora, tormenta y batería baja.
+   · Ahorro: con la pantalla apagada o en modo ahorro no se pinta nada; el mapa se mueve cada pocos segundos. */
+const lowPow=()=>document.visibilityState!=='visible'||!!($('saver')&&$('saver').classList.contains('show'));
+async function liveWx(lat,lng){
+  try{
+    const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code&hourly=precipitation_probability,weather_code,wind_gusts_10m&forecast_hours=3&wind_speed_unit=kmh&timezone=auto`);
+    const c=d.current;if(!c||c.wind_speed_10m==null)throw new Error('sin datos');const H=d.hourly||{};
+    const pp=Math.max(0,...(H.precipitation_probability||[]).slice(0,2).map(x=>x||0));
+    const storm=(c.weather_code>=95)||(H.weather_code||[]).slice(0,2).some(x=>x>=95);
+    const gmax=Math.max(c.wind_gusts_10m||0,...(H.wind_gusts_10m||[]).slice(0,2).map(x=>x||0));
+    return{spd:Math.round(c.wind_speed_10m),dir:Math.round(c.wind_direction_10m||0),gust:Math.round(c.wind_gusts_10m||0),gmax:Math.round(gmax),rain:c.precipitation||0,pp,storm,src:'Open‑Meteo'};
+  }catch(e){console.warn('viento en ruta: uso MET Norway',e)}
+  const d=await metNo(lat,lng);const ts=((d.properties||{}).timeseries||[]);if(!ts.length)throw new Error('sin datos');
+  const now=Date.now();let k=ts.findIndex(x=>new Date(x.time).getTime()>now-3600e3);if(k<0)k=0;
+  const i=ts[k].data.instant.details||{};let pp=0,storm=false;
+  for(let j=k;j<Math.min(ts.length,k+2);j++){const n1=ts[j].data.next_1_hours||{};const x=n1.details||{};pp=Math.max(pp,x.probability_of_precipitation??((x.precipitation_amount||0)>0.2?70:0));if(/thunder/.test(String((n1.summary||{}).symbol_code||'')))storm=true}
+  const g=Math.round((i.wind_speed_of_gust??(i.wind_speed||0)*1.5)*3.6);
+  return{spd:Math.round((i.wind_speed||0)*3.6),dir:Math.round(i.wind_from_direction||0),gust:g,gmax:g,rain:((ts[k].data.next_1_hours||{}).details||{}).precipitation_amount||0,pp,storm,src:'MET Norway'};
+}
+/* Rumbo: de dónde a dónde vas en los últimos ~250 m */
+function liveHeading(){
+  const P=live.pts;if(!P||P.length<3)return null;
+  if((live.speed||0)<(live.hike?2:6))return live.hdg??null;
+  const a=P.at(-1);for(let i=P.length-2,n=0;i>=0&&n<400;i--,n++){if(hav(P[i],a)>=0.25){live.hdg=bearing(P[i],a);return live.hdg}}
+  return live.hdg??null;
+}
+/* Relación con tu rumbo: 'contra' | 'favor' | 'dcha' | 'izda' | 'flojo' */
+function windRel(w,h){if(!w)return null;if(w.spd<8)return 'flojo';if(h==null)return null;const r=((w.dir-h+540)%360)-180;return Math.abs(r)<=45?'contra':Math.abs(r)>=135?'favor':r>0?'dcha':'izda'}
+const REL_T={contra:['en contra','te da de cara'],favor:['a favor','te empuja por detrás'],dcha:['de costado','te da por la derecha'],izda:['de costado','te da por la izquierda'],flojo:['flojo','casi no hay viento']};
+function lwRender(){
+  const el=$('lvWind');if(!el)return;const w=live.wx;
+  if(!w){el.style.display='none';return}
+  const h=live.hdg??null,rel=windRel(w,h);
+  const deg=h!=null?(w.dir-h+360)%360:w.dir;
+  const warn=live.wxWarn&&Date.now()-live.wxWarn.t<20*60000?live.wxWarn:null;
+  el.style.display='flex';el.classList.toggle('warn',!!warn);el.classList.toggle('fav',rel==='favor');el.classList.toggle('bad',rel==='contra'&&w.spd>=15);
+  const html=`<span class="lwa">${windArrow(deg,30)}</span><span class="lwt"><b>${w.spd} km/h ${rel?REL_T[rel][0]:'del '+dirOf(w.dir)[0]}</b><small>${warn?esc(warn.txt):(rel&&rel!=='flojo'?REL_T[rel][1]+' · ':'')+'rachas '+w.gust+' · del '+dirOf(w.dir)[0]}</small></span><span class="lws">🔊</span>`;
+  if(el.__h!==html){el.__h=html;el.innerHTML=html}
+}
+function lwText(){const w=live.wx;const rel=windRel(w,live.hdg??null);live.wxSaidT=Date.now();live.wxSaidRel=rel;
+  return w.spd<8?`Viento flojo, ${w.spd} kilómetros por hora.`:`Viento del ${dirOf(w.dir)[0]} de ${w.spd} kilómetros por hora${rel?', '+REL_T[rel][1]:''}. Rachas de ${w.gust}.`}
+function lwSay(tap){
+  if(!live.wx){if(tap)toast('Buscando el viento…');return}
+  const t=lwText();if(tap&&!live.voice)toast('🌬️ '+t);speak(t);
+}
+function lwWarn(key,txt,voice,Q){
+  live.wxWarned=live.wxWarned||{};if(Date.now()-(live.wxWarned[key]||0)<45*60000)return;
+  live.wxWarned[key]=Date.now();live.wxWarn={txt,t:Date.now()};
+  toast(txt);vib([300,150,300]);Q.push(voice);   // se dice todo junto al final (una voz no corta a la otra)
+  if(document.visibilityState!=='visible')bgNotify(txt,live.rideTitle||'RideSafe IA',false);
+  lwRender();
+}
+async function lwTick(){
+  if(!live.on||live.paused)return;const Q=[];
+  const p=live.pts.at(-1);if(!p)return;
+  const h=liveHeading();
+  const w=live.wx,now=Date.now();
+  if(navigator.onLine&&!live.wxBusy&&(!w||now-w.t>15*60000||hav(w.ll,p)>8)){
+    live.wxBusy=true;
+    try{const n=await liveWx(p[0],p[1]);if(!live.on)return;n.t=now;n.ll=[p[0],p[1]];const first=!live.wx;const old=live.wx;live.wx=n;
+      lwRender();
+      if(first||Math.abs(n.spd-old.spd)>=8)Q.push(lwText());
+      // Incidencias
+      const strong=live.hike?60:45;
+      if(n.storm)lwWarn('storm','⛈️ Tormenta en la próxima hora','Atención. Hay tormenta prevista en la próxima hora. Busca un sitio para resguardarte.',Q);
+      else if(n.rain>0.3||n.pp>=60)lwWarn('rain',`🌧️ Lluvia ${n.rain>0.3?'ahora':'en la próxima hora ('+n.pp+'%)'}`,`Atención. ${n.rain>0.3?'Está lloviendo':'Es probable que llueva en la próxima hora'}. El suelo resbala: frena antes en las curvas.`,Q);
+      if(n.gmax>=strong||n.spd>=35)lwWarn('gust',`💨 Rachas fuertes de ${n.gmax} km/h`,`Atención. Rachas de viento de ${n.gmax} kilómetros por hora. Agarra fuerte el manillar en zonas abiertas y en las bajadas.`,Q);
+    }catch(e){console.warn('viento en ruta',e)}finally{live.wxBusy=false}
+  }
+  // Cambio de viento respecto a tu rumbo (giro de la carretera): lo dice si se mantiene
+  if(live.wx){const rel=windRel(live.wx,h);
+    if(rel&&rel!=='flojo'&&rel!==live.wxSaidRel){if(live.wxCand===rel&&now-(live.wxSaidT||0)>5*60000){live.wxCand=null;Q.push(rel==='contra'?`Ahora el viento ${REL_T.contra[1]}. Ve a rueda y reserva fuerzas.`:rel==='favor'?`Ahora el viento ${REL_T.favor[1]}.`:`Ahora el viento ${REL_T[rel][1]}.`);live.wxSaidRel=rel;live.wxSaidT=now}else live.wxCand=rel}
+    else live.wxCand=null;
+    lwRender();}
+  await lwBattery(Q);
+  if(Q.length&&live.on)speak(Q.join(' '));
+}
+/* Batería: aviso y ahorro automático */
+async function lwBattery(Q){
+  try{if(!navigator.getBattery)return;const b=live.bat||(live.bat=await navigator.getBattery());if(!live.on||b.charging)return;const l=Math.round(b.level*100);
+    if(l<=30&&!live.eco){live.eco=true;lwWarn('bat30',`🔋 Batería al ${l}%: ahorro activado`,`Batería al ${l} por ciento. Activo el ahorro de batería. Si quieres ahorrar más, pulsa la luna para apagar la pantalla.`,Q)}
+    if(l<=15)lwWarn('bat15',`🔋 Batería al ${l}%`,`Batería muy baja, al ${l} por ciento. Pon el modo ahorro con la luna. El GPS sigue grabando.`,Q);
+  }catch(e){}
+}
+function lwStart(){clearInterval(live.wxT);live.wxT=setInterval(lwTick,60000);setTimeout(lwTick,6000)}
+// Al volver a encender la pantalla: se pinta todo de una vez
+document.addEventListener('visibilitychange',()=>{if(live.on&&!lowPow()){try{setLine(map,live.pts,'track','#60A5FA');renderLive();lwRender()}catch(e){}}});
 
 function onFix(pos){
   if(!live.on)return;
@@ -5223,7 +5325,7 @@ function onFix(pos){
   // Mi punto en el mapa
   const ll=[c.longitude,c.latitude];
   if(!meMarker){const el=document.createElement('div');el.style.cssText='width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 8px rgba(37,99,235,.25)';meMarker=new maplibregl.Marker({element:el}).setLngLat(ll).addTo(map)}else meMarker.setLngLat(ll);
-  if(live.follow){const ph=document.querySelector('.lvpanel')?.offsetHeight||300,bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),duration:800,padding:{top:bh+20,bottom:ph,left:0,right:0}})}
+  if(live.follow&&!lowPow()&&now-(live.camT||0)>=(live.eco?5000:1800)){live.camT=now;const ph=document.querySelector('.lvpanel')?.offsetHeight||300,bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),duration:live.eco?600:1200,padding:{top:bh+20,bottom:ph,left:0,right:0}})}
   if(c.speed!=null&&c.speed>=0&&c.speed*3.6<90)live.speed=live.speed?live.speed*0.4+c.speed*3.6*0.6:c.speed*3.6;
   if(c.altitude!=null)live.alt=c.altitude;
   if(!live.paused){
@@ -5233,14 +5335,14 @@ function onFix(pos){
       if(last&&(d<0.5||(now>last[3]&&d/((now-last[3])/3600000)<55))){live.km+=d;if(c.speed==null&&now-last[3]>1500){const v=d/((now-last[3])/3600000);if(v<90)live.speed=live.speed?live.speed*0.5+v*0.5:v}}
       if(c.altitude!=null){if(live.lastAlt!=null){const dz=c.altitude-live.lastAlt;if(Math.abs(dz)>=3){if(dz>0)live.up+=dz;live.lastAlt=c.altitude}}else live.lastAlt=c.altitude}
       live.pts.push([p[0],p[1],c.altitude??null,now]);
-      if(live.pts.length<600||live.pts.length%3===0)setLine(map,live.pts,'track','#60A5FA');
+      if(!lowPow()&&now-(live.lineT||0)>=(live.eco?10000:3000)){live.lineT=now;setLine(map,live.pts,'track','#60A5FA')}
     }
   }
   if(live.nav)navUpdate(p);
   if(live.rideId)pushPos(p,now);
   if(live.catchTo)catchCheck(p,now);
   if(live.shareId)pushShare();
-  renderLive();
+  if(!lowPow()&&now-(live.rT||0)>800){live.rT=now;renderLive()}
 }
 
 /* Navegación: siguiente indicación, restante, fuera de ruta */
@@ -5307,7 +5409,7 @@ function checkStragglers(){
 const elapsed=()=>live.on?Math.max(0,(live.paused?live.pauseStart:Date.now())-live.startT-live.pausedMs):0;
 function clock(ms){const s=Math.floor(ms/1000);return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function renderLive(){
-  if(!live.on)return;
+  if(!live.on||lowPow())return;
   $('lvSpeed').textContent=live.paused?'—':Math.round(live.speed||0);
   $('lvKm').textContent=live.km.toFixed(2);
   $('lvTime').textContent=clock(elapsed());
@@ -5388,7 +5490,7 @@ async function stopLive(){
 }
 async function finishLive(save){
   saverOff();fallStop();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
-  navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);clearInterval(L.bkTimer);liveBackupClear();
+  navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);clearInterval(L.bkTimer);clearInterval(L.wxT);liveBackupClear();
   if(CAM.open){CAM.closeAfter=false;if(CAM.rec&&CAM.rec.state==='recording'){CAM.closeAfter=true;CAM.rec.stop()}else camClose()}
   (L.camMk||[]).forEach(m=>m.remove());
   try{L.wake&&L.wake.release()}catch(e){}

@@ -1,3 +1,11 @@
+## Versión 5.1 — Viento en ruta, avisos del tiempo y menos batería
+- Al grabar, debajo de la velocidad sale el viento: «22 km/h en contra / a favor / de costado», rachas y de dónde viene. La flecha indica cómo te da respecto a tu marcha.
+- Lo dice en voz al empezar y cuando cambia (al girar la carretera, si se mantiene). Tocando la tarjeta del viento lo repite.
+- Avisos en voz, vibración y notificación: 🌧️ lluvia en la próxima hora, ⛈️ tormenta, 💨 rachas fuertes (45 km/h en bici, 60 a pie) y 🔋 batería baja.
+- Se mira el tiempo cada 15 minutos o al avanzar 8 km (Open‑Meteo; si falla, MET Norway). Gasta muy pocos datos.
+- Ahorro de batería: con la pantalla apagada o en modo ahorro 🌙 no se pinta nada; el mapa se mueve cada 2 s en vez de cada segundo y la línea se redibuja cada 3 s.
+- Con la batería al 30% se activa solo el ahorro (el mapa se mueve cada 5 s). En la pantalla negra también sale el viento.
+
 ## Versión 5.0.2 — Más mapa en el diseñador
 - Botón «⌄ Ver más mapa» arriba de la tarjeta (o deslizarla hacia abajo): la tarjeta se queda en una barra fina abajo y se ve casi todo el mapa (también se oculta la barra de menús).
 - La barra muestra km y desnivel y tiene ↶ Deshacer, 🛣️/📏 Caminos o Recta y 🚵 Senderos. Se sigue tocando el mapa para añadir puntos.
