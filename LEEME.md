@@ -1,3 +1,9 @@
+## Versión 4.9 — Vídeo del recorrido en 3D para compartir
+- Actividades → la salida → «🎬 Vídeo 3D para WhatsApp y redes» (o dentro del 3D: «🎬 Crear vídeo…»).
+- Crea en el propio móvil un vídeo vertical (720×1280, 15-30 s) con el satélite en relieve, el punto que avanza, la línea por altitud, MÁX/MÍN, los datos y la marca RideSafe IA. Al final se aleja para ver la ruta entera.
+- Botones: 📤 Compartir (WhatsApp, Instagram, Facebook…) y 💾 Guardar.
+- No se sube a ningún sitio.
+
 ## Versión 4.8.1 — Arreglos tras la prueba
 - La foto con tus datos de una ruta a pie sale con el icono de senderista 🥾 (antes salía una bici).
 - Subir GPX: ahora pregunta si es una ruta para hacer (se guarda en «Mis rutas», se puede crear una salida o compartirla con el club) o una salida ya hecha (Actividades). Botón «📂 Subir una ruta GPX» también en «Mis rutas».
