@@ -703,6 +703,18 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .mv-bar .lime{background:#C8DC3C;color:#0E1A2B;border:0}
 .camPin{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#0E1A2B center/cover no-repeat;box-shadow:0 2px 8px rgba(0,0,0,.45);display:grid;place-items:center;font-size:14px;cursor:pointer}
 
+/* v4.9.1 — Pueblos y velocidad en el 3D */
+.r3-here{font-size:13px;font-weight:800;color:var(--lime);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
+.r3-here:empty{display:none}
+.r3-spd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.r3-spd span{font-size:12px;color:#9FB0C5;font-weight:700;flex-shrink:0;margin-right:2px}
+.r3-spd button{border:1px solid #2A3B55;background:#16263D;color:#fff;border-radius:16px;padding:8px 2px;white-space:nowrap;font:inherit;font-size:13px;font-weight:800}
+.r3-spd button.on{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+.r3-by{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;align-items:center}
+.r3-by:empty{display:none}
+.r3-by small{font-size:12px;color:#9FB0C5;font-weight:700;flex-shrink:0}
+.r3-by button{flex-shrink:0;border:0;background:rgba(200,220,60,.12);color:#E7F0A8;border-radius:14px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700}
+.r3-by button.on{background:var(--lime);color:var(--on-lime)}
 /* v4.9 — Vídeo del recorrido en 3D */
 .r3-vid{display:block;width:100%;margin-top:12px;min-height:50px;border-radius:25px;border:1px solid var(--lime);background:rgba(200,220,60,.12);color:var(--lime);font:inherit;font-weight:800;font-size:16px}
 #r3vBox,#r3vRes{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,9,15,.55)}
@@ -945,7 +957,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 4.9.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1117,10 +1129,12 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 
 <!-- Foto con tus datos -->
 <div id="r3d" role="dialog" aria-label="Recorrido en 3D"><div id="r3dMap"></div>
- <div class="r3-top"><div class="r3-card"><b id="r3Name">Recorrido</b><small id="r3Date"></small></div><button class="r3-x" onclick="close3D()" aria-label="Cerrar">✕</button></div>
+ <div class="r3-top"><div class="r3-card"><b id="r3Name">Recorrido</b><small id="r3Date"></small><div class="r3-here" id="r3Here"></div></div><button class="r3-x" onclick="close3D()" aria-label="Cerrar">✕</button></div>
  <div class="r3-side"><button id="r3Dim" onclick="toggle3DView()" aria-label="Ver en 3D o en plano">2D</button><button id="r3Sat" onclick="toggle3DSat()" aria-label="Satélite o mapa">🗺️</button></div>
  <div class="r3-bot"><div class="r3-row"><button class="r3-play" id="r3Play" onclick="play3D()" aria-label="Reproducir">▶</button><input type="range" id="r3Seek" min="0" max="1000" value="0" oninput="seek3D(this.value/1000)" aria-label="Avanzar el recorrido"></div>
   <div class="r3-st"><div><b id="r3Km">0,0</b><span>km</span></div><div><b id="r3T">0:00</b><span>tiempo</span></div><div><b id="r3Alt">—</b><span>m altitud</span></div><div><b id="r3V">—</b><span>km/h media</span></div></div>
+  <div class="r3-spd" id="r3Spd" aria-label="Velocidad"><button data-s="0.25" onclick="r3Speed(0.25)">🐢 Muy lenta</button><button data-s="0.5" onclick="r3Speed(0.5)">Lenta</button><button data-s="1" onclick="r3Speed(1)">Normal</button><button data-s="2" onclick="r3Speed(2)">⏩ Rápida</button></div>
+  <div class="r3-by" id="r3By"></div>
   <button class="r3-vid" onclick="rec3D()">🎬 Crear vídeo para WhatsApp y redes</button></div>
  <div id="r3vBox"><div class="r3v-card"><div class="r3v-dot"></div><h3 id="r3vMsg">Creando el vídeo…</h3><b id="r3vPct">0 %</b><button class="btn btn-line" onclick="r3vCancel()">Cancelar</button></div></div>
  <div id="r3vRes"></div>
@@ -2966,7 +2980,7 @@ async function syncActs(){
    línea fina coloreada por altitud, MÁX/MÍN y reproducción con la cámara siguiendo.
    Relieve: Terrain Tiles de AWS (gratis) · Satélite: Esri (el mismo de «Capas»).
    =================================================================== */
-let R3={map:null,a:null,c:null,cum:null,ele:null,t:0,play:false,raf:0,last:0,dur:20000,mk:null,b:null,flat:false,sat:true,lbls:[]};
+let R3={map:null,a:null,c:null,cum:null,ele:null,t:0,play:false,raf:0,last:0,dur:20000,mk:null,b:null,flat:false,sat:true,lbls:[],spd:1,zOff:0,places:[],plTok:0};
 function r3Ele(a,c,cum){
   const pd=a.pd||[],pe=a.pe||[];if(pd.length<2)return c.map(()=>null);
   const tot=cum.at(-1)||1,ptot=pd.at(-1)||tot;let j=0;
@@ -2985,7 +2999,7 @@ function open3D(id,autoRec){
   if(typeof maplibregl==='undefined'){toast('El mapa necesita conexión a internet');return}
   const c=decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
   const cum=cumDist(c);const ele=r3Ele(a,c,cum);
-  Object.assign(R3,{lbls:[],a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
+  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
   $('r3Dim').textContent='2D';$('r3Sat').textContent='🗺️';$('r3Play').textContent='▶';$('r3Seek').value=0;
   closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');
@@ -3008,7 +3022,8 @@ function open3D(id,autoRec){
       const el=document.createElement('div');el.className='r3-mk';R3.mk=new maplibregl.Marker({element:el}).setLngLat([c[0][1],c[0][0]]).addTo(m);
       const b=new maplibregl.LngLatBounds();c.forEach(p=>b.extend([p[1],p[0]]));R3.b=b;
       m.fitBounds(b,{padding:{top:120,bottom:50,left:50,right:90},pitch:0,duration:0});m.jumpTo({pitch:50,zoom:m.getZoom()-0.45});
-      r3Stats();
+      r3Stats();r3Speed(R3.spd,true);r3LoadPlaces();
+      m.on('zoom',e=>{if(e.originalEvent&&!R3V.on)R3.zOff=Math.max(-3,Math.min(3,m.getZoom()-r3Z()))});
       if(autoRec)setTimeout(rec3D,1800);
     });
     m.on('error',e=>console.warn('3d',e&&e.error));
@@ -3018,19 +3033,19 @@ function r3At(t){const c=R3.c,cum=R3.cum,tot=cum.at(-1);const d=t*tot;let i=1;wh
   return{lat:c[i-1][0]+(c[i][0]-c[i-1][0])*f,lng:c[i-1][1]+(c[i][1]-c[i-1][1])*f,i,e:R3.ele[i-1]!=null?R3.ele[i-1]+((R3.ele[i]??R3.ele[i-1])-R3.ele[i-1])*f:null}}
 function r3Stats(){const a=R3.a,t=R3.t,km=(a.km||R3.cum.at(-1))*t,mins=(a.mins||0)*t;const p=r3At(t);
   $('r3Km').textContent=fmtNum(km,1);$('r3T').textContent=Math.floor(mins/60)+':'+String(Math.round(mins%60)).padStart(2,'0');
-  $('r3Alt').textContent=p.e!=null?Math.round(p.e):'—';$('r3V').textContent=a.mins?fmtNum(a.km/(a.mins/60),1):'—'}
+  $('r3Alt').textContent=p.e!=null?Math.round(p.e):'—';r3HereUpd(R3.t*(R3.cum.at(-1)||0));$('r3V').textContent=a.mins?fmtNum(a.km/(a.mins/60),1):'—'}
 function r3Frame(follow){
   const m=R3.map;if(!m||!R3.mk)return;const p=r3At(R3.t);R3.mk.setLngLat([p.lng,p.lat]);
   if(follow){const q=r3At(Math.min(1,R3.t+0.02));let br=bearing([p.lat,p.lng],[q.lat,q.lng]);const cur=m.getBearing();let d=((br-cur+540)%360)-180;
-    m.jumpTo({center:[p.lng,p.lat],bearing:cur+d*0.06,pitch:R3.flat?0:62,zoom:R3.flat?14:14.6})}
+    m.jumpTo({center:[p.lng,p.lat],bearing:cur+d*0.06,pitch:R3.flat?0:62,zoom:r3Z()+(R3V.on?0:R3.zOff)})}
   r3Stats();$('r3Seek').value=Math.round(R3.t*1000);
 }
-function r3Loop(ts){if(!R3.play)return;if(!R3.last)R3.last=ts;const dt=ts-R3.last;R3.last=ts;R3.t=Math.min(1,R3.t+dt/R3.dur);r3Frame(true);
+function r3Loop(ts){if(!R3.play)return;if(!R3.last)R3.last=ts;const dt=ts-R3.last;R3.last=ts;R3.t=Math.min(1,R3.t+dt/(R3.dur/R3.spd));r3Frame(true);
   if(R3.t>=1){R3.play=false;$('r3Play').textContent='↺';if(R3.b){const m=R3.map;const cam=m.cameraForBounds(R3.b,{padding:{top:120,bottom:50,left:50,right:90}});if(cam)m.easeTo({center:cam.center,zoom:cam.zoom-(R3.flat?0:0.45),bearing:0,pitch:R3.flat?0:50,duration:1500})}return}
   R3.raf=requestAnimationFrame(r3Loop)}
 function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶';return}
   if(R3.t>=1)R3.t=0;R3.play=true;R3.last=0;$('r3Play').textContent='❚❚';const p=r3At(R3.t);
-  R3.map.easeTo({center:[p.lng,p.lat],zoom:R3.flat?14:14.6,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
+  R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
 function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
 function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;m.setLayoutProperty('sat','visibility',R3.sat?'visible':'none');m.setLayoutProperty('osm','visibility',R3.sat?'none':'visible');$('r3Sat').textContent=R3.sat?'🗺️':'🛰️'}
@@ -3040,6 +3055,34 @@ function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimatio
    Se graba en el propio móvil (vertical 720×1280) con el mapa, el punto que avanza,
    los datos (km, tiempo, altitud, media) y la marca RideSafe IA. No se sube a ningún sitio.
    =================================================================== */
+
+/* v4.9.1 — Pueblos y carreteras por donde pasaste + velocidad del 3D */
+function r3Z(){return R3.flat?14:(R3.spd<=0.25?15.6:R3.spd<=0.5?15.1:R3.spd>=2?14.1:14.6)}
+function r3Speed(v,quiet){R3.spd=v;store.set('r3spd',v);document.querySelectorAll('#r3Spd button').forEach(b=>b.classList.toggle('on',+b.dataset.s===v));R3.zOff=0;
+  if(!quiet&&R3.map&&R3.mk){const p=r3At(R3.t);if(R3.play||R3.t>0)R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z(),duration:600});toast(v<1?'🐢 Más despacio y más cerca':v>1?'⏩ Más rápido':'Velocidad normal')}}
+async function r3LoadPlaces(){
+  const a=R3.a,tok=R3.plTok;if(!a)return;
+  if(a.places&&a.places.length){R3.places=a.places;r3ByRender();return}
+  const c=R3.c,cum=R3.cum,tot=cum.at(-1);if(!tot)return;
+  const step=Math.max(1.5,tot/24);const out=[];
+  for(let d=0;d<=tot+0.01;d+=step){
+    if(R3.plTok!==tok||!R3.map)return;
+    const i=Math.min(c.length-1,cum.findIndex(x=>x>=Math.min(d,tot))<0?c.length-1:cum.findIndex(x=>x>=Math.min(d,tot)));
+    try{const j=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=16&accept-language=es&lat=${c[i][0].toFixed(5)}&lon=${c[i][1].toFixed(5)}`)).json();
+      const ad=(j&&j.address)||{};const town=ad.village||ad.town||ad.city||ad.hamlet||ad.municipality||'';const road=ad.road||'';
+      if(town||road){out.push({d:+d.toFixed(1),n:town,r:road});R3.places=out.slice();r3ByRender();r3Stats()}}catch(e){}
+    await new Promise(r=>setTimeout(r,1100));   // Nominatim: como mucho 1 consulta por segundo
+  }
+  if(out.length&&R3.plTok===tok){a.places=out;store.set('acts',acts);try{saveActRemote(a)}catch(e){}}
+}
+function r3HereTxt(km){const P=R3.places||[];if(!P.length)return '';let b=null;for(const q of P){if(q.d<=km+0.3)b=q;else break}if(!b)b=P[0];
+  return b.n&&b.r?b.r+' · '+b.n:(b.n||b.r||'')}
+function r3HereUpd(km){const e=$('r3Here');if(!e)return;const t=r3HereTxt(km);const v=t?'📍 '+t:'';if(e.textContent!==v)e.textContent=v;
+  const bs=[...document.querySelectorAll('#r3By button')];let cur=null;bs.forEach(b=>{if(+b.dataset.d<=km+0.3)cur=b});bs.forEach(b=>b.classList.toggle('on',b===cur))}
+function r3Towns(){const out=[];(R3.places||[]).forEach(q=>{if(q.n&&out.at(-1)!==q.n)out.push(q.n)});return out}
+function r3ByRender(){const e=$('r3By');if(!e)return;const seen=[];const items=[];(R3.places||[]).forEach(q=>{if(q.n&&seen.at(-1)!==q.n){seen.push(q.n);items.push(q)}});
+  e.innerHTML=items.length?'<small>Pasaste por:</small>'+items.map(q=>`<button data-d="${q.d}" onclick="r3GoKm(${q.d})">${esc(q.n)}</button>`).join(''):''}
+function r3GoKm(km){const tot=R3.cum.at(-1)||1;seek3D(Math.max(0,Math.min(1,km/tot)));}
 const R3V={on:false,rec:null,chunks:[],raf:0,cv:null,blob:null,mime:'',logo:null,cancel:false,url:null};
 function r3vMime(){const L=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];return (window.MediaRecorder&&MediaRecorder.isTypeSupported&&L.find(t=>MediaRecorder.isTypeSupported(t)))||''}
 function r3vRound(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
@@ -3067,6 +3110,10 @@ function r3vDraw(endHold){
   g.fillStyle='#fff';g.font='800 34px "Plus Jakarta Sans",sans-serif';g.fillText('RideSafe',114,84);const rw=g.measureText('RideSafe ').width;g.fillStyle='#C8DC3C';g.fillText('IA',114+rw,84);
   const a=R3.a;let nm=a.name||'Salida';g.font='800 40px "Plus Jakarta Sans",sans-serif';g.fillStyle='#fff';while(g.measureText(nm).width>W-72&&nm.length>4)nm=nm.slice(0,-2);if(nm!==(a.name||'Salida'))nm+='…';
   g.fillText(nm,36,160);g.font='600 26px "Plus Jakarta Sans",sans-serif';g.fillStyle='#C9D3E0';g.fillText(fmtDate(a.date)+(a.sport==='hike'?' · 🥾 a pie':''),36,200);
+  const here=r3HereTxt((R3.cum.at(-1)||0)*(endHold?1:R3.t));if(here&&!endHold){g.font='800 28px "Plus Jakarta Sans",sans-serif';let ht='📍 '+here;while(g.measureText(ht).width>W-72&&ht.length>6)ht=ht.slice(0,-2);g.fillStyle='rgba(11,20,34,.75)';const hw=g.measureText(ht).width+28;r3vRound(g,30,222,hw,46,23);g.fill();g.fillStyle='#C8DC3C';g.fillText(ht,44,255)}
+  if(endHold){const tw=r3Towns();if(tw.length>1){g.font='800 26px "Plus Jakarta Sans",sans-serif';const lines=[];let cur='';tw.forEach((n,i)=>{const piece=(i?' → ':'')+n;if(g.measureText(cur+piece).width>W-120&&cur){lines.push(cur);cur=n}else cur+=piece});if(cur)lines.push(cur);
+    const bh=70+lines.length*38;const by=H-360-bh;g.fillStyle='rgba(11,20,34,.85)';r3vRound(g,36,by,W-72,bh,22);g.fill();g.fillStyle='#A9B6C8';g.font='700 22px "Plus Jakarta Sans",sans-serif';g.fillText('POR DÓNDE HAS PASADO',60,by+42);
+    g.fillStyle='#fff';g.font='800 26px "Plus Jakarta Sans",sans-serif';lines.forEach((l,i)=>g.fillText(l,60,by+84+i*38))}}
   // pie con datos
   gr=g.createLinearGradient(0,H-330,0,H);gr.addColorStop(0,'rgba(8,14,24,0)');gr.addColorStop(.35,'rgba(8,14,24,.88)');gr.addColorStop(1,'rgba(8,14,24,.96)');g.fillStyle=gr;g.fillRect(0,H-330,W,330);
   const t=endHold?1:R3.t,km=(a.km||R3.cum.at(-1))*t,mins=(a.mins||0)*t;
@@ -3087,7 +3134,7 @@ async function rec3D(){
   R3V.on=true;R3V.cancel=false;R3V.chunks=[];R3V.mime=mime;$('r3vBox').classList.add('show');$('r3vPct').textContent='0 %';$('r3vMsg').textContent='Preparando el mapa…';
   try{if('wakeLock' in navigator)R3V.wake=await navigator.wakeLock.request('screen')}catch(e){}
   // vista inicial y unos segundos para que carguen las imágenes del satélite
-  const p0=r3At(0);m.jumpTo({center:[p0.lng,p0.lat],zoom:R3.flat?14:14.6,pitch:R3.flat?0:62});
+  const p0=r3At(0);m.jumpTo({center:[p0.lng,p0.lat],zoom:r3Z(),pitch:R3.flat?0:62});
   await new Promise(r=>setTimeout(r,2200));if(R3V.cancel){r3vEnd(true);return}
   const stream=cv.captureStream(30);
   let rec;try{rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5000000})}catch(e){r3vEnd(true);toast('No se pudo crear el vídeo');return}
@@ -3095,7 +3142,7 @@ async function rec3D(){
   rec.onstop=()=>{const type=(rec.mimeType||mime).split(';')[0];const blob=new Blob(R3V.chunks,{type});R3V.chunks=[];if(R3V.cancel||!blob.size){r3vEnd(true);return}R3V.blob=blob;r3vEnd(false);r3vShow()};
   $('r3vMsg').textContent='Creando el vídeo… no cierres la app';
   rec.start(500);
-  const dur=Math.max(15000,Math.min(30000,R3.dur));let last=0,hold=0;
+  const dur=Math.max(15000,Math.min(90000,R3.dur/R3.spd));let last=0,hold=0;
   const loop=ts=>{if(!R3V.on)return;if(R3V.cancel){try{rec.stop()}catch(e){}return}
     if(!last)last=ts;const dt=Math.min(100,ts-last);last=ts;
     if(R3.t<1){R3.t=Math.min(1,R3.t+dt/dur);r3Frame(true);r3vDraw(false)}

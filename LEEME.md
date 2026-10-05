@@ -1,3 +1,10 @@
+## Versión 4.9.1 — Por dónde pasaste y velocidad en el 3D
+- Arriba sale por dónde vas en cada momento: «📍 A-364 · Arahal» (carretera y pueblo).
+- Abajo, «Pasaste por:» con los pueblos de la ruta; al tocar uno, el 3D salta a ese punto.
+- Velocidad: 🐢 Muy lenta · Lenta · Normal · ⏩ Rápida. Más despacio = cámara más cerca (más detalle). Se puede acercar o alejar con dos dedos.
+- El vídeo para compartir usa la velocidad elegida (hasta 90 s), lleva el pueblo por el que pasas y al final «Por dónde has pasado».
+- Los pueblos se buscan una sola vez por salida y se guardan.
+
 ## Versión 4.9 — Vídeo del recorrido en 3D para compartir
 - Actividades → la salida → «🎬 Vídeo 3D para WhatsApp y redes» (o dentro del 3D: «🎬 Crear vídeo…»).
 - Crea en el propio móvil un vídeo vertical (720×1280, 15-30 s) con el satélite en relieve, el punto que avanza, la línea por altitud, MÁX/MÍN, los datos y la marca RideSafe IA. Al final se aleja para ver la ruta entera.
