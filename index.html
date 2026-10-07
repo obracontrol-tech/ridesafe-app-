@@ -634,6 +634,18 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
 .pdown{display:block;margin:-4px auto 6px;min-height:30px;padding:2px 18px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--txt2);font-family:inherit;font-weight:800;font-size:13.5px;touch-action:manipulation}
 #pTiny{display:none}
+/* v5.4 — Revisión antes de salir */
+.rv-sem{display:flex;gap:12px;align-items:flex-start;border:2px solid;border-radius:18px;padding:12px 14px;margin:0 0 10px;background:var(--card2)}
+.rv-sem .rv-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:2px;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+.rv-sem b{display:block;font-size:18px;font-weight:900}.rv-sem small{display:block;margin-top:4px;font-size:14px;line-height:1.5;color:var(--txt)}
+.rv-rel{font-size:13px;color:var(--txt2);margin:0 2px 12px;line-height:1.45}.rv-rel b{color:var(--txt)}
+.rv-hrs{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.rv-h{display:grid;grid-template-columns:48px 26px 40px 1fr 1fr 1fr;align-items:center;gap:4px;font-size:14px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.rv-h:last-child{border-bottom:0}.rv-h .rv-i{font-size:18px}.rv-bad{color:#F97316;font-weight:800}
+.rv-ck{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.rv-ck label{display:flex;align-items:center;gap:10px;min-height:42px;font-size:15px;cursor:pointer}
+.rv-ck input{width:22px;height:22px;accent-color:var(--lime);flex-shrink:0}
+.rv-ck input:checked+span{color:var(--txt2);text-decoration:line-through}
 /* v5.0.2 — Tarjeta recogida: solo una barra fina abajo y el mapa casi entero */
 #s-rutas.planning #planPanel.tiny{bottom:calc(10px + env(safe-area-inset-bottom));left:10px;right:10px;padding:8px;border-radius:22px;overflow:visible;max-height:none}
 #s-rutas #planPanel.tiny.tiny.tiny.tiny>*:not(#pTiny){display:none!important}
@@ -1005,7 +1017,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1604,7 +1616,8 @@ async function openRide(id,keep){
    ${r.route?`<div class="pstats" style="margin-top:0"><div><b class="num">${r.route.km}</b><span>km</span></div><div><b class="num">+${r.route.up}</b><span>m subida</span></div><div><b class="num">−${r.route.down}</b><span>m bajada</span></div><div><b class="num" style="font-size:16px">${hm(r.route.mins)}</b><span>aprox.</span></div></div>${profileSVG(unpackRoute(r.route).prof)}<button class="btn btn-line" style="margin:8px 0 14px" onclick="showRoute(unpackRoute(rides.find(x=>x.id===${jsq(r.id)}).route))">🗺️ Ver la ruta en el mapa grande</button>`:''}
    <div class="li" style="margin-bottom:10px;cursor:default"><span class="em">🚩</span><div><small>Punto de salida</small><b>${esc(r.start)}</b></div><button class="mini" onclick="guideKey(${gdKey(r.start,r.startLL)},${jsq(r.id)})">🧭 Cómo llegar</button></div>
    <div class="li" style="margin-bottom:16px;cursor:default"><span class="em">📍</span><div><small>Punto de encuentro${r.meetHour?' · '+esc(r.meetHour):''}</small><b>${esc(meetPt)}</b></div><button class="mini" onclick="guideKey(${gdKey(meetPt,r.meetLL||(r.meet?null:r.startLL))},${jsq(r.id)})">🧭 Cómo llegar</button></div>
-   ${rideLL(r)?'<div class="li" id="wxBox" style="cursor:default;margin-bottom:16px"><span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Consultando…</small></div></div>':''}
+   ${rideLL(r)?'<div class="li" id="wxBox" style="cursor:default;margin-bottom:8px"><span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Consultando…</small></div></div>':''}
+   ${r.date>=iso(new Date())?`<button class="btn btn-line" style="width:100%;margin:0 0 16px;border-color:var(--lime);color:var(--lime)" onclick="openReview(${jsq(r.id)})">✅ Revisión antes de salir · tiempo y lista</button>`:''}
    <div class="chips" style="margin-bottom:14px">${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.pace?`<span class="tag">Ritmo ${esc(String(r.pace).toLowerCase())}</span>`:''}<span class="tag">${r.seats?p.length+'/'+r.seats+' plazas':'Sin límite de plazas'}</span><span class="tag">Organiza ${esc(r.by)}</span></div>
    ${r.plan&&r.plan.text?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Recorrido</span><b>🧭 Recorrido previsto</b></div><div class="rp-route">${[...(r.start?[r.start.split(',')[0]]:[]),...(r.plan.points||[]),...(r.plan.back?[r.plan.back]:[])].map((x,i,a)=>`<span class="rp-stop${i===0||i===a.length-1?' end':''}">${esc(x)}</span>`).join('<span class="rp-arr">→</span>')}</div></div>`:''}
    ${r.stop&&r.stop.place?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Parada</span><b>${STOP_ICO[r.stop.type]||'☕'} Parada prevista</b></div><b style="display:block;font-size:17px;margin-top:6px">${esc(r.stop.type)} en ${esc(r.stop.place)}</b><small style="color:var(--txt2)">${r.stop.hour?'Hora aproximada: '+esc(r.stop.hour):''}${r.stop.note?(r.stop.hour?' · ':'')+esc(r.stop.note):''}</small></div>`:''}
@@ -2909,6 +2922,103 @@ async function fillWxDetail(r){
   if(w.far){box.innerHTML='<span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Disponible 15 días antes de la salida</small></div>';return}
   const warn=[];if(w.rain>=50)warn.push('probable lluvia');if(w.gust>=40)warn.push('rachas fuertes');if(w.tmax>=33)warn.push('mucho calor: lleva agua');if(w.t<=3)warn.push('frío: abrígate');
   box.innerHTML=`<span class="em">${wxIcon(w.code)}</span><div><b>${w.t}°${w.tmax>w.t?' → '+w.tmax+'°':''} · lluvia ${w.rain}%</b><small>💨 Viento del ${wxDir(w.dir)} ${w.wind} km/h (rachas ${w.gust})${warn.length?'<br><span style="color:var(--bronze);font-weight:700">⚠️ '+warn.join(' · ')+'</span>':''}</small></div>`;
+}
+
+/* ===== v5.4 — REVISIÓN ANTES DE SALIR =====
+   Para las salidas programadas con días de antelación: se vuelve a mirar el tiempo (3 modelos),
+   se compara con la última vez que lo miraste, semáforo, hora a hora, luz del día y lista de cosas. */
+const RV_CHECK=[['ruedas','🛞 Ruedas y presión'],['frenos','🛑 Frenos'],['cadena','⛓️ Cadena limpia y engrasada'],['luces','🔦 Luces cargadas'],
+  ['kit','🔧 Cámara, desmontables y bomba'],['agua','💧 Bidones llenos'],['comida','🍌 Comida o geles'],['movil','📱 Móvil cargado y RideSafe IA'],['casco','⛑️ Casco y gafas'],['dni','🪪 DNI, tarjeta sanitaria y algo de dinero']];
+const RV_HIKE=[['calzado','🥾 Calzado de montaña'],['agua','💧 Agua (1 l cada 2 h)'],['comida','🍎 Comida'],['movil','📱 Móvil cargado y RideSafe IA'],['botiquin','🩹 Botiquín pequeño'],['frontal','🔦 Frontal'],['dni','🪪 DNI y tarjeta sanitaria']];
+async function rvForecast(r){
+  const ll=rideLL(r);if(!ll)return null;
+  const days=(new Date(r.date+'T'+(r.hour||'09:00'))-new Date())/86400000;
+  if(days>15)return{far:true,days};
+  const hrs=Math.max(1,Math.ceil(((r.route&&r.route.mins)||(r.km?r.km/(isHikeRide(r)?4.5:20)*60:180))/60));
+  const q=`latitude=${ll.lat.toFixed(3)}&longitude=${ll.lng.toFixed(3)}&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&daily=sunrise,sunset&timezone=auto&start_date=${r.date}&end_date=${r.date}`;
+  const [b,m]=await Promise.allSettled([omJSON('https://api.open-meteo.com/v1/forecast?'+q),days<=4?getJSON(omUrl(ll.lat,ll.lng,`hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,weather_code&start_date=${r.date}&end_date=${r.date}`),9000):Promise.reject('lejos')]);
+  if(b.status!=='fulfilled')throw b.reason;
+  const H=b.value.hourly,D=b.value.daily||{};const i0=Math.max(0,H.time.findIndex(t=>t.slice(11,13)===String(r.hour||'09').slice(0,2)));
+  const M=m.status==='fulfilled'?m.value.hourly:null;
+  const rows=[];
+  for(let i=i0;i<Math.min(H.time.length,i0+hrs+1);i++){
+    let wind=H.wind_speed_10m[i],gust=H.wind_gusts_10m[i],dir=H.wind_direction_10m[i],models=1,rainN=null,rainOf=null;
+    if(M){const j=M.time.indexOf(H.time[i]);if(j>=0){const sp=omVals(M,'wind_speed_10m',j);if(sp.length>=2){wind=median(sp);dir=dirMean(omVals(M,'wind_direction_10m',j),sp);gust=Math.max(gust||0,vmax(omVals(M,'wind_gusts_10m',j))||0);models=sp.length}
+      const rc=omRainCount(M,j,j+1);if(rc.of>=2){rainN=rc.n;rainOf=rc.of}}}
+    rows.push({h:H.time[i].slice(11,16),t:Math.round(H.temperature_2m[i]),feel:Math.round(H.apparent_temperature[i]),pp:Math.round(H.precipitation_probability[i]||0),mm:H.precipitation[i]||0,code:H.weather_code[i]||0,wind:Math.round(wind||0),gust:Math.round(gust||0),dir:Math.round(dir||0),models,rainN,rainOf});
+  }
+  if(!rows.length)throw new Error('sin horas');
+  const mx=k=>Math.max(...rows.map(x=>x[k])),mn=k=>Math.min(...rows.map(x=>x[k]));
+  const rainModels=rows.some(x=>x.rainN!=null)?Math.max(...rows.map(x=>x.rainN||0)):null,rainOf=rows.find(x=>x.rainOf)?.rainOf||null;
+  const end=new Date(new Date(r.date+'T'+(r.hour||'09:00')).getTime()+hrs*3600000);
+  return{days,rows,hrs,end,sunrise:(D.sunrise||[])[0]||null,sunset:(D.sunset||[])[0]||null,
+    sum:{pp:mx('pp'),mm:+rows.reduce((s,x)=>s+x.mm,0).toFixed(1),gust:mx('gust'),wind:Math.round(rows.reduce((s,x)=>s+x.wind,0)/rows.length),tmin:mn('t'),tmax:mx('t'),feelmin:mn('feel'),storm:rows.some(x=>x.code>=95),code:rows[0].code,dir:rows[0].dir,rainModels,rainOf,models:Math.max(...rows.map(x=>x.models))}};
+}
+function rvVerdict(F,hike){
+  const s=F.sum,bad=[],warn=[];
+  if(s.storm)bad.push('⛈️ Tormenta prevista');
+  if(s.gust>=(hike?70:55))bad.push(`💨 Rachas muy fuertes (${s.gust} km/h)`);else if(s.gust>=(hike?50:40))warn.push(`💨 Rachas de ${s.gust} km/h`);
+  if(s.pp>=70||(s.rainModels!=null&&s.rainModels>=2&&s.mm>=2))bad.push(`🌧️ Lluvia muy probable (${s.pp}%${s.mm?', '+s.mm+' mm':''})`);else if(s.pp>=40||(s.rainModels||0)>=1)warn.push(`🌦️ Puede llover (${s.pp}%)`);
+  if(s.tmax>=35)bad.push(`🥵 Mucho calor (${s.tmax}°)`);else if(s.tmax>=30)warn.push(`☀️ Calor (${s.tmax}°): más agua`);
+  if(s.feelmin<=0)bad.push(`🥶 Sensación de ${s.feelmin}° (hielo en la carretera)`);else if(s.feelmin<=6)warn.push(`🧤 Frío: sensación de ${s.feelmin}°`);
+  if(F.sunset){const ss=new Date(F.sunset);if(F.end>ss)warn.push(`🌇 Llegaríais después de la puesta de sol (${F.sunset.slice(11,16)}): luces`)}
+  if(F.sunrise){const sr=new Date(F.sunrise);const st=new Date(F.end.getTime()-F.hrs*3600000);if(st<sr)warn.push(`🌅 Salís antes del amanecer (${F.sunrise.slice(11,16)}): luces`)}
+  const lvl=bad.length?'red':warn.length?'amber':'green';
+  return{lvl,bad,warn,title:lvl==='red'?'Mejor aplazar o acortar':lvl==='amber'?'Se puede salir, con precaución':'Buen día para salir'};
+}
+function rvChanges(r,s){
+  const k='rv_'+r.id,old=store.get(k,null);
+  const now={t:Date.now(),pp:s.pp,gust:s.gust,wind:s.wind,tmax:s.tmax,tmin:s.tmin,date:r.date,hour:r.hour};
+  store.set(k,now);
+  if(!old||old.date!==r.date||old.hour!==r.hour)return null;
+  const ch=[];const d=(a,b,u,lbl,th,worseUp)=>{if(Math.abs(b-a)>=th)ch.push(`${(b>a)===worseUp?'🔺':'🔻'} ${lbl}: ${a}${u} → <b>${b}${u}</b>`)};
+  d(old.pp,s.pp,'%','Lluvia',15,true);d(old.gust,s.gust,' km/h','Rachas',10,true);d(old.wind,s.wind,' km/h','Viento',8,true);d(old.tmax,s.tmax,'°','Máxima',3,true);d(old.tmin,s.tmin,'°','Mínima',3,false);
+  const ago=Math.round((Date.now()-old.t)/3600000);
+  return{ago:ago<1?'hace menos de 1 hora':ago<48?'hace '+ago+' h':'hace '+Math.round(ago/24)+' días',ch};
+}
+async function openReview(id){
+  const r=rides.find(x=>x.id===id);if(!r){toast('No encuentro esa salida');return}
+  const hike=isHikeRide(r);
+  $('rideBody').innerHTML=sheetHead('✅ Revisión antes de salir')+`<p style="color:var(--txt2);margin:-8px 0 12px">${esc(r.title||'Salida en grupo')} · ${esc(fmtDate(r.date))} · ${esc(r.hour||'')}</p><div id="rvBody"><div class="empty">Mirando la última previsión…</div></div>`;
+  openRideId=null;openSheet('sh-ride');
+  let F;try{F=await rvForecast(r)}catch(e){console.warn('revisión',e);$('rvBody').innerHTML='<div class="empty">No se pudo consultar el tiempo. Revisa la conexión e inténtalo otra vez.</div>'+rvBtns(r);return}
+  if(!F){$('rvBody').innerHTML='<div class="empty">Esta salida no tiene punto de salida en el mapa, así que no puedo mirar el tiempo.</div>'+rvChecklist(r,hike,null)+rvBtns(r);return}
+  if(F.far){$('rvBody').innerHTML=`<div class="plc"><b>Todavía es pronto</b><p style="color:var(--txt2);margin-top:4px">Faltan ${Math.round(F.days)} días. La previsión llega a 15 días; vuelve a mirarla unos días antes.</p></div>`+rvChecklist(r,hike,null)+rvBtns(r);return}
+  const V=rvVerdict(F,hike),s=F.sum,C=rvChanges(r,s);
+  const d=F.days,rel=d>4?['🟠 Orientativa','Faltan '+Math.round(d)+' días: la previsión aún puede cambiar bastante. Vuelve a mirarla la víspera.']:d>2?['🟡 Bastante fiable','Faltan '+Math.round(d)+' días. Mírala otra vez la víspera.']:d>0.6?['🟢 Fiable','Mañana o pasado: la previsión ya acierta bastante.']:['🟢 Muy fiable','Es hoy: previsión de las próximas horas.'];
+  const col={green:'#22C55E',amber:'#F59E0B',red:'#EF4444'}[V.lvl];
+  const wi=r.route&&r.route.poly&&s.wind>=8?routeWind(decodePoly(r.route.poly),s.dir):null;
+  $('rvBody').innerHTML=`
+   <div class="rv-sem" style="border-color:${col}"><span class="rv-dot" style="background:${col}"></span><div><b>${V.title}</b><small>${[...V.bad,...V.warn].map(esc).join('<br>')||'Sin avisos para las horas de la salida'}</small></div></div>
+   <div class="rv-rel"><b>${rel[0]}</b> · ${rel[1]}${s.models>=2?'<br>Viento y lluvia cruzando 3 modelos (ECMWF, ICON, Météo‑France).':''}</div>
+   ${C?`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Cambios</span><b>Desde tu última revisión (${C.ago})</b></div><p style="margin-top:6px;font-size:14px;line-height:1.6">${C.ch.length?C.ch.join('<br>'):'✓ Sin cambios importantes'}</p></div>`:''}
+   <div class="pstats" style="margin:0 0 12px"><div><b class="num">${s.tmin}°/${s.tmax}°</b><span>temperatura</span></div><div><b class="num">${s.pp}%</b><span>lluvia</span></div><div><b class="num">${s.wind}</b><span>viento km/h</span></div><div><b class="num">${s.gust}</b><span>rachas</span></div></div>
+   ${wi?`<div class="li" style="cursor:default;margin-bottom:12px"><span class="em">🌬️</span><div><b>Viento del ${esc(wxDir(s.dir))} en tu ruta</b><small>Primera mitad ${RW[wi.ida]} · segunda mitad ${RW[wi.vuelta]}</small></div></div>`:''}
+   <div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Hora a hora</span><b>Durante la salida</b></div>
+    <div class="rv-hrs">${F.rows.map(x=>`<div class="rv-h"><b>${x.h}</b><span class="rv-i">${wxIcon(x.code)}</span><span>${x.t}°</span><span class="${x.pp>=50?'rv-bad':''}">💧${x.pp}%</span><span class="rv-w"><i style="display:inline-block;transform:rotate(${(x.dir+180)%360}deg)">↑</i> ${x.wind}</span><span class="${x.gust>=40?'rv-bad':''}">↯${x.gust}</span></div>`).join('')}</div>
+    <small style="display:block;color:var(--txt2);margin-top:6px">💧 probabilidad de lluvia · viento y ↯ rachas en km/h · la flecha indica hacia dónde sopla${F.sunset?' · 🌇 puesta de sol '+F.sunset.slice(11,16):''}</small></div>
+   ${rvChecklist(r,hike,s)}${rvBtns(r,V,s)}`;
+}
+function rvChecklist(r,hike,s){
+  const key='rvc_'+r.id,done=store.get(key,{});
+  const L=[...(hike?RV_HIKE:RV_CHECK)];
+  if(s){if(s.pp>=40)L.unshift(['chub','🧥 Chubasquero (puede llover)']);if(s.feelmin<=8)L.unshift(['abrigo','🧤 Guantes, manguitos y cortavientos (frío)']);if(s.tmax>=28)L.unshift(['solar','🧴 Crema solar y agua extra (calor)'])}
+  const n=L.filter(([k])=>done[k]).length;
+  return `<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Lista</span><b>Antes de salir (${n}/${L.length})</b></div>
+   <div class="rv-ck">${L.map(([k,t])=>`<label><input type="checkbox" ${done[k]?'checked':''} onchange="rvTick(${jsq(r.id)},${jsq(k)},this.checked)"><span>${esc(t)}</span></label>`).join('')}</div></div>`;
+}
+function rvTick(id,k,on){const key='rvc_'+id,d=store.get(key,{});if(on)d[k]=1;else delete d[k];store.set(key,d);vib(10);
+  const b=document.querySelector('.rv-ck')?.closest('.plc')?.querySelector('.pc-h b');if(b){const t=document.querySelectorAll('.rv-ck input').length,n=document.querySelectorAll('.rv-ck input:checked').length;b.textContent=`Antes de salir (${n}/${t})`}}
+function rvBtns(r,V,s){
+  return `<div style="display:grid;gap:8px;margin-top:4px">${V?`<button class="btn btn-lime" onclick="rvShare(${jsq(r.id)})">📲 Mandar el parte al grupo (WhatsApp)</button>`:''}
+   <button class="btn btn-line" onclick="openReview(${jsq(r.id)})">🔄 Volver a mirar</button>
+   <button class="btn" style="color:var(--txt2)" onclick="openRide(${jsq(r.id)})">← Volver a la salida</button></div>`;
+}
+async function rvShare(id){
+  const r=rides.find(x=>x.id===id);if(!r)return;let F;try{F=await rvForecast(r)}catch(e){toast('Sin conexión');return}if(!F||F.far)return;
+  const V=rvVerdict(F,isHikeRide(r)),s=F.sum;const ico={green:'🟢',amber:'🟡',red:'🔴'}[V.lvl];
+  const t=`${ico} *Parte para la salida* — ${r.title||'Salida en grupo'}\n📅 ${fmtDate(r.date)} · ${r.hour}\n🌡️ ${s.tmin}° a ${s.tmax}° · 💧 lluvia ${s.pp}% · 💨 ${s.wind} km/h (rachas ${s.gust})\n${V.title}${[...V.bad,...V.warn].length?'\n'+[...V.bad,...V.warn].join('\n'):''}\n\nMás detalles en RideSafe IA: ${appUrl()}#revisar=${r.id}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 
 /* ---- Añadir al calendario ---- */
@@ -6074,6 +6184,8 @@ function startFirebase(){
     watchClubData();
     // Enlace compartido: #salida=ID
     if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
+    const hr=location.hash.match(/revisar=([\w-]+)/);
+    if(hr){setTimeout(()=>{go('comunidad');const go2=n=>{if(rides.find(x=>x.id===hr[1]))openReview(hr[1]);else if(n<12)setTimeout(()=>go2(n+1),500);else openRide(hr[1])};go2(0)},600);history.replaceState(null,'',location.pathname)}
     const hm=location.hash.match(/salida=([\w-]+)/);
     if(hm){setTimeout(()=>{go('comunidad');openRide(hm[1])},600);history.replaceState(null,'',location.pathname)}
     const hv=location.hash.match(/vivo=([a-z0-9]{8,20})/i);

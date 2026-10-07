@@ -1,3 +1,13 @@
+## Versión 5.4 — Revisión antes de salir
+- En cada salida programada: botón «✅ Revisión antes de salir · tiempo y lista».
+- Semáforo 🟢🟡🔴 con los avisos (tormenta, rachas, lluvia, calor, frío/hielo, llegar de noche o salir antes del amanecer).
+- Fiabilidad según los días que faltan (orientativa >4 días, bastante fiable 3–4, fiable mañana, muy fiable hoy).
+- «Cambios desde tu última revisión»: 🔺 empeora / 🔻 mejora (lluvia, rachas, viento, temperaturas).
+- Hora a hora durante la salida (temperatura, lluvia, viento con flecha y rachas) y viento en la ruta (primera y segunda mitad).
+- Lista para marcar (bici, kit, agua, móvil…) que añade sola chubasquero, abrigo o crema según el tiempo. A pie, lista de senderismo.
+- «📲 Mandar el parte al grupo» por WhatsApp con enlace directo a la revisión.
+- El recordatorio de la víspera abre directamente la revisión (función «recordatorioSalidas» actualizada: cmd_funcion_v5.4.txt).
+
 ## Versión 5.3 — Previsión más exacta: consenso de 3 modelos
 - El viento, las rachas, la lluvia y las tormentas se calculan cruzando 3 modelos: ECMWF IFS 9 km (el europeo de referencia), ICON (alemán) y Météo‑France (AROME de alta resolución cerca de Francia y Cataluña; ARPEGE en el resto).
 - Viento: el valor del medio de los 3. Rachas: la más fuerte de los 3 (por seguridad). Lluvia: cuántos modelos la ven → «seguro», «probable» o «posible» (p. ej. «🌧️ Lluvia probable en la próxima hora (2 de 3 modelos)»).
