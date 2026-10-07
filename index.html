@@ -1005,7 +1005,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1983,7 +1983,7 @@ async function openWind(c){
        <button class="btn btn-line" onclick="openWind(windCtx)">🔄 Actualizar</button>
        <a class="btn btn-line" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="https://www.windy.com/?${c.lat.toFixed(3)},${c.lng.toFixed(3)},10" target="_blank" rel="noopener">🗺️ Ver mapa</a>
      </div>
-     <p class="ws-src">La previsión es para el día y la hora de la salida, en el punto de salida. Datos gratuitos de ${c.src==='MET Norway'?'<a href="https://www.met.no/" target="_blank" rel="noopener">MET Norway</a> (Open‑Meteo no respondía)':'<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a>'} · consultado a las ${now}. Se actualiza cada hora; mírala otra vez la víspera.</p>
+     <p class="ws-src">La previsión es para el día y la hora de la salida, en el punto de salida. Datos gratuitos de ${c.src==='MET Norway'?'<a href="https://www.met.no/" target="_blank" rel="noopener">MET Norway</a> (Open‑Meteo no respondía)':c.src===OMM_SRC?'<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a>, cruzando 3 modelos: ECMWF, ICON y Météo‑France (viento: el valor del medio; rachas: la más fuerte)':'<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a>'} · consultado a las ${now}. Se actualiza cada hora; mírala otra vez la víspera.</p>
      ${back}`;
   }catch(e){B.innerHTML=`<div class="plc"><b>No se pudo consultar el viento</b><p style="color:var(--txt2);margin-top:4px">Revisa la conexión e inténtalo otra vez.</p><button class="btn btn-line" style="margin-top:10px" onclick="openWind(windCtx)">🔄 Reintentar</button></div>${back}`}
 }
@@ -2886,6 +2886,11 @@ async function getWx(r){
     const hrs=Math.max(1,Math.ceil((r.route?.mins||180)/60));
     const sl=a=>a.slice(i,Math.min(a.length,i+hrs+1));
     const w={at:Date.now(),t:Math.round(h.temperature_2m[i]),tmax:Math.round(Math.max(...sl(h.temperature_2m))),rain:Math.max(...sl(h.precipitation_probability).map(x=>x||0)),wind:Math.round(h.wind_speed_10m[i]),gust:Math.round(Math.max(...sl(h.wind_gusts_10m))),dir:h.wind_direction_10m[i],code:h.weather_code[i]};
+    // v5.3: viento y rachas con los 3 modelos (hasta 4 días vista, que es donde son fiables)
+    if(days<=4){try{const M=(await getJSON(omUrl(ll.lat,ll.lng,`hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation&start_date=${r.date}&end_date=${r.date}`),8000)).hourly;
+      const j=Math.max(0,M.time.findIndex(t=>t.slice(11,13)===r.hour.slice(0,2)));const sp=omVals(M,'wind_speed_10m',j);
+      if(sp.length>=2){w.wind=Math.round(median(sp));w.dir=dirMean(omVals(M,'wind_direction_10m',j),sp);let g=w.gust||0;for(let k=j;k<Math.min(M.time.length,j+hrs+1);k++)g=Math.max(g,vmax(omVals(M,'wind_gusts_10m',k))||0);w.gust=Math.round(g);
+        const rc=omRainCount(M,j,j+hrs+1);if(rc.of>=2&&rc.n>=2)w.rain=Math.max(w.rain,rc.n>=rc.of?80:60);w.models=sp.length;w.src=OMM_SRC}}catch(e){}}
     wxCache[key]=w;return w;
   }catch(e){return null}
 }
@@ -4379,7 +4384,40 @@ async function metNo(lat,lng){
   metCache[k]={t:Date.now(),d};return d;
 }
 /* Viento por horas de un día: {time[], spd[], dir[], gust[], src} (km/h, grados) */
+/* ===== v5.3 — Previsión más exacta: CONSENSO DE 3 MODELOS =====
+   ECMWF IFS 9 km (el modelo europeo de referencia), DWD ICON (alemán, 2–7 km en Europa)
+   y Météo‑France (AROME 1,3–2,5 km cerca de Francia y Cataluña; ARPEGE en el resto).
+   · Viento: la mediana de los 3 (el valor del medio, quita los extremos).
+   · Rachas: la MÁS FUERTE de los 3 (por seguridad).
+   · Lluvia y tormenta: cuántos modelos la ven → «seguro», «probable» o «posible».
+   Si falla, la app sigue con la previsión de siempre (Open‑Meteo y MET Norway). */
+const OMM=['ecmwf_ifs','icon_seamless','meteofrance_seamless'];
+const OMM_SRC='ECMWF · ICON · Météo‑France';
+const omUrl=(lat,lng,q)=>`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&${q}&models=${OMM.join(',')}&wind_speed_unit=kmh&timezone=auto`;
+// Valores de una variable en los 3 modelos (vienen como «variable_modelo»)
+function omVals(blk,v,i){if(!blk)return[];const out=[];
+  OMM.forEach(m=>{let x=blk[v+'_'+m];if(i!=null)x=Array.isArray(x)?x[i]:null;if(x!=null&&!isNaN(x))out.push(+x)});
+  if(!out.length){let x=blk[v];if(i!=null)x=Array.isArray(x)?x[i]:null;if(x!=null&&!isNaN(x))out.push(+x)}
+  return out}
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),k=s.length>>1;return s.length%2?s[k]:(s[k-1]+s[k])/2};
+const vmax=a=>a.length?Math.max(...a):null;
+// Dirección media (vectorial: 350° y 10° dan 0°, no 180°)
+function dirMean(dirs,spds){if(!dirs.length)return null;let x=0,y=0;dirs.forEach((d,k)=>{const w=(spds&&spds[k])||1;x+=w*Math.cos(d*Math.PI/180);y+=w*Math.sin(d*Math.PI/180)});return Math.round((Math.atan2(y,x)*180/Math.PI+360)%360)}
+// Cuántos modelos ven lluvia (≥0,3 mm/h) o tormenta en las horas [a,b)
+function omRainCount(H,a,b){let n=0,st=0;const ms=OMM.filter(m=>H&&Array.isArray(H['precipitation_'+m])&&H['precipitation_'+m].some(x=>x!=null));
+  ms.forEach(m=>{const P=H['precipitation_'+m],C=H['weather_code_'+m]||[];let r=false,s=false;for(let i=a;i<Math.min(b,P.length);i++){if((P[i]||0)>=0.3)r=true;if((C[i]||0)>=95)s=true}if(r)n++;if(s)st++});
+  return{n,st,of:ms.length}}
+const confTxt=(n,of)=>!of?'':n>=Math.max(2,of)?'seguro':n>=2?'probable':n===1?'posible':'';
 async function wxHourly(lat,lng,date){
+  try{   // v5.3: consenso de 3 modelos
+    const H=(await omJSON(omUrl(lat,lng,`hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&start_date=${date}&end_date=${date}`))).hourly;
+    if(!H||!H.time||!H.time.length)throw new Error('vacío');
+    const spd=[],dir=[],gust=[];let n=0;
+    H.time.forEach((t,i)=>{const sp=omVals(H,'wind_speed_10m',i),dr=omVals(H,'wind_direction_10m',i),gs=omVals(H,'wind_gusts_10m',i);n=Math.max(n,sp.length);
+      spd.push(median(sp));dir.push(dirMean(dr,sp));gust.push(vmax(gs))});
+    if(spd.every(x=>x==null))throw new Error('sin datos');
+    return{time:H.time,spd,dir,gust,src:n>=2?OMM_SRC:'Open‑Meteo',models:n};
+  }catch(e){console.warn('3 modelos: uso Open-Meteo normal',e)}
   try{
     const h=(await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto&start_date=${date}&end_date=${date}`)).hourly;
     if(!h||!h.time||!h.time.length)throw new Error('vacío');
@@ -4393,6 +4431,15 @@ async function wxHourly(lat,lng,date){
 }
 /* Tiempo de ahora (para el semáforo) */
 async function wxNow(lat,lng){
+  const W=await wxNow1(lat,lng);
+  try{const d=await getJSON(omUrl(lat,lng,'current=wind_speed_10m,wind_gusts_10m,weather_code&hourly=precipitation,weather_code&forecast_hours=4'),8000);
+    const sp=omVals(d.current,'wind_speed_10m'),gs=omVals(d.current,'wind_gusts_10m');
+    if(sp.length>=2){W.w=Math.round(median(sp));W.g=Math.round(Math.max(W.g||0,vmax(gs)||0));W.models=sp.length;W.src=OMM_SRC}
+    const rc=omRainCount(d.hourly,0,4);if(rc.of>=2){W.rainModels=rc.n;W.rainOf=rc.of;if(rc.n>=2)W.pp=Math.max(W.pp||0,rc.n>=rc.of?80:60);if(rc.st>=1&&W.code<95&&rc.st>=2)W.code=95}
+  }catch(e){console.warn('3 modelos (ahora)',e)}
+  return W;
+}
+async function wxNow1(lat,lng){
   try{
     const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&hourly=precipitation_probability&daily=sunset&forecast_days=2&wind_speed_unit=kmh&timezone=auto`);
     const c=d.current;if(!c)throw new Error('sin datos');
@@ -5255,6 +5302,19 @@ async function startLive(opt){
    · Ahorro: con la pantalla apagada o en modo ahorro no se pinta nada; el mapa se mueve cada pocos segundos. */
 const lowPow=()=>document.visibilityState!=='visible'||!!($('saver')&&$('saver').classList.contains('show'));
 async function liveWx(lat,lng){
+  try{   // v5.3: consenso de 3 modelos + probabilidad de lluvia
+    const [m,b]=await Promise.allSettled([getJSON(omUrl(lat,lng,'current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code&hourly=precipitation,weather_code,wind_gusts_10m&forecast_hours=3'),9000),
+      getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&hourly=precipitation_probability&forecast_hours=3&timezone=auto`,9000)]);
+    if(m.status!=='fulfilled')throw m.reason;const d=m.value,C=d.current,H=d.hourly;
+    const sp=omVals(C,'wind_speed_10m'),dr=omVals(C,'wind_direction_10m'),gs=omVals(C,'wind_gusts_10m');
+    if(sp.length<2)throw new Error('pocos modelos');
+    const gh=[0,1].flatMap(i=>omVals(H,'wind_gusts_10m',i));const rc=omRainCount(H,0,2);
+    const ppE=b.status==='fulfilled'?Math.max(0,...((b.value.hourly||{}).precipitation_probability||[]).slice(0,2).map(x=>x||0)):0;
+    const pp=Math.max(ppE,rc.of?Math.round(rc.n/rc.of*100):0);
+    const rainNow=median(omVals(C,'precipitation'))||0;
+    return{spd:Math.round(median(sp)),dir:dirMean(dr,sp),gust:Math.round(vmax(gs)||0),gmax:Math.round(Math.max(vmax(gs)||0,vmax(gh)||0)),rain:rainNow,pp,
+      storm:rc.st>=2||(rc.st>=1&&ppE>=50)||omVals(C,'weather_code').filter(x=>x>=95).length>=2,conf:confTxt(rc.n,rc.of),rainN:rc.n,rainOf:rc.of,models:sp.length,src:OMM_SRC};
+  }catch(e){console.warn('3 modelos (ruta): uso Open-Meteo normal',e)}
   try{
     const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code&hourly=precipitation_probability,weather_code,wind_gusts_10m&forecast_hours=3&wind_speed_unit=kmh&timezone=auto`);
     const c=d.current;if(!c||c.wind_speed_10m==null)throw new Error('sin datos');const H=d.hourly||{};
@@ -5316,7 +5376,7 @@ async function lwTick(){
       // Incidencias
       const strong=live.hike?60:45;
       if(n.storm)lwWarn('storm','⛈️ Tormenta en la próxima hora','Atención. Hay tormenta prevista en la próxima hora. Busca un sitio para resguardarte.',Q);
-      else if(n.rain>0.3||n.pp>=60)lwWarn('rain',`🌧️ Lluvia ${n.rain>0.3?'ahora':'en la próxima hora ('+n.pp+'%)'}`,`Atención. ${n.rain>0.3?'Está lloviendo':'Es probable que llueva en la próxima hora'}. El suelo resbala: frena antes en las curvas.`,Q);
+      else if(n.rain>0.3||n.pp>=60)lwWarn('rain',`🌧️ Lluvia ${n.rain>0.3?'ahora':(n.conf?n.conf+' ':'')+'en la próxima hora'+(n.rainOf?' ('+n.rainN+' de '+n.rainOf+' modelos)':' ('+n.pp+'%)')}`,`Atención. ${n.rain>0.3?'Está lloviendo':'Es probable que llueva en la próxima hora'}. El suelo resbala: frena antes en las curvas.`,Q);
       if(n.gmax>=strong||n.spd>=35)lwWarn('gust',`💨 Rachas fuertes de ${n.gmax} km/h`,`Atención. Rachas de viento de ${n.gmax} kilómetros por hora. Agarra fuerte el manillar en zonas abiertas y en las bajadas.`,Q);
     }catch(e){console.warn('viento en ruta',e)}finally{live.wxBusy=false}
   }

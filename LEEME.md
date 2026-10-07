@@ -1,3 +1,9 @@
+## Versión 5.3 — Previsión más exacta: consenso de 3 modelos
+- El viento, las rachas, la lluvia y las tormentas se calculan cruzando 3 modelos: ECMWF IFS 9 km (el europeo de referencia), ICON (alemán) y Météo‑France (AROME de alta resolución cerca de Francia y Cataluña; ARPEGE en el resto).
+- Viento: el valor del medio de los 3. Rachas: la más fuerte de los 3 (por seguridad). Lluvia: cuántos modelos la ven → «seguro», «probable» o «posible» (p. ej. «🌧️ Lluvia probable en la próxima hora (2 de 3 modelos)»).
+- Se usa en: viento en ruta, semáforo de «¿salgo hoy?», planificación con viento por horas y el tiempo de las salidas (hasta 4 días vista).
+- Si ese servicio falla, la app sigue con la previsión de siempre (Open‑Meteo y MET Norway).
+
 ## Versión 5.2 — Avisos también en iGPSPORT, Wahoo, Bryton y relojes
 - Perfil → «⌚ Avisos en mi Garmin, iGPSPORT o reloj»: ahora se elige la marca (Garmin · iGPSPORT · Wahoo, Bryton, reloj…) y salen sus pasos.
 - iGPSPORT: activar las notificaciones en la app iGPSPORT, dar «Acceso a notificaciones» a iGPSPORT en Android y batería «Sin restricciones».
