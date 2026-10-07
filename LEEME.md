@@ -1,3 +1,9 @@
+## Versión 5.2 — Avisos también en iGPSPORT, Wahoo, Bryton y relojes
+- Perfil → «⌚ Avisos en mi Garmin, iGPSPORT o reloj»: ahora se elige la marca (Garmin · iGPSPORT · Wahoo, Bryton, reloj…) y salen sus pasos.
+- iGPSPORT: activar las notificaciones en la app iGPSPORT, dar «Acceso a notificaciones» a iGPSPORT en Android y batería «Sin restricciones».
+- El botón de prueba dice el nombre de tu aparato.
+- Corregido el paso 1: el interruptor se llama «🔔 Avisos con la app cerrada».
+
 ## Versión 5.1 — Viento en ruta, avisos del tiempo y menos batería
 - Al grabar, debajo de la velocidad sale el viento: «22 km/h en contra / a favor / de costado», rachas y de dónde viene. La flecha indica cómo te da respecto a tu marcha.
 - Lo dice en voz al empezar y cuando cambia (al girar la carretera, si se mantiene). Tocando la tarjeta del viento lo repite.

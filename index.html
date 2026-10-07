@@ -991,8 +991,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
-  <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin (ver abajo)</small></div>
-  <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
+  <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
   <div class="sec" style="margin-top:14px"><h3 style="font-size:18px">Ayuda</h3></div>
@@ -1005,7 +1005,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3779,38 +3779,59 @@ function renderChat(){
 const GARMIN_OK=['Edge 130 Plus','Edge 530','Edge 830','Edge 540 / 540 Solar','Edge 840 / 840 Solar','Edge 1040 / 1040 Solar','Edge 1050','Edge Explore 2','Relojes Garmin (Forerunner, Fenix, Venu, Instinct, Vivoactive, Epix…)'];
 const GARMIN_MAYBE=['Edge 520 Plus','Edge 1030','Edge 1000'];
 const GARMIN_NO=['Edge 520 (original)','Edge 130 (original)','Edge 20 / 25','Edge 820','Edge Explore (original)'];
-function openGarmin(){
+/* v5.2 — También iGPSPORT, Wahoo, Bryton y relojes: todos muestran las notificaciones del móvil */
+const DEV_T={garmin:'Garmin',igps:'iGPSPORT',otro:'aparato'};
+const devName=()=>DEV_T[store.get('devBrand','garmin')]||'Garmin';
+function openGarmin(br){
+  if(br)store.set('devBrand',br);const B=store.get('devBrand','garmin');
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const perm='Notification' in window?Notification.permission:'no';
-  $('rideBody').innerHTML=sheetHead('⌚ Avisos en tu Garmin')+`<p style="color:var(--txt2);margin:-8px 0 12px">Cuando alguien del grupo avisa (pinchazo, esperad, ayuda, caída…), RideSafe IA manda una notificación a tu móvil. Si tu Garmin muestra las notificaciones del móvil, el aviso <b>aparece también en su pantalla</b> con pitido y vibración.</p>
-   <button class="btn btn-lime" onclick="garminTest()">⌚ Probar aviso en mi Garmin</button>
-   <small style="display:block;color:var(--txt2);margin:6px 4px 14px">Pulsa, <b>bloquea el móvil</b> y mira el Garmin: en 5 segundos llega una notificación de prueba.</small>
-   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Paso a paso</span><b>Cómo activarlo</b></div>
-    <ol style="margin:8px 0 0 18px;line-height:1.55;font-size:14.5px">
-     <li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos del pelotón con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>
-     <li><b>Tu Garmin</b>: Ajustes → Funciones conectadas → Teléfono → <b>Notificaciones inteligentes</b> → activa la categoría <b>«Otros»</b> (y «Redes sociales» si aparece).</li>
-     <li><b>App Garmin Connect</b> del móvil: Ajustes → Notificaciones → Notificaciones de apps → permite <b>${isIOS?'RideSafe IA':'Chrome'}</b>${isIOS?'':' (en Android los avisos de RideSafe IA llegan a través de Chrome)'}.</li>
-     <li>Durante la salida, el Garmin debe estar <b>conectado al móvil</b> por Bluetooth.</li></ol></div>
-   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Modelos</span><b>¿Funciona con el mío?</b></div>
-    <p style="margin-top:8px;font-size:14px"><b style="color:var(--lime)">✅ Sí</b> (muestran notificaciones de apps): ${GARMIN_OK.join(' · ')}</p>
+  const app=isIOS?'RideSafe IA':'Chrome',appNote=isIOS?'':' (en Android los avisos de RideSafe IA llegan a través de Chrome)';
+  const tabs=`<div class="chips" style="margin:0 0 12px;flex-wrap:wrap">${[['garmin','⌚ Garmin'],['igps','🚴 iGPSPORT'],['otro','📟 Wahoo, Bryton, reloj…']].map(([k,t])=>`<button class="chip${B===k?' on':''}" onclick="openGarmin(${jsq(k)})">${t}</button>`).join('')}</div>`;
+  const step1=`<li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>`;
+  let steps,models;
+  if(B==='igps'){
+    steps=step1+`<li><b>App iGPSPORT</b> del móvil: entra en tu aparato (Dispositivo) → busca <b>Notificaciones</b> / «Recordatorio de mensajes» y actívalo. Si te deja elegir apps, marca <b>${app}</b>${appNote}.</li>
+     ${isIOS?'':`<li><b>Android</b>: Ajustes del móvil → Aplicaciones → Acceso especial → <b>Acceso a notificaciones</b> → permite <b>iGPSPORT</b>. Y en la batería de la app iGPSPORT pon <b>«Sin restricciones»</b>.</li>`}
+     <li>Durante la salida, el iGPSPORT debe estar <b>conectado al móvil</b> por Bluetooth y la app iGPSPORT abierta en segundo plano.</li>`;
+    models=`<p style="margin-top:8px;font-size:14px"><b style="color:var(--lime)">✅ Sí</b>: los modelos con <b>«Smart notification» / notificaciones inteligentes</b> (por ejemplo BSC300 / BSC300T, iGS630 / 630S, iGS800, BiNavi). Lo pone en la caja o en la ficha del modelo en igpsport.com.</p>
+     <p style="margin-top:6px;font-size:14px"><b style="color:#FBBF24">⚠️ Depende</b>: algunos modelos sencillos solo enseñan llamadas y SMS. Pruébalo con el botón de arriba.</p>`;
+  }else if(B==='otro'){
+    steps=step1+`<li><b>La app de tu aparato</b> (Wahoo ELEMNT, Bryton Active, Zepp, Huawei Health, Samsung Wear, Apple Watch…): activa las <b>notificaciones del móvil</b> y permite <b>${app}</b>${appNote}.</li>
+     ${isIOS?'':`<li><b>Android</b>: Ajustes → Aplicaciones → Acceso especial → <b>Acceso a notificaciones</b> → permite la app de tu aparato.</li>`}
+     <li>Durante la salida, el aparato debe estar <b>conectado al móvil</b> por Bluetooth.</li>`;
+    models=`<p style="margin-top:8px;font-size:14px">Casi todos los cuentakilómetros GPS y relojes actuales muestran las notificaciones del móvil. Si el tuyo solo enseña llamadas y SMS, el aviso no saldrá en él (pero sí en el móvil). Pruébalo con el botón de arriba.</p>`;
+  }else{
+    steps=step1+`<li><b>Tu Garmin</b>: Ajustes → Funciones conectadas → Teléfono → <b>Notificaciones inteligentes</b> → activa la categoría <b>«Otros»</b> (y «Redes sociales» si aparece).</li>
+     <li><b>App Garmin Connect</b> del móvil: Ajustes → Notificaciones → Notificaciones de apps → permite <b>${app}</b>${appNote}.</li>
+     <li>Durante la salida, el Garmin debe estar <b>conectado al móvil</b> por Bluetooth.</li>`;
+    models=`<p style="margin-top:8px;font-size:14px"><b style="color:var(--lime)">✅ Sí</b> (muestran notificaciones de apps): ${GARMIN_OK.join(' · ')}</p>
     <p style="margin-top:6px;font-size:14px"><b style="color:#FBBF24">⚠️ Depende</b> (pruébalo con el botón): ${GARMIN_MAYBE.join(' · ')}</p>
-    <p style="margin-top:6px;font-size:14px"><b style="color:var(--red)">❌ No</b> (solo llamadas y SMS): ${GARMIN_NO.join(' · ')}</p>
-    <small style="display:block;color:var(--txt2);margin-top:6px">Si tu Garmin no es compatible, el aviso te llega igualmente al móvil con sonido y vibración, y suena la sirena si llevas RideSafe IA abierta en el manillar.</small></div>`;
+    <p style="margin-top:6px;font-size:14px"><b style="color:var(--red)">❌ No</b> (solo llamadas y SMS): ${GARMIN_NO.join(' · ')}</p>`;
+  }
+  const n=devName();
+  $('rideBody').innerHTML=sheetHead('⌚ Avisos en tu cuentakilómetros')+tabs+`<p style="color:var(--txt2);margin:-2px 0 12px">Cuando alguien del grupo avisa (pinchazo, esperad, ayuda, caída…), RideSafe IA manda una notificación a tu móvil. Si tu ${esc(n)} muestra las notificaciones del móvil, el aviso <b>aparece también en su pantalla</b> con pitido y vibración. También los avisos de lluvia, rachas fuertes y las salidas.</p>
+   <button class="btn btn-lime" onclick="garminTest()">⌚ Probar aviso en mi ${esc(n)}</button>
+   <small style="display:block;color:var(--txt2);margin:6px 4px 14px">Pulsa, <b>bloquea el móvil</b> y mira el ${esc(n)}: en 5 segundos llega una notificación de prueba.</small>
+   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Paso a paso</span><b>Cómo activarlo</b></div>
+    <ol style="margin:8px 0 0 18px;line-height:1.55;font-size:14.5px">${steps}</ol></div>
+   <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Modelos</span><b>¿Funciona con el mío?</b></div>${models}
+    <small style="display:block;color:var(--txt2);margin-top:6px">Si tu aparato no es compatible, el aviso te llega igualmente al móvil con sonido y vibración, y suena la sirena si llevas RideSafe IA abierta en el manillar.</small></div>`;
   openRideId=null;openSheet('sh-ride');
 }
 async function garminTest(){
   if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('Este móvil no permite notificaciones');return}
   let perm=Notification.permission;if(perm==='default'){try{perm=await Notification.requestPermission()}catch(e){}}
   if(perm!=='granted'){alert('Las notificaciones de RideSafe IA están bloqueadas.\n\nActívalas en: Ajustes del móvil → Aplicaciones → Chrome (o RideSafe IA) → Notificaciones → Permitir.');return}
-  toast('⌚ Bloquea el móvil y mira el Garmin: llega en 5 segundos');
+  toast(`⌚ Bloquea el móvil y mira el ${devName()}: llega en 5 segundos`);
   setTimeout(async()=>{
     try{const reg=await navigator.serviceWorker.ready;
-      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:'Prueba de RideSafe IA · si lo ves en tu Garmin, te llegarán los avisos',icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba',renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}})}
+      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:`Prueba de RideSafe IA · si lo ves en tu ${devName()}, te llegarán los avisos`,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba',renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}})}
     catch(e){toast('No se pudo lanzar la prueba')}
     setTimeout(async()=>{if(document.visibilityState!=='visible')await new Promise(r=>{const f=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',f);r()}};document.addEventListener('visibilitychange',f)});
-      const i=await askChoice('¿Te ha salido el aviso en el Garmin?',[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
-      if(i===0){store.set('garminOk',Date.now());toast('¡Perfecto! Te llegarán los avisos del pelotón al Garmin')}
-      if(i===1){openGarmin();setTimeout(()=>toast('Revisa los pasos 2 y 3. Si tu modelo sale en «No», el aviso solo llegará al móvil'),400)}
+      const i=await askChoice(`¿Te ha salido el aviso en el ${devName()}?`,[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
+      if(i===0){store.set('garminOk',Date.now());toast(`¡Perfecto! Te llegarán los avisos del pelotón al ${devName()}`)}
+      if(i===1){openGarmin();setTimeout(()=>toast('Revisa los pasos 2 y 3. Si tu modelo solo enseña llamadas y SMS, el aviso solo llegará al móvil'),400)}
     },6500);
   },5000);
 }
