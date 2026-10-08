@@ -650,6 +650,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
 .pdown{display:block;margin:-4px auto 6px;min-height:30px;padding:2px 18px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--txt2);font-family:inherit;font-weight:800;font-size:13.5px;touch-action:manipulation}
 #pTiny{display:none}
+/* v5.6 — Encuestas del club */
+.poll{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:12px}
+.poll .pq b{display:block;font-size:16.5px;line-height:1.3}.poll .pq small{display:block;color:var(--txt2);font-size:12.5px;margin:3px 0 8px}
+.popts{display:flex;flex-direction:column;gap:6px}
+.popt{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:700;font-size:15px;text-align:left;touch-action:manipulation}
+.popt i{position:absolute;left:0;top:0;bottom:0;background:rgba(200,220,60,.22);border-radius:14px 0 0 14px;transition:width .4s}
+.popt span,.popt em{position:relative;font-style:normal}.popt em{font-size:13px;color:var(--txt2);font-weight:800;white-space:nowrap}
+.popt.mine{border-color:var(--lime)}.popt.win{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
+.popt:disabled{opacity:1}
+.phint{display:block;color:var(--txt2);font-size:12.5px;margin-top:6px}
+.pman{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 /* v5.4 — Revisión antes de salir */
 .rv-sem{display:flex;gap:12px;align-items:flex-start;border:2px solid;border-radius:18px;padding:12px 14px;margin:0 0 10px;background:var(--card2)}
 .rv-sem .rv-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:2px;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
@@ -939,6 +950,11 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div id="groupBox"></div>
   </div>
 
+  <div class="block" id="clubTalk" style="display:none">
+    <div class="sec"><h3>Habla con tu club</h3></div>
+    <div id="clubTalkBox"></div>
+  </div>
+
   <div class="block">
     <div class="sec"><h3>Mis puntos</h3></div>
     <div class="stats">
@@ -1033,7 +1049,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2337,7 +2353,8 @@ function watchClubData(){
     clubSubs.push(db.collection('rides').where('group','==',C).limit(500).onSnapshot(s=>{ridesClub=docs(s);merge()},e=>{console.warn('salidas del club',e);ridesLoaded=true;renderRides()}));
     clubSubs.push(db.collection('feed').where('club','==',C).limit(200).onSnapshot(s=>{feed=docs(s).sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));renderFeed()},e=>console.warn('actividad',e)));
     clubSubs.push(db.collection('pois').where('club','==',C).limit(500).onSnapshot(s=>{pois=docs(s);drawPois()},e=>console.warn('puntos',e)));
-  }else{ridesLoaded=true;renderFeed();drawPois()}
+    watchClubTalk(C,clubSubs);
+  }else{ridesLoaded=true;renderFeed();drawPois();watchClubTalk(null,clubSubs)}
   rankKey=null;watchRanks();
 }
 
@@ -4175,6 +4192,119 @@ async function sendMsg(txt){
   db.collection('rides').doc(chat.id).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
 }
 function delMsg(mid){if(!confirm('¿Borrar este comentario?'))return;db.collection('rides').doc(chat.id).collection('msgs').doc(mid).delete().catch(netErr)}
+
+/* ===== v5.6 — HABLA CON TU CLUB: chat general y encuestas =====
+   groups/{club}/msgs  → chat del club (solo miembros)
+   groups/{club}/polls → encuestas: cada uno vota una opción; el que la crea (o un administrador) la cierra */
+let clubPolls=[],clubLast=null,clubChat={unsub:null,msgs:[]};
+const POLL_TPL=[['🕗 ¿A qué hora salimos?',['8:00','8:30','9:00','9:30']],['🛣️ ¿Ruta larga o corta?',['Larga','Media','Corta']],['☕ ¿Dónde paramos a almorzar?',['',''],1],['📅 ¿Qué día salimos?',['Sábado','Domingo','Los dos']]];
+const pollOpen=p=>!p.closed&&(!p.until||Date.now()<p.until);
+const myVote=p=>p.votes&&p.votes[uid]!=null?p.votes[uid]:null;
+function watchClubTalk(C,subs){
+  clubPolls=[];clubLast=null;
+  if(!C){renderClubTalk();return}
+  const g=db.collection('groups').doc(C);
+  subs.push(g.collection('polls').orderBy('ts','desc').limit(20).onSnapshot(s=>{clubPolls=s.docs.map(d=>({id:d.id,...d.data()}));renderClubTalk();if($('pollList'))renderPolls()},e=>console.warn('encuestas',e)));
+  subs.push(g.collection('msgs').orderBy('ts','desc').limit(1).onSnapshot(s=>{clubLast=s.docs[0]?{id:s.docs[0].id,...s.docs[0].data()}:null;renderClubTalk()},e=>console.warn('chat club',e)));
+}
+function renderClubTalk(){
+  const blk=$('clubTalk'),box=$('clubTalkBox');if(!blk||!box)return;
+  const C=me?.group;if(!C||!myGroup){blk.style.display='none';return}
+  blk.style.display='block';
+  const seen=store.get('cmSeen_'+C,0),unread=clubLast&&clubLast.uid!==uid&&clubLast.ts>seen;
+  const open=clubPolls.filter(pollOpen),pend=open.filter(p=>myVote(p)==null);
+  const last=clubLast?`${clubLast.uid===uid?'Tú':esc(String(clubLast.name||'').split(' ')[0])}: ${esc(String(clubLast.text).slice(0,60))}`:'Habla con todo el club, sin depender de WhatsApp';
+  const p0=pend[0]||open[0];
+  box.innerHTML=`<button class="li" style="margin-bottom:8px" onclick="openClubChat()"><span class="em">💬</span><div style="min-width:0"><b>Chat del club${unread?' <span class="tag lime" style="margin-left:6px">nuevo</span>':''}</b><small style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${last}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+   <button class="li" onclick="openPolls()"><span class="em">📊</span><div><b>Encuestas${pend.length?' <span class="tag lime" style="margin-left:6px">'+pend.length+' por votar</span>':''}</b><small>${open.length?open.length+' abierta'+(open.length>1?'s':'')+' · toca para votar o crear una':'Decidid entre todos: hora, ruta, parada…'}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+   ${p0?`<div class="poll" style="margin-top:10px">${pollHTML(p0,true)}</div>`:''}`;
+}
+/* ---- Encuestas ---- */
+function pollHTML(p,compact){
+  const n=Object.keys(p.votes||{}).length,cnt=p.opts.map((_,i)=>Object.values(p.votes||{}).filter(v=>v===i).length),mx=Math.max(1,...cnt),mv=myVote(p),op=pollOpen(p);
+  const show=!op||mv!=null;   // los resultados se ven después de votar (o si ya está cerrada)
+  const left=p.until?Math.max(0,p.until-Date.now()):0;const lt=!op?'Cerrada':p.until?(left>86400000?'quedan '+Math.ceil(left/86400000)+' días':left>3600000?'quedan '+Math.ceil(left/3600000)+' h':'última hora'):'sin fecha de cierre';
+  const canMan=p.uid===uid||isClubAdm();
+  return `<div class="pq"><b>${esc(p.q)}</b><small>${esc(String(p.name||'').split(' ')[0])} · ${n} voto${n===1?'':'s'} · ${lt}</small></div>
+   <div class="popts">${p.opts.map((o,i)=>{const pc=n?Math.round(cnt[i]/n*100):0;const win=!op&&cnt[i]===mx&&n>0;
+     return `<button class="popt${mv===i?' mine':''}${win?' win':''}" ${op?`onclick="pollVote(${jsq(p.id)},${i})"`:'disabled'}>${show?`<i style="width:${pc}%"></i>`:''}<span>${mv===i?'✓ ':''}${esc(o)}</span>${show?`<em>${cnt[i]} · ${pc}%</em>`:''}</button>`}).join('')}</div>
+   ${op&&mv==null?'<small class="phint">Toca una opción para votar. Verás los resultados al votar.</small>':op?'<small class="phint">Toca tu voto otra vez para quitarlo, u otra opción para cambiarlo.</small>':''}
+   ${!compact&&canMan?`<div class="pman">${op?`<button class="mini" onclick="pollClose(${jsq(p.id)})">🔒 Cerrar</button>`:''}<button class="mini" style="color:var(--red)" onclick="pollDel(${jsq(p.id)})">🗑️ Borrar</button><button class="mini" onclick="pollShare(${jsq(p.id)})">📲 WhatsApp</button></div>`:''}`;
+}
+function openPolls(){
+  if(!me?.group){toast('Únete a un club para ver sus encuestas');return}
+  $('rideBody').innerHTML=sheetHead('📊 Encuestas del club')+`<button class="btn btn-lime" style="width:100%;margin-bottom:14px" onclick="pollNew()">＋ Nueva encuesta</button><div id="pollList"></div>`;
+  openRideId=null;openSheet('sh-ride');renderPolls();
+}
+function renderPolls(){const l=$('pollList');if(!l)return;
+  const L=[...clubPolls].sort((a,b)=>(pollOpen(b)-pollOpen(a))||(b.ts-a.ts));
+  l.innerHTML=L.length?L.map(p=>`<div class="poll">${pollHTML(p,false)}</div>`).join(''):'<div class="empty">Aún no hay encuestas. ¡Crea la primera!</div>'}
+async function pollVote(id,i){
+  if(!ready())return;const p=clubPolls.find(x=>x.id===id);if(!p||!pollOpen(p))return;
+  const ref=db.collection('groups').doc(me.group).collection('polls').doc(id);vib(15);
+  const v=myVote(p)===i?FV.delete():i;
+  p.votes=p.votes||{};if(myVote(p)===i)delete p.votes[uid];else p.votes[uid]=i;renderClubTalk();renderPolls();
+  ref.update({['votes.'+uid]:v}).catch(netErr);
+}
+function pollNew(tpl){
+  const T=tpl!=null?POLL_TPL[tpl]:null;
+  $('rideBody').innerHTML=sheetHead('📊 Nueva encuesta')+`
+   <div class="chips" style="margin:0 0 10px;flex-wrap:wrap">${POLL_TPL.map((t,k)=>`<button class="chip${tpl===k?' on':''}" onclick="pollNew(${k})">${esc(t[0])}</button>`).join('')}</div>
+   <label class="l">Pregunta</label><input class="inp" id="pQ" maxlength="120" placeholder="¿Qué preguntas al club?" value="${T?esc(T[0].replace(/^\S+\s/,'')):''}">
+   <label class="l" style="margin-top:10px">Opciones (de 2 a 6)</label>
+   <div id="pOpts">${[0,1,2,3,4,5].map(k=>`<input class="inp" style="margin-bottom:6px" maxlength="40" placeholder="Opción ${k+1}${k>1?' (si quieres)':''}" value="${T&&T[1][k]?esc(T[1][k]):''}">`).join('')}</div>
+   <label class="l" style="margin-top:6px">Se cierra</label>
+   <div class="chips" id="pDur" style="margin-bottom:14px"><button class="chip" data-h="24">en 1 día</button><button class="chip on" data-h="72">en 3 días</button><button class="chip" data-h="168">en 1 semana</button><button class="chip" data-h="0">cuando yo la cierre</button></div>
+   <button class="btn btn-lime" style="width:100%" onclick="pollSave()">📊 Publicar en el club</button>
+   <button class="btn" style="width:100%;color:var(--txt2);margin-top:6px" onclick="openPolls()">← Volver</button>`;
+  $('pDur').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;$('pDur').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b))};
+  if(T&&T[2])setTimeout(()=>$('pOpts').querySelector('input').focus(),200);
+}
+function pollSave(){
+  if(!ready())return;if(!me?.group){toast('Únete a un club');return}
+  const q=$('pQ').value.trim().slice(0,120);const opts=[...$('pOpts').querySelectorAll('input')].map(i=>i.value.trim().slice(0,40)).filter(Boolean);
+  const uniq=[...new Set(opts)];
+  if(!q){toast('Escribe la pregunta');return}if(uniq.length<2){toast('Pon al menos 2 opciones distintas');return}
+  const h=+($('pDur').querySelector('.chip.on')||{dataset:{h:72}}).dataset.h;
+  const ref=db.collection('groups').doc(me.group).collection('polls').doc();
+  ref.set({uid,name:myName(),q,opts:uniq.slice(0,6),votes:{},ts:Date.now(),until:h?Date.now()+h*3600000:0,closed:false}).then(()=>{toast('📊 Encuesta publicada: le llega a todo el club');addPoints(5)}).catch(netErr);
+  openPolls();
+}
+async function pollClose(id){if(!await askConfirm('¿Cerrar la encuesta?','Ya no se podrá votar. Los resultados quedan a la vista.','Cerrar'))return;
+  db.collection('groups').doc(me.group).collection('polls').doc(id).update({closed:true}).catch(netErr)}
+async function pollDel(id){if(!await askConfirm('¿Borrar la encuesta?','Se borra para todo el club.','Borrar'))return;
+  db.collection('groups').doc(me.group).collection('polls').doc(id).delete().catch(netErr)}
+function pollShare(id){const p=clubPolls.find(x=>x.id===id);if(!p)return;const n=Object.keys(p.votes||{}).length;
+  const t=`📊 *${p.q}*\n${p.opts.map((o,i)=>`• ${o}: ${Object.values(p.votes||{}).filter(v=>v===i).length}`).join('\n')}\n(${n} votos)\n\nVota en RideSafe IA: ${appUrl()}#encuestas`;
+  window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')}
+/* ---- Chat del club ---- */
+function openClubChat(){
+  if(!me?.group){toast('Únete a un club para hablar con él');return}
+  const C=me.group;
+  $('rideBody').innerHTML=sheetHead('💬 Chat del club')+`<p style="color:var(--txt2);margin:-8px 0 10px">${esc(myGroup?.name||'Tu club')} · solo lo ven los miembros</p>
+   <div class="chat"><div class="chatlist" id="clubChatList" style="max-height:52vh"><div class="empty" style="padding:12px">Cargando…</div></div>
+   <div class="chatin"><input class="inp" id="clubChatIn" maxlength="300" placeholder="Escribe al club…" enterkeyhint="send" onkeydown="if(event.key==='Enter')clubSend()"><button class="btn btn-lime" style="width:auto;min-height:52px;padding:0 18px" onclick="clubSend()" aria-label="Enviar">➤</button></div></div>`;
+  openRideId=null;openSheet('sh-ride');
+  if(clubChat.unsub)try{clubChat.unsub()}catch(e){}
+  clubChat.unsub=db.collection('groups').doc(C).collection('msgs').orderBy('ts','desc').limit(120).onSnapshot(s=>{
+    if(!$('clubChatList')){try{clubChat.unsub()}catch(e){}clubChat.unsub=null;return}
+    clubChat.msgs=s.docs.map(d=>({id:d.id,...d.data()})).reverse();renderClubChat();
+    store.set('cmSeen_'+C,Date.now());renderClubTalk();
+  },e=>{console.warn('chat club',e);const l=$('clubChatList');if(l)l.innerHTML='<div class="empty" style="padding:12px">No se pudo cargar el chat. Si acabas de actualizar, el administrador tiene que publicar las reglas v4.5.</div>'});
+}
+function renderClubChat(){
+  const l=$('clubChatList');if(!l)return;
+  const canMod=isClubAdm()||!!(myGroup&&(myGroup.captains||{})[uid])||isAdmin;
+  l.innerHTML=clubChat.msgs.length?clubChat.msgs.map(m=>{const mine=m.uid===uid;
+    return `<div class="msg${mine?' me':''}">${mine?'':`<span class="face" style="width:30px;height:30px;margin:0;flex-shrink:0;background:${colorOf(m.name)}">${ini(m.name)}</span>`}<div class="bub"><div class="mh"><b>${mine?'Tú':esc(m.name)}</b><small>${msgTime(m.ts)}</small>${mine||canMod?`<button aria-label="Borrar mensaje" onclick="clubDel(${jsq(m.id)})">✕</button>`:''}</div><p>${esc(m.text)}</p></div></div>`}).join('')
+    :'<div class="empty" style="padding:12px">Aún no hay mensajes. ¡Saluda al club! 👋</div>';
+  l.scrollTop=l.scrollHeight;
+}
+function clubSend(){
+  if(!ready()||!me?.group)return;const inp=$('clubChatIn');const text=inp.value.trim().slice(0,300);if(!text)return;inp.value='';
+  db.collection('groups').doc(me.group).collection('msgs').add({uid,name:myName(),text,ts:Date.now()}).catch(netErr);
+}
+function clubDel(id){if(!confirm('¿Borrar este mensaje?'))return;db.collection('groups').doc(me.group).collection('msgs').doc(id).delete().catch(netErr)}
 
 /* ===== Más funciones ===== */
 const FEATURES=[
@@ -6215,6 +6345,8 @@ function startFirebase(){
     // v4.0 — Salidas, actividad, puntos y ranking: solo los de MI club (se escuchan en watchClubData)
     watchClubData();
     // Enlace compartido: #salida=ID
+    if(/encuestas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openPolls();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
+    if(/chatclub/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openClubChat();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
     const hr=location.hash.match(/revisar=([\w-]+)/);
     if(hr){setTimeout(()=>{go('comunidad');const go2=n=>{if(rides.find(x=>x.id===hr[1]))openReview(hr[1]);else if(n<12)setTimeout(()=>go2(n+1),500);else openRide(hr[1])};go2(0)},600);history.replaceState(null,'',location.pathname)}

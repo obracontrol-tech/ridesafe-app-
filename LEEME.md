@@ -1,3 +1,11 @@
+## Versión 5.6 — Habla con tu club: chat y encuestas
+- Comunidad → nuevo apartado «Habla con tu club».
+- 💬 Chat del club: un chat para todo el club (no solo dentro de cada salida). Solo lo ven los miembros. Aviso «nuevo» cuando hay mensajes sin leer. Cada uno borra los suyos; administradores y jefes pueden borrar cualquiera.
+- 📊 Encuestas: pregunta con 2 a 6 opciones y cierre en 1 día, 3 días, 1 semana o a mano. Plantillas rápidas (hora de salida, ruta larga o corta, dónde almorzar, qué día). Se vota con un toque; los resultados se ven al votar. Se puede cambiar o quitar el voto. Quien la crea o un administrador la cierra o la borra. Botón para mandar el resultado por WhatsApp.
+- La encuesta pendiente sale directamente en Comunidad para votar sin entrar.
+- Al crear una encuesta, a todo el club le llega un aviso al móvil (función «encuestaAviso»).
+- NECESITA: reglas v4.5 (RideSafeIA_reglas_v4.5.txt) y la función (cmd_funcion_v5.6.txt).
+
 ## Versión 5.5 — Temperatura exterior al grabar
 - En la tarjeta del viento sale la temperatura de fuera (y la sensación térmica si es distinta): azul si hace frío, naranja si hace calor. También en la pantalla negra del modo ahorro.
 - En voz al empezar: «Temperatura exterior de 14 grados…» junto con el viento. Y si sube o baja 4 grados durante la ruta, lo dice.
