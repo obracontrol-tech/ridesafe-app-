@@ -1,3 +1,8 @@
+## Versión 5.4.2 — Botones al grabar, bien ordenados
+- 🌙 Modo ahorro (pantalla apagada) pasa a la fila de abajo, junto a Pausa, Terminar, 📷 y SOS: siempre a mano.
+- Brújula, 🔊 voz y centrar van en una fila encima de la tarjeta, a la derecha de «GRABANDO». Ya no flotan sobre el mapa ni los tapa la brújula grande.
+- «⋯» abre Capas y 📡 Compartir con la familia (cuando se está compartiendo, el «⋯» lleva un aro verde).
+
 ## Versión 5.4.1 — Botones de la derecha al grabar
 - Los botones redondos de la derecha (brújula, luna, voz, centrar, capas, compartir) ya no quedan tapados por la tarjeta de abajo.
 - Si no caben, se quedan los más usados (🌙 ahorro, 🔊 voz, centrar) y el resto va al botón «⋯»: al tocarlo salen al lado y se cierran solos.
