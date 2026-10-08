@@ -511,6 +511,14 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvbtns .lvsos{width:50px!important;background:rgba(127,29,29,.85)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .lvside button{width:48px!important;height:48px!important;font-size:20px!important}
 .lvside button.on{background:rgba(239,68,68,.85)!important}
+/* v5.4.1 — Botones de la derecha: si no caben encima de la tarjeta, los menos usados van a «⋯» */
+.lvside{flex-wrap:wrap-reverse;align-content:flex-start;column-gap:10px}
+.lvside .lvhid{display:none!important;order:10}
+.lvside .lvmore{order:9;font-size:26px!important;font-weight:900;line-height:1}
+.lvside.open .lvhid{display:grid!important}
+.lvside.open .lvmore{background:var(--lime)!important;color:var(--on-lime)!important}
+/* La atribución del mapa no tapa la tarjeta: arriba a la izquierda y recogida */
+#app.live #map .maplibregl-ctrl-bottom-right{top:calc(env(safe-area-inset-top) + 70px);bottom:auto;right:auto;left:0}
 .lvbanner{background:rgba(20,83,45,.78)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.18)}
 .lvbanner.off{background:rgba(127,29,29,.8)!important}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.78)!important}}
@@ -840,7 +848,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button onclick="toggleRec()" id="recBtn">INICIAR</button>
   </div>
   <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div></div>
-  <div class="lv lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div>
+  <div class="lv lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button class="lvmore" onclick="lvSideMore()" aria-label="Más botones" style="display:none">⋯</button></div>
   <div class="lv lvpanel">
     <span class="lvstate" id="lvState">● GRABANDO</span>
     <div class="lvstats">
@@ -1017,7 +1025,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.4.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5383,7 +5391,7 @@ async function startLive(opt){
   live={on:true,paused:false,voice:store.get('voice',true),follow:true,pts:[],km:0,up:0,lastAlt:null,startT:Date.now(),pausedMs:0,pauseStart:0,speed:0,alt:null,
     rideId:opt.rideId||null,rideTitle:opt.title||'',hike:opt.hike!=null?!!opt.hike:isHike(),members:{},mMarkers:{},lastPush:0,lastPushLL:null,warned:{},off:0,lastReroute:0,nav:null,wps:opt.wps||null};
   live.mk='L'+live.startT;
-  $('app').classList.add('live');$('s-rutas').classList.add('live');
+  $('app').classList.add('live');$('s-rutas').classList.add('live');setTimeout(()=>{lvSideFit(true);document.querySelectorAll('#map .maplibregl-compact-show').forEach(e=>e.classList.remove('maplibregl-compact-show'))},400);
   rideMarkers.forEach(m=>m.remove());
   $('lvVoice').textContent=live.voice?'🔊':'🔇';
   $('lvGroup').style.display=live.rideId?'block':'none';
@@ -5509,6 +5517,25 @@ function lwStart(){clearInterval(live.wxT);live.wxT=setInterval(lwTick,60000);se
 // Al volver a encender la pantalla: se pinta todo de una vez
 document.addEventListener('visibilitychange',()=>{if(live.on&&!lowPow()){try{setLine(map,live.pts,'track','#60A5FA');renderLive();lwRender()}catch(e){}}});
 
+
+/* v5.4.1 — Encaja los botones de la derecha en el hueco que deja la tarjeta de abajo */
+function lvSideFit(force){
+  const sd=document.querySelector('.lvside'),pn=document.querySelector('.lvpanel');if(!sd||!pn||!live.on)return;
+  const pTop=[...pn.children].filter(e=>e.offsetParent).reduce((m,e)=>Math.min(m,e.getBoundingClientRect().top),1e9);
+  const key=Math.round(pTop)+'|'+innerHeight;if(!force&&sd.__k===key)return;sd.__k=key;
+  const btns=[...sd.querySelectorAll('button:not(.lvmore)')],more=sd.querySelector('.lvmore');
+  btns.forEach(b=>b.classList.remove('lvhid'));more.style.display='none';sd.style.maxHeight='';
+  const top=sd.getBoundingClientRect().top,avail=pTop-top-10,size=(btns[0]&&btns[0].offsetHeight)||48,gap=12;
+  sd.style.maxHeight=Math.max(size,avail)+'px';
+  const n=Math.floor((avail+gap)/(size+gap));if(n>=btns.length){sd.classList.remove('open');return}
+  // Orden de importancia: modo ahorro, voz, centrar, brújula, capas, compartir con la familia
+  const keep=new Set([1,2,3,0,4,5].slice(0,Math.max(1,n-1)));
+  btns.forEach((b,k)=>{if(!keep.has(k))b.classList.add('lvhid')});more.style.display='grid';
+}
+function lvSideMore(){const sd=document.querySelector('.lvside');sd.classList.toggle('open');vib(10);
+  clearTimeout(sd.__t);if(sd.classList.contains('open'))sd.__t=setTimeout(()=>sd.classList.remove('open'),6000)}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.lvside .lvhid');if(b){const sd=document.querySelector('.lvside');setTimeout(()=>sd.classList.remove('open'),250)}},true);
+addEventListener('resize',()=>{if(live.on)setTimeout(()=>lvSideFit(true),200)});
 function onFix(pos){
   if(!live.on)return;
   const c=pos.coords;if(c.accuracy>40)return;
@@ -5601,6 +5628,7 @@ const elapsed=()=>live.on?Math.max(0,(live.paused?live.pauseStart:Date.now())-li
 function clock(ms){const s=Math.floor(ms/1000);return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function renderLive(){
   if(!live.on||lowPow())return;
+  setTimeout(lvSideFit,0);
   $('lvSpeed').textContent=live.paused?'—':Math.round(live.speed||0);
   $('lvKm').textContent=live.km.toFixed(2);
   $('lvTime').textContent=clock(elapsed());

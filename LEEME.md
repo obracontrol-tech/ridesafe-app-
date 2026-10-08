@@ -1,3 +1,8 @@
+## Versión 5.4.1 — Botones de la derecha al grabar
+- Los botones redondos de la derecha (brújula, luna, voz, centrar, capas, compartir) ya no quedan tapados por la tarjeta de abajo.
+- Si no caben, se quedan los más usados (🌙 ahorro, 🔊 voz, centrar) y el resto va al botón «⋯»: al tocarlo salen al lado y se cierran solos.
+- El texto de los créditos del mapa (Waymarked Trails, OpenStreetMap…) va arriba a la izquierda y recogido.
+
 ## Versión 5.4 — Revisión antes de salir
 - En cada salida programada: botón «✅ Revisión antes de salir · tiempo y lista».
 - Semáforo 🟢🟡🔴 con los avisos (tormenta, rachas, lluvia, calor, frío/hielo, llegar de noche o salir antes del amanecer).
