@@ -503,6 +503,9 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvwind .lwt{flex:1;min-width:0}.lvwind b{display:block;font-size:15px;font-weight:900}
 .lvwind small{display:block;font-size:12px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lvwind .lws{font-size:16px;opacity:.7}
+.lvwind .lwtemp{flex-shrink:0;text-align:center;padding:2px 10px;border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)}
+.lvwind .lwtemp b{font-size:22px;font-weight:900;line-height:1.05}.lvwind .lwtemp small{font-size:11px}
+.lvwind .lwtemp.hot b{color:#FB923C}.lvwind .lwtemp.cold b{color:#7DD3FC}
 .lvwind.fav{border-color:rgba(34,197,94,.8)}.lvwind.fav .lwa{color:#4ADE80}
 .lvwind.bad{border-color:rgba(249,115,22,.85)}.lvwind.bad .lwa{color:#FB923C}
 .lvwind.warn{background:rgba(127,29,29,.7);border-color:rgba(239,68,68,.95)}
@@ -1030,7 +1033,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.4.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4156,7 +4159,7 @@ function saverOn(){
 }
 function saverTick(){
   const d=$('svData');if(!d||!live.on){saverOff();return}
-  d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`+(live.wx?` · 🌬️ ${live.wx.spd} km/h ${(REL_T[windRel(live.wx,live.hdg??null)]||[""])[0]}`:"");
+  d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`+(live.wx?`${live.wx.temp!=null?' · 🌡️ '+live.wx.temp+'°':''} · 🌬️ ${live.wx.spd} km/h ${(REL_T[windRel(live.wx,live.hdg??null)]||[""])[0]}`:"");
   if(Math.floor(Date.now()/1000)%30===0){const i=$('saver').querySelector('.sv-in');i.style.transform=`translate(${Math.round(Math.random()*60-30)}px,${Math.round(Math.random()*160-80)}px)`}
 }
 function saverOff(){clearInterval(saverT);const d=$('saver');if(d)d.classList.remove('show');try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}
@@ -5426,7 +5429,7 @@ async function startLive(opt){
 const lowPow=()=>document.visibilityState!=='visible'||!!($('saver')&&$('saver').classList.contains('show'));
 async function liveWx(lat,lng){
   try{   // v5.3: consenso de 3 modelos + probabilidad de lluvia
-    const [m,b]=await Promise.allSettled([getJSON(omUrl(lat,lng,'current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code&hourly=precipitation,weather_code,wind_gusts_10m&forecast_hours=3'),9000),
+    const [m,b]=await Promise.allSettled([getJSON(omUrl(lat,lng,'current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code,temperature_2m,apparent_temperature&hourly=precipitation,weather_code,wind_gusts_10m&forecast_hours=3'),9000),
       getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&hourly=precipitation_probability&forecast_hours=3&timezone=auto`,9000)]);
     if(m.status!=='fulfilled')throw m.reason;const d=m.value,C=d.current,H=d.hourly;
     const sp=omVals(C,'wind_speed_10m'),dr=omVals(C,'wind_direction_10m'),gs=omVals(C,'wind_gusts_10m');
@@ -5435,23 +5438,24 @@ async function liveWx(lat,lng){
     const ppE=b.status==='fulfilled'?Math.max(0,...((b.value.hourly||{}).precipitation_probability||[]).slice(0,2).map(x=>x||0)):0;
     const pp=Math.max(ppE,rc.of?Math.round(rc.n/rc.of*100):0);
     const rainNow=median(omVals(C,'precipitation'))||0;
-    return{spd:Math.round(median(sp)),dir:dirMean(dr,sp),gust:Math.round(vmax(gs)||0),gmax:Math.round(Math.max(vmax(gs)||0,vmax(gh)||0)),rain:rainNow,pp,
+    const tt=median(omVals(C,'temperature_2m')),ff=median(omVals(C,'apparent_temperature'));
+    return{temp:tt!=null?Math.round(tt):null,feel:ff!=null?Math.round(ff):null,spd:Math.round(median(sp)),dir:dirMean(dr,sp),gust:Math.round(vmax(gs)||0),gmax:Math.round(Math.max(vmax(gs)||0,vmax(gh)||0)),rain:rainNow,pp,
       storm:rc.st>=2||(rc.st>=1&&ppE>=50)||omVals(C,'weather_code').filter(x=>x>=95).length>=2,conf:confTxt(rc.n,rc.of),rainN:rc.n,rainOf:rc.of,models:sp.length,src:OMM_SRC};
   }catch(e){console.warn('3 modelos (ruta): uso Open-Meteo normal',e)}
   try{
-    const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code&hourly=precipitation_probability,weather_code,wind_gusts_10m&forecast_hours=3&wind_speed_unit=kmh&timezone=auto`);
+    const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+lat).toFixed(3)}&longitude=${(+lng).toFixed(3)}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,weather_code,temperature_2m,apparent_temperature&hourly=precipitation_probability,weather_code,wind_gusts_10m&forecast_hours=3&wind_speed_unit=kmh&timezone=auto`);
     const c=d.current;if(!c||c.wind_speed_10m==null)throw new Error('sin datos');const H=d.hourly||{};
     const pp=Math.max(0,...(H.precipitation_probability||[]).slice(0,2).map(x=>x||0));
     const storm=(c.weather_code>=95)||(H.weather_code||[]).slice(0,2).some(x=>x>=95);
     const gmax=Math.max(c.wind_gusts_10m||0,...(H.wind_gusts_10m||[]).slice(0,2).map(x=>x||0));
-    return{spd:Math.round(c.wind_speed_10m),dir:Math.round(c.wind_direction_10m||0),gust:Math.round(c.wind_gusts_10m||0),gmax:Math.round(gmax),rain:c.precipitation||0,pp,storm,src:'Open‑Meteo'};
+    return{temp:c.temperature_2m!=null?Math.round(c.temperature_2m):null,feel:c.apparent_temperature!=null?Math.round(c.apparent_temperature):null,spd:Math.round(c.wind_speed_10m),dir:Math.round(c.wind_direction_10m||0),gust:Math.round(c.wind_gusts_10m||0),gmax:Math.round(gmax),rain:c.precipitation||0,pp,storm,src:'Open‑Meteo'};
   }catch(e){console.warn('viento en ruta: uso MET Norway',e)}
   const d=await metNo(lat,lng);const ts=((d.properties||{}).timeseries||[]);if(!ts.length)throw new Error('sin datos');
   const now=Date.now();let k=ts.findIndex(x=>new Date(x.time).getTime()>now-3600e3);if(k<0)k=0;
   const i=ts[k].data.instant.details||{};let pp=0,storm=false;
   for(let j=k;j<Math.min(ts.length,k+2);j++){const n1=ts[j].data.next_1_hours||{};const x=n1.details||{};pp=Math.max(pp,x.probability_of_precipitation??((x.precipitation_amount||0)>0.2?70:0));if(/thunder/.test(String((n1.summary||{}).symbol_code||'')))storm=true}
   const g=Math.round((i.wind_speed_of_gust??(i.wind_speed||0)*1.5)*3.6);
-  return{spd:Math.round((i.wind_speed||0)*3.6),dir:Math.round(i.wind_from_direction||0),gust:g,gmax:g,rain:((ts[k].data.next_1_hours||{}).details||{}).precipitation_amount||0,pp,storm,src:'MET Norway'};
+  return{temp:i.air_temperature!=null?Math.round(i.air_temperature):null,feel:null,spd:Math.round((i.wind_speed||0)*3.6),dir:Math.round(i.wind_from_direction||0),gust:g,gmax:g,rain:((ts[k].data.next_1_hours||{}).details||{}).precipitation_amount||0,pp,storm,src:'MET Norway'};
 }
 /* Rumbo: de dónde a dónde vas en los últimos ~250 m */
 function liveHeading(){
@@ -5470,11 +5474,15 @@ function lwRender(){
   const deg=h!=null?(w.dir-h+360)%360:w.dir;
   const warn=live.wxWarn&&Date.now()-live.wxWarn.t<20*60000?live.wxWarn:null;
   el.style.display='flex';el.classList.toggle('warn',!!warn);el.classList.toggle('fav',rel==='favor');el.classList.toggle('bad',rel==='contra'&&w.spd>=15);
-  const html=`<span class="lwa">${windArrow(deg,30)}</span><span class="lwt"><b>${w.spd} km/h ${rel?REL_T[rel][0]:'del '+dirOf(w.dir)[0]}</b><small>${warn?esc(warn.txt):(rel&&rel!=='flojo'?REL_T[rel][1]+' · ':'')+'rachas '+w.gust+' · del '+dirOf(w.dir)[0]}</small></span><span class="lws">🔊</span>`;
+  const html=`<span class="lwa">${windArrow(deg,30)}</span><span class="lwt"><b>${w.spd} km/h ${rel?REL_T[rel][0]:'del '+dirOf(w.dir)[0]}</b><small>${warn?esc(warn.txt):(rel&&rel!=='flojo'?REL_T[rel][1]+' · ':'')+'rachas '+w.gust+' · del '+dirOf(w.dir)[0]}</small></span>${w.temp!=null?`<span class="lwtemp ${tempCls(w)}"><b>${w.temp}°</b><small>${w.feel!=null&&Math.abs(w.feel-w.temp)>=2?'sens. '+w.feel+'°':'fuera'}</small></span>`:''}<span class="lws">🔊</span>`;
   if(el.__h!==html){el.__h=html;el.innerHTML=html}
 }
 function lwText(){const w=live.wx;const rel=windRel(w,live.hdg??null);live.wxSaidT=Date.now();live.wxSaidRel=rel;
-  return w.spd<8?`Viento flojo, ${w.spd} kilómetros por hora.`:`Viento del ${dirOf(w.dir)[0]} de ${w.spd} kilómetros por hora${rel?', '+REL_T[rel][1]:''}. Rachas de ${w.gust}.`}
+  live.tSaid=w.temp;
+  return tempText(w)+' '+(w.spd<8?`Viento flojo, ${w.spd} kilómetros por hora.`:`Viento del ${dirOf(w.dir)[0]} de ${w.spd} kilómetros por hora${rel?', '+REL_T[rel][1]:''}. Rachas de ${w.gust}.`)}
+const tempCls=w=>{const f=w.feel??w.temp;return f==null?'':f>=32?'hot':f<=5?'cold':''};
+function tempText(w){if(w.temp==null)return '';const f=w.feel??w.temp;
+  return `Temperatura exterior de ${w.temp} grados${w.feel!=null&&Math.abs(w.feel-w.temp)>=2?', sensación de '+w.feel:''}.`}
 function lwSay(tap){
   if(!live.wx){if(tap)toast('Buscando el viento…');return}
   const t=lwText();if(tap&&!live.voice)toast('🌬️ '+t);speak(t);
@@ -5500,6 +5508,12 @@ async function lwTick(){
       const strong=live.hike?60:45;
       if(n.storm)lwWarn('storm','⛈️ Tormenta en la próxima hora','Atención. Hay tormenta prevista en la próxima hora. Busca un sitio para resguardarte.',Q);
       else if(n.rain>0.3||n.pp>=60)lwWarn('rain',`🌧️ Lluvia ${n.rain>0.3?'ahora':(n.conf?n.conf+' ':'')+'en la próxima hora'+(n.rainOf?' ('+n.rainN+' de '+n.rainOf+' modelos)':' ('+n.pp+'%)')}`,`Atención. ${n.rain>0.3?'Está lloviendo':'Es probable que llueva en la próxima hora'}. El suelo resbala: frena antes en las curvas.`,Q);
+      if(n.temp!=null){const f=n.feel??n.temp;
+        if(f>=36)lwWarn('hot2',`🥵 Mucho calor: ${n.temp}°`,`Atención. Mucho calor, ${n.temp} grados. Bebe cada 15 minutos, moja la cabeza y busca sombra en las paradas.`,Q);
+        else if(f>=32)lwWarn('hot',`☀️ Calor: ${n.temp}°`,`Hace calor, ${n.temp} grados. Bebe a menudo y no esperes a tener sed.`,Q);
+        if(f<=1)lwWarn('ice',`🥶 ${n.temp}°: puede haber hielo`,`Atención. Temperatura de ${n.temp} grados${n.feel!=null?', sensación de '+n.feel:''}. Puede haber hielo en sombras y puentes: baja la velocidad en las curvas.`,Q);
+        else if(f<=5)lwWarn('cold',`🧤 Frío: ${n.temp}°`,`Hace frío, ${n.temp} grados${n.feel!=null&&n.feel!==n.temp?', sensación de '+n.feel:''}. Abrígate bien en las bajadas.`,Q);
+        if(!first&&live.tSaid!=null&&Math.abs(n.temp-live.tSaid)>=4){Q.push(`La temperatura ha ${n.temp>live.tSaid?'subido':'bajado'} a ${n.temp} grados.`);live.tSaid=n.temp}}
       if(n.gmax>=strong||n.spd>=35)lwWarn('gust',`💨 Rachas fuertes de ${n.gmax} km/h`,`Atención. Rachas de viento de ${n.gmax} kilómetros por hora. Agarra fuerte el manillar en zonas abiertas y en las bajadas.`,Q);
     }catch(e){console.warn('viento en ruta',e)}finally{live.wxBusy=false}
   }

@@ -1,3 +1,9 @@
+## Versión 5.5 — Temperatura exterior al grabar
+- En la tarjeta del viento sale la temperatura de fuera (y la sensación térmica si es distinta): azul si hace frío, naranja si hace calor. También en la pantalla negra del modo ahorro.
+- En voz al empezar: «Temperatura exterior de 14 grados…» junto con el viento. Y si sube o baja 4 grados durante la ruta, lo dice.
+- Avisos: ☀️ calor (32°), 🥵 mucho calor (36°), 🧤 frío (5°) y 🥶 posible hielo (1° o menos).
+- Dato de los mismos 3 modelos (ECMWF, ICON, Météo‑France), cada 15 min o cada 8 km.
+
 ## Versión 5.4.2 — Botones al grabar, bien ordenados
 - 🌙 Modo ahorro (pantalla apagada) pasa a la fila de abajo, junto a Pausa, Terminar, 📷 y SOS: siempre a mano.
 - Brújula, 🔊 voz y centrar van en una fila encima de la tarjeta, a la derecha de «GRABANDO». Ya no flotan sobre el mapa ni los tapa la brújula grande.
