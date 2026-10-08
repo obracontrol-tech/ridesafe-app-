@@ -1,3 +1,13 @@
+## Versión 5.7 — Salidas abiertas y clubes cerca
+- Comunidad → «🌍 Cerca de ti: salidas abiertas y clubes» (también para quien no tiene club).
+- Al crear una salida: casilla «🌍 Salida abierta». Necesita el punto de encuentro marcado en el mapa.
+- Los ciclistas a menos de 40 km la ven (solo título, día, hora, punto de encuentro, nivel, km y plazas; nunca rutas ni casas) y pulsan «🙋 Pedir unirme» con un mensaje opcional.
+- El organizador recibe un aviso y en la salida ve «Ciclistas que quieren venir» con Aceptar / No.
+- Al aceptarle, el ciclista recibe un aviso, se apunta solo y ve la salida, el chat y el pelotón en vivo (y le llegan los avisos de pinchazo, esperad…). No ve nada más del club.
+- Clubes cerca: el administrador del club puede «📣 Publicar mi club aquí» (nombre, pueblo, miembros y una frase). Cualquiera de la zona puede entrar con «Unirme». Se quita cuando quiera.
+- Al cancelar una salida abierta se borra su ficha pública.
+- NECESITA: reglas v4.6 (RideSafeIA_reglas_v4.6.txt) y las funciones (cmd_funcion_v5.7.txt).
+
 ## Versión 5.6 — Habla con tu club: chat y encuestas
 - Comunidad → nuevo apartado «Habla con tu club».
 - 💬 Chat del club: un chat para todo el club (no solo dentro de cada salida). Solo lo ven los miembros. Aviso «nuevo» cuando hay mensajes sin leer. Cada uno borra los suyos; administradores y jefes pueden borrar cualquiera.

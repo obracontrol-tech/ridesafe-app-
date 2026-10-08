@@ -660,6 +660,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .popt.mine{border-color:var(--lime)}.popt.win{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
 .popt:disabled{opacity:1}
 .phint{display:block;color:var(--txt2);font-size:12.5px;margin-top:6px}
+/* v5.7 — Salidas abiertas y clubes cerca */
+.opc small{display:block;margin-top:2px;line-height:1.4}
+.opc .opb{flex-basis:100%;display:flex;justify-content:flex-end;margin-top:8px}
+.opc .opb .mini{min-height:44px;padding:0 16px;font-size:15px}
 .pman{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 /* v5.4 — Revisión antes de salir */
 .rv-sem{display:flex;gap:12px;align-items:flex-start;border:2px solid;border-radius:18px;padding:12px 14px;margin:0 0 10px;background:var(--card2)}
@@ -932,6 +936,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="btn btn-lime" onclick="openCreate()"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4m-4 7v5m-2.5-2.5h5"/></svg>Crear salida</button>
     <button class="btn btn-line" onclick="openAllRides()"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Ver salidas</button>
   </div>
+  <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
   <div id="catchHome"></div>
@@ -1049,7 +1054,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.7</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1184,6 +1189,11 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <label class="l">👁️ ¿Para quién es?</label>
     <div class="chips" id="visChips"></div>
     <small id="visNote" style="display:block;color:var(--txt2);margin-top:6px"></small>
+  </div>
+
+  <div class="f">
+    <label class="check" style="margin-bottom:4px"><input type="checkbox" id="cOpen">🌍 Salida abierta: otros ciclistas de la zona pueden pedir unirse</label>
+    <small style="display:block;color:var(--txt2);margin-left:32px">Tú aceptas a cada uno. Solo se ve el punto de encuentro y la hora. Necesita el punto marcado en el mapa (📍).</small>
   </div>
 
   <div class="f">
@@ -1648,6 +1658,7 @@ async function openRide(id,keep){
    ${r.route?`<div class="pstats" style="margin-top:0"><div><b class="num">${r.route.km}</b><span>km</span></div><div><b class="num">+${r.route.up}</b><span>m subida</span></div><div><b class="num">−${r.route.down}</b><span>m bajada</span></div><div><b class="num" style="font-size:16px">${hm(r.route.mins)}</b><span>aprox.</span></div></div>${profileSVG(unpackRoute(r.route).prof)}<button class="btn btn-line" style="margin:8px 0 14px" onclick="showRoute(unpackRoute(rides.find(x=>x.id===${jsq(r.id)}).route))">🗺️ Ver la ruta en el mapa grande</button>`:''}
    <div class="li" style="margin-bottom:10px;cursor:default"><span class="em">🚩</span><div><small>Punto de salida</small><b>${esc(r.start)}</b></div><button class="mini" onclick="guideKey(${gdKey(r.start,r.startLL)},${jsq(r.id)})">🧭 Cómo llegar</button></div>
    <div class="li" style="margin-bottom:16px;cursor:default"><span class="em">📍</span><div><small>Punto de encuentro${r.meetHour?' · '+esc(r.meetHour):''}</small><b>${esc(meetPt)}</b></div><button class="mini" onclick="guideKey(${gdKey(meetPt,r.meetLL||(r.meet?null:r.startLL))},${jsq(r.id)})">🧭 Cómo llegar</button></div>
+   ${r.open&&r.byUid===uid?'<div id="reqBox"></div>':''}${r.guest?'<div class="li" style="cursor:default;margin-bottom:10px;border-color:var(--lime)"><span class="em">🌍</span><div><b>Salida abierta</b><small>Te ha aceptado '+esc(String(r.by||'').split(' ')[0])+'. Ves la salida, el chat y el pelotón en vivo.</small></div></div>':''}
    ${rideLL(r)?'<div class="li" id="wxBox" style="cursor:default;margin-bottom:8px"><span class="em">🌤️</span><div><b>Tiempo previsto</b><small>Consultando…</small></div></div>':''}
    ${r.date>=iso(new Date())?`<button class="btn btn-line" style="width:100%;margin:0 0 16px;border-color:var(--lime);color:var(--lime)" onclick="openReview(${jsq(r.id)})">✅ Revisión antes de salir · tiempo y lista</button>`:''}
    <div class="chips" style="margin-bottom:14px">${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.pace?`<span class="tag">Ritmo ${esc(String(r.pace).toLowerCase())}</span>`:''}<span class="tag">${r.seats?p.length+'/'+r.seats+' plazas':'Sin límite de plazas'}</span><span class="tag">Organiza ${esc(r.by)}</span></div>
@@ -1672,7 +1683,7 @@ async function openRide(id,keep){
    </div>`;
   if(!keep)openSheet('sh-ride');
   else{const ci=$('chatIn');if(ci&&draft){ci.value=draft}if(ci&&focused)ci.focus({preventScroll:true});$('sh-ride').scrollTop=_sh}
-  drawRideMap(r);fillWxDetail(r);watchChat(r.id);
+  drawRideMap(r);fillWxDetail(r);watchChat(r.id);watchReqs(r);if(r.open&&r.byUid===uid)renderReqs(r.id);
   if($('catchBox'))fillCatch(r.id);
 }
 /* ===================================================================
@@ -1859,7 +1870,7 @@ function drawRideMap(r){
 }
 function cancelRide(id){
   if(!ready()||!confirm('¿Cancelar esta salida? Se borrará para todos.'))return;
-  db.collection('rides').doc(id).delete().catch(netErr);closeSheets();toast('Salida cancelada');
+  db.collection('rides').doc(id).delete().catch(netErr);db.collection('open').doc(id).delete().catch(()=>{});closeSheets();toast('Salida cancelada');
 }
 
 /* ===== Crear salida ===== */
@@ -2075,7 +2086,7 @@ function openCreate(){
   ['gpsStart','gpsMeet','mapStart','mapMeet'].forEach(i=>$(i).classList.remove('ok'));
   pickLL.start=pickLL.meet=null;$('okStart').classList.remove('on');$('okMeet').classList.remove('on');
   formRoute=null;renderRouteBox();resetPlanForm(null);
-  fillVisChips('');
+  fillVisChips('');$('cOpen').checked=false;
   document.querySelectorAll('.err').forEach(e=>e.style.display='none');
   $('cDate').value=iso(addDays(1));$('cDate').min=iso(new Date());
   openSheet('sh-create');
@@ -2106,18 +2117,19 @@ function publishRide(){
   const r={title:$('cTitle').value.trim().slice(0,40),date,hour,start,meet,meetHour:same?'':($('cMeetHour').value||''),
     vis:myGroup?'club':'me',group:myGroup?myGroup.id:null,gp:myGroup?visGp():'',type:chipVal('typeChips')||'',pace:chipVal('paceChips')||'',km:Math.max(0,Math.min(400,Math.round(+$('cKm').value||0))),seats:+$('cSeats').value||0,
     note:$('cNote').value.trim().slice(0,200),by:myName(),byUid:uid,people:{[uid]:myName()},createdAt:FV.serverTimestamp(),
-    startLL:pickLL.start||null,meetLL:same?(pickLL.start||null):(pickLL.meet||null),route:formRoute?{...formRoute}:null,...collectPlan()};
+    startLL:pickLL.start||null,meetLL:same?(pickLL.start||null):(pickLL.meet||null),route:formRoute?{...formRoute}:null,...collectPlan(),open:!!$('cOpen').checked};
+  if(r.open&&!(r.meetLL||r.startLL)){toast('Para que sea abierta, marca el punto de encuentro en el mapa (📍)');return}
   if(r.route){delete r.route.a;if(!r.km)r.km=Math.round(r.route.km)}
   if(editingId){
     const id=editingId,old=rides.find(x=>x.id===id);editingId=null;
     const up={...r};['by','byUid','people','createdAt'].forEach(k=>delete up[k]);if(old&&!isOwner(old)){up.group=old.group||null}up.updatedAt=FV.serverTimestamp();
-    db.collection('rides').doc(id).update(up).catch(netErr);
+    db.collection('rides').doc(id).update(up).then(()=>{if(old&&old.byUid===uid&&(up.open||old.open))syncOpen(id,{...old,...up})}).catch(netErr);
     closeSheets();toast('Cambios guardados');
     const changed=old&&(old.date!==r.date||old.hour!==r.hour||old.start!==r.start||old.meet!==r.meet||old.meetHour!==r.meetHour);
     setTimeout(()=>{openRide(id);if(changed&&names(old).length>1&&confirm('Has cambiado día, hora o lugar. ¿Avisar a los apuntados por WhatsApp?'))notifyChange(id)},500);
     return;
   }
-  ref.set(r).catch(netErr);
+  ref.set(r).then(()=>{if(r.open)syncOpen(ref.id,r)}).catch(netErr);
   addPoints(20,{created:FV.increment(1)});
   go('comunidad');closeSheets();
   setTimeout(()=>openRide(ref.id),350);
@@ -2344,8 +2356,9 @@ function watchClubData(){
   if(key===clubSubKey)return;clubSubKey=key;
   clubSubs.forEach(f=>{try{f()}catch(e){}});clubSubs=[];
   ridesClub=[];ridesMine=[];feed=[];pois=[];rides=[];
-  const merge=()=>{const m=new Map();[...ridesClub,...ridesMine].forEach(r=>m.set(r.id,r));rides=[...m.values()];ridesLoaded=true;renderRides();drawRideMarkers();
+  const merge=()=>{const m=new Map();[...Object.values(ridesGuest),...ridesClub,...ridesMine].forEach(r=>m.set(r.id,r));rides=[...m.values()];ridesLoaded=true;renderRides();drawRideMarkers();
     if(openRideId&&$('sh-ride').classList.contains('show'))openRide(openRideId,true)};
+  window.clubMerge=merge;watchMyReqs();
   const docs=s=>s.docs.map(d=>({id:d.id,...d.data()}));
   // Mis propias salidas (también las que hice sin club)
   clubSubs.push(db.collection('rides').where('byUid','==',uid).limit(300).onSnapshot(s=>{ridesMine=docs(s);merge()},e=>{console.warn('mis salidas',e);ridesLoaded=true;renderRides()}));
@@ -3088,7 +3101,7 @@ function editRide(id){
   if(r.startLL)setPicked('start',r.startLL);if(r.meetLL&&!same)setPicked('meet',r.meetLL);
   const pickChip=(id,v)=>document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.textContent===v));
   pickChip('typeChips',r.type);pickChip('paceChips',r.pace);
-  fillVisChips(r.gp||'');
+  fillVisChips(r.gp||'');$('cOpen').checked=!!r.open;
   formRoute=r.route?{...r.route}:null;renderRouteBox();resetPlanForm(r);
 }
 function notifyChange(id){
@@ -4305,6 +4318,129 @@ function clubSend(){
   db.collection('groups').doc(me.group).collection('msgs').add({uid,name:myName(),text,ts:Date.now()}).catch(netErr);
 }
 function clubDel(id){if(!confirm('¿Borrar este mensaje?'))return;db.collection('groups').doc(me.group).collection('msgs').doc(id).delete().catch(netErr)}
+
+/* ===== v5.7 — SALIDAS ABIERTAS Y CLUBES CERCA =====
+   · open/{rideId}: ficha pública de una salida abierta (solo punto de encuentro, hora y nivel).
+   · open/{rideId}/reqs/{uid}: «quiero unirme»; el organizador acepta o rechaza.
+   · Al aceptarle, el ciclista se apunta solo y ve la salida, el chat y el pelotón (reglas v4.6).
+   · clubdir/{code}: clubes que su administrador decide publicar. */
+const OPEN_KM=40;
+const cellOf=(lat,lng)=>Math.floor(lat*2)+'_'+Math.floor(lng*2);   // cuadrículas de ~50 km
+const cellsNear=(lat,lng)=>{const a=Math.floor(lat*2),b=Math.floor(lng*2),o=[];for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)o.push((a+i)+'_'+(b+j));return o};
+let ridesGuest={},guestSubs={},myReqSubs={},myReqs={};
+function openLL(r){return r.meetLL||r.startLL||null}
+async function syncOpen(id,r){
+  if(!db||!uid)return;const ref=db.collection('open').doc(id);
+  const ll=openLL(r);
+  if(!r.open||!ll){ref.delete().catch(()=>{});return}
+  const lat=+(+ll.lat).toFixed(4),lng=+(+ll.lng).toFixed(4);
+  await ref.set({byUid:uid,by:String(myName()).split(' ')[0].slice(0,24)||'Ciclista',title:String(r.title||'Salida abierta').slice(0,40),date:r.date,hour:r.hour,
+    meet:String(r.meet||r.start).slice(0,120),lat,lng,cell:cellOf(lat,lng),type:String(r.type||'').slice(0,30),pace:String(r.pace||'').slice(0,30),
+    km:+r.km||0,seats:+r.seats||0,club:String(r.group&&myGroup?myGroup.name:'').slice(0,30),hike:isHikeRide(r),t:Date.now()}).catch(e=>console.warn('salida abierta',e));
+}
+/* ---- Buscador ---- */
+let openTab='rides',openList=[],clubList=[],openHere=null;
+async function openNearby(tab){
+  if(tab)openTab=tab;
+  $('rideBody').innerHTML=sheetHead('🌍 Cerca de ti')+`<div class="chips" style="margin:0 0 12px"><button class="chip${openTab==='rides'?' on':''}" onclick="openNearby('rides')">🚴 Salidas abiertas</button><button class="chip${openTab==='clubs'?' on':''}" onclick="openNearby('clubs')">👥 Clubes</button></div><div id="openBody"><div class="empty">Buscando cerca de ti…</div></div>`;
+  openRideId=null;openSheet('sh-ride');
+  if(!openHere){openHere=myLL();if(!openHere&&navigator.geolocation)openHere=await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{timeout:8000,maximumAge:600000}))}
+  if(!openHere){$('openBody').innerHTML='<div class="empty">Activa la ubicación del móvil para ver lo que hay cerca.</div>';return}
+  const cells=cellsNear(openHere.lat,openHere.lng);
+  try{
+    if(openTab==='rides'){
+      const s=await db.collection(openTab==='rides'?'open':'clubdir').where('cell','in',cells).limit(200).get();
+      const today=iso(new Date());
+      openList=s.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.date>=today).map(o=>({...o,d:hav([openHere.lat,openHere.lng],[o.lat,o.lng])})).filter(o=>o.d<=OPEN_KM).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour));
+      renderOpenRides();
+    }else{
+      const s=await db.collection('clubdir').where('cell','in',cells).limit(100).get();
+      clubList=s.docs.map(d=>({id:d.id,...d.data()})).map(o=>({...o,d:hav([openHere.lat,openHere.lng],[o.lat,o.lng])})).filter(o=>o.d<=OPEN_KM*1.5).sort((a,b)=>a.d-b.d);
+      renderClubDir();
+    }
+  }catch(e){console.warn('cerca',e);$('openBody').innerHTML='<div class="empty">No se pudo buscar. Si acabas de actualizar, hay que publicar las reglas v4.6.</div>'}
+}
+function renderOpenRides(){
+  const B=$('openBody');if(!B)return;
+  const safe='<small style="display:block;color:var(--txt2);margin:2px 2px 12px;line-height:1.45">🔒 Solo se ve el punto de encuentro y la hora. Pides unirte y el organizador te acepta. Quedad siempre en sitios públicos.</small>';
+  B.innerHTML=safe+(openList.length?openList.map(o=>{const q=myReqs[o.id],mine=o.byUid===uid;
+    const st=mine?'<span class="tag lime">Es tuya</span>':q?(q.status==='ok'?'<span class="tag lime">✅ Aceptado</span>':q.status==='no'?'<span class="tag">No aceptada</span>':'<span class="tag">⏳ Pendiente</span>'):'';
+    const btn=mine?`<button class="mini" onclick="openRide(${jsq(o.id)})">Ver</button>`:q?(q.status==='ok'?`<button class="mini ok" onclick="guestOpen(${jsq(o.id)})">Ver salida</button>`:q.status==='pending'?`<button class="mini" onclick="reqCancel(${jsq(o.id)})">Anular</button>`:''):`<button class="mini ok" onclick="reqJoin(${jsq(o.id)})">🙋 Pedir unirme</button>`;
+    return `<div class="li opc" style="cursor:default;margin-bottom:10px;align-items:flex-start;flex-wrap:wrap"><span class="em">${o.hike?'🥾':'🚴'}</span><div style="flex:1;min-width:0"><b>${esc(o.title)}</b><small>${esc(fmtDate(o.date))} · ${esc(o.hour)} · a ${o.d<10?o.d.toFixed(1).replace('.',','):Math.round(o.d)} km</small><small>📍 ${esc(String(o.meet).split(',').slice(0,2).join(','))}</small><small>${[o.type,o.pace&&'ritmo '+String(o.pace).toLowerCase(),o.km?o.km+' km':'',o.seats?o.seats+' plazas':''].filter(Boolean).map(esc).join(' · ')}</small><small>Organiza ${esc(o.by)}${o.club?' · '+esc(o.club):''} ${st}</small></div>${btn?`<div class="opb">${btn}</div>`:''}</div>`}).join('')
+    :`<div class="empty">No hay salidas abiertas a menos de ${OPEN_KM} km.<br>¡Crea una y marca «🌍 Abierta»!</div>`);
+}
+function renderClubDir(){
+  const B=$('openBody');if(!B)return;
+  const adm=myGroup&&isClubAdm();const pub=adm&&clubList.some(c=>c.id===myGroup.id);
+  B.innerHTML=(adm?`<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="${pub?'clubDirOff()':'clubDirOn()'}">${pub?'🙈 Quitar mi club de la lista':'📣 Publicar mi club aquí'}</button>`:'')+
+   (clubList.length?clubList.map(c=>{const mine=myGroup&&myGroup.id===c.id;
+     return `<div class="li opc" style="cursor:default;margin-bottom:10px;align-items:flex-start"><span class="em">${c.hike?'🥾':'👥'}</span><div style="flex:1;min-width:0"><b>${esc(c.name)}</b><small>📍 ${esc(c.town||'')} · a ${Math.round(c.d)} km · ${+c.members||1} miembros</small>${c.desc?`<small>${esc(c.desc)}</small>`:''}</div><div style="flex-shrink:0">${mine?'<span class="tag lime">Tu club</span>':`<button class="mini ok" onclick="clubDirJoin(${jsq(c.id)},${jsq(c.name)})">Unirme</button>`}</div></div>`}).join('')
+    :'<div class="empty">Aún no hay clubes publicados cerca.</div>');
+}
+async function clubDirOn(){
+  if(!myGroup||!isClubAdm())return;
+  const desc=(prompt('Una frase para presentar el club (opcional). Ej.: Salidas de carretera sábados y domingos, ritmo tranquilo','')||'').trim().slice(0,140);
+  if(!await askConfirm('¿Publicar tu club?','Aparecerá en «Clubes cerca» con su nombre, pueblo y número de miembros. Cualquier ciclista de la zona podrá entrar con un botón. Puedes quitarlo cuando quieras y expulsar a quien no quieras.','Publicar'))return;
+  const ll=openHere||myLL();if(!ll){toast('Activa la ubicación');return}
+  const lat=+(+ll.lat).toFixed(2),lng=+(+ll.lng).toFixed(2);   // ~1 km: zona, no la casa de nadie
+  const town=await reverseName({lat,lng}).then(t=>t.split(',').pop().trim()).catch(()=>'');
+  await db.collection('clubdir').doc(myGroup.id).set({name:String(myGroup.name||'Club').slice(0,30),town:town.slice(0,40),desc,lat,lng,cell:cellOf(lat,lng),members:Object.keys(myGroup.members||{}).length,hike:isHike(),t:Date.now()}).then(()=>toast('📣 Tu club ya sale en «Clubes cerca»')).catch(netErr);
+  openNearby('clubs');
+}
+async function clubDirOff(){if(!myGroup)return;await db.collection('clubdir').doc(myGroup.id).delete().catch(netErr);toast('Tu club ya no sale en la lista');openNearby('clubs')}
+async function clubDirJoin(code,name){
+  if(myGroup&&!await askConfirm('¿Cambiar de club?',`Ahora estás en «${myGroup.name}». Al unirte a «${name}» dejarás de ver las salidas de tu club actual.`,'Cambiar'))return;
+  closeSheets();joinGroup(code);
+}
+/* ---- Pedir unirse / anular ---- */
+async function reqJoin(id){
+  if(!ready())return;const o=openList.find(x=>x.id===id);if(!o)return;
+  const msg=(prompt(`Mensaje para ${o.by} (opcional). Ej.: Hola, voy a ritmo tranquilo y llevo luces`,'')||'').trim().slice(0,140);
+  try{await db.collection('open').doc(id).collection('reqs').doc(uid).set({uid,name:myName(),msg,t:Date.now(),status:'pending'});
+    const L=store.get('myReqs',[]);if(!L.includes(id))L.unshift(id);store.set('myReqs',L.slice(0,40));watchMyReqs();
+    toast('🙋 Petición enviada. Te avisaremos cuando te acepte');vib(30);myReqs[id]={status:'pending'};renderOpenRides();
+  }catch(e){netErr(e)}
+}
+async function reqCancel(id){db.collection('open').doc(id).collection('reqs').doc(uid).delete().catch(()=>{});store.set('myReqs',store.get('myReqs',[]).filter(x=>x!==id));delete myReqs[id];guestDrop(id);renderOpenRides()}
+/* ---- Mis peticiones: al aceptarme, me apunto solo y veo la salida ---- */
+function watchMyReqs(){
+  if(!db||!uid)return;
+  store.get('myReqs',[]).forEach(id=>{if(myReqSubs[id])return;
+    myReqSubs[id]=db.collection('open').doc(id).collection('reqs').doc(uid).onSnapshot(s=>{
+      const q=s.exists?s.data():null;const was=myReqs[id]&&myReqs[id].status;myReqs[id]=q;
+      if(!q){guestDrop(id);return}
+      if(q.status==='ok'){guestWatch(id,was&&was!=='ok')}
+      if($('openBody')&&openTab==='rides')renderOpenRides();
+    },()=>{});
+  });
+}
+function guestWatch(id,fresh){
+  if(guestSubs[id])return;
+  guestSubs[id]=db.collection('rides').doc(id).onSnapshot(s=>{
+    if(!s.exists){guestDrop(id);return}
+    const r={id:s.id,...s.data(),guest:true};ridesGuest[id]=r;
+    const J=store.get('guestJoined',[]);
+    if(!(r.people||{})[uid]&&!J.includes(id)&&r.date>=iso(new Date())){store.set('guestJoined',[id,...J].slice(0,60));db.collection('rides').doc(id).update({['people.'+uid]:myName()}).then(()=>{if(fresh)toast('✅ ¡Te han aceptado! Ya estás apuntado a «'+(r.title||'la salida')+'»')}).catch(e=>console.warn('apuntarme',e))}
+    guestMerge();
+  },e=>{console.warn('salida abierta',e)});
+}
+function guestDrop(id){if(guestSubs[id]){try{guestSubs[id]()}catch(e){}delete guestSubs[id]}delete ridesGuest[id];guestMerge()}
+function guestMerge(){if(typeof clubMerge==='function')clubMerge()}
+function guestOpen(id){const r=rides.find(x=>x.id===id);if(r){closeSheets();setTimeout(()=>openRide(id),250)}else toast('Cargando la salida…')}
+/* ---- Organizador: solicitudes de su salida abierta ---- */
+let reqSub=null,reqList=[];
+function watchReqs(r){
+  if(reqSub){try{reqSub()}catch(e){}reqSub=null}reqList=[];
+  if(!r||!r.open||r.byUid!==uid)return;
+  reqSub=db.collection('open').doc(r.id).collection('reqs').onSnapshot(s=>{reqList=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.t-b.t);renderReqs(r.id)},()=>{});
+}
+function renderReqs(id){
+  const b=$('reqBox');if(!b)return;const P=reqList.filter(q=>q.status==='pending'),OK=reqList.filter(q=>q.status==='ok');
+  b.innerHTML=`<div class="plc" style="margin:0 0 12px"><div class="pc-h"><span class="pc-tag">Abierta</span><b>🌍 Ciclistas que quieren venir${P.length?' ('+P.length+')':''}</b></div>
+   ${P.length?P.map(q=>`<div class="li" style="cursor:default;margin-top:8px"><span class="face" style="width:34px;height:34px;margin:0;background:${colorOf(q.name)}">${ini(q.name)}</span><div style="flex:1;min-width:0"><b>${esc(q.name)}</b>${q.msg?`<small>«${esc(q.msg)}»</small>`:''}</div><div style="display:flex;gap:6px;flex-shrink:0"><button class="mini ok" onclick="reqSet(${jsq(id)},${jsq(q.id)},'ok')">Aceptar</button><button class="mini" onclick="reqSet(${jsq(id)},${jsq(q.id)},'no')">No</button></div></div>`).join(''):'<small style="display:block;color:var(--txt2);margin-top:6px">Nadie ha pedido unirse todavía. La salida sale en «🌍 Cerca de ti» para ciclistas a menos de 40 km.</small>'}
+   ${OK.length?`<small style="display:block;color:var(--txt2);margin-top:8px">✅ Aceptados: ${OK.map(q=>esc(q.name)).join(', ')}</small>`:''}</div>`;
+}
+function reqSet(rid,qid,st){db.collection('open').doc(rid).collection('reqs').doc(qid).update({status:st}).then(()=>toast(st==='ok'?'✅ Aceptado: se apunta solo a la salida':'Petición rechazada')).catch(netErr)}
 
 /* ===== Más funciones ===== */
 const FEATURES=[
@@ -6345,6 +6481,7 @@ function startFirebase(){
     // v4.0 — Salidas, actividad, puntos y ranking: solo los de MI club (se escuchan en watchClubData)
     watchClubData();
     // Enlace compartido: #salida=ID
+    if(/abiertas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');openNearby('rides')},900)}
     if(/encuestas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openPolls();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/chatclub/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openClubChat();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
