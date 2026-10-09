@@ -1,3 +1,10 @@
+## Versión 5.8.2 — Revisión de seguridad y de código
+- Límite de avisos por ciclista (en las funciones): salidas nuevas o canceladas 6/hora, cambios 10/hora, encuestas 4/hora, consultas 5/hora y una sola notificación por petición a una salida abierta en 24 h. Así nadie puede llenar de avisos los móviles del club.
+- Reglas v4.7: el administrador de un club ya no puede meter a otros ciclistas en su club (cada uno entra él mismo con el código o desde «Clubes cerca»); un ciclista bloqueado no puede borrarse el perfil para quitarse el bloqueo.
+- Novedades: «✅ Ya está» respeta la casilla 📲 (antes podía avisar al móvil aunque la quitaras); las novedades no se duplican aunque publiques dos seguidas; al abrir la app desde el aviso, espera a que carguen las novedades.
+- El recordatorio «Seguridad primero» no sale si la app se abrió desde un enlace o un aviso.
+- NECESITA: reglas v4.7 (RideSafeIA_reglas_v4.7.txt) y funciones (cmd_funcion_v5.8.2.txt).
+
 ## Versión 5.8 — Seguridad primero
 - Bienvenida nueva: la primera pantalla es el espíritu de la app («Salir juntos. Volver todos.», gratis, hecha por un ciclista de Lleida).
 - Tras poner el nombre sale «🚑 Seguridad primero»: nombre y teléfono del contacto de emergencia, explicación del aviso de caída y botón «🧪 Ver cómo es el aviso». Se puede dejar para luego.

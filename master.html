@@ -661,7 +661,7 @@ async function newsAdd(){
   const it={id:'n'+Date.now().toString(36),v,title,text,status:document.querySelector('#nwS .chip.on').dataset.s,t:Date.now(),...(push?{push:true}:{})};
   try{await newsSave([...(upd.items||[]),it].slice(-40));toast(push?'📣 Novedad publicada · 📲 notificación en camino':'📣 Novedad publicada');vNews()}catch(e){err(e)}
 }
-async function newsDone(id){const push=!!($('nwP')&&$('nwP').checked);try{await newsSave((upd.items||[]).map(x=>x.id===id?{...x,status:'ready',t:Date.now(),...(push?{push:true}:{})}:x));toast(push?'✅ Marcada como disponible · 📲 aviso al móvil':'✅ Marcada como disponible');vNews()}catch(e){err(e)}}
+async function newsDone(id){const push=!!($('nwP')&&$('nwP').checked);try{await newsSave((upd.items||[]).map(x=>x.id===id?{...x,status:'ready',t:Date.now(),push}:x));toast(push?'✅ Marcada como disponible · 📲 aviso al móvil':'✅ Marcada como disponible');vNews()}catch(e){err(e)}}
 async function newsDel(id){if(!await confirmDlg('🗑️ Quitar novedad','Dejará de verse en la app.','Quitar',true))return;try{await newsSave((upd.items||[]).filter(x=>x.id!==id));toast('Novedad quitada');vNews()}catch(e){err(e)}}
 /* ---------- Ventanas y utilidades ---------- */
 function dlg(h){$('dlg').innerHTML=h;$('ov').classList.add('show')}

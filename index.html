@@ -1059,7 +1059,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.8.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6437,6 +6437,7 @@ function setTheme(light){document.documentElement.dataset.theme=light?'light':'d
 
 /* ===== Onboarding (3 pantallas) ===== */
 /* v5.8 — 1º el espíritu de la app; al final, «Seguridad primero» (contacto de emergencia) */
+window.__hash0=location.hash.length>1;   // v5.8.2 — si la app se abrió desde un enlace o un aviso, no sale el recordatorio de seguridad
 const ONB=[
   ['🛡️','Salir juntos. Volver todos.','RideSafe IA es gratis. La hizo un ciclista de Lleida con una idea: que en cada salida volvamos todos a casa.'],
   ['🚴','Rueda acompañado','Organiza salidas con tu club, mirad todos el mapa a la vez y avisa con un toque si pinchas o te caes.'],
@@ -6472,7 +6473,7 @@ function safetyNudge(){
   if(window.__sn)return;window.__sn=1;
   const c=store.get('sosContact',{})||{};if(c.tel||!me||!me.name)return;
   const L=+store.get('safeLater',0);if(L&&Date.now()-L<7*864e5)return;
-  if($('onb').classList.contains('show')||document.querySelector('.sheet.show')||live.on||location.hash.length>1)return;
+  if($('onb').classList.contains('show')||document.querySelector('.sheet.show')||live.on||window.__hash0)return;
   openRideId=null;
   $('rideBody').innerHTML=`<h2>🚑 Seguridad primero <button class="x" onclick="safeLaterClose()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
    <p style="color:var(--txt2);margin:-4px 0 12px">Aún no tienes <b>contacto de emergencia</b>. Si te caes en una salida, ¿a quién avisamos? Tarda 20 segundos.</p>
@@ -6525,7 +6526,7 @@ function startFirebase(){
     if(/abiertas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');openNearby('rides')},900)}
     if(/encuestas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openPolls();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/chatclub/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openClubChat();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
-    if(/novedades/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openNews()},700)}
+    if(/novedades/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');const t=n=>{if(updData||n>=16)openNews();else setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
     const hr=location.hash.match(/revisar=([\w-]+)/);
     if(hr){setTimeout(()=>{go('comunidad');const go2=n=>{if(rides.find(x=>x.id===hr[1]))openReview(hr[1]);else if(n<12)setTimeout(()=>go2(n+1),500);else openRide(hr[1])};go2(0)},600);history.replaceState(null,'',location.pathname)}
