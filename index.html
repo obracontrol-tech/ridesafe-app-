@@ -6525,6 +6525,7 @@ function startFirebase(){
     if(/abiertas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');openNearby('rides')},900)}
     if(/encuestas/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openPolls();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
     if(/chatclub/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('comunidad');const t=n=>{if(me?.group&&myGroup)openClubChat();else if(n<16)setTimeout(()=>t(n+1),500)};t(0)},700)}
+    if(/novedades/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openNews()},700)}
     if(/consulta/.test(location.hash)){history.replaceState(null,'',location.pathname);setTimeout(()=>{go('perfil');openSupport()},700)}
     const hr=location.hash.match(/revisar=([\w-]+)/);
     if(hr){setTimeout(()=>{go('comunidad');const go2=n=>{if(rides.find(x=>x.id===hr[1]))openReview(hr[1]);else if(n<12)setTimeout(()=>go2(n+1),500);else openRide(hr[1])};go2(0)},600);history.replaceState(null,'',location.pathname)}

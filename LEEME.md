@@ -4,7 +4,9 @@
 - Quien ya usa la app y no tiene contacto de emergencia ve una vez la tarjeta «Seguridad primero» al abrir la app (si pulsa «Ahora no», se le vuelve a recordar a los 7 días). Nunca sale si ya tiene contacto, durante una salida grabando ni al abrir un enlace.
 - En la ayuda, las preguntas de seguridad (112 y aviso de caída) van las primeras.
 - Cartel nuevo para el club (cartel.html): «Salir juntos. Volver todos.», lo que hace la app, aviso de poner el contacto de emergencia y dos QR: 1) instalar la app y 2) «Lo básico» de la guía en el móvil.
-- No necesita cambios en reglas ni funciones.
+- Consola → 🚀 Novedades: casilla «📲 Avisar también al móvil de todos». Al publicar una novedad (o pulsar «✅ Ya está») llega una notificación a todos los móviles con avisos activados; al tocarla se abre «Novedades» en la app. NECESITA la función novedadAviso (cmd_funcion_v5.8.txt).
+- Los avisos generales de la consola (📣 Aviso) ya podían mandarse al móvil con su casilla.
+- No necesita cambios en reglas.
 
 ## Versión 5.7 — Salidas abiertas y clubes cerca
 - Comunidad → «🌍 Cerca de ti: salidas abiertas y clubes» (también para quien no tiene club).
