@@ -3,6 +3,7 @@
 - Tras poner el nombre sale «🚑 Seguridad primero»: nombre y teléfono del contacto de emergencia, explicación del aviso de caída y botón «🧪 Ver cómo es el aviso». Se puede dejar para luego.
 - Quien ya usa la app y no tiene contacto de emergencia ve una vez la tarjeta «Seguridad primero» al abrir la app (si pulsa «Ahora no», se le vuelve a recordar a los 7 días). Nunca sale si ya tiene contacto, durante una salida grabando ni al abrir un enlace.
 - En la ayuda, las preguntas de seguridad (112 y aviso de caída) van las primeras.
+- Cartel nuevo para el club (cartel.html): «Salir juntos. Volver todos.», lo que hace la app, aviso de poner el contacto de emergencia y dos QR: 1) instalar la app y 2) «Lo básico» de la guía en el móvil.
 - No necesita cambios en reglas ni funciones.
 
 ## Versión 5.7 — Salidas abiertas y clubes cerca
