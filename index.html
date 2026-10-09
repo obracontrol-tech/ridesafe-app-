@@ -463,6 +463,11 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .dots i{width:10px;height:10px;border-radius:5px;background:var(--line);transition:.2s}
 .dots i.on{width:28px;background:var(--lime)}
 #onb input{margin-top:6px;text-align:center;max-width:320px}
+#onb .slide{overflow-y:auto}
+.safef{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin:0 auto}
+.safef small{color:var(--txt2);font-size:13px;line-height:1.4;text-align:left}
+.safef .lnk{background:none;border:0;color:var(--txt2);text-decoration:underline;font-size:15px;padding:8px;font-family:inherit}
+#onb .safef input{margin-top:0;max-width:none}
 #layMenu{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;width:min(94vw,400px);max-height:70vh;overflow-y:auto;background:rgba(14,26,43,.86);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:24px;box-shadow:0 16px 44px rgba(0,0,0,.45);padding:12px 12px 10px;animation:lmIn .18s ease-out}
 @keyframes lmIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
 #layMenu .lm-h{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 10px}
@@ -1054,7 +1059,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3686,6 +3691,8 @@ function inviteFriends(){
   if(navigator.share)navigator.share({title:'RideSafe IA',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 const HELP=[
+ ['🆘','¿Y si tengo un problema en ruta?','Comunidad → Alertas de seguridad: llamar al 112 o enviar tu ubicación por WhatsApp. Mientras grabas también tienes el botón SOS y 📡 para que tu familia te siga.'],
+ ['🚑','¿Cómo funciona el aviso de caída?','Mientras grabas una salida, si el móvil nota un golpe fuerte yendo a más de 8 km/h y luego te quedas quieto, sale "¿Estás bien?" con 30 segundos de cuenta atrás. Si no respondes, avisa a tu grupo y a tu familia (si les compartes la ubicación) y muestra el botón del 112. Se configura en Seguridad → Alertas de seguridad.','caida caidas golpe sensor accidente alarma contacto emergencia sensibilidad'],
  ['📅','¿Cómo organizo una salida?','Pulsa el botón verde ＋ → "Crear salida". Pon día, hora, punto de salida y de encuentro (puedes marcarlos en el mapa). Publica y compártela por WhatsApp.'],
  ['✋','¿Cómo me apunto?','Abre la salida (desde Comunidad o desde el enlace de WhatsApp) y pulsa "Me apunto". Puedes añadirla a tu calendario con avisos.'],
  ['🔧','¿Y si pincho en la salida?','Mientras grabas la salida en grupo pulsa 🔧 Pinchazo, ✋ Esperad o 🆘 Ayuda. A todo el pelotón le suena una sirena fuerte, vibra el móvil y ve en pantalla quién es y dónde está. Cuando lo arregles pulsa ✅ Solucionado. Pruébalo en Comunidad → Probar aviso de pinchazo (sube el volumen).'],
@@ -3694,18 +3701,16 @@ const HELP=[
  ['⏺️','¿Cómo grabo una salida?','Rutas → "Rec · INICIAR". Mantén la pantalla encendida. Al terminar, pulsa ⏹ Terminar y se guarda con sus puntos y su foto.'],
  ['👥','¿Para qué sirve Mi club?','Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas. Entra con el código de tu club y apúntate a tus grupetas.'],
  ['🔒','¿Cómo no pierdo mis datos?','Perfil → "Guardar mi cuenta con Google". Si cambias de móvil, entra con la misma cuenta.'],
- ['🆘','¿Y si tengo un problema en ruta?','Comunidad → Alertas de seguridad: llamar al 112 o enviar tu ubicación por WhatsApp. Mientras grabas también tienes el botón SOS y 📡 para que tu familia te siga.'],
 
  ['🚦','¿Qué es el semáforo de la ruta?','Al planificar una ruta, debajo del perfil sale una nota de 0 a 100: 🟢 buenas condiciones, 🟠 con precaución, 🔴 mejor otro momento. Valora las pendientes, el tiempo de ahora (viento, lluvia, calor, frío) y si llegarías de noche. Si no hay conexión, valora solo el terreno.','semaforo nota color verde rojo naranja comprobando tiempo meteo lluvia viento'],
  ['☕','¿Cómo veo fuentes y bares en la ruta?','Planifica la ruta y pulsa "☕ Ver paradas en la ruta". Verás fuentes, bares, farmacias, talleres y tiendas a menos de 300 m, ordenados por kilómetro. Te avisa si hay muchos km sin agua. Si guardas la ruta, las paradas se guardan con ella.','paradas parada fuente fuentes agua bar bares cafe farmacia taller tienda comer'],
- ['🚑','¿Cómo funciona el aviso de caída?','Mientras grabas una salida, si el móvil nota un golpe fuerte yendo a más de 8 km/h y luego te quedas quieto, sale "¿Estás bien?" con 30 segundos de cuenta atrás. Si no respondes, avisa a tu grupo y a tu familia (si les compartes la ubicación) y muestra el botón del 112. Se configura en Seguridad → Alertas de seguridad.','caida caidas golpe sensor accidente alarma contacto emergencia sensibilidad'],
  ['🧪','El aviso de caída no salta al probarlo','Es normal si estás parado: en ruta solo salta si ibas a más de 8 km/h antes del golpe y luego te quedas quieto 15 segundos. Así se evitan falsas alarmas. Para probar el sensor sin moverte usa Seguridad → Alertas de seguridad → "📳 Probar el sensor de verdad".','caida no salta prueba probar parado sensible sensibilidad funciona detecta'],
  ['👨‍👩‍👧','¿Cómo ve mi familia dónde estoy?','Pulsa "📍 Ubicación para la familia" (o 📡 mientras grabas) y envíales el enlace por WhatsApp. Lo abren sin instalar nada. Si sufres una caída, en su pantalla sale una alerta roja; deben pulsar una vez "🔔 Activar alarma sonora" para que suene.','familia ubicacion compartir enlace seguir donde estoy alarma sonora'],
  ['🔊','No oigo la voz de la navegación','Toca la pantalla una vez después de abrir la app, comprueba que el botón de voz está en 🔊 y sube el volumen multimedia del móvil (no el del timbre). Si el móvil está en silencio, puede no sonar.','voz sonido oigo suena silencio volumen audio navegacion habla'],
  ['🔄','No veo los cambios nuevos de la app','Cierra la app del todo (quítala de recientes) y vuelve a abrirla. Si sigue igual, abre en Chrome app.ridesafeia.es/?v=2 para forzar la versión nueva.','actualizar actualizacion version nueva cambios novedades aparece antigua vieja cache'],
  ['💻','¿Puedo usarla en el ordenador?','Sí. Abre app.ridesafeia.es en Chrome o Edge y pulsa el icono de instalar de la barra de direcciones. Entra con la misma cuenta que en el móvil. En el PC puedes crear salidas y planificar rutas; grabar y navegar se hace con el móvil.','ordenador pc portatil windows instalar escritorio jefe'],
  ['🧭','¿Cómo voy a un sitio concreto?','En Rutas pulsa "🧭 Ir a un destino", escribe el sitio y elígelo. La app calcula la ruta en bici desde donde estás. Pulsa "▲ Iniciar" para que te guíe con voz.','destino ir llegar navegar guiar buscar sitio'],
- ['📍','El GPS no me sitúa bien','Activa la ubicación del móvil en modo "alta precisión" y da permiso de ubicación al navegador (Chrome → ⋮ → Configuración → Configuración de sitios → Ubicación). Al aire libre funciona mucho mejor que dentro de casa.','gps ubicacion localizacion permiso situa posicion precision'],
+ ['📍','El GPS no me sitúa bien','Activa la ubicación del móvil en modo "alta precisión" y da permiso de ubicación al navegador (Chrome → ⋮ → Configuración → Configuración de sitios → Ubicación). Al aire libre funciona mucho mejor que dentro de casa.','gps ubicacion localizacion permiso situa posicion precision']
 ];
 function openHelp(){
   $('rideBody').innerHTML=sheetHead('❓ Cómo funciona')+HELP.map(([e,q,a])=>`<details class="faq"><summary><span>${e}</span>${q}</summary><p>${a}</p></details>`).join('')+
@@ -6431,26 +6436,62 @@ function saveName(){
 function setTheme(light){document.documentElement.dataset.theme=light?'light':'dark';$('swLight').checked=light;store.set('light',light);document.querySelector('meta[name=theme-color]').content=light?'#F4F6F9':'#0E1A2B'}
 
 /* ===== Onboarding (3 pantallas) ===== */
+/* v5.8 — 1º el espíritu de la app; al final, «Seguridad primero» (contacto de emergencia) */
 const ONB=[
-  ['🚴','Sal en bici acompañado','Crea salidas con día, hora, punto de salida y punto de encuentro.'],
-  ['📍','Todos en el mismo sitio','Tu grupo se apunta con un toque y recibe el aviso por WhatsApp.'],
-  ['👋','¿Cómo te llamas?','Así te verán los demás ciclistas.']
+  ['🛡️','Salir juntos. Volver todos.','RideSafe IA es gratis. La hizo un ciclista de Lleida con una idea: que en cada salida volvamos todos a casa.'],
+  ['🚴','Rueda acompañado','Organiza salidas con tu club, mirad todos el mapa a la vez y avisa con un toque si pinchas o te caes.'],
+  ['👋','¿Cómo te llamas?','Así te verán los demás ciclistas.'],
+  ['🚑','Seguridad primero','Antes de tu primera salida: ¿a quién avisamos si te caes?']
 ];
 let onbI=0;
 function showOnb(){if($('onb').classList.contains('show'))return;onbI=0;paintOnb();$('onb').classList.add('show')}
 function paintOnb(){
   const [e,t,p]=ONB[onbI];
-  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name"><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="privacidad.html" style="color:var(--lime)">privacidad y condiciones</a> de RideSafe IA.</small>':''}`;
+  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name"><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="privacidad.html" style="color:var(--lime)">privacidad y condiciones</a> de RideSafe IA.</small>':''}${onbI===3?safeFormHTML('onb'):''}`;
   $('onbDots').innerHTML=ONB.map((_,i)=>`<i class="${i===onbI?'on':''}"></i>`).join('');
-  $('onbNext').textContent=onbI===2?'Empezar':'Siguiente';
+  $('onbNext').textContent=onbI===3?'💾 Guardar y empezar':onbI===2?'Continuar':'Siguiente';
 }
+/* v5.8 — Formulario «Seguridad primero» (en la bienvenida y en el recordatorio) */
+function safeFormHTML(k){const c=store.get('sosContact',{})||{};
+  return `<div class="safef"><input class="inp" id="${k}SfName" placeholder="Nombre (ej. María)" maxlength="40" value="${esc(c.name||'')}" autocomplete="off">
+  <input class="inp" id="${k}SfTel" type="tel" inputmode="tel" placeholder="Teléfono (ej. 600 123 456)" maxlength="20" value="${esc(c.tel||'')}">
+  <small>🚑 El <b>aviso de caída</b> ya está activado. Si el móvil nota un golpe fuerte en marcha y no respondes en 30 s, avisa a tu grupo y te deja llamar a este contacto y al 112.</small>
+  <button class="btn btn-line" type="button" onclick="fallAsk(true)">🧪 Ver cómo es el aviso</button>
+  ${k==='onb'?'<button class="lnk" type="button" onclick="onbDone(true)">Hacerlo luego</button>':''}</div>`}
+function safeSave(k){const name=($(k+'SfName').value||'').trim().slice(0,40),tel=($(k+'SfTel').value||'').trim().slice(0,20);
+  if(!tel){toast('Escribe el teléfono de tu contacto');return false}
+  if(telNorm(tel).length<9){toast('Revisa el teléfono');return false}
+  store.set('sosContact',{name,tel});store.set('safeOnb',1);return true}
+function onbDone(later){
+  if(later)store.set('safeLater',Date.now());
+  $('onb').classList.remove('show');paintName();renderRides();
+  const n=myName();toast(later?'¡Bienvenido, '+n+'! Recuerda: Comunidad → Alertas de seguridad':'✅ Listo, '+n+'. Contacto de emergencia guardado');
+}
+/* v5.8 — A quien ya usa la app sin contacto de emergencia se lo pedimos una vez (y otra a los 7 días si dice «ahora no») */
+function safetyNudge(){
+  if(window.__sn)return;window.__sn=1;
+  const c=store.get('sosContact',{})||{};if(c.tel||!me||!me.name)return;
+  const L=+store.get('safeLater',0);if(L&&Date.now()-L<7*864e5)return;
+  if($('onb').classList.contains('show')||document.querySelector('.sheet.show')||live.on||location.hash.length>1)return;
+  openRideId=null;
+  $('rideBody').innerHTML=`<h2>🚑 Seguridad primero <button class="x" onclick="safeLaterClose()" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h2>
+   <p style="color:var(--txt2);margin:-4px 0 12px">Aún no tienes <b>contacto de emergencia</b>. Si te caes en una salida, ¿a quién avisamos? Tarda 20 segundos.</p>
+   ${safeFormHTML('nd')}
+   <button class="btn btn-lime" style="margin-top:12px;min-height:56px" onclick="if(safeSave('nd')){closeSheets();toast('✅ Contacto de emergencia guardado')}">💾 Guardar</button>
+   <button class="btn btn-line" style="margin-top:8px" onclick="safeLaterClose()">Ahora no</button>`;
+  openSheet('sh-ride');
+}
+function safeLaterClose(){store.set('safeLater',Date.now());closeSheets()}
 $('onbNext').onclick=()=>{
   if(onbI<2){onbI++;paintOnb();return}
+  if(onbI===3){if(safeSave('onb'))onbDone(false);return}
   const n=$('onbName').value.trim().slice(0,24);if(!n){toast('Escribe tu nombre');return}
   if(!db||!uid){toast('Conectando… inténtalo en unos segundos');return}
-  me={name:n,pts:0,created:0};store.set('me',me);
+  me={name:n,pts:0,created:0};store.set('me',me);window.__sn=1;
   db.collection('users').doc(uid).set({name:n,pts:0,created:0,since:FV.serverTimestamp()},{merge:true}).catch(netErr);
-  $('onb').classList.remove('show');paintName();renderRides();toast('¡Bienvenido a RideSafe IA, '+n+'!');
+  paintName();
+  if((store.get('sosContact',{})||{}).tel){onbDone(false);return}
+  onbI=3;paintOnb();
 };
 
 /* ===== Firebase: conexión y datos en tiempo real ===== */
@@ -6469,7 +6510,7 @@ function startFirebase(){
     uid=u.uid;
     // Perfil
     db.collection('users').doc(uid).onSnapshot(s=>{
-      if(s.exists&&s.data().name){me={...me,...s.data()};store.set('me',me);$('onb').classList.remove('show')}
+      if(s.exists&&s.data().name){me={...me,...s.data()};store.set('me',me);if(!(onbI===3&&$('onb').classList.contains('show')))$('onb').classList.remove('show');if(!window.__sn)setTimeout(safetyNudge,5000)}
       else if(window.__deleting)return;
       else if(me&&me.name){db.collection('users').doc(uid).set({name:me.name,pts:me.pts||0,created:me.created||0,since:FV.serverTimestamp()},{merge:true}).catch(()=>{})}
       else showOnb();

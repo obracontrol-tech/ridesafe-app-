@@ -1,3 +1,10 @@
+## Versión 5.8 — Seguridad primero
+- Bienvenida nueva: la primera pantalla es el espíritu de la app («Salir juntos. Volver todos.», gratis, hecha por un ciclista de Lleida).
+- Tras poner el nombre sale «🚑 Seguridad primero»: nombre y teléfono del contacto de emergencia, explicación del aviso de caída y botón «🧪 Ver cómo es el aviso». Se puede dejar para luego.
+- Quien ya usa la app y no tiene contacto de emergencia ve una vez la tarjeta «Seguridad primero» al abrir la app (si pulsa «Ahora no», se le vuelve a recordar a los 7 días). Nunca sale si ya tiene contacto, durante una salida grabando ni al abrir un enlace.
+- En la ayuda, las preguntas de seguridad (112 y aviso de caída) van las primeras.
+- No necesita cambios en reglas ni funciones.
+
 ## Versión 5.7 — Salidas abiertas y clubes cerca
 - Comunidad → «🌍 Cerca de ti: salidas abiertas y clubes» (también para quien no tiene club).
 - Al crear una salida: casilla «🌍 Salida abierta». Necesita el punto de encuentro marcado en el mapa.
