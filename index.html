@@ -906,6 +906,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
       <button id="bUse" class="lime" onclick="useRoute()">📅 Crear salida con esta ruta</button>
       <button id="bPub" style="grid-column:1/-1" onclick="publishRoute()">👥 Compartir con mi club</button>
       <button class="gm-link" onclick="plan.route&&saveRouteOffline(plan.route.coords,$('planTitle').textContent)">📥 Guardar mapa para usar sin conexión</button>
+      <button class="gm-link" onclick="devPlan()" style="color:var(--lime);font-weight:800">📲 Enviar al ciclocomputador (iGPSPORT, Garmin…)</button>
       <button class="gm-link" onclick="gpxPlan()">⬇️ Descargar GPX (Garmin, Wahoo…)</button>
       <button class="gm-link" id="bEdit" style="display:none" onclick="editRoute()">✏️ Editar esta ruta en el diseñador</button>
       <button class="gm-link" id="bDelComm" style="color:var(--red);display:none" onclick="viewingComm&&delCommRoute(viewingComm.id)">🗑️ Borrar ruta del club</button>
@@ -1059,7 +1060,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.8.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1682,7 +1683,7 @@ async function openRide(id,keep){
      ${isOwner(r)?'<div class="joinnote">👑 Organizas esta salida</div>':inR?`<button class="btn joinbig on" onclick="toggleJoin(${jsq(r.id)})">Apuntado ✓<small>Toca para cancelar tu asistencia</small></button>`:`<button class="btn btn-lime" onclick="toggleJoin(${jsq(r.id)})">✋ Voy a esta salida</button>`}
      <button class="btn btn-line" onclick="openCard(${jsq(r.id)})">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar(${jsq(r.id)})">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal(${jsq(r.id)})">📆 Google Calendar</button></div>`:''}
-     ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id===${jsq(r.id)}).route.poly),rides.find(x=>x.id===${jsq(r.id)}).title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="gpxRide(${jsq(r.id)})">⬇️ GPX</button></div>`:''}
+     ${r.route?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="saveRouteOffline(decodePoly(rides.find(x=>x.id===${jsq(r.id)}).route.poly),rides.find(x=>x.id===${jsq(r.id)}).title||'Salida')">📥 Mapa sin conexión</button><button class="btn btn-line" style="font-size:15px" onclick="devRide(${jsq(r.id)})">📲 Al ciclocomputador</button></div>`:''}
      ${canManage(r)&&!isOwner(r)?`<div class="joinnote" style="color:var(--bronze)">${isClubAdm()?'🛡️ Puedes gestionar esta salida como administrador del club':isGpResp(r)&&!(myGroup.captains||{})[uid]?'🎯 Puedes gestionar esta salida como responsable de «'+esc(gpName(r.gp))+'»':'⭐ Puedes gestionar esta salida como jefe de pelotón'}</div>`:''}
      ${canManage(r)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="editRide(${jsq(r.id)})">✏️ Editar</button><button class="btn btn-line" style="font-size:15px" onclick="notifyChange(${jsq(r.id)})">📣 Avisar cambio</button></div><button class="btn" style="color:var(--red)" onclick="cancelRide(${jsq(r.id)})">Cancelar salida</button>`:`<button class="btn" style="color:var(--txt2);font-size:14px" onclick="reportContent('rides',${jsq(r.id)},'${esc(String(r.title||'Salida').replace(/['"\\]/g,''))}')">⚠️ Reportar esta salida</button>`}
    </div>`;
@@ -3115,15 +3116,51 @@ function notifyChange(id){
 }
 
 /* ---- Exportar GPX (Garmin, Wahoo, Komoot…) ---- */
-function downloadGPX(coords,name,prof){
+function downloadGPX(coords,name,prof,quiet){
   if(!coords||coords.length<2){toast('No hay ruta para exportar');return}
   const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
-  a.download=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';document.body.appendChild(a);a.click();a.remove();
-  toast('GPX descargado. Ábrelo con tu Garmin, Wahoo o Komoot');
+  const fn=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
+  a.download=fn;document.body.appendChild(a);a.click();a.remove();
+  if(!quiet)toast('GPX descargado. Ábrelo con tu Garmin, Wahoo o Komoot');
+  return fn;
+}
+/* v5.9 — 📲 Pasar la ruta al ciclocomputador (iGPSPORT, Garmin, Wahoo…): descarga el GPX y explica los pasos de su app */
+let devSend=null;
+function sendToDevice(coords,name,prof){
+  if(!coords||coords.length<2){toast('No hay ruta para enviar');return}
+  const fn=downloadGPX(coords,name,prof,true);if(!fn)return;
+  devSend={fn,name:String(name||'Ruta')};devSendSheet();
+}
+function devSendSheet(br){
+  if(br)store.set('devBrand',br);const B=store.get('devBrand','garmin');if(!devSend)return;
+  const tabs=`<div class="chips" style="margin:0 0 12px;flex-wrap:wrap">${[['igps','🚴 iGPSPORT'],['garmin','⌚ Garmin'],['otro','📟 Wahoo, Bryton…']].map(([k,t])=>`<button class="chip${B===k?' on':''}" onclick="devSendSheet(${jsq(k)})">${t}</button>`).join('')}</div>`;
+  const file=`<b>${esc(devSend.fn)}</b>`;
+  const steps=B==='igps'?`<li>Abre la app <b>iGPSPORT</b> → <b>Mis rutas</b> → pestaña <b>«Mía»</b>.</li>
+   <li>Pulsa <b>＋</b> → <b>«Importar archivo de ruta»</b> (el botón amarillo).</li>
+   <li>Entra en <b>Descargas</b> y elige ${file}.</li>
+   <li>Abre la ruta y pulsa el botón rojo <b>«Enviar al equipo»</b> (con el BSC300T encendido y conectado). Verás el mapa, los km y el perfil de desnivel.</li>
+   <li>En el ciclocomputador: <b>Navegación → Ruta</b> → elige la ruta → <b>Navegar</b>.</li>`
+   :B==='garmin'?`<li>Abre la app <b>Garmin Connect</b> en el móvil.</li>
+   <li>Ve a <b>Más → Entrenamiento y planificación → Recorridos</b> y pulsa <b>Importar</b> (si tu versión lo permite).</li>
+   <li>Si no aparece, súbelo desde el ordenador en <b>connect.garmin.com → Entrenamiento → Recorridos → Importar</b> y elige ${file}.</li>
+   <li>Abre el recorrido y pulsa <b>Enviar al dispositivo</b>.</li>
+   <li>En el Edge: <b>Navegación → Recorridos</b> → elige el recorrido.</li>`
+   :`<li>Abre la app de tu aparato (Wahoo ELEMNT, Bryton Active…).</li>
+   <li>Busca <b>Rutas</b> → <b>Importar</b> / <b>＋</b> → archivo.</li>
+   <li>Entra en <b>Descargas</b> y elige ${file}.</li>
+   <li>Sincroniza el aparato y busca la ruta en su menú de <b>Rutas</b> o <b>Navegación</b>.</li>`;
+  $('rideBody').innerHTML=sheetHead('📲 Pasar la ruta al ciclocomputador')+
+   `<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
+   tabs+`<ol class="steps" style="margin:4px 0 12px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">${steps}</ol>`+
+   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) salen también en la pantalla del aparato: pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
+   `<button class="btn btn-lime" onclick="closeSheets()">Entendido</button>`;
+  openRideId=null;openSheet('sh-ride');
 }
 function gpxPlan(){if(plan.route)downloadGPX(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
+function devPlan(){if(plan.route)sendToDevice(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
+function devRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)sendToDevice(decodePoly(r.route.poly),r.title||'Salida RideSafe IA')}
 function gpxRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)downloadGPX(decodePoly(r.route.poly),r.title||'Salida RideSafe IA')}
 
 
@@ -4971,9 +5008,9 @@ async function addPlanPt(ll){
 /* v4.5 — Botones del modo «Dibujar ruta» */
 async function drawDone(){
   if(!plan.route||plan.busy)return;
-  const o=[['▲ Empezar a rodar ahora','','go'],['💾 Guardar en mis rutas','','save'],['📅 Crear una salida con esta ruta','','use'],['👥 Compartir con mi club','','pub'],['⬇️ Descargar GPX (Garmin, Wahoo…)','','gpx'],['📊 Ver perfil, semáforo y paradas','','det']];
+  const o=[['▲ Empezar a rodar ahora','','go'],['💾 Guardar en mis rutas','','save'],['📅 Crear una salida con esta ruta','','use'],['👥 Compartir con mi club','','pub'],['📲 Enviar al ciclocomputador','','dev'],['⬇️ Descargar GPX (Garmin, Wahoo…)','','gpx'],['📊 Ver perfil, semáforo y paradas','','det']];
   const i=await askChoice('¿Qué quieres hacer con la ruta?',o);if(i<0)return;
-  ({go:goNav,save:saveRoute,use:useRoute,pub:()=>publishRoute(),gpx:gpxPlan,det:()=>togglePlanMini(false)})[o[i][2]]();
+  ({go:goNav,save:saveRoute,use:useRoute,pub:()=>publishRoute(),gpx:gpxPlan,dev:devPlan,det:()=>togglePlanMini(false)})[o[i][2]]();
 }
 function drawUndo(){if(plan.view)return;if(plan.dest){plan.dest=plan.stops.length?plan.stops.pop():null}else plan.start=null;vib(15);redrawPlanMarkers();computeRoute();renderPlan()}
 function drawHome(){if(plan.view||!plan.start||!plan.dest)return;plan.stops.push(plan.dest);plan.dest={...plan.start,sg:drawSg()};vib(15);redrawPlanMarkers();computeRoute();toast('🔁 La ruta vuelve al punto de salida')}

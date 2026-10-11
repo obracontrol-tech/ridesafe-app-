@@ -1,3 +1,9 @@
+## Versión 5.9 — 📲 Enviar la ruta al ciclocomputador
+- Nuevo botón «📲 Enviar al ciclocomputador (iGPSPORT, Garmin…)» en el planificador y el diseñador de rutas, y «📲 Al ciclocomputador» en la ficha de cada salida con recorrido.
+- Descarga el GPX (con altitud) con un nombre claro y abre una tarjeta con los pasos exactos de la app del aparato: iGPSPORT (Mis rutas → Mía → ＋ → Importar archivo de ruta → enviar al aparato → Navegación → Ruta), Garmin Connect (Recorridos → Importar) y Wahoo/Bryton.
+- La marca elegida se recuerda (la misma que en Perfil → ⌚).
+- No necesita cambios en reglas ni funciones.
+
 ## Versión 5.8.2 — Revisión de seguridad y de código
 - Límite de avisos por ciclista (en las funciones): salidas nuevas o canceladas 6/hora, cambios 10/hora, encuestas 4/hora, consultas 5/hora y una sola notificación por petición a una salida abierta en 24 h. Así nadie puede llenar de avisos los móviles del club.
 - Reglas v4.7: el administrador de un club ya no puede meter a otros ciclistas en su club (cada uno entra él mismo con el código o desde «Clubes cerca»); un ciclista bloqueado no puede borrarse el perfil para quitarse el bloqueo.
