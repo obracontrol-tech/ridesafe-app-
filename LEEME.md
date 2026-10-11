@@ -1,3 +1,9 @@
+## Versión 5.9.1 — 🟠 Strava activado
+- Actividades → «Conectar con Strava»: las salidas grabadas con el iGPSPORT (o Garmin, reloj…) que llegan a Strava aparecen solas en RideSafe (bici, gravel, MTB, e-bike; la primera vez, los últimos 30 días).
+- Se sincroniza al abrir la app (cada 30 min como mucho) o con «🔄 Sincronizar ahora». «Desconectar» lo quita cuando quieras.
+- El secreto de Strava solo está en Firebase, nunca en la app.
+- NECESITA: funciones Strava (cmd_strava_v5.9.1.txt) y el secreto STRAVA_CLIENT_SECRET puesto en Cloud Shell.
+
 ## Versión 5.9 — 📲 Enviar la ruta al ciclocomputador
 - Nuevo botón «📲 Enviar al ciclocomputador (iGPSPORT, Garmin…)» en el planificador y el diseñador de rutas, y «📲 Al ciclocomputador» en la ficha de cada salida con recorrido.
 - Descarga el GPX (con altitud) con un nombre claro y abre una tarjeta con los pasos exactos de la app del aparato: iGPSPORT (Mis rutas → Mía → ＋ → Importar archivo de ruta → enviar al aparato → Navegación → Ruta), Garmin Connect (Recorridos → Importar) y Wahoo/Bryton.

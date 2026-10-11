@@ -1060,7 +1060,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.9.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4174,7 +4174,7 @@ async function refreshPush(){
 // Si la app está abierta cuando llega el aviso, ya lo muestra el pelotón en pantalla
 function pushForeground(){try{if(pushReady())firebase.messaging().onMessage(()=>{})}catch(e){}}
 /* ===== v3.5 — Strava: las salidas del reloj llegan solas ===== */
-const STRAVA_CLIENT_ID='PON_AQUI_CLIENT_ID';
+const STRAVA_CLIENT_ID='286573';
 let strava=null;   // {athleteName,lastSync} si está conectado
 const stravaOn=()=>STRAVA_CLIENT_ID&&!STRAVA_CLIENT_ID.startsWith('PON_');
 const callFn=(n,d)=>firebase.app().functions('europe-southwest1').httpsCallable(n)(d||{}).then(r=>r.data);
