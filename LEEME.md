@@ -1,3 +1,11 @@
+## Versión 5.10 — 🔀 Varias opciones de recorrido de A a B
+- «Ir a un destino» (De A a B, sin paradas): la app calcula hasta 3 caminos distintos y los enseña todos en el mapa. El elegido va en verde lima y los demás en gris.
+- Debajo salen las opciones con sus km, metros de subida y tiempo: «📏 La más corta», «⛰️ Menos subida» y «🔀 Otra opción».
+- Para elegir uno, toca su tarjeta o toca la línea gris en el mapa. Con «🗺️ Ver mapa» siguen viéndose las opciones.
+- Al Iniciar, Guardar, Crear salida o Enviar al ciclocomputador se usa el camino elegido (la navegación sigue ese camino, no el más rápido).
+- Arreglo: si el mapa aún estaba cargando al abrir el planificador, una orden vieja podía borrar la línea de la ruta recién calculada.
+- No necesita cambios en reglas ni funciones.
+
 ## Versión 5.9.1 — 🟠 Strava activado
 - Actividades → «Conectar con Strava»: las salidas grabadas con el iGPSPORT (o Garmin, reloj…) que llegan a Strava aparecen solas en RideSafe (bici, gravel, MTB, e-bike; la primera vez, los últimos 30 días).
 - Se sincroniza al abrir la app (cada 30 min como mucho) o con «🔄 Sincronizar ahora». «Desconectar» lo quita cuando quieras.

@@ -598,7 +598,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #saver .sv-in{text-align:center;transition:transform 1.5s ease}
 #saver .sv-d{color:#3a3a3a;font-size:22px;font-weight:800;letter-spacing:.02em}
 #saver .sv-h{color:#5a5a5a;font-size:14px;margin-top:14px;line-height:1.5;transition:opacity .6s}
-.planpanel.mini>*:not(.grab):not(.pdown):not(.phead):not(#bikeChips):not(#planHint){display:none!important}
+.planpanel.mini>*:not(.grab):not(.pdown):not(.phead):not(#bikeChips):not(#planHint):not(#pAlts){display:none!important}
+/* v5.10 — Opciones de recorrido de A a B */
+#pAlts .alts{display:flex;gap:6px;overflow-x:auto;margin:2px 0 8px;padding-bottom:2px;scrollbar-width:none}
+#pAlts .alt{flex:1 0 auto;min-width:104px;text-align:left;padding:7px 10px;border-radius:14px;background:var(--card);border:2px solid var(--line);color:var(--txt);display:flex;flex-direction:column;gap:1px;line-height:1.2}
+#pAlts .alt b{font-size:14px}#pAlts .alt small{font-size:12px;color:var(--txt2)}#pAlts .alt i{font-style:normal;font-size:11px;font-weight:800;color:var(--txt2)}
+#pAlts .alt.on{border-color:var(--lime);background:var(--card2)}#pAlts .alt.on i{color:var(--lime)}
+#pAlts .ahint{display:block;font-size:12px;color:var(--txt2);margin:-4px 2px 8px}
 .plc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin:0 0 14px}
 .pc-h{display:flex;align-items:center;gap:8px}.pc-h b{font-size:15.5px}
 .pc-s{display:block;color:var(--txt2);font-size:12.5px;margin-top:4px}
@@ -900,6 +906,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
       <button class="chip" data-km="20" onclick="setLoopKm(20)">20 km</button><button class="chip" data-km="40" onclick="setLoopKm(40)">40 km</button><button class="chip" data-km="60" onclick="setLoopKm(60)">60 km</button><button class="chip" data-km="80" onclick="setLoopKm(80)">80 km</button><button class="chip" data-km="100" onclick="setLoopKm(100)">100 km</button>
       <button class="chip" onclick="newLoop()">🔄 Otra vuelta</button>
     </div>
+    <div id="pAlts"></div>
     <div class="pacts" id="pActions" style="display:none">
       <button id="bGo" class="go" onclick="goNav()">▲ Iniciar</button>
       <button id="bSave" onclick="plan.view&&viewingComm?saveCommRoute():saveRoute()">💾 Guardar</button>
@@ -1060,7 +1067,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.9.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.10</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4709,7 +4716,7 @@ function initMap(){
   map.on('load',()=>{drawRideMarkers();drawPois()});
   map.on('rotate',compassDraw);
   const zf=()=>$('map').classList.toggle('zfar',map.getZoom()<11.5);map.on('zoomend',zf);map.on('load',zf);
-  map.on('click',e=>{if(plan.active&&!plan.view)addPlanPt({lat:e.lngLat.lat,lng:e.lngLat.lng})});
+  map.on('click',e=>{if(plan.active&&!plan.view){if(altTap(e))return;addPlanPt({lat:e.lngLat.lat,lng:e.lngLat.lng})}});
   map.on('dragstart',()=>{if(live.on)live.follow=false});
 }
 function locateMe(silent){
@@ -4939,7 +4946,10 @@ function profileSVG(prof){
 /* Línea de la ruta en un mapa */
 function setLine(m,coords,id,color){
   if(!m)return;id=id||'plan';color=color||'#C8DC3C';
-  if(!(m.style&&m.style._loaded)){m.once('load',()=>setLine(m,coords,id,color));return}
+  // v5.10: si el mapa aún carga, se guarda solo la última línea pedida (antes una orden vieja podía borrar la ruta nueva)
+  m.__pend=m.__pend||{};
+  if(!(m.style&&m.style._loaded)){const first=!(id in m.__pend);m.__pend[id]=[coords,color];if(first)m.once('load',()=>{if(!(id in m.__pend))return;const q=m.__pend[id];delete m.__pend[id];setLine(m,q[0],id,q[1])});return}
+  delete m.__pend[id];
   const data={type:'FeatureCollection',features:coords&&coords.length>1?[{type:'Feature',geometry:{type:'LineString',coordinates:coords.map(p=>[p[1],p[0]])}}]:[]};
   const s=m.getSource(id);
   if(s)s.setData(data);
@@ -4981,7 +4991,7 @@ function exitPlanner(){planTiny(false);togglePlanMini(false);$('planPanel').clas
   viewingComm=null;plan.active=false;plan.view=false;clearPlan(true);setPlanning(false);
   if(plan.fromCreate){plan.fromCreate=false;reopenCreate()}
 }
-function clearPlan(silent){stopsClear();plan.markers.forEach(m=>m.remove());plan.markers=[];plan.start=null;plan.stops=[];plan.dest=null;plan.route=null;plan.reqId++;plan.busy=false;setLine(map,null);if(!silent)renderPlan()}
+function clearPlan(silent){stopsClear();plan.markers.forEach(m=>m.remove());plan.markers=[];plan.start=null;plan.stops=[];plan.dest=null;plan.route=null;plan.alts=null;plan.altI=0;drawAlts();plan.reqId++;plan.busy=false;setLine(map,null);if(!silent)renderPlan()}
 
 /* Tocar el mapa: si falta el destino, lo pone ahí */
 async function addPlanPt(ll){
@@ -5249,6 +5259,52 @@ async function mbRoute(wps){
   const rt=d.routes[0];
   return{coords:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,legs:rt.legs.map(l=>l.distance/1000)};
 }
+/* ===== v5.10 — Varias opciones de recorrido de A a B, con su mapa =====
+   Pide a Mapbox hasta 3 caminos distintos. Si da menos, busca otro pasando por un lado y por el otro.
+   En el mapa: la elegida en verde lima y las demás en gris (tócalas para elegirlas). */
+function thinPts(c,step){const o=[c[0]];let acc=0;for(let i=1;i<c.length;i++){acc+=hav(c[i-1],c[i]);if(acc>=step){o.push(c[i]);acc=0}}o.push(c.at(-1));return o}
+function overlapFrac(a,b){const A=thinPts(a.coords,0.2),B=thinPts(b.coords,0.2);let n=0;A.forEach(p=>{if(B.some(q=>hav(p,q)<0.06))n++});return n/A.length}
+function hasSpur(r){const A=thinPts(r.coords,0.1);let d=0;const cum=A.map((p,i)=>i?(d+=hav(A[i-1],p)):0);let bad=0;
+  for(let i=0;i<A.length;i++)for(let j=i+1;j<A.length;j++){if(cum[j]-cum[i]>0.4&&hav(A[i],A[j])<0.03){bad++;break}}return bad/A.length>0.04}
+function altNav(r){const c=r.coords,cd=cumDist(c),t=cd.at(-1),o=[];for(let k=1;k<=6;k++){const x=t*k/7;const i=cd.findIndex(v=>v>=x);if(i>0)o.push({lat:c[i][0],lng:c[i][1]})}return o}
+async function mbAlts(a,b){
+  const P=routeProfile(),q=p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6);
+  const get=async(w,alt)=>{const u='https://api.mapbox.com/directions/v5/mapbox/'+P.p+'/'+w.map(q).join(';')+'?geometries=geojson&overview=full&steps=false'+(alt?'&alternatives=true':'')+P.x+'&access_token='+MAPBOX_TOKEN;
+    const r=await fetch(u);const d=await r.json();if(!r.ok||d.code!=='Ok'||!d.routes?.length)throw d;
+    return d.routes.map(rt=>({coords:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,legs:[rt.distance/1000]}))};
+  const all=await get([a,b],true);const out=[all[0]];
+  all.slice(1).forEach(r=>{if(r.km<=out[0].km*1.6&&overlapFrac(r,out[0])<0.8){r.nav=[a,...altNav(r),b];out.push(r)}});
+  if(out.length<3){
+    const kx=111.32*Math.cos((a.lat+b.lat)/2*Math.PI/180),ky=111.32;
+    const dx=(b.lng-a.lng)*kx,dy=(b.lat-a.lat)*ky,L=Math.hypot(dx,dy)||1;
+    const off=Math.min(Math.max(L*0.2,1.2),15);
+    for(const f of [0.5,0.35,0.65]){if(out.length>=3)break;
+      for(const sg of [1,-1]){if(out.length>=3)break;
+        const via={lat:a.lat+(b.lat-a.lat)*f+sg*(dx/L)*off/ky,lng:a.lng+(b.lng-a.lng)*f-sg*(dy/L)*off/kx};
+        try{const r=(await get([a,via,b],false))[0];r.legs=[r.km];
+          if(r.km<=out[0].km*1.6&&!hasSpur(r)&&out.every(o=>overlapFrac(r,o)<0.8)){r.nav=[a,via,b];out.push(r)}}catch(e){}
+      }}
+  }
+  return out;
+}
+function altLabels(){const A=plan.alts;if(!A)return;A.forEach(x=>x.lbl='🔀 Otra opción');
+  const mk=A.reduce((m,x,i)=>x.km<A[m].km?i:m,0);A[mk].lbl='📏 La más corta';
+  if(A.every(x=>x.prof)){const mu=A.reduce((m,x,i)=>x.up<A[m].up?i:m,0);if(mu!==mk&&A[mk].up-A[mu].up>=25)A[mu].lbl='⛰️ Menos subida';else if(mu===mk)A[mk].lbl='⭐ Corta y llana'}}
+function altsHTML(){const A=plan.alts;if(!A||A.length<2||plan.view||!plan.active)return '';
+  return `<div class="alts">${A.map((x,i)=>`<button class="alt${i===plan.altI?' on':''}" onclick="selectAlt(${i})"><i>${x.lbl||'Opción '+(i+1)}</i><b>${x.km.toFixed(1).replace('.',',')} km</b><small>${x.prof?'+'+Math.round(x.up)+' m · '+hm(x.mins||estMins(x.km,x.up)):'calculando…'}</small></button>`).join('')}</div><small class="ahint">${A.length} caminos. Toca uno aquí o la línea gris en el mapa para elegirlo.</small>`}
+function selectAlt(i){const A=plan.alts;if(!A||!A[i]||i===plan.altI)return;
+  plan.altI=i;plan.route=A[i];stopsClear();setLine(map,A[i].coords);drawAlts();vib(15);renderPlan();
+  if(A[i].prof&&!A[i].stopsList&&!A[i].stopsBusy)loadStops()}
+function drawAlts(){if(!map)return;const m=map;if(!(m.style&&m.style._loaded)){m.once('load',drawAlts);return}
+  const A=plan.alts||[];const data={type:'FeatureCollection',features:A.map((x,i)=>i===plan.altI?null:{type:'Feature',properties:{i},geometry:{type:'LineString',coordinates:x.coords.map(p=>[p[1],p[0]])}}).filter(Boolean)};
+  const s=m.getSource('alts');if(s){s.setData(data);return}
+  m.addSource('alts',{type:'geojson',data});const bf=m.getLayer('plan-case')?'plan-case':undefined;
+  m.addLayer({id:'alts-case',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':8,'line-opacity':0.7}},bf);
+  m.addLayer({id:'alts-line',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#9AA7B8','line-width':4.5}},bf);
+  m.addLayer({id:'alts-hit',type:'line',source:'alts',paint:{'line-color':'#000','line-width':26,'line-opacity':0}},bf)}
+function altTap(e){if(!plan.alts||!map.getLayer('alts-hit'))return false;
+  const f=map.queryRenderedFeatures(e.point,{layers:['alts-hit']});if(!f.length)return false;
+  selectAlt(+f[0].properties.i);toast('🔀 Has elegido otro camino');return true}
 async function computeRoute(){
   const wps=planWps();
   const ok=plan.mode==='loop'?!!plan.start:(plan.start&&plan.dest);
@@ -5260,18 +5316,23 @@ async function computeRoute(){
     if(plan.mode==='loop'){
       const lw=loopWaypoints(plan.start,plan.loopKm,plan.seed);r=await mbRoute(lw);r.nav=lw;
       if(Math.abs(r.km-plan.loopKm)/plan.loopKm>0.2){const lw2=loopWaypoints(plan.start,plan.loopKm,plan.seed,plan.loopKm/r.km);const r2=await mbRoute(lw2);r2.nav=lw2;if(Math.abs(r2.km-plan.loopKm)<Math.abs(r.km-plan.loopKm))r=r2}
+    }else if(plan.mode==='ab'&&wps.length===2){
+      const al=await mbAlts(wps[0],wps[1]);if(id!==plan.reqId)return;
+      plan.alts=al.length>1?al:null;plan.altI=0;r=al[0];
     }else r=plan.mode==='draw'&&wps.some(p=>p.sg&&p.sg!=='road')?await drawBuild(wps):await mbRouteMany(wps);
     if(id!==plan.reqId)return;
+    if(!(plan.mode==='ab'&&wps.length===2))plan.alts=null;
     r.mode=plan.mode==='draw'?'draw':plan.stops.length&&plan.mode!=='loop'?'stages':plan.mode;r.up=0;r.down=0;
     r.wps=plan.mode==='loop'?[plan.start]:wps;
-    setLine(map,r.coords);plan.route=r;renderPlan();fitTo(map,r.coords,{top:60,bottom:Math.round(window.innerHeight*0.58),left:40,right:90});
-    try{await addElevation(r)}catch(e){console.warn('desnivel',e);r.profFail=true}
+    (plan.alts||[r]).forEach(a=>{a.mode=r.mode;a.up=0;a.down=0;a.wps=r.wps});
+    setLine(map,r.coords);drawAlts();plan.route=r;renderPlan();fitTo(map,plan.alts?[].concat(...plan.alts.map(a=>a.coords)):r.coords,{top:60,bottom:Math.round(window.innerHeight*0.58),left:40,right:90});
+    await Promise.all((plan.alts||[r]).map(a=>addElevation(a).then(()=>{a.mins=estMins(a.km,a.up)}).catch(e=>{console.warn('desnivel',e);a.profFail=true})));
     if(id!==plan.reqId)return;
-    r.mins=estMins(r.km,r.up);renderPlan();
+    altLabels();r=plan.route;r.mins=estMins(r.km,r.up);renderPlan();
     if(id===plan.reqId&&!r.stopsList&&!r.stopsBusy)loadStops();
   }catch(e){
     if(id!==plan.reqId)return;console.error(e);
-    plan.route=null;setLine(map,null);
+    plan.route=null;plan.alts=null;drawAlts();setLine(map,null);
     toast(e&&e.code==='NoRoute'?'No hay camino en bici entre esos puntos':e&&e.code==='NoSegment'?'Ese punto está lejos de cualquier camino. Acércalo a una carretera':e&&e.message&&/token/i.test(e.message)?'La clave de Mapbox no es válida para esta web':'No se pudo calcular la ruta. Revisa la conexión');
   }finally{if(id===plan.reqId){plan.busy=false;renderPlan()}}
 }
@@ -5312,6 +5373,7 @@ function renderPlan(){
     rows+=`<div class="prow"><span class="pic">${IC.dest}</span>${fieldBtn('dest',plan.dest,'¿A dónde vas?')}${v?'':`<button class="pbtn" onclick="openPointSearch('new')" aria-label="Añadir parada">＋</button>`}</div>`;
   }
   $('pRows').innerHTML=rows;
+  $('pAlts').innerHTML=altsHTML();
   $('loopOpts').style.display=plan.mode==='loop'&&!v?'flex':'none';
   $('loopOpts').querySelectorAll('.chip[data-km]').forEach(c=>c.classList.toggle('on',+c.dataset.km===plan.loopKm));
   $('planHint').textContent=plan.busy?'Calculando ruta…':v?'Ruta guardada':plan.mode==='draw'?(!plan.start?'👆 Toca el mapa donde empiezas':!plan.dest?'👆 Toca el mapa por donde quieres ir':'👆 Toca para seguir · arrastra un punto para moverlo'):plan.mode==='loop'?'':(!plan.start?'👆 Toca el mapa para poner la salida (A)':!plan.dest?'👆 Toca el mapa para poner la llegada (B)':(isMtb()?'👆 Toca el mapa para añadir paradas · 🚵 por caminos':'👆 Toca el mapa para añadir paradas · 🚴 solo asfalto'));
