@@ -1,3 +1,10 @@
+## Versión 5.11 — 🏪 Tienda amiga (prueba)
+- Cada tienda tiene su enlace con QR: https://app.ridesafeia.es/?tienda=nombre-de-la-tienda
+- Quien entra en la app por ese QR ve al abrirla, durante 2,5 segundos, el logo de la tienda con «te recomienda RideSafe IA». Se cierra solo o tocando. No sale si la app se abre desde un aviso o un enlace.
+- En Perfil, abajo: «🏪 App recomendada por …» con el logo.
+- Consola → 🏪 Tiendas: dar de alta una tienda (nombre + logo, fondo oscuro o blanco), ver su enlace y su QR, descargar el QR en imagen, imprimir el cartel A5 para el mostrador, pausar o borrar la tienda, y ver cuántos ciclistas han entrado por cada tienda.
+- La tienda se guarda en Firebase (config/tiendas). No necesita cambios en reglas ni funciones.
+
 ## Versión 5.10 — 🔀 Varias opciones de recorrido de A a B
 - «Ir a un destino» (De A a B, sin paradas): la app calcula hasta 3 caminos distintos y los enseña todos en el mapa. El elegido va en verde lima y los demás en gris.
 - Debajo salen las opciones con sus km, metros de subida y tiempo: «📏 La más corta», «⛰️ Menos subida» y «🔀 Otra opción».
