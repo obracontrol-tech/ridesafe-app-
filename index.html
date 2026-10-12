@@ -1076,7 +1076,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
-  <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Tus canciones por el altavoz; bajan solas con los avisos</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2922,21 +2922,15 @@ function openMusic(){
   if(!store.get('musLaw',0)){store.set('musLaw',1);setTimeout(()=>alert('🔈 Usa el altavoz del móvil o un altavoz de manillar.\n\n🚫 En España está prohibido ir en bici con auriculares o cascos conectados al móvil (Reglamento General de Circulación, art. 18.2). Multa de 200 €.\n\nLa música baja sola cuando llega un aviso del grupo o una indicación.'),300)}
 }
 function renderMusic(){
-  const B=$('musBody');if(!B)return;const on=musOn(),cur=mus.list[mus.i];
+  /* v5.13.3 — Versión sencilla: la música va con Spotify (Android la baja sola cuando la app habla) */
+  const B=$('musBody');if(!B)return;
   B.innerHTML=`<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">🔈 <b>Por el altavoz</b> del móvil o de manillar. 🚫 Con auriculares está prohibido en bici (multa 200 €).</div>
-   <label class="btn btn-lime" style="width:100%;cursor:pointer;justify-content:center">📂 ${mus.list.length?'Elegir otras canciones':'Elegir canciones del móvil'}<input type="file" accept="audio/*,.mp3,.m4a,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
-   ${mus.list.length?`<div style="text-align:center;margin:16px 0 6px"><small style="color:var(--txt2)">Sonando · ${mus.i+1} de ${mus.list.length}</small><b style="display:block;font-size:19px;margin-top:2px">${esc(cur.n)}</b></div>
-   <div style="display:flex;justify-content:center;gap:14px;margin:10px 0 14px">
-     <button class="round" style="width:62px;height:62px;font-size:24px" onclick="musPrev()" aria-label="Anterior">⏮</button>
-     <button class="round" style="width:78px;height:78px;font-size:32px;background:var(--lime);color:var(--on-lime);border-color:var(--lime)" onclick="musToggle()" aria-label="${on?'Pausa':'Reproducir'}">${on?'⏸':'▶️'}</button>
-     <button class="round" style="width:62px;height:62px;font-size:24px" onclick="musNext()" aria-label="Siguiente">⏭</button></div>
-   <div class="set" style="gap:10px">🔉<input type="range" min="0" max="1" step="0.05" value="${mus.vol}" oninput="musVol(this.value)" style="flex:1;accent-color:var(--lime)" aria-label="Volumen">🔊</div>
-   <div class="set">🔀 Orden aleatorio <label class="sw"><input type="checkbox" ${mus.shuf?'checked':''} onchange="mus.shuf=this.checked"><span></span></label></div>
-   <button class="btn btn-line" style="width:100%;margin-top:4px" onclick="musTest()">🧪 Probar: así baja la música con un aviso</button>
-   <div class="list" style="margin-top:12px;max-height:240px;overflow:auto">${mus.list.map((x,i)=>`<button class="li" style="${i===mus.i?'border-color:var(--lime)':''}" onclick="musLoad(${i},true)"><span class="em">${i===mus.i&&on?'🔊':'🎵'}</span><div><b>${esc(x.n)}</b></div></button>`).join('')}</div>`
-   :'<small style="display:block;color:var(--txt2);margin:10px 2px 0;line-height:1.45">Elige una o varias canciones (MP3 y similares) de tu móvil. Suenan dentro de RideSafe, también con la pantalla apagada o en 🌙 modo ahorro.</small>'}
-   <small style="display:block;color:var(--txt2);margin:16px 2px 8px">¿Usas otra app de música? Se abre aparte (en ese caso la música no baja sola con los avisos):</small>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><a class="btn btn-line" style="text-decoration:none;justify-content:center" href="https://open.spotify.com/" target="_blank" rel="noopener">🟢 Spotify</a><a class="btn btn-line" style="text-decoration:none;justify-content:center" href="https://music.youtube.com/" target="_blank" rel="noopener">🔴 YouTube Music</a></div>`;
+   <a class="btn btn-lime" style="width:100%;text-decoration:none;justify-content:center;min-height:56px;font-size:17px" href="https://open.spotify.com/" target="_blank" rel="noopener">🟢 Abrir Spotify</a>
+   <div class="list" style="margin-top:14px">
+    <div class="li" style="cursor:default"><span class="em">1️⃣</span><div><b>Pon tu música en Spotify</b><small>Dale a ▶️ y vuelve a RideSafe. Sigue sonando detrás.</small></div></div>
+    <div class="li" style="cursor:default"><span class="em">2️⃣</span><div><b>Inicia la salida en RideSafe</b><small>Cuando la app hable (tiempo, avisos del grupo, giros), Android baja la música un momento y luego la sube.</small></div></div>
+   </div>
+   <small style="display:block;color:var(--txt2);margin:12px 2px 0;line-height:1.45">ℹ️ YouTube Music gratis se para al cambiar de app: para que suene detrás hace falta YouTube Premium.</small>`;
 }
 let viewingComm=null;
 function viewCommRoute(id){

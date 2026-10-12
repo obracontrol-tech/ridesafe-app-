@@ -1,3 +1,8 @@
+## Versión 5.13.3 — Música en ruta, versión sencilla con Spotify
+- El reproductor propio se ha quitado: en Android el sistema lo paraba cada vez que la app hablaba (tiempo, avisos) y no se podía evitar desde una app web.
+- Perfil → «🎵 Música en ruta» (y en la salida, «⋯» → 🎵): botón «Abrir Spotify», aviso de altavoz / auriculares prohibidos y cómo usarlo. Con Spotify, Android baja la música un momento cuando RideSafe habla y luego la sube.
+- YouTube Music gratis se para al cambiar de app (necesita Premium para sonar detrás).
+
 ## Versión 5.13.2 — Música: segundo arreglo para que vuelva tras la voz
 - Android le dice a la app «pausa» cuando la app habla (el tiempo, el viento, los avisos). La app lo tomaba como si TÚ hubieras pulsado pausa y por eso no volvía. Ahora distingue: si la pausa llega mientras habla la app, la música vuelve sola al terminar de hablar.
 
