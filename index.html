@@ -609,7 +609,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #saver .sv-in{text-align:center;transition:transform 1.5s ease}
 #saver .sv-d{color:#3a3a3a;font-size:22px;font-weight:800;letter-spacing:.02em}
 #saver .sv-h{color:#5a5a5a;font-size:14px;margin-top:14px;line-height:1.5;transition:opacity .6s}
-.planpanel.mini>*:not(.grab):not(.pdown):not(.phead):not(#bikeChips):not(#planHint):not(#pAlts){display:none!important}
+.planpanel.mini>*:not(.grab):not(.pdown):not(.phead):not(#bikeChips):not(#planHint){display:none!important}
+#s-rutas #planPanel.mini>#pAlts{display:block!important}
 /* v5.10 — Opciones de recorrido de A a B */
 #pAlts .alts{display:flex;gap:6px;overflow-x:auto;margin:2px 0 8px;padding-bottom:2px;scrollbar-width:none}
 #pAlts .alt{flex:1 0 auto;min-width:104px;text-align:left;padding:7px 10px;border-radius:14px;background:var(--card);border:2px solid var(--line);color:var(--txt);display:flex;flex-direction:column;gap:1px;line-height:1.2}
@@ -1079,7 +1080,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.11</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.11.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4749,11 +4750,13 @@ function openMapFilters(){
     ${row('mfRides','🚩','Salidas del club','Dónde empiezan las próximas salidas',store.get('showRides',true))}
     ${row('mfPois','⭐','Puntos ciclistas del club','Los que habéis añadido vosotros',poiShow)}
     ${row('mfOsm','💧','Fuentes, bares y farmacias','De la zona que estás mirando',osmOn)}
+    ${row('mfStops','☕','Paradas de la ruta','Fuentes, bares y farmacias junto a la ruta que planificas',store.get('stopsOn',true))}
     <div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Listo</button></div></div>`;
   d.addEventListener('change',e=>{const t=e.target;
     if(t.id==='mfRides'){store.set('showRides',t.checked);drawRideMarkers()}
     if(t.id==='mfPois'){poiShow=t.checked;store.set('poiShow',poiShow);drawPois()}
-    if(t.id==='mfOsm'){if(t.checked)osmShow();else osmClear()}});
+    if(t.id==='mfOsm'){if(t.checked)osmShow();else osmClear()}
+    if(t.id==='mfStops'){store.set('stopsOn',t.checked);drawStops();if(plan.active)renderPlan()}});
   d.onclick=e=>{if(e.target.closest('.cfm-ok')||e.target===d)d.remove()};
   document.body.appendChild(d);
 }
@@ -5053,6 +5056,7 @@ function renderTiny(){
     <button class="tinf" onclick="planTiny(false)"><b>${esc(top)}</b><small>${esc(sub)}</small></button>`+
     (draw?`<button class="tbt" onclick="drawUndo()" ${n?'':'disabled'} aria-label="Deshacer"><span>↶</span>Deshacer</button>
     <button class="tbt${fr?' on':''}" onclick="drawSetFree(!store.get('drawFree',false))" aria-label="Cambiar entre caminos y línea recta"><span>${fr?'📏':'🛣️'}</span>${fr?'Recta':'Caminos'}</button>`:'')+
+    (r&&r.stopsList&&r.stopsList.length?`<button class="tbt${store.get('stopsOn',true)?' on':''}" onclick="stopsSet(!store.get('stopsOn',true));renderTiny()" aria-label="Fuentes, bares y farmacias en el mapa"><span>☕</span>${store.get('stopsOn',true)?'Quitar':'Paradas'}</button>`:'')+
     `<button class="tbt${trailsOn()?' on':''}" onclick="trailsToggle(!trailsOn())" aria-label="Ver senderos"><span>${isHike()?'🥾':'🚵'}</span>Senderos</button>`;
 }
 // Deslizar la tarjeta hacia abajo también la recoge
@@ -5416,10 +5420,13 @@ function stopsHTML(r){
   const chips=['all',...Object.keys(STOP_T).filter(k=>cnt[k])].map(k=>`<button class="${stopFilter===k?'on':''}" onclick="stopFilter=${jsq(k)};renderPlan();drawStops()">${k==='all'?'Todas ('+L.length+')':STOP_T[k][0]+' '+cnt[k]}</button>`).join('');
   const vis=L.filter(s=>stopFilter==='all'||s.t===stopFilter).slice(0,60);
   const warn=(r.stopsGaps||[]).map(g=>`<div class="stp-warn">⚠️ <b>${Math.round(g.len)} km sin agua ni sitios para comprar</b> (del km ${Math.round(g.a)} al ${Math.round(g.b)}). Lleva agua extra.</div>`).join('');
-  return `<div class="stp"><b>☕ Paradas en la ruta</b><small style="display:block;color:var(--txt2)">A menos de 300 m del recorrido · toca una para verla</small>${warn}
+  const on=store.get('stopsOn',true);
+  return `<div class="stp"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">☕ Paradas en la ruta</b><button class="mini" style="min-height:36px;padding:0 12px" onclick="stopsSet(${on?'false':'true'})">${on?'🙈 Quitar del mapa':'👁️ Ver en el mapa'}</button></div><small style="display:block;color:var(--txt2)">A menos de 300 m del recorrido · toca una para verla</small>${warn}
    ${L.length?`<div class="stp-chips">${chips}</div>${vis.map(s=>{const i=L.indexOf(s);const c=STOP_T[s.t];return `<button class="stp-li" onclick="goStop(${i})"><span class="k">km ${s.km<10?s.km.toFixed(1).replace('.',','):Math.round(s.km)}</span><span style="font-size:20px">${c[0]}</span><span style="flex:1;min-width:0"><b>${esc(s.n||c[1])}</b><small>${c[1]} · a ${Math.max(10,Math.round(s.off*1000/10)*10)} m de la ruta</small></span></button>`}).join('')}`:'<small style="display:block;margin-top:6px">No hay paradas conocidas cerca de esta ruta. Lleva agua y comida suficiente.</small>'}</div>`;
 }
 function goStop(i){const s=plan.route&&plan.route.stopsList&&plan.route.stopsList[i];if(!s||!map)return;map.flyTo({center:[s.lng,s.lat],zoom:16,duration:700});vib(20)}
+/* v5.11.1 — Botón para quitar o volver a poner en el mapa las fuentes, bares y farmacias de la ruta */
+function stopsSet(on){store.set('stopsOn',!!on);drawStops();renderPlan();toast(on?'💧☕💊 Paradas visibles en el mapa':'🙈 Paradas quitadas del mapa')}
 function drawStops(){
   stopsClear();const r=plan.route;if(!map||!r||!r.stopsList||!store.get('stopsOn',true))return;
   r.stopsList.forEach((s,i)=>{if(stopFilter!=='all'&&s.t!==stopFilter)return;const el=document.createElement('div');el.className='stpm';el.textContent=STOP_T[s.t][0];el.title=s.n||STOP_T[s.t][1];
@@ -5441,8 +5448,10 @@ const OSM_Q=bb=>`[out:json][timeout:25];(nwr["amenity"~"^(drinking_water|pharmac
 let osmMk=[],osmOn=false,osmList=[];
 function osmClear(){osmMk.forEach(m=>m.remove());osmMk=[];osmOn=false}
 async function poiMenu(){
-  const opts=[[osmOn?'🙈 Quitar fuentes, bares y farmacias del mapa':'💧☕💊 Ver fuentes, bares y farmacias aquí','','near'],['⭐ Añadir un punto ciclista (lo verá tu club)','','add']];
+  const rs=plan.active&&plan.route&&plan.route.stopsList&&plan.route.stopsList.length,so=store.get('stopsOn',true);
+  const opts=[...(rs?[[so?'🙈 Quitar las paradas de la ruta del mapa':'👁️ Ver las paradas de la ruta en el mapa','','stops']]:[]),[osmOn?'🙈 Quitar fuentes, bares y farmacias del mapa':'💧☕💊 Ver fuentes, bares y farmacias aquí','','near'],['⭐ Añadir un punto ciclista (lo verá tu club)','','add']];
   const i=await askChoice('¿Qué quieres hacer?',opts);if(i<0)return;
+  if(opts[i][2]==='stops'){stopsSet(!so);renderTiny();return}
   if(opts[i][2]==='add'){addPoi();return}
   if(osmOn){osmClear();toast('Quitados del mapa');return}
   osmShow();

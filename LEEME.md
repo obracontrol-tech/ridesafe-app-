@@ -1,3 +1,11 @@
+## Versión 5.11.1 — Arreglo de tarjetas en blanco + botón para quitar las paradas
+- ARREGLO: desde la 5.10, al bajar la tarjeta del planificador («⌄ Ver más mapa») la barra de abajo salía en blanco, y en «🗺️ Ver mapa» del diseñador desaparecían los botones. Ya se ven otra vez.
+- Fuentes, bares y farmacias de la ruta: botón para quitarlas o volver a ponerlas en el mapa:
+  · en la tarjeta, «☕ Paradas en la ruta» → «🙈 Quitar del mapa» / «👁️ Ver en el mapa»;
+  · en la barra de abajo (tarjeta bajada) → botón «☕ Quitar / Paradas»;
+  · en el botón ☕ del mapa y en el botón de capas → «Paradas de la ruta».
+- La app recuerda lo que elijas para las próximas rutas.
+
 ## Versión 5.11 — 🏪 Tienda amiga (prueba)
 - Cada tienda tiene su enlace con QR: https://app.ridesafeia.es/?tienda=nombre-de-la-tienda
 - Quien entra en la app por ese QR ve al abrirla, durante 2,5 segundos, el logo de la tienda con «te recomienda RideSafe IA». Se cierra solo o tocando. No sale si la app se abre desde un aviso o un enlace.
