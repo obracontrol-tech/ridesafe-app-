@@ -875,7 +875,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
       <button class="flt" aria-label="Qué ver en el mapa" onclick="openMapFilters()"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button>
     </div>
     <div class="mrow">
-      <button class="zone" onclick="toast('Buscando salidas en esta zona…')"><svg class="i" viewBox="0 0 24 24" style="width:20px"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Buscar en esta zona</button>
+      <button class="zone" onclick="openAqui()" aria-label="Qué hay por aquí: rutas para salir ya, salidas cerca, rutas del club y paradas">📍 ¿Qué hay por aquí?</button>
       <div class="seg" role="group" aria-label="Tipo de bici">
         <button class="on" aria-label="Carretera" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3"/></svg></button>
         <button aria-label="Montaña" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M15 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 10.5V12l-3-3 4-3 2 3h3M3 21l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></button>
@@ -1082,7 +1082,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.11.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.12</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2782,6 +2782,81 @@ function renderCommRoutes(){
   l.sort((a,b)=>(a._d??1e9)-(b._d??1e9));
   $('crList').innerHTML=l.length?l.map(r=>`<div class="feed" style="cursor:pointer" onclick="viewCommRoute(${jsq(r.id)})"><div class="fb"><div class="fr">${routeSVG(r.poly,96,96)}</div><div style="flex:1;min-width:0"><div class="ft" style="margin:0 0 4px">${esc(r.name)}</div><small style="color:var(--txt2)">${r.mode==='loop'?'⟲ Circular':'🗺️ '+(PLAN_T[r.mode]||'Ruta')}${r.town?' · '+esc(r.town):''}${r._d!=null?' · a '+kmTxt(r._d):''}</small><div class="chips" style="margin-top:8px"><span class="tag lime">${fmtNum(r.km,1)} km</span><span class="tag">+${r.up} m</span><span class="tag">${hm(r.mins)}</span></div><small style="color:var(--txt2);display:block;margin-top:6px">Por ${esc(r.by)}${r.uses?' · usada '+r.uses+' '+(r.uses===1?'vez':'veces'):''}</small></div></div></div>`).join(''):`<div class="empty">Aún no hay rutas${crFilter!=='all'?' con ese filtro':''}.<br>Planifica una y pulsa "🌍 Compartir".</div>`;
 }
+/* ===== v5.12 — 📍 ¿Qué hay por aquí? =====
+   Un solo botón que junta lo útil de la zona: 3 rutas circulares para salir ya, salidas abiertas cerca,
+   rutas del club que empiezan cerca y fuentes/bares/farmacias. Usa tu posición (o el centro del mapa si
+   lo has movido lejos de ti: así sirve para mirar otra zona antes de un viaje). */
+let aqui={here:null,far:false,seed:0,loops:null,id:0};
+const AQUI_KM=()=>hikeNow()?[5,10,15]:isMtb()?[15,25,40]:[25,45,70];
+async function aquiPos(){
+  let me=myLL();if(!me&&navigator.geolocation)me=await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{timeout:8000,maximumAge:300000}));
+  const c=map?map.getCenter():null;
+  if(c&&(!me||hav([me.lat,me.lng],[c.lat,c.lng])>3))return{p:{lat:c.lat,lng:c.lng},far:true};
+  return me?{p:{lat:me.lat,lng:me.lng},far:false}:null;
+}
+async function openAqui(){
+  if(!map){toast('El mapa necesita conexión a internet');return}
+  $('rideBody').innerHTML=sheetHead('📍 ¿Qué hay por aquí?')+'<div id="aquiB"><div class="empty">Mirando la zona…</div></div>';
+  openRideId=null;openSheet('sh-ride');
+  const w=await aquiPos();
+  if(!w){$('aquiB').innerHTML='<div class="empty">Activa la ubicación del móvil, o mueve el mapa a la zona que quieres mirar.</div>';return}
+  aqui={here:w.p,far:w.far,seed:aqui.here&&hav([aqui.here.lat,aqui.here.lng],[w.p.lat,w.p.lng])<0.5?aqui.seed:0,loops:null,id:aqui.id+1,open:null,comm:null};
+  const id=aqui.id;
+  $('aquiB').innerHTML=`<small style="display:block;color:var(--txt2);margin:-4px 2px 12px" id="aquiWhere">${w.far?'🗺️ En la zona que miras en el mapa':'📍 Desde donde estás'}</small>
+   <div class="sec" style="margin:0 0 8px"><h3 style="font-size:17px">🚴 Rutas para salir ya</h3></div><div id="aquiLoops"><div class="empty">Calculando 3 rutas circulares…</div></div>
+   <div class="sec" style="margin:16px 0 8px"><h3 style="font-size:17px">📅 Salidas abiertas cerca</h3></div><div id="aquiOpen"><div class="empty">Buscando…</div></div>
+   <div class="sec" style="margin:16px 0 8px"><h3 style="font-size:17px">🗺️ Rutas de tu club que salen cerca</h3></div><div id="aquiComm"><div class="empty">Buscando…</div></div>
+   <div class="sec" style="margin:16px 0 8px"><h3 style="font-size:17px">💧 Para parar</h3></div>
+   <button class="li" onclick="aquiStops()"><span class="em">☕</span><div><b>Fuentes, bares, farmacias y talleres</b><small>Verlos en el mapa de esta zona (se quitan con el botón ☕)</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`;
+  reverseName({lat:w.p.lat,lng:w.p.lng}).then(n=>{const e=$('aquiWhere');if(e&&n&&aqui.id===id)e.textContent=(w.far?'🗺️ Zona del mapa: ':'📍 Desde donde estás: ')+n}).catch(()=>{});
+  aquiLoops();aquiOpen(id);aquiComm(id);
+}
+async function aquiLoops(){
+  const B=$('aquiLoops');if(!B||!aqui.here)return;const id=aqui.id;
+  if(!MAPBOX_TOKEN||MAPBOX_TOKEN.startsWith('PON_')){B.innerHTML='<div class="empty">Falta la clave de Mapbox.</div>';return}
+  B.innerHTML='<div class="empty">Calculando 3 rutas circulares…</div>';
+  const s=aqui.here,kms=AQUI_KM();
+  const one=async(km,i)=>{const seed=aqui.seed*3+i+1;let lw=loopWaypoints(s,km,seed),r=await mbRoute(lw);r.nav=lw;
+    if(Math.abs(r.km-km)/km>0.2){const lw2=loopWaypoints(s,km,seed,km/r.km);const r2=await mbRoute(lw2);r2.nav=lw2;if(Math.abs(r2.km-km)<Math.abs(r.km-km))r=r2}
+    r.target=km;r.seed=seed;try{await addElevation(r)}catch(e){r.up=0;r.profFail=true}r.mins=estMins(r.km,r.up||0);return r};
+  const res=await Promise.allSettled(kms.map(one));if(aqui.id!==id)return;
+  aqui.loops=res.map(x=>x.status==='fulfilled'?x.value:null);
+  const ok=aqui.loops.filter(Boolean);
+  if(!ok.length){B.innerHTML='<div class="empty">No se pudieron calcular rutas aquí. Revisa la conexión o mueve el mapa a una zona con carreteras.</div>';return}
+  const lbl=['Corta','Media','Larga'];
+  B.innerHTML=aqui.loops.map((r,i)=>r?`<div class="feed" style="cursor:pointer;margin-bottom:10px" onclick="aquiUse(${i})"><div class="fb"><div class="fr">${routeSVG(encodePoly(r.coords),96,96)}</div><div style="flex:1;min-width:0"><div class="ft" style="margin:0 0 4px">⟲ ${lbl[i]} · ${r.km.toFixed(0)} km</div><small style="color:var(--txt2);display:block">${r.profFail?'':'⛰️ +'+Math.round(r.up)+' m · '}⏱️ ${hm(r.mins)}</small><button class="mini" style="margin-top:8px;min-height:38px" onclick="event.stopPropagation();aquiUse(${i})">🗺️ Ver en el mapa</button></div></div></div>`:'').join('')+
+    `<button class="btn btn-line" style="width:100%;min-height:46px" onclick="aqui.seed++;aquiLoops()">🔄 Otras 3 rutas</button><small style="display:block;color:var(--txt2);margin:6px 2px 0">Rutas propuestas por carreteras${isMtb()?' y caminos':''} reales. No son rutas probadas por otros ciclistas: míralas antes de salir.</small>`;
+}
+function aquiUse(i){
+  const r=aqui.loops&&aqui.loops[i];if(!r)return;
+  closeSheets();startPlanner('loop');
+  plan.loopKm=r.target;plan.seed=r.seed;plan.start={lat:aqui.here.lat,lng:aqui.here.lng,label:aqui.far?'Punto de salida':HERE};
+  redrawPlanMarkers();computeRoute();
+}
+async function aquiOpen(id){
+  const B=$('aquiOpen');if(!B)return;
+  if(!db){B.innerHTML='<div class="empty">Sin conexión.</div>';return}
+  try{const h=aqui.here,s=await db.collection('open').where('cell','in',cellsNear(h.lat,h.lng)).limit(200).get();if(aqui.id!==id)return;
+    const today=iso(new Date());
+    const L=s.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.date>=today).map(o=>({...o,d:hav([h.lat,h.lng],[o.lat,o.lng])})).filter(o=>o.d<=OPEN_KM).sort((a,b)=>(a.date+a.hour).localeCompare(b.date+b.hour));
+    aqui.open=L;
+    B.innerHTML=L.length?L.slice(0,3).map(o=>`<button class="li" onclick="aquiOpenAll()"><span class="em">${o.hike?'🥾':'🚴'}</span><div><b>${esc(o.title)}</b><small>${esc(fmtDate(o.date))} · ${esc(o.hour)} · a ${o.d<10?o.d.toFixed(1).replace('.',','):Math.round(o.d)} km</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`).join('')+(L.length>3?`<button class="btn btn-line" style="width:100%;min-height:44px" onclick="aquiOpenAll()">Ver las ${L.length} salidas</button>`:'')
+      :`<div class="empty" style="padding:14px">No hay salidas abiertas a menos de ${OPEN_KM} km.<br><button class="mini" style="margin-top:8px" onclick="closeSheets();openCreate&&openCreate()">➕ Crear una</button></div>`;
+  }catch(e){console.warn('aqui open',e);B.innerHTML='<div class="empty">No se pudo buscar ahora.</div>'}
+}
+function aquiOpenAll(){openHere={lat:aqui.here.lat,lng:aqui.here.lng};openNearby('rides')}
+async function aquiComm(id){
+  const B=$('aquiComm');if(!B)return;
+  if(!db||!me?.group){B.innerHTML='<div class="empty" style="padding:14px">Únete a un club para ver aquí sus rutas.</div>';return}
+  try{const s=await db.collection('routes').where('club','==',me.group).limit(300).get();if(aqui.id!==id)return;
+    const h=aqui.here;
+    const L=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>(!r.gp||canSeeGp(r.gp))&&r.start).map(r=>({...r,_d:hav([h.lat,h.lng],[r.start.lat,r.start.lng])})).filter(r=>r._d<=8).sort((a,b)=>a._d-b._d);
+    commRoutes=L;
+    B.innerHTML=L.length?L.slice(0,3).map(r=>`<div class="feed" style="cursor:pointer;margin-bottom:10px" onclick="closeSheets();viewCommRoute(${jsq(r.id)})"><div class="fb"><div class="fr">${routeSVG(r.poly,96,96)}</div><div style="flex:1;min-width:0"><div class="ft" style="margin:0 0 4px">${esc(r.name)}</div><small style="color:var(--txt2);display:block">${Math.round(r.km||0)} km${r.up?' · ⛰️ +'+Math.round(r.up)+' m':''}</small><small style="color:var(--txt2);display:block">📍 Empieza a ${r._d<1?Math.round(r._d*1000)+' m':r._d.toFixed(1).replace('.',',')+' km'}</small></div></div></div>`).join('')+(L.length>3?`<button class="btn btn-line" style="width:100%;min-height:44px" onclick="openCommRoutes()">Ver todas las rutas del club</button>`:'')
+      :'<div class="empty" style="padding:14px">Tu club no tiene rutas que empiecen cerca de aquí.</div>';
+  }catch(e){console.warn('aqui rutas',e);B.innerHTML='<div class="empty">No se pudo buscar ahora.</div>'}
+}
+function aquiStops(){closeSheets();if(!map)return;const h=aqui.here;if(h)map.jumpTo({center:[h.lng,h.lat],zoom:Math.max(map.getZoom(),14)});setTimeout(()=>{if(osmOn)osmClear();osmShow()},300)}
 let viewingComm=null;
 function viewCommRoute(id){
   const r=commRoutes.find(x=>x.id===id);if(!r)return;

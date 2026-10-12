@@ -1,3 +1,12 @@
+## Versión 5.12 — 📍 ¿Qué hay por aquí?
+- En el mapa de Rutas, arriba a la izquierda, el botón «📍 ¿Qué hay por aquí?» (antes «Buscar en esta zona», que no hacía nada). Abre una tarjeta con:
+  1. 🚴 Rutas para salir ya: 3 rutas circulares desde aquí (carretera 25/45/70 km, montaña 15/25/40, a pie 5/10/15) con su dibujo, desnivel y tiempo. «🗺️ Ver en el mapa» la abre en el planificador para iniciarla, guardarla, crear una salida o pasarla al ciclocomputador. «🔄 Otras 3 rutas» propone otras.
+  2. 📅 Salidas abiertas a menos de 40 km (las 3 próximas y «Ver todas»).
+  3. 🗺️ Rutas de tu club que empiezan a menos de 8 km.
+  4. 💧 Fuentes, bares, farmacias y talleres de la zona en el mapa.
+- Usa tu posición. Si has movido el mapa lejos de ti (más de 3 km), mira la zona del mapa: sirve para preparar rutas antes de un viaje.
+- No necesita cambios en reglas ni funciones.
+
 ## Versión 5.11.2 — «Ver más mapa» más visible
 - El botón «⌄ Ver más mapa ⌄» del planificador ahora es verde lima, más grande y se queda fijo arriba de la tarjeta aunque la subas con el dedo. Ya no se pierde.
 
