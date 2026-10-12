@@ -1,3 +1,7 @@
+## Versión 5.13.1 — La música vuelve sola después de hablar
+- En Android, cuando la app habla (el tiempo, el viento, las indicaciones, los avisos), el sistema paraba la música y no volvía. Ahora, si la pausa no la has pedido tú, la música vuelve sola en cuanto la app termina de hablar.
+- Si pulsas ⏸ tú, se queda parada.
+
 ## Versión 5.13 — 🎵 Música en ruta (prueba)
 - Perfil → «🎵 Música en ruta», y durante la salida en el botón «⋯» → 🎵.
 - Eliges canciones de tu móvil (MP3 y similares) y suenan dentro de RideSafe, también con la pantalla apagada o en 🌙 modo ahorro. Botones ⏮ ⏯ ⏭, volumen y orden aleatorio. También desde la pantalla de bloqueo.

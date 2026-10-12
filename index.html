@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2870,9 +2870,17 @@ function aquiStops(){closeSheets();if(!map)return;const h=aqui.here;if(h)map.jum
    Tus canciones del móvil suenan dentro de RideSafe (por el altavoz). Cuando llega un aviso del grupo
    o una indicación de voz, la música baja sola y luego vuelve a subir. En España no se puede ir en bici
    con auriculares (Reglamento General de Circulación, art. 18.2). */
-const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false};
+const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false,want:false,resT:null};
+/* v5.13.1 — En Android, cuando la app habla (tiempo, viento, indicaciones…) el sistema pausa la música.
+   Si la pausa no la has pedido tú, la música vuelve sola en cuanto termina de hablar. */
+function musSpeaking(){try{if('speechSynthesis' in window&&speechSynthesis.speaking)return true}catch(e){}return !!(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused&&!ttsAudio.ended)}
+function musAutoResume(){clearInterval(mus.resT);const t0=Date.now();
+  mus.resT=setInterval(()=>{const a=mus.a;if(!a||!mus.want||Date.now()-t0>90000){clearInterval(mus.resT);return}
+    if(!a.paused){clearInterval(mus.resT);return}
+    if(musSpeaking()||Date.now()-t0<700)return;
+    a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().then(()=>{clearInterval(mus.resT);musUI()}).catch(()=>{})},500)}
 function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
-  a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',musUI);
+  a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',()=>{if(mus.want&&!a.ended)musAutoResume();musUI()});
   a.addEventListener('error',()=>{toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
   try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>musPause());ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
   return a}
@@ -2886,17 +2894,17 @@ function musPick(inp){const fs=[...(inp.files||[])].filter(f=>/^audio\//.test(f.
 function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mus.list.length;const a=musAudio();a.src=mus.list[mus.i].url;
   try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'RideSafe IA · Música en ruta'})}catch(e){}
   if(play)musPlay();else musUI()}
-function musPlay(){if(!mus.list.length){openMusic();return}const a=musAudio();a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
-function musPause(){if(mus.a)mus.a.pause();musUI()}
-function musToggle(){musOn()?musPause():musPlay()}
+function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
+function musPause(){mus.want=false;clearInterval(mus.resT);if(mus.a)mus.a.pause();musUI()}
+function musToggle(){(musOn()||mus.want&&mus.a&&mus.a.paused&&musSpeaking())?musPause():musPlay()}
 function musNext(auto){if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
 function musPrev(){if(!mus.list.length)return;if(mus.a&&mus.a.currentTime>4){mus.a.currentTime=0;return}musLoad(mus.i-1,true)}
 function musVol(v){mus.vol=Math.max(0,Math.min(1,+v));store.set('musVol',mus.vol);if(mus.a&&!mus.ducked)mus.a.volume=mus.vol}
 function musRamp(to,ms){const a=mus.a;if(!a)return;clearInterval(mus.rampT);const from=a.volume,t0=Date.now();
   mus.rampT=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/ms);try{a.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1)clearInterval(mus.rampT)},40)}
 /* Baja la música mientras suena un aviso o una indicación, y luego la vuelve a subir */
-function musDuck(ms){if(!musOn())return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
-  mus.duckT=setTimeout(()=>{mus.ducked=false;musRamp(mus.vol,900)},Math.max(1500,ms||3000))}
+function musDuck(ms){if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
+  mus.duckT=setTimeout(()=>{mus.ducked=false;musRamp(mus.vol,900);if(mus.want&&mus.a&&mus.a.paused)musAutoResume()},Math.max(1500,ms||3000))}
 function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}musDuck(3800);setTimeout(()=>speakLocal('Aviso de prueba. Esperad, que hay un pinchazo.'),300)}
 function musUI(){
   const on=musOn(),cur=mus.list[mus.i];
