@@ -1,3 +1,7 @@
+## Versión 5.13.4 — Música: botón para reanudar y voz que no para Spotify
+- En la salida, «⋯» → 🎵 abre Spotify directamente para volver a darle a ▶️.
+- Nueva opción en «🎵 Música en ruta»: «🗣️ Voz que no para la música». Usa la voz del móvil para el tiempo, avisos y giros; la voz de Google hacía que Android parase Spotify. Se activa sola al abrir Spotify desde RideSafe.
+
 ## Versión 5.13.3 — Música en ruta, versión sencilla con Spotify
 - El reproductor propio se ha quitado: en Android el sistema lo paraba cada vez que la app hablaba (tiempo, avisos) y no se podía evitar desde una app web.
 - Perfil → «🎵 Música en ruta» (y en la salida, «⋯» → 🎵): botón «Abrir Spotify», aviso de altavoz / auriculares prohibidos y cómo usarlo. Con Spotify, Android baja la música un momento cuando RideSafe habla y luego la sube.
