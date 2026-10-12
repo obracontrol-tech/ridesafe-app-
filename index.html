@@ -671,7 +671,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #sh-search .sopt .mini{min-height:52px;font-size:15px;border-radius:16px}
 /* v4.5 — Dibujar ruta (como Strava) */
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
-.pdown{display:block;margin:-4px auto 6px;min-height:30px;padding:2px 18px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--txt2);font-family:inherit;font-weight:800;font-size:13.5px;touch-action:manipulation}
+.pdown{display:block;margin:-4px auto 8px;min-height:40px;padding:4px 22px;border-radius:20px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px;touch-action:manipulation;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+/* v5.11.2 — «Ver más mapa» se queda fijo arriba aunque subas la tarjeta, y resalta en verde lima */
+#s-rutas.planning .planpanel>.pdown{position:sticky;top:-6px;z-index:4;box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(-8px -100vmax -8px -100vmax)}
 #pTiny{display:none}
 /* v5.6 — Encuestas del club */
 .poll{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:12px}
@@ -908,7 +910,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvmoon" onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
-    <button class="pdown" onclick="planTiny(true)" aria-label="Bajar la tarjeta para ver el mapa">⌄ Ver más mapa</button>
+    <button class="pdown" onclick="planTiny(true)" aria-label="Bajar la tarjeta para ver el mapa">⌄ Ver más mapa ⌄</button>
     <div id="pTiny"></div>
     <div class="phead"><div><b id="planTitle">De A a B</b></div><div style="display:flex;gap:6px"><button class="mini" id="pMiniBtn" onclick="togglePlanMini()" style="min-height:40px">🗺️ Ver mapa</button><button class="mini" onclick="exitPlanner()" style="min-height:40px">Cancelar</button></div></div>
     <div class="chips" id="bikeChips" style="margin:-2px 0 8px;flex-wrap:nowrap"><button class="chip" data-b="road" onclick="setBike(false)">🚴 Carretera</button><button class="chip" data-b="mtb" onclick="setBike(true)">🚵 Montaña</button><button class="chip" data-b="hike" onclick="setSport(2)">🥾 A pie</button></div>
@@ -1080,7 +1082,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.11.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.11.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->

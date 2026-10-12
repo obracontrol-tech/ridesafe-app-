@@ -1,3 +1,6 @@
+## Versión 5.11.2 — «Ver más mapa» más visible
+- El botón «⌄ Ver más mapa ⌄» del planificador ahora es verde lima, más grande y se queda fijo arriba de la tarjeta aunque la subas con el dedo. Ya no se pierde.
+
 ## Versión 5.11.1 — Arreglo de tarjetas en blanco + botón para quitar las paradas
 - ARREGLO: desde la 5.10, al bajar la tarjeta del planificador («⌄ Ver más mapa») la barra de abajo salía en blanco, y en «🗺️ Ver mapa» del diseñador desaparecían los botones. Ya se ven otra vez.
 - Fuentes, bares y farmacias de la ruta: botón para quitarlas o volver a ponerlas en el mapa:
