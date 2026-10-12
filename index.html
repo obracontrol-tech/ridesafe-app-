@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2870,7 +2870,11 @@ function aquiStops(){closeSheets();if(!map)return;const h=aqui.here;if(h)map.jum
    Tus canciones del móvil suenan dentro de RideSafe (por el altavoz). Cuando llega un aviso del grupo
    o una indicación de voz, la música baja sola y luego vuelve a subir. En España no se puede ir en bici
    con auriculares (Reglamento General de Circulación, art. 18.2). */
-const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false,want:false,resT:null};
+const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false,want:false,resT:null,speakUntil:0};
+/* v5.13.2 — Android avisa «pausa» a la página cuando la app habla. Esa pausa NO es tuya: la música vuelve después */
+const musSysPause=()=>Date.now()<mus.speakUntil+1500||musSpeaking();
+function musVoiceStart(ms){mus.speakUntil=Math.max(mus.speakUntil,Date.now()+(ms||60000))}
+function musAfterVoice(){mus.speakUntil=Date.now()+200;if(mus.want&&mus.a&&mus.a.paused)setTimeout(()=>{if(mus.want&&mus.a.paused&&!musSpeaking()){mus.a.volume=mus.ducked?mus.vol*0.15:mus.vol;mus.a.play().then(musUI).catch(()=>musAutoResume())}},450)}
 /* v5.13.1 — En Android, cuando la app habla (tiempo, viento, indicaciones…) el sistema pausa la música.
    Si la pausa no la has pedido tú, la música vuelve sola en cuanto termina de hablar. */
 function musSpeaking(){try{if('speechSynthesis' in window&&speechSynthesis.speaking)return true}catch(e){}return !!(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused&&!ttsAudio.ended)}
@@ -2882,7 +2886,7 @@ function musAutoResume(){clearInterval(mus.resT);const t0=Date.now();
 function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
   a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',()=>{if(mus.want&&!a.ended)musAutoResume();musUI()});
   a.addEventListener('error',()=>{toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
-  try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>musPause());ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
+  try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('stop',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
   return a}
 const musOn=()=>!!(mus.a&&!mus.a.paused);
 function musName(f){return String(f.name||'Canción').replace(/\.[a-z0-9]{2,4}$/i,'').replace(/[_]+/g,' ').slice(0,60)}
@@ -2903,7 +2907,7 @@ function musVol(v){mus.vol=Math.max(0,Math.min(1,+v));store.set('musVol',mus.vol
 function musRamp(to,ms){const a=mus.a;if(!a)return;clearInterval(mus.rampT);const from=a.volume,t0=Date.now();
   mus.rampT=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/ms);try{a.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1)clearInterval(mus.rampT)},40)}
 /* Baja la música mientras suena un aviso o una indicación, y luego la vuelve a subir */
-function musDuck(ms){if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
+function musDuck(ms){musVoiceStart(Math.max(1500,ms||3000));if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
   mus.duckT=setTimeout(()=>{mus.ducked=false;musRamp(mus.vol,900);if(mus.want&&mus.a&&mus.a.paused)musAutoResume()},Math.max(1500,ms||3000))}
 function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}musDuck(3800);setTimeout(()=>speakLocal('Aviso de prueba. Esperad, que hay un pinchazo.'),300)}
 function musUI(){
@@ -5884,7 +5888,7 @@ const ttsCache=new Map();let ttsAudio=null,ttsOff=0;
 function ttsOk(){return GOOGLE_TTS_KEY&&!GOOGLE_TTS_KEY.startsWith('PON_')&&Date.now()>ttsOff}
 // Los móviles solo dejan sonar audio si antes hubo un toque: lo "despertamos" en el primer toque
 document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new Audio();ttsAudio.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA';ttsAudio.play().catch(()=>{})}catch(e){}document.removeEventListener('pointerdown',un)},{once:true});
-function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>musVoiceStart();u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 async function ttsGet(t){
   if(ttsCache.has(t))return ttsCache.get(t);
   const ac=new AbortController();const to=setTimeout(()=>ac.abort(),3500);
@@ -5905,7 +5909,8 @@ async function speak(t){
   try{
     const src=await ttsGet(t);
     try{speechSynthesis.cancel()}catch(e){}
-    ttsAudio=ttsAudio||new Audio();ttsAudio.pause();ttsAudio.src=src;
+    if(!ttsAudio){ttsAudio=new Audio();ttsAudio.addEventListener('play',()=>musVoiceStart());ttsAudio.addEventListener('ended',musAfterVoice);ttsAudio.addEventListener('error',musAfterVoice)}
+    ttsAudio.pause();ttsAudio.src=src;
     await ttsAudio.play();
   }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+60000;speakLocal(t)}
 }

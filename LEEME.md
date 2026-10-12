@@ -1,3 +1,6 @@
+## Versión 5.13.2 — Música: segundo arreglo para que vuelva tras la voz
+- Android le dice a la app «pausa» cuando la app habla (el tiempo, el viento, los avisos). La app lo tomaba como si TÚ hubieras pulsado pausa y por eso no volvía. Ahora distingue: si la pausa llega mientras habla la app, la música vuelve sola al terminar de hablar.
+
 ## Versión 5.13.1 — La música vuelve sola después de hablar
 - En Android, cuando la app habla (el tiempo, el viento, las indicaciones, los avisos), el sistema paraba la música y no volvía. Ahora, si la pausa no la has pedido tú, la música vuelve sola en cuanto la app termina de hablar.
 - Si pulsas ⏸ tú, se queda parada.
