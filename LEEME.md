@@ -1,3 +1,12 @@
+## Versión 5.13 — 🎵 Música en ruta (prueba)
+- Perfil → «🎵 Música en ruta», y durante la salida en el botón «⋯» → 🎵.
+- Eliges canciones de tu móvil (MP3 y similares) y suenan dentro de RideSafe, también con la pantalla apagada o en 🌙 modo ahorro. Botones ⏮ ⏯ ⏭, volumen y orden aleatorio. También desde la pantalla de bloqueo.
+- Durante la salida aparece un mini reproductor encima de Pausa/Terminar.
+- La música BAJA SOLA cuando suena un aviso del grupo (pinchazo, esperad, caída…) o una indicación de voz, y vuelve a subir. Botón «🧪 Probar» para oírlo.
+- Aviso legal la primera vez: por el altavoz; con auriculares está prohibido en bici (RGC art. 18.2, 200 €).
+- Botones para abrir Spotify o YouTube Music (esas no bajan solas con los avisos).
+- Las canciones no se guardan en la app: cada vez que abres la app se eligen otra vez.
+
 ## Versión 5.12 — 📍 ¿Qué hay por aquí?
 - En el mapa de Rutas, arriba a la izquierda, el botón «📍 ¿Qué hay por aquí?» (antes «Buscar en esta zona», que no hacía nada). Abre una tarjeta con:
   1. 🚴 Rutas para salir ya: 3 rutas circulares desde aquí (carretera 25/45/70 km, montaña 15/25/40, a pie 5/10/15) con su dibujo, desnivel y tiempo. «🗺️ Ver en el mapa» la abre en el planificador para iniciarla, guardarla, crear una salida o pasarla al ciclocomputador. «🔄 Otras 3 rutas» propone otras.

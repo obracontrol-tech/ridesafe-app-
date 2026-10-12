@@ -546,6 +546,13 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #shopSp .ssp-app{margin-top:18px;font-size:14px;font-weight:800;color:#C8DC3C;letter-spacing:.5px}#shopSp.light .ssp-app{color:#5B7A12}
 .shopline{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;color:var(--txt2);font-size:13px}
 .shopline img{height:28px;max-width:90px;object-fit:contain;background:#0E1A2B;border-radius:6px;padding:3px}
+/* v5.13 — 🎵 mini reproductor en la salida */
+.lvmus{display:flex;align-items:center;gap:6px;margin:0 0 8px;padding:6px;border-radius:26px;background:rgba(11,20,34,.62);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.16)}
+.lvmus button{min-width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:18px;font-family:inherit}
+.lvmus .lvm-p{background:var(--lime);color:var(--on-lime)}
+.lvmus .lvm-t{flex:1;min-width:0;display:flex;align-items:center;gap:6px;padding:0 12px;background:none;font-size:14px;font-weight:700;text-align:left}
+.lvmus .lvm-t span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#lvMusBtn.mon{box-shadow:0 0 0 3px var(--lime)!important}
 body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;bottom:auto!important}
 .xauto{position:sticky;top:0;float:right;margin:-2px -4px 0 8px;z-index:3;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px solid var(--line)}
 .sheet .x{flex-shrink:0}
@@ -898,7 +905,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div></div>
   
   <div class="lv lvpanel">
-    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas y compartir con la familia">⋯</button><div class="lvpop"><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button></div></div></div>
+    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="openMusic()" aria-label="Música en ruta">🎵</button></div></div></div>
     <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
@@ -907,6 +914,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
     <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button></div>
+    <div class="lvmus" id="lvMus" style="display:none"></div>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvmoon" onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
@@ -1068,6 +1076,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
+  <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Tus canciones por el altavoz; bajan solas con los avisos</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -1082,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.12</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2857,6 +2866,66 @@ async function aquiComm(id){
   }catch(e){console.warn('aqui rutas',e);B.innerHTML='<div class="empty">No se pudo buscar ahora.</div>'}
 }
 function aquiStops(){closeSheets();if(!map)return;const h=aqui.here;if(h)map.jumpTo({center:[h.lng,h.lat],zoom:Math.max(map.getZoom(),14)});setTimeout(()=>{if(osmOn)osmClear();osmShow()},300)}
+/* ===== v5.13 — 🎵 Música en ruta (prueba) =====
+   Tus canciones del móvil suenan dentro de RideSafe (por el altavoz). Cuando llega un aviso del grupo
+   o una indicación de voz, la música baja sola y luego vuelve a subir. En España no se puede ir en bici
+   con auriculares (Reglamento General de Circulación, art. 18.2). */
+const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false};
+function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
+  a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',musUI);
+  a.addEventListener('error',()=>{toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
+  try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>musPause());ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
+  return a}
+const musOn=()=>!!(mus.a&&!mus.a.paused);
+function musName(f){return String(f.name||'Canción').replace(/\.[a-z0-9]{2,4}$/i,'').replace(/[_]+/g,' ').slice(0,60)}
+function musPick(inp){const fs=[...(inp.files||[])].filter(f=>/^audio\//.test(f.type)||/\.(mp3|m4a|aac|ogg|opus|wav|flac)$/i.test(f.name));
+  if(!fs.length){toast('No hay canciones en lo que has elegido');return}
+  mus.list.forEach(x=>{try{URL.revokeObjectURL(x.url)}catch(e){}});
+  mus.list=fs.map(f=>({n:musName(f),url:URL.createObjectURL(f)}));mus.i=0;inp.value='';
+  musLoad(0,true);toast(`🎵 ${fs.length} ${fs.length===1?'canción':'canciones'}`)}
+function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mus.list.length;const a=musAudio();a.src=mus.list[mus.i].url;
+  try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'RideSafe IA · Música en ruta'})}catch(e){}
+  if(play)musPlay();else musUI()}
+function musPlay(){if(!mus.list.length){openMusic();return}const a=musAudio();a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
+function musPause(){if(mus.a)mus.a.pause();musUI()}
+function musToggle(){musOn()?musPause():musPlay()}
+function musNext(auto){if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
+function musPrev(){if(!mus.list.length)return;if(mus.a&&mus.a.currentTime>4){mus.a.currentTime=0;return}musLoad(mus.i-1,true)}
+function musVol(v){mus.vol=Math.max(0,Math.min(1,+v));store.set('musVol',mus.vol);if(mus.a&&!mus.ducked)mus.a.volume=mus.vol}
+function musRamp(to,ms){const a=mus.a;if(!a)return;clearInterval(mus.rampT);const from=a.volume,t0=Date.now();
+  mus.rampT=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/ms);try{a.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1)clearInterval(mus.rampT)},40)}
+/* Baja la música mientras suena un aviso o una indicación, y luego la vuelve a subir */
+function musDuck(ms){if(!musOn())return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
+  mus.duckT=setTimeout(()=>{mus.ducked=false;musRamp(mus.vol,900)},Math.max(1500,ms||3000))}
+function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}musDuck(3800);setTimeout(()=>speakLocal('Aviso de prueba. Esperad, que hay un pinchazo.'),300)}
+function musUI(){
+  const on=musOn(),cur=mus.list[mus.i];
+  const bar=$('lvMus');if(bar){bar.style.display=mus.list.length?'flex':'none';
+    if(mus.list.length)bar.innerHTML=`<button onclick="openMusic()" class="lvm-t" aria-label="Abrir música">🎵 <span>${esc(cur?cur.n:'')}</span></button><button onclick="musPrev()" aria-label="Anterior">⏮</button><button onclick="musToggle()" class="lvm-p" aria-label="${on?'Pausa':'Reproducir'}">${on?'⏸':'▶️'}</button><button onclick="musNext()" aria-label="Siguiente">⏭</button>`}
+  const sb=$('musBody');if(sb)renderMusic();
+  const lb=$('lvMusBtn');if(lb)lb.classList.toggle('mon',on);
+}
+function openMusic(){
+  $('rideBody').innerHTML=sheetHead('🎵 Música en ruta')+'<div id="musBody"></div>';openRideId=null;openSheet('sh-ride');renderMusic();
+  if(!store.get('musLaw',0)){store.set('musLaw',1);setTimeout(()=>alert('🔈 Usa el altavoz del móvil o un altavoz de manillar.\n\n🚫 En España está prohibido ir en bici con auriculares o cascos conectados al móvil (Reglamento General de Circulación, art. 18.2). Multa de 200 €.\n\nLa música baja sola cuando llega un aviso del grupo o una indicación.'),300)}
+}
+function renderMusic(){
+  const B=$('musBody');if(!B)return;const on=musOn(),cur=mus.list[mus.i];
+  B.innerHTML=`<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">🔈 <b>Por el altavoz</b> del móvil o de manillar. 🚫 Con auriculares está prohibido en bici (multa 200 €).</div>
+   <label class="btn btn-lime" style="width:100%;cursor:pointer;justify-content:center">📂 ${mus.list.length?'Elegir otras canciones':'Elegir canciones del móvil'}<input type="file" accept="audio/*,.mp3,.m4a,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
+   ${mus.list.length?`<div style="text-align:center;margin:16px 0 6px"><small style="color:var(--txt2)">Sonando · ${mus.i+1} de ${mus.list.length}</small><b style="display:block;font-size:19px;margin-top:2px">${esc(cur.n)}</b></div>
+   <div style="display:flex;justify-content:center;gap:14px;margin:10px 0 14px">
+     <button class="round" style="width:62px;height:62px;font-size:24px" onclick="musPrev()" aria-label="Anterior">⏮</button>
+     <button class="round" style="width:78px;height:78px;font-size:32px;background:var(--lime);color:var(--on-lime);border-color:var(--lime)" onclick="musToggle()" aria-label="${on?'Pausa':'Reproducir'}">${on?'⏸':'▶️'}</button>
+     <button class="round" style="width:62px;height:62px;font-size:24px" onclick="musNext()" aria-label="Siguiente">⏭</button></div>
+   <div class="set" style="gap:10px">🔉<input type="range" min="0" max="1" step="0.05" value="${mus.vol}" oninput="musVol(this.value)" style="flex:1;accent-color:var(--lime)" aria-label="Volumen">🔊</div>
+   <div class="set">🔀 Orden aleatorio <label class="sw"><input type="checkbox" ${mus.shuf?'checked':''} onchange="mus.shuf=this.checked"><span></span></label></div>
+   <button class="btn btn-line" style="width:100%;margin-top:4px" onclick="musTest()">🧪 Probar: así baja la música con un aviso</button>
+   <div class="list" style="margin-top:12px;max-height:240px;overflow:auto">${mus.list.map((x,i)=>`<button class="li" style="${i===mus.i?'border-color:var(--lime)':''}" onclick="musLoad(${i},true)"><span class="em">${i===mus.i&&on?'🔊':'🎵'}</span><div><b>${esc(x.n)}</b></div></button>`).join('')}</div>`
+   :'<small style="display:block;color:var(--txt2);margin:10px 2px 0;line-height:1.45">Elige una o varias canciones (MP3 y similares) de tu móvil. Suenan dentro de RideSafe, también con la pantalla apagada o en 🌙 modo ahorro.</small>'}
+   <small style="display:block;color:var(--txt2);margin:16px 2px 8px">¿Usas otra app de música? Se abre aparte (en ese caso la música no baja sola con los avisos):</small>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><a class="btn btn-line" style="text-decoration:none;justify-content:center" href="https://open.spotify.com/" target="_blank" rel="noopener">🟢 Spotify</a><a class="btn btn-line" style="text-decoration:none;justify-content:center" href="https://music.youtube.com/" target="_blank" rel="noopener">🔴 YouTube Music</a></div>`;
+}
 let viewingComm=null;
 function viewCommRoute(id){
   const r=commRoutes.find(x=>x.id===id);if(!r)return;
@@ -4177,6 +4246,7 @@ function alarmSound(kind,rounds){
       t+=d});
     return (t-t0)*1000;
   };
+  musDuck(rounds*2300+1500);
   let n=0;const loop=()=>{if(n++>=rounds)return;const ms=play();alarmT=setTimeout(loop,ms+450)};
   try{if(AC.state==='suspended')AC.resume()}catch(e){}loop();
   vib(soft?[150,80,150]:[700,200,700,200,700,200,700,200,700]);
@@ -5822,6 +5892,7 @@ async function ttsGet(t){
 }
 async function speak(t){
   if(!live.voice||!t)return;
+  musDuck(Math.max(3200,String(t).length*85));
   if(!ttsOk()){speakLocal(t);return}
   try{
     const src=await ttsGet(t);
