@@ -855,6 +855,14 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .r3-x{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(11,20,34,.78);color:#fff;font-size:22px;pointer-events:auto}
 .r3-side{position:absolute;right:12px;top:calc(84px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:10px;z-index:3}
 .r3-side button{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(11,20,34,.78);color:#fff;font-size:20px;font-weight:800}
+.r3-grip{display:block;width:100%;border:0;background:none;padding:0 0 10px;margin-top:-6px;color:#9FB0C5;font:inherit;font-size:12px;font-weight:700;touch-action:none}
+.r3-grip i{display:block;width:44px;height:5px;border-radius:3px;background:#3A4D6B;margin:0 auto 4px}
+#r3d.r3min .r3-st,#r3d.r3min .r3-spd,#r3d.r3min .r3-by,#r3d.r3min .r3-vid{display:none}
+#r3d.r3min .r3-bot{padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+#r3d.r3min .r3-play{width:48px;height:48px;font-size:20px}
+#r3d.r3min .r3-card{padding:7px 14px}#r3d.r3min .r3-card b{font-size:14px}#r3d.r3min .r3-card small,#r3d.r3min .r3-here{display:none}
+#r3d.r3min .r3-x{width:44px;height:44px;font-size:18px}
+#r3d.r3min .r3-side{top:calc(66px + env(safe-area-inset-top))}#r3d.r3min .r3-side button{width:44px;height:44px;font-size:17px}
 .r3-bot{background:#0B1422;border-top:1px solid #22324A;border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));color:#fff}
 .r3-row{display:flex;align-items:center;gap:14px}
 .r3-play{width:58px;height:58px;border-radius:50%;border:0;background:var(--lime);color:var(--on-lime);font-size:24px;font-weight:900;flex-shrink:0}
@@ -1091,7 +1099,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1270,7 +1278,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 <div id="r3d" role="dialog" aria-label="Recorrido en 3D"><div id="r3dMap"></div>
  <div class="r3-top"><div class="r3-card"><b id="r3Name">Recorrido</b><small id="r3Date"></small><div class="r3-here" id="r3Here"></div></div><button class="r3-x" onclick="close3D()" aria-label="Cerrar">✕</button></div>
  <div class="r3-side"><button id="r3Dim" onclick="toggle3DView()" aria-label="Ver en 3D o en plano">2D</button><button id="r3Sat" onclick="toggle3DSat()" aria-label="Satélite o mapa">🗺️</button></div>
- <div class="r3-bot"><div class="r3-row"><button class="r3-play" id="r3Play" onclick="play3D()" aria-label="Reproducir">▶</button><input type="range" id="r3Seek" min="0" max="1000" value="0" oninput="seek3D(this.value/1000)" aria-label="Avanzar el recorrido"></div>
+ <div class="r3-bot"><button class="r3-grip" id="r3Grip" onclick="r3Min()" aria-label="Ampliar o reducir el mapa"><i></i><span id="r3GripT">Ver mapa grande</span></button><div class="r3-row"><button class="r3-play" id="r3Play" onclick="play3D()" aria-label="Reproducir">▶</button><input type="range" id="r3Seek" min="0" max="1000" value="0" oninput="seek3D(this.value/1000)" aria-label="Avanzar el recorrido"></div>
   <div class="r3-st"><div><b id="r3Km">0,0</b><span>km</span></div><div><b id="r3T">0:00</b><span>tiempo</span></div><div><b id="r3Alt">—</b><span>m altitud</span></div><div><b id="r3V">—</b><span>km/h media</span></div></div>
   <div class="r3-spd" id="r3Spd" aria-label="Velocidad"><button data-s="0.25" onclick="r3Speed(0.25)">🐢 Muy lenta</button><button data-s="0.5" onclick="r3Speed(0.5)">Lenta</button><button data-s="1" onclick="r3Speed(1)">Normal</button><button data-s="2" onclick="r3Speed(2)">⏩ Rápida</button></div>
   <div class="r3-by" id="r3By"></div>
@@ -3437,7 +3445,7 @@ function open3D(id,autoRec){
   Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true,mbFail:false,mbErr:0,demId:'dem',demErr:0});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
   $('r3Dim').textContent='2D';$('r3Sat').textContent='🗺️';$('r3Play').textContent='▶';$('r3Seek').value=0;
-  closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');
+  closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');r3Min(!!store.get('r3min',false));
   if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}
   try{
     const m=new maplibregl.Map({container:'r3dMap',style:r3Style(),preserveDrawingBuffer:true,center:[c[0][1],c[0][0]],zoom:13,pitch:60,bearing:0,maxPitch:75,attributionControl:{compact:true}});
@@ -3459,6 +3467,7 @@ function open3D(id,autoRec){
       const b=new maplibregl.LngLatBounds();c.forEach(p=>b.extend([p[1],p[0]]));R3.b=b;
       m.fitBounds(b,{padding:{top:120,bottom:50,left:50,right:90},pitch:0,duration:0});m.jumpTo({pitch:50,zoom:m.getZoom()-0.45});
       r3Stats();r3Speed(R3.spd,true);r3LoadPlaces();
+      setTimeout(()=>{document.querySelectorAll('#r3dMap .maplibregl-ctrl-attrib').forEach(x=>x.classList.remove('maplibregl-compact-show'))},400);
       m.on('zoom',e=>{if(e.originalEvent&&!R3V.on)R3.zOff=Math.max(-3,Math.min(3,m.getZoom()-r3Z()))});
       if(autoRec)setTimeout(rec3D,1800);
     });
@@ -3486,6 +3495,10 @@ function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnim
   if(R3.t>=1)R3.t=0;R3.play=true;R3.last=0;$('r3Play').textContent='❚❚';const p=r3At(R3.t);
   R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
+function r3Min(on){const d=$('r3d');if(on===undefined)on=!d.classList.contains('r3min');d.classList.toggle('r3min',on);$('r3GripT').textContent=on?'Ver datos y opciones':'Ver mapa grande';try{store.set('r3min',on)}catch(e){}
+  [60,320].forEach(t=>setTimeout(()=>{try{R3.map&&R3.map.resize()}catch(e){}},t))}
+(function(){let y0=null;document.addEventListener('touchstart',e=>{if(e.target.closest&&e.target.closest('#r3Grip'))y0=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;if(dy>30)r3Min(true);else if(dy<-30)r3Min(false)},{passive:true})})();
 function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:R3.demId||'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
 function r3Base(m){const mb=!R3.mbFail;const v={mbh:mb&&R3.sat,mbo:mb&&!R3.sat,sat:!mb&&R3.sat,osm:!mb&&!R3.sat};for(const k in v){try{m.setLayoutProperty(k,'visibility',v[k]?'visible':'none')}catch(e){}}}
 function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;r3Base(m);$('r3Sat').textContent=R3.sat?'🗺️':'🛰️';toast(R3.sat?'Híbrido: satélite con calles':'Outdoors: caminos y senderos')}
