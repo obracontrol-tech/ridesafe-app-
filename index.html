@@ -3423,10 +3423,13 @@ function r3Style(){return{version:8,sources:{
   dem2:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}},
   layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat'},
     {id:'shade',type:'hillshade',source:'dem2',paint:{'hillshade-exaggeration':0.35,'hillshade-shadow-color':'#000000'}}]}}
+function plan3D(){const r=plan.route;if(!r||!r.coords||r.coords.length<2){toast('Primero calcula una ruta');return}
+  const d=new Date();const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  open3D({id:0,plan:true,name:'Ruta planificada',date:ds,km:r.km,mins:r.mins||0,c:r.coords,pd:(r.prof||[]).map(x=>x.d),pe:(r.prof||[]).map(x=>x.e)})}
 function open3D(id,autoRec){
-  const a=acts.find(x=>x.id===id);if(!a||!a.poly)return;
+  const a=(id&&typeof id==='object')?id:acts.find(x=>x.id===id);if(!a||!(a.poly||a.c))return;
   if(typeof maplibregl==='undefined'){toast('El mapa necesita conexión a internet');return}
-  const c=decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
+  const c=a.c||decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
   const cum=cumDist(c);const ele=r3Ele(a,c,cum);
   Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
@@ -3441,6 +3444,7 @@ function open3D(id,autoRec){
       const ok=ele.some(v=>v!=null);const lo=ok?Math.min(...ele.filter(v=>v!=null)):0,hi=ok?Math.max(...ele.filter(v=>v!=null)):1;
       const tot=cum.at(-1)||1;const stops=[];const n=Math.min(48,c.length-1);
       for(let k=0;k<=n;k++){const i=Math.round(k/n*(c.length-1));const f=ok&&hi>lo?(ele[i]-lo)/(hi-lo):0.5;stops.push(cum[i]/tot,r3Color(f))}
+      if(a.plan&&a.pd&&a.pd.length>1){stops.length=0;const T=a.pd.at(-1)||1;for(let i=1;i<a.pd.length;i++){const dd=(a.pd[i]-a.pd[i-1])*1000;const s=dd>0?(a.pe[i]-a.pe[i-1])/dd*100:0;const col=s>=12?'#EF4444':s>=7?'#F97316':'#C8DC3C';stops.push(a.pd[i-1]/T,col,Math.max(a.pd[i-1]/T,a.pd[i]/T-1e-4),col)}}
       for(let k=2;k<stops.length;k+=2){if(stops[k]<=stops[k-2])stops[k]=Math.min(1,stops[k-2]+1e-6)}
       m.addSource('r3',{type:'geojson',lineMetrics:true,data:{type:'Feature',geometry:{type:'LineString',coordinates:c.map(p=>[p[1],p[0]])}}});
       m.addLayer({id:'r3-case',type:'line',source:'r3',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#000','line-opacity':.45,'line-width':5}});
@@ -3478,7 +3482,7 @@ function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnim
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
 function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
 function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;m.setLayoutProperty('sat','visibility',R3.sat?'visible':'none');m.setLayoutProperty('osm','visibility',R3.sat?'none':'visible');$('r3Sat').textContent=R3.sat?'🗺️':'🛰️'}
-function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a)openActDetail(R3.a.id)}
+function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a&&!R3.a.plan)openActDetail(R3.a.id)}
 /* ===================================================================
    v4.9 — VÍDEO DEL RECORRIDO EN 3D para WhatsApp y redes
    Se graba en el propio móvil (vertical 720×1280) con el mapa, el punto que avanza,
@@ -5116,6 +5120,34 @@ function profileSVG(prof){
   <div class="proflbl"><span>${Math.round(mn)} m</span><span>🟢 llano · 🟠 ≥7% · 🔴 ≥12%</span><span>${Math.round(mx)} m</span></div></div>`;
 }
 
+/* v-rampas: tramos duros pintados sobre la ruta del mapa (naranja ≥7 %, rojo ≥12 %) */
+function steepPaint(m,r){
+  try{
+    if(!m||!(m.style&&m.style._loaded))return;
+    const feats=[];
+    if(r&&r.prof&&r.prof.length>1&&r.coords&&r.coords.length>1){
+      const c=r.coords,cd=cumDist(c);
+      const at=d=>{let j=0;while(j<cd.length-2&&cd[j+1]<d)j++;const f=cd[j+1]>cd[j]?Math.max(0,Math.min(1,(d-cd[j])/(cd[j+1]-cd[j]))):0;return[c[j][1]+(c[j+1][1]-c[j][1])*f,c[j][0]+(c[j+1][0]-c[j][0])*f]};
+      const P=r.prof;let cur=null;
+      for(let i=1;i<P.length;i++){
+        const dd=(P[i].d-P[i-1].d)*1000;const s=dd>0?(P[i].e-P[i-1].e)/dd*100:0;
+        const lv=s>=12?2:s>=7?1:0;
+        if(lv&&cur&&cur.lv===lv){cur.d1=P[i].d}
+        else{if(cur)feats.push(cur);cur=lv?{lv,d0:P[i-1].d,d1:P[i].d}:null}
+      }
+      if(cur)feats.push(cur);
+      for(let k=0;k<feats.length;k++){const f=feats[k];const pts=[at(f.d0)];
+        for(let j=0;j<cd.length;j++){if(cd[j]>f.d0&&cd[j]<f.d1)pts.push([c[j][1],c[j][0]])}
+        pts.push(at(f.d1));feats[k]={type:'Feature',properties:{lv:f.lv},geometry:{type:'LineString',coordinates:pts}}}
+    }
+    const data={type:'FeatureCollection',features:feats};
+    const s=m.getSource('steep');
+    if(s)s.setData(data);
+    else if(feats.length){m.addSource('steep',{type:'geojson',data});
+      m.addLayer({id:'steep-line',type:'line',source:'steep',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['case',['==',['get','lv'],2],'#EF4444','#F97316'],'line-width':6}})}
+  }catch(e){}
+}
+
 /* Línea de la ruta en un mapa */
 function setLine(m,coords,id,color){
   if(!m)return;id=id||'plan';color=color||'#C8DC3C';
@@ -5123,6 +5155,7 @@ function setLine(m,coords,id,color){
   m.__pend=m.__pend||{};
   if(!(m.style&&m.style._loaded)){const first=!(id in m.__pend);m.__pend[id]=[coords,color];if(first)m.once('load',()=>{if(!(id in m.__pend))return;const q=m.__pend[id];delete m.__pend[id];setLine(m,q[0],id,q[1])});return}
   delete m.__pend[id];
+  if(id==='plan'&&!(coords&&coords.length>1))steepPaint(m,null);
   const data={type:'FeatureCollection',features:coords&&coords.length>1?[{type:'Feature',geometry:{type:'LineString',coordinates:coords.map(p=>[p[1],p[0]])}}]:[]};
   const s=m.getSource(id);
   if(s)s.setData(data);
@@ -5558,7 +5591,7 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?(r.mins<60?Math.round(r.mins)+' min':Math.floor(r.mins/60)+' h '+String(Math.round(r.mins%60)).padStart(2,'0')):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
+  try{steepPaint(map,r)}catch(e){}const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof)+'<button class="btn btn-line" style="width:100%;margin:2px 0 10px;border-color:var(--lime)" onclick="plan3D()">⛰️ Ver ruta en 3D</button>':'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';$('bEdit').style.display=v&&r?'block':'none';
