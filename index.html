@@ -3419,9 +3419,12 @@ function r3Color(f){f=Math.max(0,Math.min(1,f));const A=[[250,204,21],[249,115,2
 function r3Style(){return{version:8,sources:{
   sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:18,attribution:'© Esri'},
   osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'},
-  dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
+  mbh:{type:'raster',tiles:[MBX('satellite-streets-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
+  mbo:{type:'raster',tiles:[MBX('outdoors-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
+  dem:{type:'raster-dem',tiles:['https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token='+MAPBOX_TOKEN],tileSize:256,encoding:'mapbox',maxzoom:15,attribution:'Relieve © Mapbox'},
+  dema:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
   dem2:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}},
-  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat'},
+  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat',layout:{visibility:'none'}},{id:'mbo',type:'raster',source:'mbo',layout:{visibility:'none'}},{id:'mbh',type:'raster',source:'mbh'},
     {id:'shade',type:'hillshade',source:'dem2',paint:{'hillshade-exaggeration':0.35,'hillshade-shadow-color':'#000000'}}]}}
 function plan3D(){const r=plan.route;if(!r||!r.coords||r.coords.length<2){toast('Primero calcula una ruta');return}
   const d=new Date();const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -3431,7 +3434,7 @@ function open3D(id,autoRec){
   if(typeof maplibregl==='undefined'){toast('El mapa necesita conexión a internet');return}
   const c=a.c||decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
   const cum=cumDist(c);const ele=r3Ele(a,c,cum);
-  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
+  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true,mbFail:false,mbErr:0,demId:'dem',demErr:0});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
   $('r3Dim').textContent='2D';$('r3Sat').textContent='🗺️';$('r3Play').textContent='▶';$('r3Seek').value=0;
   closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');
@@ -3440,7 +3443,7 @@ function open3D(id,autoRec){
     const m=new maplibregl.Map({container:'r3dMap',style:r3Style(),preserveDrawingBuffer:true,center:[c[0][1],c[0][0]],zoom:13,pitch:60,bearing:0,maxPitch:75,attributionControl:{compact:true}});
     R3.map=m;
     m.on('load',()=>{
-      try{m.setTerrain({source:'dem',exaggeration:1.6})}catch(e){}
+      try{m.setTerrain({source:R3.demId||'dem',exaggeration:1.6})}catch(e){}
       const ok=ele.some(v=>v!=null);const lo=ok?Math.min(...ele.filter(v=>v!=null)):0,hi=ok?Math.max(...ele.filter(v=>v!=null)):1;
       const tot=cum.at(-1)||1;const stops=[];const n=Math.min(48,c.length-1);
       for(let k=0;k<=n;k++){const i=Math.round(k/n*(c.length-1));const f=ok&&hi>lo?(ele[i]-lo)/(hi-lo):0.5;stops.push(cum[i]/tot,r3Color(f))}
@@ -3459,7 +3462,10 @@ function open3D(id,autoRec){
       m.on('zoom',e=>{if(e.originalEvent&&!R3V.on)R3.zOff=Math.max(-3,Math.min(3,m.getZoom()-r3Z()))});
       if(autoRec)setTimeout(rec3D,1800);
     });
-    m.on('error',e=>console.warn('3d',e&&e.error));
+    m.on('error',e=>{const id=e&&e.sourceId;
+      if((id==='mbh'||id==='mbo')&&!R3.mbFail&&++R3.mbErr>=3){R3.mbFail=true;r3Base(m)}
+      if(id==='dem'&&R3.demId==='dem'&&++R3.demErr>=3){R3.demId='dema';if(!R3.flat){try{m.setTerrain({source:'dema',exaggeration:1.6})}catch(_){}}}
+      console.warn('3d',e&&e.error)});
   }catch(e){console.warn(e);toast('Este móvil no puede mostrar el mapa en 3D');close3D()}
 }
 function r3At(t){const c=R3.c,cum=R3.cum,tot=cum.at(-1);const d=t*tot;let i=1;while(i<cum.length-1&&cum[i]<d)i++;const f=cum[i]>cum[i-1]?(d-cum[i-1])/(cum[i]-cum[i-1]):0;
@@ -3480,8 +3486,9 @@ function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnim
   if(R3.t>=1)R3.t=0;R3.play=true;R3.last=0;$('r3Play').textContent='❚❚';const p=r3At(R3.t);
   R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
-function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
-function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;m.setLayoutProperty('sat','visibility',R3.sat?'visible':'none');m.setLayoutProperty('osm','visibility',R3.sat?'none':'visible');$('r3Sat').textContent=R3.sat?'🗺️':'🛰️'}
+function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:R3.demId||'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
+function r3Base(m){const mb=!R3.mbFail;const v={mbh:mb&&R3.sat,mbo:mb&&!R3.sat,sat:!mb&&R3.sat,osm:!mb&&!R3.sat};for(const k in v){try{m.setLayoutProperty(k,'visibility',v[k]?'visible':'none')}catch(e){}}}
+function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;r3Base(m);$('r3Sat').textContent=R3.sat?'🗺️':'🛰️';toast(R3.sat?'Híbrido: satélite con calles':'Outdoors: caminos y senderos')}
 function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a&&!R3.a.plan)openActDetail(R3.a.id)}
 /* ===================================================================
    v4.9 — VÍDEO DEL RECORRIDO EN 3D para WhatsApp y redes
