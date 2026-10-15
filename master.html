@@ -2634,18 +2634,26 @@ async function clubDelete(id){
 }
 
 /* ---------- 👥 Ciclistas ---------- */
-let qUser='',fUser='all';const selU=new Set();
+let qUser='',fUser='all',sUser='new';const selU=new Set();   // v5.13.8: sUser = orden (new = altas más recientes, old = más antiguas, pts = puntos)
 function vUsers(){
   let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
   if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
   if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
-  l.sort((a,b)=>(b.pts||0)-(a.pts||0));
-  $('view').innerHTML=`<div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
+  if(sUser==='pts')l.sort((a,b)=>(b.pts||0)-(a.pts||0));
+  else l.sort((a,b)=>{const x=tsMs(a.since),y=tsMs(b.since);if(!x&&!y)return 0;if(!x)return 1;if(!y)return -1;return sUser==='old'?x-y:y-x});
+  const now=Date.now(),mIni=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+  const nMes=D.users.filter(u=>u.name&&tsMs(u.since)>=mIni).length,n7=D.users.filter(u=>u.name&&tsMs(u.since)>=now-7*86400000).length;
+  const mKey=u=>{const t=tsMs(u.since);if(!t)return 'Sin fecha de alta';const d=new Date(t);const m=d.toLocaleDateString('es-ES',{month:'long',year:'numeric'});return m.charAt(0).toUpperCase()+m.slice(1)};
+  const mCount={};if(sUser!=='pts')l.forEach(u=>{const k=mKey(u);mCount[k]=(mCount[k]||0)+1});
+  let lastM='';
+  const row=u=>{let h='';if(sUser!=='pts'){const k=mKey(u);if(k!==lastM){lastM=k;h=`<tr class="mh"><td colspan="7" style="background:var(--card2);color:var(--lime);font-weight:800;font-size:13px;padding:8px 12px">📅 ${esc(k)} · ${mCount[k]} ${mCount[k]===1?'alta':'altas'}</td></tr>`}}return h};
+  $('view').innerHTML=`<p style="color:var(--txt2);font-size:13.5px;margin:0 2px 10px">🆕 Altas este mes: <b style="color:var(--lime)">${nMes}</b> · últimos 7 días: <b style="color:var(--lime)">${n7}</b> · total: <b>${D.users.filter(u=>u.name).length}</b></p><div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
     <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
+    <div class="chips">${[['new','🆕 Más nuevos'],['old','📅 Más antiguos'],['pts','⭐ Puntos']].map(([k,t])=>`<button class="chip${sUser===k?' on':''}" onclick="sUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
     <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
    <p style="color:var(--txt3);font-size:12.5px;margin:-4px 2px 10px">Marca la casilla de los nombres de prueba para eliminarlos de golpe. «✏️ Nombre» cambia el nombre en todos los sitios (club, salidas, ranking y su móvil).</p>
    <div class="box tw"><table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
-   ${l.slice(0,400).map(u=>`<tr><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'}</small></div></div></td>
+   ${l.slice(0,400).map(u=>row(u)+`<tr><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'} · alta ${fDate(u.since)}</small></div></div></td>
      <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
      <td class="hide-m">${userState(u.id,u)}</td>
      <td class="r"><div class="acts"><button class="btn sm" onclick="userPts(${jsq(u.id)})">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser(${jsq(u.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser(${jsq(u.id)})">⚖️ Sancionar</button><button class="btn sm" onclick="userRename(${jsq(u.id)})">✏️ Nombre</button><button class="btn sm red" onclick="userWipe(${jsq(u.id)})">🗑️ Contenido</button><button class="btn sm red" onclick="userDel(${jsq(u.id)})">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
@@ -2715,7 +2723,7 @@ async function userDelSel(){
   let i=0,k=0;for(const id of ids){i++;toast(`Eliminando ${i} de ${ids.length}…`);k+=await userPurge(id)}
   selU.clear();toast(`✅ ${ids.length} ciclista${ids.length===1?'':'s'} eliminado${ids.length===1?'':'s'}`);loadAll();
 }
-function csvUsers(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Nombre','Club','Puntos','Desde','Google','Bloqueado']].concat(D.users.filter(u=>u.name).map(u=>[u.name,(userClub(u.id)||{}).name||'',u.pts||0,fDate(u.since),u.google?'sí':'no',u.banned?'sí':'no']));download('ciclistas-ridesafe.csv','﻿'+rows.map(r=>r.map(q).join(';')).join('\n'),'text/csv')}
+function csvUsers(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Nombre','Club','Puntos','Desde','Google','Bloqueado']].concat(D.users.filter(u=>u.name).slice().sort((a,b)=>tsMs(b.since)-tsMs(a.since)).map(u=>[u.name,(userClub(u.id)||{}).name||'',u.pts||0,fDate(u.since),u.google?'sí':'no',u.banned?'sí':'no']));download('ciclistas-ridesafe.csv','﻿'+rows.map(r=>r.map(q).join(';')).join('\n'),'text/csv')}
 
 /* ---------- 📅 Salidas ---------- */
 let fRide='up',cRide='';
