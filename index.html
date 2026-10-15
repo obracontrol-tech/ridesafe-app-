@@ -1099,7 +1099,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.10</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.11</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5611,7 +5611,7 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?(r.mins<60?Math.round(r.mins)+' min':Math.floor(r.mins/60)+' h '+String(Math.round(r.mins%60)).padStart(2,'0')):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  try{steepPaint(map,r)}catch(e){}const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof)+'<button class="btn btn-line" style="width:100%;margin:2px 0 10px;border-color:var(--lime)" onclick="plan3D()">⛰️ Ver ruta en 3D</button>':'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
+  try{steepPaint(map,r)}catch(e){}const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=(r&&r.coords&&r.coords.length>1?'<button class="btn btn-line" style="width:100%;margin:4px 0 10px;border-color:var(--lime)" onclick="plan3D()">⛰️ Ver ruta en 3D</button>':'')+(pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'');if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';$('bEdit').style.display=v&&r?'block':'none';
