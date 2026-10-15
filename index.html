@@ -1099,7 +1099,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3429,7 +3429,7 @@ function r3Style(){return{version:8,sources:{
   osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'},
   mbh:{type:'raster',tiles:[MBX('satellite-streets-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
   mbo:{type:'raster',tiles:[MBX('outdoors-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
-  dem:{type:'raster-dem',tiles:['https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token='+MAPBOX_TOKEN],tileSize:256,encoding:'mapbox',maxzoom:15,attribution:'Relieve © Mapbox'},
+  dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
   dema:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
   dem2:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}},
   layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat',layout:{visibility:'none'}},{id:'mbo',type:'raster',source:'mbo',layout:{visibility:'none'}},{id:'mbh',type:'raster',source:'mbh'},
