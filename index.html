@@ -855,14 +855,6 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .r3-x{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(11,20,34,.78);color:#fff;font-size:22px;pointer-events:auto}
 .r3-side{position:absolute;right:12px;top:calc(84px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:10px;z-index:3}
 .r3-side button{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(11,20,34,.78);color:#fff;font-size:20px;font-weight:800}
-.r3-grip{display:block;width:100%;border:0;background:none;padding:0 0 10px;margin-top:-6px;color:#9FB0C5;font:inherit;font-size:12px;font-weight:700;touch-action:none}
-.r3-grip i{display:block;width:44px;height:5px;border-radius:3px;background:#3A4D6B;margin:0 auto 4px}
-#r3d.r3min .r3-st,#r3d.r3min .r3-spd,#r3d.r3min .r3-by,#r3d.r3min .r3-vid{display:none}
-#r3d.r3min .r3-bot{padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-#r3d.r3min .r3-play{width:48px;height:48px;font-size:20px}
-#r3d.r3min .r3-card{padding:7px 14px}#r3d.r3min .r3-card b{font-size:14px}#r3d.r3min .r3-card small,#r3d.r3min .r3-here{display:none}
-#r3d.r3min .r3-x{width:44px;height:44px;font-size:18px}
-#r3d.r3min .r3-side{top:calc(66px + env(safe-area-inset-top))}#r3d.r3min .r3-side button{width:44px;height:44px;font-size:17px}
 .r3-bot{background:#0B1422;border-top:1px solid #22324A;border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));color:#fff}
 .r3-row{display:flex;align-items:center;gap:14px}
 .r3-play{width:58px;height:58px;border-radius:50%;border:0;background:var(--lime);color:var(--on-lime);font-size:24px;font-weight:900;flex-shrink:0}
@@ -1099,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.11</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1278,7 +1270,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 <div id="r3d" role="dialog" aria-label="Recorrido en 3D"><div id="r3dMap"></div>
  <div class="r3-top"><div class="r3-card"><b id="r3Name">Recorrido</b><small id="r3Date"></small><div class="r3-here" id="r3Here"></div></div><button class="r3-x" onclick="close3D()" aria-label="Cerrar">✕</button></div>
  <div class="r3-side"><button id="r3Dim" onclick="toggle3DView()" aria-label="Ver en 3D o en plano">2D</button><button id="r3Sat" onclick="toggle3DSat()" aria-label="Satélite o mapa">🗺️</button></div>
- <div class="r3-bot"><button class="r3-grip" id="r3Grip" onclick="r3Min()" aria-label="Ampliar o reducir el mapa"><i></i><span id="r3GripT">Ver mapa grande</span></button><div class="r3-row"><button class="r3-play" id="r3Play" onclick="play3D()" aria-label="Reproducir">▶</button><input type="range" id="r3Seek" min="0" max="1000" value="0" oninput="seek3D(this.value/1000)" aria-label="Avanzar el recorrido"></div>
+ <div class="r3-bot"><div class="r3-row"><button class="r3-play" id="r3Play" onclick="play3D()" aria-label="Reproducir">▶</button><input type="range" id="r3Seek" min="0" max="1000" value="0" oninput="seek3D(this.value/1000)" aria-label="Avanzar el recorrido"></div>
   <div class="r3-st"><div><b id="r3Km">0,0</b><span>km</span></div><div><b id="r3T">0:00</b><span>tiempo</span></div><div><b id="r3Alt">—</b><span>m altitud</span></div><div><b id="r3V">—</b><span>km/h media</span></div></div>
   <div class="r3-spd" id="r3Spd" aria-label="Velocidad"><button data-s="0.25" onclick="r3Speed(0.25)">🐢 Muy lenta</button><button data-s="0.5" onclick="r3Speed(0.5)">Lenta</button><button data-s="1" onclick="r3Speed(1)">Normal</button><button data-s="2" onclick="r3Speed(2)">⏩ Rápida</button></div>
   <div class="r3-by" id="r3By"></div>
@@ -3339,7 +3331,7 @@ function devSendSheet(br){
   $('rideBody').innerHTML=sheetHead('📲 Pasar la ruta al ciclocomputador')+
    `<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
    tabs+`<ol class="steps" style="margin:4px 0 12px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">${steps}</ol>`+
-   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) salen también en la pantalla del aparato: pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
+   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) solo salen en el aparato o el reloj si muestra notificaciones de otras apps (algunos solo enseñan llamadas y SMS): pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
    `<button class="btn btn-lime" onclick="closeSheets()">Entendido</button>`;
   openRideId=null;openSheet('sh-ride');
 }
@@ -3427,35 +3419,28 @@ function r3Color(f){f=Math.max(0,Math.min(1,f));const A=[[250,204,21],[249,115,2
 function r3Style(){return{version:8,sources:{
   sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:18,attribution:'© Esri'},
   osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'},
-  mbh:{type:'raster',tiles:[MBX('satellite-streets-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
-  mbo:{type:'raster',tiles:[MBX('outdoors-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
   dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
-  dema:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
   dem2:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}},
-  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat',layout:{visibility:'none'}},{id:'mbo',type:'raster',source:'mbo',layout:{visibility:'none'}},{id:'mbh',type:'raster',source:'mbh'},
+  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat'},
     {id:'shade',type:'hillshade',source:'dem2',paint:{'hillshade-exaggeration':0.35,'hillshade-shadow-color':'#000000'}}]}}
-function plan3D(){const r=plan.route;if(!r||!r.coords||r.coords.length<2){toast('Primero calcula una ruta');return}
-  const d=new Date();const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  open3D({id:0,plan:true,name:'Ruta planificada',date:ds,km:r.km,mins:r.mins||0,c:r.coords,pd:(r.prof||[]).map(x=>x.d),pe:(r.prof||[]).map(x=>x.e)})}
 function open3D(id,autoRec){
-  const a=(id&&typeof id==='object')?id:acts.find(x=>x.id===id);if(!a||!(a.poly||a.c))return;
+  const a=acts.find(x=>x.id===id);if(!a||!a.poly)return;
   if(typeof maplibregl==='undefined'){toast('El mapa necesita conexión a internet');return}
-  const c=a.c||decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
+  const c=decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
   const cum=cumDist(c);const ele=r3Ele(a,c,cum);
-  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true,mbFail:false,mbErr:0,demId:'dem',demErr:0});
+  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
   $('r3Dim').textContent='2D';$('r3Sat').textContent='🗺️';$('r3Play').textContent='▶';$('r3Seek').value=0;
-  closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');r3Min(!!store.get('r3min',false));
+  closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');
   if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}
   try{
     const m=new maplibregl.Map({container:'r3dMap',style:r3Style(),preserveDrawingBuffer:true,center:[c[0][1],c[0][0]],zoom:13,pitch:60,bearing:0,maxPitch:75,attributionControl:{compact:true}});
     R3.map=m;
     m.on('load',()=>{
-      try{m.setTerrain({source:R3.demId||'dem',exaggeration:1.3})}catch(e){}
+      try{m.setTerrain({source:'dem',exaggeration:1.6})}catch(e){}
       const ok=ele.some(v=>v!=null);const lo=ok?Math.min(...ele.filter(v=>v!=null)):0,hi=ok?Math.max(...ele.filter(v=>v!=null)):1;
       const tot=cum.at(-1)||1;const stops=[];const n=Math.min(48,c.length-1);
       for(let k=0;k<=n;k++){const i=Math.round(k/n*(c.length-1));const f=ok&&hi>lo?(ele[i]-lo)/(hi-lo):0.5;stops.push(cum[i]/tot,r3Color(f))}
-      if(a.plan&&a.pd&&a.pd.length>1){stops.length=0;const T=a.pd.at(-1)||1;for(let i=1;i<a.pd.length;i++){const dd=(a.pd[i]-a.pd[i-1])*1000;const s=dd>0?(a.pe[i]-a.pe[i-1])/dd*100:0;const col=s>=12?'#EF4444':s>=7?'#F97316':'#C8DC3C';stops.push(a.pd[i-1]/T,col,Math.max(a.pd[i-1]/T,a.pd[i]/T-1e-4),col)}}
       for(let k=2;k<stops.length;k+=2){if(stops[k]<=stops[k-2])stops[k]=Math.min(1,stops[k-2]+1e-6)}
       m.addSource('r3',{type:'geojson',lineMetrics:true,data:{type:'Feature',geometry:{type:'LineString',coordinates:c.map(p=>[p[1],p[0]])}}});
       m.addLayer({id:'r3-case',type:'line',source:'r3',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#000','line-opacity':.45,'line-width':5}});
@@ -3467,14 +3452,10 @@ function open3D(id,autoRec){
       const b=new maplibregl.LngLatBounds();c.forEach(p=>b.extend([p[1],p[0]]));R3.b=b;
       m.fitBounds(b,{padding:{top:120,bottom:50,left:50,right:90},pitch:0,duration:0});m.jumpTo({pitch:50,zoom:m.getZoom()-0.45});
       r3Stats();r3Speed(R3.spd,true);r3LoadPlaces();
-      setTimeout(()=>{document.querySelectorAll('#r3dMap .maplibregl-ctrl-attrib').forEach(x=>x.classList.remove('maplibregl-compact-show'))},400);
       m.on('zoom',e=>{if(e.originalEvent&&!R3V.on)R3.zOff=Math.max(-3,Math.min(3,m.getZoom()-r3Z()))});
       if(autoRec)setTimeout(rec3D,1800);
     });
-    m.on('error',e=>{const id=e&&e.sourceId;
-      if((id==='mbh'||id==='mbo')&&!R3.mbFail&&++R3.mbErr>=3){R3.mbFail=true;r3Base(m)}
-      if(id==='dem'&&R3.demId==='dem'&&++R3.demErr>=3){R3.demId='dema';if(!R3.flat){try{m.setTerrain({source:'dema',exaggeration:1.3})}catch(_){}}}
-      console.warn('3d',e&&e.error)});
+    m.on('error',e=>console.warn('3d',e&&e.error));
   }catch(e){console.warn(e);toast('Este móvil no puede mostrar el mapa en 3D');close3D()}
 }
 function r3At(t){const c=R3.c,cum=R3.cum,tot=cum.at(-1);const d=t*tot;let i=1;while(i<cum.length-1&&cum[i]<d)i++;const f=cum[i]>cum[i-1]?(d-cum[i-1])/(cum[i]-cum[i-1]):0;
@@ -3485,7 +3466,7 @@ function r3Stats(){const a=R3.a,t=R3.t,km=(a.km||R3.cum.at(-1))*t,mins=(a.mins||
 function r3Frame(follow){
   const m=R3.map;if(!m||!R3.mk)return;const p=r3At(R3.t);R3.mk.setLngLat([p.lng,p.lat]);
   if(follow){const q=r3At(Math.min(1,R3.t+0.02));let br=bearing([p.lat,p.lng],[q.lat,q.lng]);const cur=m.getBearing();let d=((br-cur+540)%360)-180;
-    m.jumpTo({center:[p.lng,p.lat],bearing:cur+d*0.06,pitch:R3.flat?0:55,zoom:r3Z()+(R3V.on?0:R3.zOff)})}
+    m.jumpTo({center:[p.lng,p.lat],bearing:cur+d*0.06,pitch:R3.flat?0:62,zoom:r3Z()+(R3V.on?0:R3.zOff)})}
   r3Stats();$('r3Seek').value=Math.round(R3.t*1000);
 }
 function r3Loop(ts){if(!R3.play)return;if(!R3.last)R3.last=ts;const dt=ts-R3.last;R3.last=ts;R3.t=Math.min(1,R3.t+dt/(R3.dur/R3.spd));r3Frame(true);
@@ -3493,16 +3474,11 @@ function r3Loop(ts){if(!R3.play)return;if(!R3.last)R3.last=ts;const dt=ts-R3.las
   R3.raf=requestAnimationFrame(r3Loop)}
 function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶';return}
   if(R3.t>=1)R3.t=0;R3.play=true;R3.last=0;$('r3Play').textContent='❚❚';const p=r3At(R3.t);
-  R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:55,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
+  R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
-function r3Min(on){const d=$('r3d');if(on===undefined)on=!d.classList.contains('r3min');d.classList.toggle('r3min',on);$('r3GripT').textContent=on?'Ver datos y opciones':'Ver mapa grande';try{store.set('r3min',on)}catch(e){}
-  [60,320].forEach(t=>setTimeout(()=>{try{R3.map&&R3.map.resize()}catch(e){}},t))}
-(function(){let y0=null;document.addEventListener('touchstart',e=>{if(e.target.closest&&e.target.closest('#r3Grip'))y0=e.touches[0].clientY},{passive:true});
-  document.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;if(dy>30)r3Min(true);else if(dy<-30)r3Min(false)},{passive:true})})();
-function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:R3.demId||'dem',exaggeration:1.3})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
-function r3Base(m){const mb=!R3.mbFail;const v={mbh:mb&&R3.sat,mbo:mb&&!R3.sat,sat:!mb&&R3.sat,osm:!mb&&!R3.sat};for(const k in v){try{m.setLayoutProperty(k,'visibility',v[k]?'visible':'none')}catch(e){}}}
-function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;r3Base(m);$('r3Sat').textContent=R3.sat?'🗺️':'🛰️';toast(R3.sat?'Híbrido: satélite con calles':'Outdoors: caminos y senderos')}
-function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a&&!R3.a.plan)openActDetail(R3.a.id)}
+function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
+function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;m.setLayoutProperty('sat','visibility',R3.sat?'visible':'none');m.setLayoutProperty('osm','visibility',R3.sat?'none':'visible');$('r3Sat').textContent=R3.sat?'🗺️':'🛰️'}
+function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a)openActDetail(R3.a.id)}
 /* ===================================================================
    v4.9 — VÍDEO DEL RECORRIDO EN 3D para WhatsApp y redes
    Se graba en el propio móvil (vertical 720×1280) con el mapa, el punto que avanza,
@@ -3510,7 +3486,7 @@ function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimatio
    =================================================================== */
 
 /* v4.9.1 — Pueblos y carreteras por donde pasaste + velocidad del 3D */
-function r3Z(){return R3.flat?14:(R3.spd<=0.25?14.6:R3.spd<=0.5?14.3:R3.spd>=2?13.6:14.0)}
+function r3Z(){return R3.flat?14:(R3.spd<=0.25?15.6:R3.spd<=0.5?15.1:R3.spd>=2?14.1:14.6)}
 function r3Speed(v,quiet){R3.spd=v;store.set('r3spd',v);document.querySelectorAll('#r3Spd button').forEach(b=>b.classList.toggle('on',+b.dataset.s===v));R3.zOff=0;
   if(!quiet&&R3.map&&R3.mk){const p=r3At(R3.t);if(R3.play||R3.t>0)R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z(),duration:600});toast(v<1?'🐢 Más despacio y más cerca':v>1?'⏩ Más rápido':'Velocidad normal')}}
 async function r3LoadPlaces(){
@@ -3587,7 +3563,7 @@ async function rec3D(){
   R3V.on=true;R3V.cancel=false;R3V.chunks=[];R3V.mime=mime;$('r3vBox').classList.add('show');$('r3vPct').textContent='0 %';$('r3vMsg').textContent='Preparando el mapa…';
   try{if('wakeLock' in navigator)R3V.wake=await navigator.wakeLock.request('screen')}catch(e){}
   // vista inicial y unos segundos para que carguen las imágenes del satélite
-  const p0=r3At(0);m.jumpTo({center:[p0.lng,p0.lat],zoom:r3Z(),pitch:R3.flat?0:55});
+  const p0=r3At(0);m.jumpTo({center:[p0.lng,p0.lat],zoom:r3Z(),pitch:R3.flat?0:62});
   await new Promise(r=>setTimeout(r,2200));if(R3V.cancel){r3vEnd(true);return}
   const stream=cv.captureStream(30);
   let rec;try{rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5000000})}catch(e){r3vEnd(true);toast('No se pudo crear el vídeo');return}
@@ -5140,34 +5116,6 @@ function profileSVG(prof){
   <div class="proflbl"><span>${Math.round(mn)} m</span><span>🟢 llano · 🟠 ≥7% · 🔴 ≥12%</span><span>${Math.round(mx)} m</span></div></div>`;
 }
 
-/* v-rampas: tramos duros pintados sobre la ruta del mapa (naranja ≥7 %, rojo ≥12 %) */
-function steepPaint(m,r){
-  try{
-    if(!m||!(m.style&&m.style._loaded))return;
-    const feats=[];
-    if(r&&r.prof&&r.prof.length>1&&r.coords&&r.coords.length>1){
-      const c=r.coords,cd=cumDist(c);
-      const at=d=>{let j=0;while(j<cd.length-2&&cd[j+1]<d)j++;const f=cd[j+1]>cd[j]?Math.max(0,Math.min(1,(d-cd[j])/(cd[j+1]-cd[j]))):0;return[c[j][1]+(c[j+1][1]-c[j][1])*f,c[j][0]+(c[j+1][0]-c[j][0])*f]};
-      const P=r.prof;let cur=null;
-      for(let i=1;i<P.length;i++){
-        const dd=(P[i].d-P[i-1].d)*1000;const s=dd>0?(P[i].e-P[i-1].e)/dd*100:0;
-        const lv=s>=12?2:s>=7?1:0;
-        if(lv&&cur&&cur.lv===lv){cur.d1=P[i].d}
-        else{if(cur)feats.push(cur);cur=lv?{lv,d0:P[i-1].d,d1:P[i].d}:null}
-      }
-      if(cur)feats.push(cur);
-      for(let k=0;k<feats.length;k++){const f=feats[k];const pts=[at(f.d0)];
-        for(let j=0;j<cd.length;j++){if(cd[j]>f.d0&&cd[j]<f.d1)pts.push([c[j][1],c[j][0]])}
-        pts.push(at(f.d1));feats[k]={type:'Feature',properties:{lv:f.lv},geometry:{type:'LineString',coordinates:pts}}}
-    }
-    const data={type:'FeatureCollection',features:feats};
-    const s=m.getSource('steep');
-    if(s)s.setData(data);
-    else if(feats.length){m.addSource('steep',{type:'geojson',data});
-      m.addLayer({id:'steep-line',type:'line',source:'steep',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['case',['==',['get','lv'],2],'#EF4444','#F97316'],'line-width':6}})}
-  }catch(e){}
-}
-
 /* Línea de la ruta en un mapa */
 function setLine(m,coords,id,color){
   if(!m)return;id=id||'plan';color=color||'#C8DC3C';
@@ -5175,7 +5123,6 @@ function setLine(m,coords,id,color){
   m.__pend=m.__pend||{};
   if(!(m.style&&m.style._loaded)){const first=!(id in m.__pend);m.__pend[id]=[coords,color];if(first)m.once('load',()=>{if(!(id in m.__pend))return;const q=m.__pend[id];delete m.__pend[id];setLine(m,q[0],id,q[1])});return}
   delete m.__pend[id];
-  if(id==='plan'&&!(coords&&coords.length>1))steepPaint(m,null);
   const data={type:'FeatureCollection',features:coords&&coords.length>1?[{type:'Feature',geometry:{type:'LineString',coordinates:coords.map(p=>[p[1],p[0]])}}]:[]};
   const s=m.getSource(id);
   if(s)s.setData(data);
@@ -5611,7 +5558,7 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?(r.mins<60?Math.round(r.mins)+' min':Math.floor(r.mins/60)+' h '+String(Math.round(r.mins%60)).padStart(2,'0')):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  try{steepPaint(map,r)}catch(e){}const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=(r&&r.coords&&r.coords.length>1?'<button class="btn btn-line" style="width:100%;margin:4px 0 10px;border-color:var(--lime)" onclick="plan3D()">⛰️ Ver ruta en 3D</button>':'')+(pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'');if(pr&&!r.conf&&!r.confBusy)computeConf(r);
+  const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';$('bEdit').style.display=v&&r?'block':'none';

@@ -1,7 +1,7 @@
 {
-  "name": "VeloGo",
-  "short_name": "VeloGo",
-  "description": "Organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.",
+  "name": "RideSafe IA",
+  "short_name": "RideSafe IA",
+  "description": "La app gratis para salir en bici con tu club: salidas, rutas, pelotón en vivo y avisos de seguridad.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,8 +10,23 @@
   "theme_color": "#0E1A2B",
   "lang": "es",
   "icons": [
-    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
