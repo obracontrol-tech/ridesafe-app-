@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.7</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4206,13 +4206,15 @@ async function garminTest(){
   toast(`⌚ Bloquea el móvil y mira el ${devName()}: llega en 5 segundos`);
   setTimeout(async()=>{
     try{const reg=await navigator.serviceWorker.ready;
-      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:`Prueba de RideSafe IA · si lo ves en tu ${devName()}, te llegarán los avisos`,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba-'+Date.now(),renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}})}
+      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:`Prueba de RideSafe IA · si lo ves en tu ${devName()}, te llegarán los avisos`,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba-'+Date.now(),renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}});
+      // v5.13.7: segunda prueba SIN emojis (algunos relojes baratos no muestran avisos con emojis)
+      setTimeout(()=>reg.showNotification('PRUEBA 2 '+(String(myName()||'Toni').split(' ')[0])+' PINCHAZO',{body:'Aviso de prueba sin emojis',icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba2-'+Date.now(),renotify:true,vibrate:[600,200,600],data:{url:'./'}}).catch(()=>{}),4000)}
     catch(e){toast('No se pudo lanzar la prueba')}
     setTimeout(async()=>{if(document.visibilityState!=='visible')await new Promise(r=>{const f=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',f);r()}};document.addEventListener('visibilitychange',f)});
       const i=await askChoice(`¿Te ha salido el aviso en el ${devName()}?`,[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
       if(i===0){store.set('garminOk',Date.now());toast(`¡Perfecto! Te llegarán los avisos del pelotón al ${devName()}`)}
       if(i===1){openGarmin();setTimeout(()=>toast('Revisa los pasos 2 y 3. Si tu modelo solo enseña llamadas y SMS, el aviso solo llegará al móvil'),400)}
-    },6500);
+    },10500);
   },5000);
 }
 /* ===== v2.0 — Avisos al pelotón: pinchazo, esperad, ayuda (pantalla + sirena) ===== */
