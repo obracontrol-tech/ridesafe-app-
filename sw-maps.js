@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5135';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5136';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -83,7 +83,9 @@ self.addEventListener('push', e => {
     body: d.body || '',
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-192.png',
-    tag: d.tag || 'ridesafe',
+    // v5.13.6: cada aviso urgente es una notificación NUEVA (no actualiza la anterior). Muchos relojes
+    // (FitCloudPro y similares) no reenvían las notificaciones que solo se actualizan.
+    tag: urgent ? (d.tag || 'ridesafe') + '-' + Date.now() : (d.tag || 'ridesafe'),
     renotify: true,
     requireInteraction: urgent,
     vibrate: urgent ? [800, 200, 800, 200, 800, 200, 800] : [200, 100, 200],
