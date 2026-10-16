@@ -500,6 +500,12 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgroup{border-radius:18px!important;padding:8px 12px!important;font-size:13px!important;max-height:84px;overflow-y:auto}
 .lvgroup .gm{color:#fff}
 .lvalert{margin-bottom:0!important;gap:6px!important}
+.lvalert .a-ptt{grid-column:1/-1;background:rgba(200,220,60,.9)!important;color:#0E1A2B!important;border-color:#C8DC3C!important;font-size:15.5px!important;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.lvalert .a-ptt.talk{background:#DC2626!important;color:#fff!important;border-color:#fff!important;animation:pttp 1s infinite}
+.lvalert .a-ptt.busy{opacity:.7}
+@keyframes pttp{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8)}50%{box-shadow:0 0 0 10px rgba(220,38,38,0)}}
+#pttMsg{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9500;background:rgba(14,26,43,.94);color:#fff;border:2px solid #C8DC3C;border-radius:22px;padding:10px 16px;font-weight:800;font-size:16px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:92vw}
+#pttMsg.show{display:flex}#pttMsg span{white-space:nowrap}#pttMsg button{white-space:nowrap;background:#C8DC3C;color:#0E1A2B;border:0;border-radius:14px;padding:6px 12px;font-weight:900;font-size:14px}
 .lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
 .lvalert .a-more{border-color:rgba(167,139,250,.9)!important}.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
 .lvbtns{gap:6px!important}
@@ -913,7 +919,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="lvwind" id="lvWind" style="display:none" onclick="lwSay(true)" aria-label="Viento: toca para oírlo"></button>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
-    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button></div>
+    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button><button class="a-ptt" id="lvPtt" aria-label="Walkie: mantén pulsado para hablar al grupo">🎙️ Mantén pulsado y habla al grupo</button></div>
     <div class="lvmus" id="lvMus" style="display:none"></div>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvmoon" onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
@@ -1091,7 +1097,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.10</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6011,7 +6017,7 @@ async function startLive(opt){
   rideMarkers.forEach(m=>m.remove());
   $('lvVoice').textContent=live.voice?'🔊':'🔇';
   $('lvGroup').style.display=live.rideId?'block':'none';
-  $('lvAlert').style.display=live.rideId?'grid':'none';alarmUnlock();live.alSeen={};
+  $('lvAlert').style.display=live.rideId?'grid':'none';alarmUnlock();live.alSeen={};if(live.rideId){pttBind();setTimeout(pttListen,800)}
   $('lvBanner').style.display='none';
   setLine(map,null,'track','#60A5FA');
   if(opt.route)navRoute(opt.route,opt.wps);
@@ -6209,6 +6215,89 @@ function pushPos(p,now){
   live.lastPush=now;live.lastPushLL=p;
   db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2),...(live.catchTo?{late:true}:{})}).catch(e=>console.warn('live',e));
 }
+/* ===== v5.14 — 🎙️ WALKIE DEL PELOTÓN: mensajes de voz que suenan solos a todo el grupo ===== */
+const PTT_MAX=15000;
+const ptt={rec:null,chunks:[],t0:0,stream:null,toggle:false,played:{},queue:[],playing:false,unsub:null,since:0};
+function pttMime(){const L=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
+function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||'🎙️ Mantén pulsado y habla al grupo'}
+async function pttStart(){
+  if(ptt.rec)return;ptt.cancel=0;
+  if(!live.on||!live.rideId){toast('El walkie funciona en una salida en grupo');return}
+  if(!window.MediaRecorder||!navigator.mediaDevices){toast('Este móvil no permite grabar audio desde la app');return}
+  alarmUnlock();
+  try{ptt.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+  catch(e){toast(e&&e.name==='NotAllowedError'?'Permite el micrófono para usar el walkie':'No se pudo abrir el micrófono');pttBtn();return}
+  const mime=pttMime();
+  try{ptt.rec=new MediaRecorder(ptt.stream,{...(mime?{mimeType:mime}:{}),audioBitsPerSecond:24000})}catch(e){try{ptt.rec=new MediaRecorder(ptt.stream)}catch(e2){pttKill();toast('No se pudo grabar audio');return}}
+  ptt.chunks=[];ptt.t0=Date.now();
+  ptt.rec.ondataavailable=e=>{if(e.data&&e.data.size)ptt.chunks.push(e.data)};
+  ptt.rec.onstop=pttSend;
+  if(ptt.cancel){ptt.cancel=0;ptt.rec=null;pttKill();toast('🎙️ Micrófono listo: mantén pulsado el botón mientras hablas');return}
+  ptt.rec.start();vib(60);beepPtt(880);
+  pttBtn('rec',ptt.toggle?'🔴 Hablando… toca para enviar':'🔴 Hablando… suelta para enviar');
+  clearTimeout(ptt.maxT);ptt.maxT=setTimeout(pttStop,PTT_MAX);
+  musDuck(PTT_MAX);
+}
+function pttStop(){clearTimeout(ptt.maxT);if(ptt.rec&&ptt.rec.state!=='inactive'){try{ptt.rec.stop()}catch(e){pttKill()}}}
+function pttKill(){try{ptt.stream&&ptt.stream.getTracks().forEach(t=>t.stop())}catch(e){}ptt.stream=null;ptt.rec=null;ptt.toggle=false;pttBtn()}
+async function pttSend(){
+  const dur=Date.now()-ptt.t0;const type=(ptt.rec&&ptt.rec.mimeType)||pttMime()||'audio/webm';const chunks=ptt.chunks;pttKill();
+  if(dur<700){toast('Mantén pulsado mientras hablas');return}
+  const blob=new Blob(chunks,{type});
+  if(blob.size>190000){toast('Mensaje demasiado largo');return}
+  pttBtn('busy','📤 Enviando…');beepPtt(660);
+  const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]||'');fr.onerror=()=>r('');fr.readAsDataURL(blob)});
+  if(!b64){pttBtn();toast('No se pudo preparar el audio');return}
+  try{
+    await db.collection('rides').doc(live.rideId).collection('voice').add({uid,name:myName(),t:Date.now(),dur:Math.round(dur/100)/10,mime:type.slice(0,60),audio:b64});
+    pttBtn();toast('🎙️ Mensaje enviado al grupo');vib([40,60,40]);
+  }catch(e){console.warn('walkie',e);pttBtn();toast(e&&e.code==='permission-denied'?'El walkie aún no está activado en el servidor':'Sin conexión: no se pudo enviar')}
+}
+/* Pulsar y mantener = hablar. Un toque corto = se queda grabando hasta otro toque (con guantes es más fácil) */
+function pttBind(){
+  const b=$('lvPtt');if(!b||b.__ok)return;b.__ok=1;
+  let down=0;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}
+    if(ptt.toggle){ptt.toggle=false;pttStop();down=0;return}down=Date.now();pttStart()});
+  const up=e=>{if(!down)return;const held=Date.now()-down;down=0;
+    if(held<450){ptt.toggle=true;if(ptt.rec)pttBtn('rec','🔴 Hablando… toca para enviar');return}
+    if(ptt.rec)pttStop();else ptt.cancel=1};
+  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);document.addEventListener('pointerup',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+}
+function beepPtt(f){try{alarmUnlock();if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(.35,AC.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.16);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.18)}catch(e){}}
+/* Escuchar: los mensajes de los demás suenan solos, uno detrás de otro */
+function pttListen(){
+  if(ptt.unsub||!db||!live.rideId)return;
+  ptt.since=Date.now()-120000;ptt.played={};
+  ptt.unsub=db.collection('rides').doc(live.rideId).collection('voice').where('t','>',ptt.since).onSnapshot(s=>{
+    s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.t-b.t).forEach(v=>{
+      if(ptt.played[v.id])return;ptt.played[v.id]=1;
+      if(v.uid===uid||Date.now()-v.t>180000||!v.audio)return;
+      ptt.queue.push(v);
+    });
+    pttPlayNext();
+  },e=>console.warn('walkie',e));
+}
+function pttUnlisten(){if(ptt.unsub){ptt.unsub();ptt.unsub=null}ptt.queue=[];pttKill();$('pttMsg')&&$('pttMsg').classList.remove('show')}
+function pttPlayNext(){
+  if(ptt.playing||!ptt.queue.length)return;
+  const v=ptt.queue.shift();const name=String(v.name||'Un ciclista').split(' ')[0];
+  if(ptt.rec){ptt.queue.unshift(v);setTimeout(pttPlayNext,1500);return}   // si estoy hablando, espero
+  ptt.playing=true;
+  let m=$('pttMsg');if(!m){m=document.createElement('div');m.id='pttMsg';document.body.appendChild(m)}
+  m.innerHTML=`<span>🎙️ ${esc(name)} habla…</span><button onclick="pttReplay()">↻ Repetir</button>`;m.classList.add('show');
+  ptt.last=v;
+  if(document.visibilityState!=='visible')bgNotify('🎙️ '+name+' te habla',(live.rideTitle||'Salida en grupo')+' · mensaje de voz',false);
+  musDuck((v.dur||5)*1000+2500);beepPtt(990);vib([80,60,80]);
+  setTimeout(()=>{
+    const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.volume=1;
+    const done=()=>{ptt.playing=false;setTimeout(()=>{if(!ptt.playing)m.classList.remove('show')},2500);setTimeout(pttPlayNext,600)};
+    a.onended=done;a.onerror=()=>{toast('🎙️ '+name+' ha enviado un audio que este móvil no puede reproducir');done()};
+    a.play().catch(()=>{m.innerHTML=`<span>🎙️ ${esc(name)} te ha hablado</span><button onclick="pttReplay()">▶ Escuchar</button>`;ptt.playing=false;setTimeout(pttPlayNext,600)});
+  },350);
+}
+function pttReplay(){const v=ptt.last;if(!v)return;try{const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);musDuck((v.dur||5)*1000+1500);a.play().catch(()=>{})}catch(e){}}
 function listenGroup(){
   live.unsub=db.collection('rides').doc(live.rideId).collection('live').onSnapshot(s=>{
     const m={};s.docs.forEach(d=>{if(d.id!==uid)m[d.id]=d.data()});live.members=m;drawMembers();checkStragglers();renderLive();checkAlerts();
@@ -6326,7 +6415,7 @@ async function finishLive(save){
   (L.camMk||[]).forEach(m=>m.remove());
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
-  if(L.unsub)L.unsub();
+  if(L.unsub)L.unsub();pttUnlisten();
   endShare(L);
   Object.values(L.mMarkers||{}).forEach(m=>m.remove());
   if(L.rideId&&db&&uid)db.collection('rides').doc(L.rideId).collection('live').doc(uid).delete().catch(()=>{});
