@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1417,7 +1417,7 @@ const store={
   set(k,v){try{localStorage.setItem('velogo_'+k,JSON.stringify(v))}catch(e){}}
 };
 let toastT;
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function toast(m,ms){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),ms||2600)}
 function cleanData(v,depth){depth=depth||0;if(v==null)return v;if(depth>30)return null;
   if(typeof v==='string')return v.startsWith('data:image/')?(SAFE_IMG_RE.test(v)?v:''):v.replace(/[<>]/g,'').replace(/"/g,'”');
   if(Array.isArray(v))return v.map(x=>cleanData(x,depth+1));
@@ -3047,31 +3047,77 @@ async function famShare(){
   }
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
   fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on};
-  if(!live.on){
-    fam.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(c.accuracy>80)return;famPush([c.latitude,c.longitude],c.speed!=null?c.speed*3.6:0,false)},e=>{if(e.code===1)toast('Activa el permiso de ubicación')},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
-    fam.timer=setInterval(()=>{if(fam.until&&Date.now()>fam.until)famStop(true)},30000);
-  }
-  await famPush(live.pts&&live.pts.at(-1)||null,live.speed||0,true);
+  famStart();
+  let p=live.on&&live.pts&&live.pts.at(-1)||null;
+  if(!p){try{p=await gpsOnce()}catch(e){}}
+  await famPush(p,live.speed||0,true);
   famBar();famSend();
-  if(live.on&&$('lvShare'))$('lvShare').classList.add('on');
+  setTimeout(()=>toast('📍 Para que tu familia te vea moverte, deja RideSafe IA abierta en pantalla',6000),2500);
 }
+/* v5.13.9 — arranque común (también al reabrir la app): GPS propio, latido y pantalla encendida */
+function famStart(){
+  famSave();
+  if(!live.on&&fam.watch==null){
+    fam.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;
+      if(c.accuracy>(fam.hasPos?150:1000))return;
+      fam.acc=Math.round(c.accuracy);famPush([c.latitude,c.longitude],c.speed!=null&&c.speed>=0?c.speed*3.6:0,false)},
+      e=>{if(e.code===1)toast('Activa el permiso de ubicación para compartirla')},{enableHighAccuracy:true,maximumAge:10000,timeout:60000});
+  }
+  clearInterval(fam.timer);fam.timer=setInterval(famBeat,30000);
+  famWake();
+  if($('lvShare')&&live.on)$('lvShare').classList.add('on');
+}
+async function famWake(){try{if(fam.on&&!live.on&&'wakeLock' in navigator&&document.visibilityState==='visible'&&!(fam.wl&&!fam.wl.released))fam.wl=await navigator.wakeLock.request('screen')}catch(e){}}
+/* Latido: aunque estés parado, la familia ve "actualizado ahora mismo" */
+async function famBeat(force){
+  if(!fam.on)return;
+  if(fam.until&&Date.now()>fam.until){famStop(true);return}
+  if(document.visibilityState!=='visible'&&!force)return;
+  if(!force&&Date.now()-fam.last<25000)return;
+  let p=live.on&&live.pts&&live.pts.at(-1)||null;
+  if(!p&&!live.on){try{p=await gpsOnce()}catch(e){}}
+  if(!p&&live.on&&meMarker){const l=meMarker.getLngLat();p=[l.lat,l.lng]}
+  famPush(p,live.on?live.speed:0,true);
+}
+function famSave(){try{if(fam.on)localStorage.setItem('rsFamBk',JSON.stringify({id:fam.id,started:fam.started,until:fam.until,fromLive:fam.fromLive,trail:fam.trail}));else localStorage.removeItem('rsFamBk')}catch(e){}}
+/* Si el móvil cerró la app mientras compartías, al abrirla se sigue compartiendo con el MISMO enlace */
+async function famResume(){
+  let bk=null;try{bk=JSON.parse(localStorage.getItem('rsFamBk')||'null')}catch(e){}
+  if(!bk||!bk.id||fam.on)return;
+  for(let k=0;k<30&&!(db&&uid);k++)await new Promise(r=>setTimeout(r,1000));
+  if(!db||!uid)return;
+  if(bk.until&&Date.now()>bk.until){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}
+  if(bk.fromLive){for(let k=0;k<60&&!live.on;k++)await new Promise(r=>setTimeout(r,2000));
+    if(!live.on){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}}
+  if(fam.on)return;
+  fam={on:true,id:bk.id,trail:Array.isArray(bk.trail)?bk.trail:[],last:0,started:bk.started||Date.now(),until:bk.until||0,fromLive:!!bk.fromLive};
+  famStart();famBar();famBeat(true);
+  toast('📍 Sigues compartiendo tu ubicación con la familia');
+}
+document.addEventListener('visibilitychange',()=>{if(fam.on&&document.visibilityState==='visible'){famWake();famBeat(true)}});
 function famSend(){
   const t=`📍 ${myName()} te comparte su ubicación en directo${live.on?' mientras rueda en bici 🚴':''}.\n\nToca el enlace para verla en el mapa (no hace falta instalar nada):\n${famUrl(fam.id)}`;
   if(navigator.share)navigator.share({title:'Mi ubicación en directo',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 async function famPush(p,speed,force){
   if(!fam.on||!db||!uid)return;const now=Date.now();
-  if(!force&&now-fam.last<10000&&!(p&&!fam.hasPos))return;if(p)fam.hasPos=true;
+  if(!force&&now-fam.last<10000&&!(p&&!fam.hasPos)){
+    if(p){fam.pend=[p,speed];if(!fam.pendT)fam.pendT=setTimeout(()=>{fam.pendT=null;const q=fam.pend;fam.pend=null;if(q)famPush(q[0],q[1],false)},10100-(now-fam.last))}
+    return}
+  if(p)fam.hasPos=true;
   if(p){const lp=fam.trail.at(-1);if(!lp||hav(lp,p)>0.02){fam.trail.push([+p[0].toFixed(5),+p[1].toFixed(5)]);if(fam.trail.length>300)fam.trail.shift()}}
   fam.last=now;
   const d={uid,name:myName(),t:now,active:true,started:fam.started,until:fam.until||null,speed:Math.round(speed||0),km:live.on?+live.km.toFixed(2):null,riding:!!live.on,trail:fam.trail.map(x=>({a:x[0],o:x[1]}))};
   if(p){d.lat=+p[0].toFixed(6);d.lng=+p[1].toFixed(6)}
-  return db.collection('share').doc(fam.id).set(d,{merge:true}).catch(e=>console.warn('fam',e));
+  if(fam.acc&&!live.on)d.acc=fam.acc;
+  if(fam.trail.length%5===0)famSave();
+  return db.collection('share').doc(fam.id).set(d,{merge:true}).then(()=>{fam.err=0}).catch(e=>{console.warn('fam',e);fam.err=(fam.err||0)+1;fam.last=0});
 }
 function pushShare(){if(fam.on&&live.on)famPush(live.pts.at(-1),live.speed,false)}
 function famStop(auto){
   if(!fam.on)return;
-  if(fam.watch!=null)navigator.geolocation.clearWatch(fam.watch);clearInterval(fam.timer);
+  if(fam.watch!=null)navigator.geolocation.clearWatch(fam.watch);clearInterval(fam.timer);try{fam.wl&&fam.wl.release()}catch(e){}
+  try{localStorage.removeItem('rsFamBk')}catch(e){}
   if(db&&fam.id)db.collection('share').doc(fam.id).set({uid,name:myName(),active:false,t:Date.now()}).catch(()=>{});
   fam={on:false};famBar();if($('lvShare'))$('lvShare').classList.remove('on');
   toast(auto?'⏱️ Se acabó el tiempo: ya no compartes tu ubicación':'Has dejado de compartir tu ubicación');
@@ -3081,7 +3127,7 @@ function famBar(){
   if(!fam.on){if(b)b.remove();return}
   if(!b){b=document.createElement('div');b.id='famBar';document.body.appendChild(b)}
   const left=fam.until?Math.max(0,Math.round((fam.until-Date.now())/60000)):null;
-  b.innerHTML=`<span>📍 Compartiendo${left!=null?` · ${left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'}`:''}</span><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
+  b.innerHTML=`<span>📍 Compartiendo${fam.err>2?' ⚠️ sin conexión':''}${left!=null?` · ${left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'}`:''}</span><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
 }
 setInterval(()=>{if(fam.on)famBar()},60000);
 function endShare(L){if(fam.on&&fam.fromLive)famStop()}
@@ -6117,7 +6163,7 @@ function onFix(pos){
   if(live.nav)navUpdate(p);
   if(live.rideId)pushPos(p,now);
   if(live.catchTo)catchCheck(p,now);
-  if(live.shareId)pushShare();
+  if(fam.on)pushShare();
   if(!lowPow()&&now-(live.rT||0)>800){live.rT=now;renderLive()}
 }
 
@@ -6502,6 +6548,7 @@ async function liveResume(bk,finish){
   if(finish)finishLive(true);else toast('▶ Seguimos grabando tu salida');
 }
 window.addEventListener('load',()=>setTimeout(liveRecoverCheck,2500));
+window.addEventListener('load',()=>setTimeout(famResume,4000));
 
 /* Botones que arrancan el modo en vivo */
 function toggleRec(){startLive({})}

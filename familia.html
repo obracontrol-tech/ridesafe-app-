@@ -80,9 +80,9 @@ else{
     const stale=Date.now()-(d.t||0)>5*60000;
     const st=$('st');
     if(!act){st.className='st end';st.textContent='✅ Ya no está compartiendo · última posición '+ago(d.t)}
-    else if(stale){st.className='st old';st.textContent='⚠️ Sin actualizar desde '+ago(d.t)+' (puede estar sin cobertura)'}
+    else if(stale){st.className='st old';st.textContent='⚠️ Última posición '+ago(d.t)+' · puede estar sin cobertura o con la app cerrada'}
     else{st.className='st ok';st.textContent='🟢 En directo · actualizado '+ago(d.t)}
-    $('sub').textContent=act?(d.riding?`🚴 En bici${d.km!=null?' · '+Number(d.km).toFixed(1).replace('.',',')+' km':''}${d.speed?' · '+Math.round(d.speed)+' km/h':''}`:'📍 Compartiendo su ubicación'):'Salida terminada';
+    $('sub').textContent=act?(d.riding?`🚴 En bici${d.km!=null?' · '+Number(d.km).toFixed(1).replace('.',',')+' km':''}${d.speed?' · '+Math.round(d.speed)+' km/h':''}`:'📍 Compartiendo su ubicación'+(d.acc>60?' · GPS poco preciso (±'+d.acc+' m)':'')):'Salida terminada';
     if(d.lat!=null&&d.lng!=null){
       last={lat:+d.lat,lng:+d.lng};
       $('gm').href='https://www.google.com/maps/dir/?api=1&destination='+last.lat+','+last.lng;
@@ -124,7 +124,7 @@ else{
     }
   }
   try{if(localStorage.getItem('rsSnd')==='1'){const u=()=>{window.sndOn();document.removeEventListener('pointerdown',u)};document.addEventListener('pointerdown',u)}}catch(e){}
-  let cur=null;setInterval(()=>{paint(cur);if(cur)showAlert(cur)},30000);
+  let cur=null;setInterval(()=>{paint(cur);if(cur)showAlert(cur)},20000);
   Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
     firebase.firestore().collection('share').doc(id).onSnapshot(s=>{
       if(!s.exists){fail('Este enlace ya no está activo','Puede que tu familiar haya dejado de compartir su ubicación.');return}
