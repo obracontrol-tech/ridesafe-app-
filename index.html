@@ -1091,7 +1091,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.10</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3041,18 +3041,27 @@ async function shareLive(){famShare()}
 async function famShare(){
   if(!ready())return;
   if(fam.on){famSend();return}
-  let hours=0;
-  if(!live.on){
-    const i=await askChoice('📍 Compartir mi ubicación con la familia',[['Durante 1 hora','','1'],['Durante 3 horas','','3'],['Durante 8 horas','','8']]);if(i<0)return;hours=[1,3,8][i];
-  }
+  const hours=await famAskTime('📍 ¿Cuánto tiempo quieres que te sigan?');if(hours==null)return;
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
-  fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on};
+  fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on&&!hours};
   famStart();
   let p=live.on&&live.pts&&live.pts.at(-1)||null;
   if(!p){try{p=await gpsOnce()}catch(e){}}
   await famPush(p,live.speed||0,true);
   famBar();famSend();
   setTimeout(()=>toast('📍 Para que tu familia te vea moverte, deja RideSafe IA abierta en pantalla',6000),2500);
+}
+/* v5.13.10 — el ciclista elige SIEMPRE cuánto tiempo (también en ruta) y lo puede cambiar */
+const FAM_H=[0.5,1,2,3,5,8,0];
+async function famAskTime(title){
+  const o=[['30 minutos'],['1 hora'],['2 horas'],['3 horas'],['5 horas'],['8 horas'],[live.on?'🚴 Hasta que termine la ruta':'✋ Hasta que lo pare yo']];
+  const i=await askChoice(title,o);if(i<0)return null;return FAM_H[i];
+}
+async function famTime(){
+  if(!fam.on)return;
+  const h=await famAskTime('⏱️ ¿Cuánto tiempo más quieres que te sigan?');if(h==null)return;
+  fam.until=h?Date.now()+h*3600000:0;fam.fromLive=!h&&live.on;famSave();famBar();famPush(null,live.speed||0,true);
+  toast(h?'⏱️ Te seguirán '+(h<1?'30 minutos':h+(h>1?' horas':' hora'))+' más':'Te seguirán hasta que '+(live.on?'termines la ruta':'lo pares'));
 }
 /* v5.13.9 — arranque común (también al reabrir la app): GPS propio, latido y pantalla encendida */
 function famStart(){
@@ -3127,10 +3136,10 @@ function famBar(){
   if(!fam.on){if(b)b.remove();return}
   if(!b){b=document.createElement('div');b.id='famBar';document.body.appendChild(b)}
   const left=fam.until?Math.max(0,Math.round((fam.until-Date.now())/60000)):null;
-  b.innerHTML=`<span>📍 Compartiendo${fam.err>2?' ⚠️ sin conexión':''}${left!=null?` · ${left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'}`:''}</span><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
+  b.innerHTML=`<span>📍 ${fam.err>2?'⚠️ sin conexión':left!=null?(left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'):'Compartiendo'}</span><button onclick="famTime()">⏱️ Tiempo</button><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
 }
 setInterval(()=>{if(fam.on)famBar()},60000);
-function endShare(L){if(fam.on&&fam.fromLive)famStop()}
+function endShare(L){if(fam.on&&fam.fromLive)famStop();else if(fam.on)setTimeout(()=>{if(fam.on&&!live.on)famStart()},500)}
 /* Vista para la familia: #vivo=ID */
 let viewer=null;
 function openViewer(id){
