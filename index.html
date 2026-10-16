@@ -1097,7 +1097,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1987,7 +1987,7 @@ function myPos(){return new Promise(res=>{
   const fb=()=>{if(meMarker){const l=meMarker.getLngLat();res({lat:l.lat,lng:l.lng})}else res(null)};
   if(!navigator.geolocation){fb();return}
   navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),fb,{enableHighAccuracy:true,timeout:12000,maximumAge:30000})})}
-function otherAppUrl(d){return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?`https://maps.apple.com/?daddr=${d.lat},${d.lng}&dirflg=d`:`geo:${d.lat},${d.lng}?q=${d.lat},${d.lng}`}
+function otherAppUrl(d){d={lat:+d.lat||0,lng:+d.lng||0};return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?`https://maps.apple.com/?daddr=${d.lat},${d.lng}&dirflg=d`:`geo:${d.lat},${d.lng}?q=${d.lat},${d.lng}`}
 async function guideKey(k,rideId){const g=GD[k];if(g)guideTo(g.name,g.ll,rideId)}
 async function guideTo(name,ll,rideId){
   if(live.on){liveGuide(name,ll);return}
@@ -2260,7 +2260,7 @@ const canManage=r=>!!r&&(isOwner(r)||isBossOf(r.group)||isGpResp(r));
 const roleOf=(g,k)=>k===g.byUid?'👑 Creador':(g.admins||{})[k]?'🛡️ Administrador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'';
 function askChoice(title,opts){return new Promise(res=>{
   const d=document.createElement('div');d.className='cfm';
-  d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${esc(i)}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${o[0]}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
+  d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${esc(i)}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${esc(o[0])}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
   const end=v=>{d.remove();res(v)};
   d.onclick=e=>{const b=e.target.closest('.cfm-opt');if(b)end(+b.dataset.i);else if(e.target===d||e.target.closest('.cfm-no'))end(-1)};
   document.body.appendChild(d);
@@ -3101,7 +3101,7 @@ async function famResume(){
   if(!bk||!bk.id||fam.on)return;
   for(let k=0;k<30&&!(db&&uid);k++)await new Promise(r=>setTimeout(r,1000));
   if(!db||!uid)return;
-  if(bk.until&&Date.now()>bk.until){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}
+  if((bk.until&&Date.now()>bk.until)||(!bk.until&&!bk.fromLive&&Date.now()-(bk.started||0)>12*3600000)){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}
   if(bk.fromLive){for(let k=0;k<60&&!live.on;k++)await new Promise(r=>setTimeout(r,2000));
     if(!live.on){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}}
   if(fam.on)return;
@@ -6273,13 +6273,13 @@ function pttListen(){
   ptt.unsub=db.collection('rides').doc(live.rideId).collection('voice').where('t','>',ptt.since).onSnapshot(s=>{
     s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.t-b.t).forEach(v=>{
       if(ptt.played[v.id])return;ptt.played[v.id]=1;
-      if(v.uid===uid||Date.now()-v.t>180000||!v.audio)return;
+      if(v.uid===uid||Date.now()-v.t>180000||!v.audio||!/^audio\/[a-z0-9.+;=, -]{1,50}$/i.test(String(v.mime||'')))return;
       ptt.queue.push(v);
     });
     pttPlayNext();
   },e=>console.warn('walkie',e));
 }
-function pttUnlisten(){if(ptt.unsub){ptt.unsub();ptt.unsub=null}ptt.queue=[];pttKill();$('pttMsg')&&$('pttMsg').classList.remove('show')}
+function pttUnlisten(rid){if(ptt.unsub){ptt.unsub();ptt.unsub=null}if(rid&&db&&uid)db.collection('rides').doc(rid).collection('voice').where('uid','==',uid).get().then(q=>q.docs.forEach(d=>d.ref.delete().catch(()=>{}))).catch(()=>{});ptt.queue=[];pttKill();$('pttMsg')&&$('pttMsg').classList.remove('show')}
 function pttPlayNext(){
   if(ptt.playing||!ptt.queue.length)return;
   const v=ptt.queue.shift();const name=String(v.name||'Un ciclista').split(' ')[0];
@@ -6415,7 +6415,7 @@ async function finishLive(save){
   (L.camMk||[]).forEach(m=>m.remove());
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
-  if(L.unsub)L.unsub();pttUnlisten();
+  if(L.unsub)L.unsub();pttUnlisten(L.rideId);
   endShare(L);
   Object.values(L.mMarkers||{}).forEach(m=>m.remove());
   if(L.rideId&&db&&uid)db.collection('rides').doc(L.rideId).collection('live').doc(uid).delete().catch(()=>{});
