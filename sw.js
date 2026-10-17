@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5143';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5144';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -78,9 +78,11 @@ self.addEventListener('push', e => {
   let d = {};
   try { const j = e.data ? e.data.json() : {}; d = j.data || j.notification || j; } catch (err) { d = { title: 'RideSafe IA', body: e.data ? e.data.text() : '' }; }
   const urgent = d.urgent === '1';
-  const title = d.title || 'RideSafe IA';
+  // v5.14.4: avisos sin emojis (más limpios y algunos relojes no los muestran)
+  const noEmo = s => String(s || '').replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '').replace(/\s{2,}/g, ' ').trim();
+  const title = noEmo(d.title) || 'RideSafe IA';
   e.waitUntil(self.registration.showNotification(title, {
-    body: d.body || '',
+    body: noEmo(d.body),
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-192.png',
     // v5.13.6: cada aviso urgente es una notificación NUEVA (no actualiza la anterior). Muchos relojes
