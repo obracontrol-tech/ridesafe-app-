@@ -1097,7 +1097,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2627,10 +2627,11 @@ async function joinGroup(code){
   if(code.length!==6){toast('El código tiene 6 caracteres');return}
   if(myGroup&&myGroup.id===code){openGroup();return}
   try{
-    let s=await db.collection('groups').doc(code).get();
+    // v5.14.3 — siempre al servidor (no a la copia guardada en el móvil)
+    let s=await db.collection('groups').doc(code).get({source:'server'}).catch(()=>db.collection('groups').doc(code).get());
     // v5.14.2 — letras que se confunden al copiar el código (8/B, 5/S, 2/Z, 0/O/D, 1/I/L): probamos las variantes
-    if(!s.exists){toast('Buscando el club…');const alt=codeVariants(code);const rs=await Promise.all(alt.map(c=>db.collection('groups').doc(c).get().catch(()=>null)));const k=rs.findIndex(t=>t&&t.exists);if(k>=0){s=rs[k];code=alt[k]}}
-    if(!s.exists){toast('No existe ningún club con ese código. Revisa que el 8 no sea una B, o pide el enlace de invitación por WhatsApp');return}
+    if(!s.exists){toast('Buscando el club…');const alt=codeVariants(code);const rs=await Promise.all(alt.map(c=>db.collection('groups').doc(c).get({source:'server'}).catch(()=>null)));const k=rs.findIndex(t=>t&&t.exists);if(k>=0){s=rs[k];code=alt[k]}}
+    if(!s.exists){alert('No encuentro ningún club con el código «'+code+'».\n\nRevisa letra a letra que es el mismo código que te han pasado.\n\nMás fácil: pide a tu club el ENLACE de invitación por WhatsApp y tócalo, o búscalo en Comunidad → «Clubes cerca».');return}
     if(myGroup&&myGroup.id===code){openGroup();return}
     const g=s.data();
     if(myGroup&&!confirm(`Ya estás en "${myGroup.name}". ¿Cambiar al club "${g.name}"? Dejarás de ver los datos del club actual.`))return;
