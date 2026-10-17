@@ -1097,7 +1097,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.14.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2197,7 +2197,7 @@ function renderStats(){
    FASE 5 — MI GRUPO · ACTIVIDAD DE LA COMUNIDAD · LOGROS · RANKING
    =================================================================== */
 let myGroup=null,groupUnsub=null,feed=[],feedUnsub=null;
-const CODE_CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_CH='ACDEFGHJKLMNPQRTUVWXY23456789';   // v5.14.2: sin B/S/Z (se confunden con 8/5/2)
 const newCode=()=>Array.from({length:6},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
 const gNames=g=>Object.values(g?.members||{});
 
@@ -2617,13 +2617,21 @@ async function createGroup(){
   }catch(e){fbErr(e,'crear el grupo')}
 }
 function joinGroupAsk(){const c=(prompt('Escribe el código de tu club (6 letras/números)','')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c)joinGroup(c)}
+function codeVariants(code){
+  const SW={'8':['B'],'B':['8'],'5':['S'],'S':['5'],'2':['Z'],'Z':['2'],'0':['O','D','Q'],'O':['0','D','Q'],'D':['0','O'],'Q':['0','O'],'1':['I','L','7'],'I':['1','L'],'L':['1','I'],'6':['G'],'G':['6'],'U':['V'],'V':['U']};
+  let out=[''];for(const ch of code){const opts=[ch,...(SW[ch]||[])];const nx=[];for(const o of out)for(const c of opts)nx.push(o+c);out=nx.slice(0,64)}
+  return out.filter(c=>c!==code).slice(0,40);
+}
 async function joinGroup(code){
   if(!ready())return;
   if(code.length!==6){toast('El código tiene 6 caracteres');return}
   if(myGroup&&myGroup.id===code){openGroup();return}
   try{
-    const s=await db.collection('groups').doc(code).get();
-    if(!s.exists){toast('No existe ningún club con ese código');return}
+    let s=await db.collection('groups').doc(code).get();
+    // v5.14.2 — letras que se confunden al copiar el código (8/B, 5/S, 2/Z, 0/O/D, 1/I/L): probamos las variantes
+    if(!s.exists){toast('Buscando el club…');const alt=codeVariants(code);const rs=await Promise.all(alt.map(c=>db.collection('groups').doc(c).get().catch(()=>null)));const k=rs.findIndex(t=>t&&t.exists);if(k>=0){s=rs[k];code=alt[k]}}
+    if(!s.exists){toast('No existe ningún club con ese código. Revisa que el 8 no sea una B, o pide el enlace de invitación por WhatsApp');return}
+    if(myGroup&&myGroup.id===code){openGroup();return}
     const g=s.data();
     if(myGroup&&!confirm(`Ya estás en "${myGroup.name}". ¿Cambiar al club "${g.name}"? Dejarás de ver los datos del club actual.`))return;
     if(myGroup&&myGroup.id!==code)await leaveGroup(true);
