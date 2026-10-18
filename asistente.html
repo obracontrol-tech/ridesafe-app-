@@ -58,7 +58,10 @@ main{flex:1;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:co
 .gem div{flex:1;font-size:13px;color:var(--txt2);line-height:1.3}
 .gem b{color:var(--txt);font-size:14px}
 .gem i{font-style:normal;font-size:22px}
-.gem.mini{padding:7px 12px}.gem.mini div{font-size:0}.gem.mini div b{font-size:13.5px}.gem.mini div br{display:none}
+.gem.mini{padding:6px 12px;border-radius:12px}.gem.mini div{font-size:0}.gem.mini div b{font-size:0}.gem.mini div b::after{content:'Gemini Live (voz y cámara)';font-size:13px}.gem.mini i{font-size:16px}
+#loc.mini{padding:6px 8px 6px 12px;border-radius:12px}#loc.mini .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#loc.mini .t br{display:none}#loc.mini .t b{font-size:13.5px;margin-right:6px}#loc.mini button{padding:6px 10px;font-size:12px}
+#near.mini summary{padding:0 2px;font-size:12.5px}
+header.mini{padding-bottom:4px}header.mini .back,header.mini .cfg{width:36px;height:36px;font-size:16px}header.mini h1{font-size:18px}header.mini h1 small{display:none}
 footer{padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
 .opts{display:flex;gap:8px;margin-bottom:8px}
 .tog{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--txt2);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px}
@@ -169,7 +172,7 @@ async function getLoc(){
     ctx.tiempo=`Ahora ${Math.round(c.temperature_2m)} °C (sensación ${Math.round(c.apparent_temperature)} °C), ${WMO[c.weather_code]||'—'}, viento ${Math.round(c.wind_speed_10m)} km/h con rachas de ${Math.round(c.wind_gusts_10m)} km/h${c.precipitation>0?', lloviendo':''}. Hoy: máxima ${Math.round(d.temperature_2m_max?.[0])} °C, mínima ${Math.round(d.temperature_2m_min?.[0])} °C, probabilidad de lluvia ${d.precipitation_probability_max?.[0]??'?'} %, puesta de sol a las ${(d.sunset?.[0]||'').slice(11,16)}.`}
   else ctx.tiempo='';
   ctx.sitios=o.status==='fulfilled'?o.value:[];
-  $('locT').innerHTML='';const b=document.createElement('b');b.textContent=ctx.lugar;$('locT').append(b,document.createElement('br'),document.createTextNode(ctx.tiempo?ctx.tiempo.split('.')[0]:'Sin datos del tiempo ahora'));
+  $('locT').innerHTML='';const b=document.createElement('b');b.textContent=ctx.lugar;$('locT').append(b,document.createElement('br'),document.createTextNode(ctx.tiempo?ctx.tiempo.split('.')[0].replace(/ \(sensación[^)]*\)/,'').replace(/ con rachas de [^,]*/,''):'Sin datos del tiempo ahora'));
   renderNear();
 }
 function pick(ll,out){
@@ -240,7 +243,7 @@ function workerUrl(){return st.get('url','')||WORKER_DEFAULT}
 function usoHoy(){const d=new Date().toISOString().slice(0,10);const u=st.get('uso',{d,n:0});return u.d===d?u:{d,n:0}}
 async function ask(text){
   text=String(text||'').trim();if(!text||busy)return;
-  $('hello')&&$('hello').remove();$('gem').classList.add('mini');
+  $('hello')&&$('hello').remove();['gem','loc','near'].forEach(i=>$(i).classList.add('mini'));document.querySelector('header').classList.add('mini');
   stopSpeak();add('me',text);$('q').value='';autosize();
   const u=usoHoy();if(u.n>=LIMITE_DIA){note(`Has llegado al límite de ${LIMITE_DIA} preguntas de hoy (versión beta). Mañana más.`);return}
   if(EMERG.test(text))showSOS();
