@@ -127,7 +127,7 @@ textarea:focus{border-color:var(--lime)}
 
 <script>
 'use strict';
-const WORKER_DEFAULT='https://ridesafe-asistente.pedrosaborrego.workers.dev';
+const WORKER_DEFAULT='https://dawn-bush-f4aa.pedrosaborrego.workers.dev';
 const LIMITE_DIA=40; // preguntas por móvil y día (beta)
 const $=id=>document.getElementById(id);
 const st={get(k,d){try{const v=localStorage.getItem('as_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('as_'+k,JSON.stringify(v))}catch(e){}}};
@@ -172,25 +172,43 @@ async function getLoc(){
   $('locT').innerHTML='';const b=document.createElement('b');b.textContent=ctx.lugar;$('locT').append(b,document.createElement('br'),document.createTextNode(ctx.tiempo?ctx.tiempo.split('.')[0]:'Sin datos del tiempo ahora'));
   renderNear();
 }
+function pick(ll,out){
+  out.sort((a,b)=>a.m-b.m);const seen=new Set(),per={},sel=[];
+  for(const s of out){const key=s.tipo+'|'+(s.nombre||Math.round(s.lat*1e4)+','+Math.round(s.lng*1e4));if(seen.has(key))continue;seen.add(key);
+    per[s.tipo]=(per[s.tipo]||0)+1;if(per[s.tipo]<=6)sel.push(s);if(sel.length>=35)break}
+  return sel}
 async function overpass(ll){
-  const A=`(around:2500,${ll.lat.toFixed(5)},${ll.lng.toFixed(5)})`;
-  const q=`[out:json][timeout:15];(nwr${A}[amenity~"^(restaurant|cafe|bar|pub|fast_food|drinking_water|pharmacy|hospital|clinic|doctors|fuel|toilets|bicycle_repair_station)$"];nwr${A}[shop=bicycle];nwr${A}[tourism~"^(viewpoint|attraction|museum|picnic_site)$"];);out center tags 150;`;
-  for(const u of['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter']){
-    try{const j=await getJSON(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}},18000);
-      const out=[];for(const e of j.elements||[]){const t=e.tags||{};const p={lat:e.lat??e.center?.lat,lng:e.lon??e.center?.lon};if(p.lat==null)continue;
-        const k=t.shop==='bicycle'?'bicycle':(t.amenity||t.tourism);const tipo=TIPOS[k];if(!tipo)continue;
-        if(!t.name&&!['drinking_water','toilets','viewpoint','bicycle_repair_station','picnic_site'].includes(k))continue;
-        out.push({tipo,nombre:t.name||'',m:dist(ll,p),lat:p.lat,lng:p.lng,horario:t.opening_hours||'',cocina:t.cuisine||''})}
-      out.sort((a,b)=>a.m-b.m);
-      const per={},sel=[];for(const s of out){per[s.tipo]=(per[s.tipo]||0)+1;if(per[s.tipo]<=6)sel.push(s);if(sel.length>=35)break}
-      return sel}catch(e){}
+  const A=`(around:1800,${ll.lat.toFixed(5)},${ll.lng.toFixed(5)})`;
+  const q=`[out:json][timeout:20];(nwr${A}[amenity~"^(restaurant|cafe|bar|pub|fast_food|drinking_water|pharmacy|hospital|clinic|fuel|bicycle_repair_station)$"];nwr${A}[shop=bicycle];nwr${A}[tourism~"^(viewpoint|attraction|museum)$"];);out center tags 120;`;
+  const one=async u=>{const j=await getJSON(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}},15000);
+    if(!j||!Array.isArray(j.elements))throw new Error('vacío');
+    const out=[];for(const e of j.elements){const t=e.tags||{};const p={lat:e.lat??e.center?.lat,lng:e.lon??e.center?.lon};if(p.lat==null)continue;
+      const k=t.shop==='bicycle'?'bicycle':(t.amenity||t.tourism);const tipo=TIPOS[k];if(!tipo)continue;
+      if(!t.name&&!['drinking_water','viewpoint','bicycle_repair_station'].includes(k))continue;
+      out.push({tipo,nombre:t.name||'',m:dist(ll,p),lat:p.lat,lng:p.lng,horario:t.opening_hours||'',cocina:t.cuisine||''})}
+    return pick(ll,out)};
+  // v1.1: dos servidores a la vez; gana el primero que responda
+  const grupos=[['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'],['https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']];
+  for(const g of grupos){try{const r=await Promise.any(g.map(one));if(r.length)return r}catch(e){}}
+  // Respaldo: buscador de OpenStreetMap (Nominatim), solo comer/beber y talleres
+  try{return await nominatimNear(ll)}catch(e){return []}
+}
+async function nominatimNear(ll){
+  const d=0.03,vb=[ll.lng-d,ll.lat+d,ll.lng+d,ll.lat-d].map(x=>x.toFixed(4)).join(',');
+  const out=[];
+  for(const [q,k] of [['restaurant','restaurant'],['cafe','cafe'],['bar','bar'],['bicycle shop','bicycle']]){
+    try{const j=await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&amenity=${encodeURIComponent(q)}&viewbox=${vb}&bounded=1&limit=12&extratags=1&accept-language=es`,null,10000);
+      for(const e of j||[]){const p={lat:+e.lat,lng:+e.lon};const nm=e.name||(e.display_name||'').split(',')[0];if(!nm)continue;
+        out.push({tipo:TIPOS[k],nombre:nm,m:dist(ll,p),lat:p.lat,lng:p.lng,horario:(e.extratags&&e.extratags.opening_hours)||'',cocina:(e.extratags&&e.extratags.cuisine)||''})}}catch(e){}
+    await new Promise(r=>setTimeout(r,1100)); // norma de uso de Nominatim: 1 petición por segundo
   }
-  return [];
+  return pick(ll,out);
 }
 function renderNear(){
   const L=$('nearL');L.innerHTML='';
-  if(!ctx.sitios.length){$('near').style.display='none';return}
   $('near').style.display='block';
+  if(!ctx.sitios.length){$('near').querySelector('summary').textContent='Sitios cerca: no he podido cargarlos (toca Actualizar)';return}
+  $('near').querySelector('summary').textContent=`Sitios cerca (${ctx.sitios.length}) · datos de OpenStreetMap`;
   for(const s of ctx.sitios.slice(0,25)){const li=document.createElement('li');const sp=document.createElement('span');sp.textContent=(s.nombre?s.nombre+' · ':'')+s.tipo+' ';const sm=document.createElement('small');sm.textContent=km(s.m);sp.appendChild(sm);
     const a=document.createElement('a');a.href=`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;a.target='_blank';a.rel='noopener';a.textContent='Ver en Maps';li.append(sp,a);L.appendChild(li)}
 }
@@ -226,6 +244,9 @@ async function ask(text){
   stopSpeak();add('me',text);$('q').value='';autosize();
   const u=usoHoy();if(u.n>=LIMITE_DIA){note(`Has llegado al límite de ${LIMITE_DIA} preguntas de hoy (versión beta). Mañana más.`);return}
   if(EMERG.test(text))showSOS();
+  if(ctx.ll&&!ctx.sitios.length&&/(comer|como|cenar|desayun|almorz|restaurant|bar|caf[eé]|tapa|bocadillo|fuente|agua|taller|tienda de bici|cerca|visitar|ver )/i.test(text)){
+    $('locT').lastChild&&($('near').querySelector('summary').textContent='Buscando sitios cercanos…');
+    ctx.sitios=await overpass(ctx.ll);renderNear()}
   hist.push({role:'user',content:text});
   busy=true;$('send').disabled=true;
   const w=document.createElement('div');w.className='msg ai dots';w.innerHTML='<span></span><span></span><span></span>';$('chat').appendChild(w);w.scrollIntoView({behavior:'smooth',block:'end'});
