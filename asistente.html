@@ -46,6 +46,10 @@ main{flex:1;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:co
 .ai{align-self:flex-start;background:var(--card);border-bottom-left-radius:6px}
 .ai .act{display:flex;gap:6px;margin-top:8px}
 .ai .act button{font-size:12.5px;color:var(--txt2);background:var(--card2);padding:5px 10px;border-radius:10px;font-weight:600}
+.lee{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px;color:var(--txt2)}
+.lee a{display:flex;align-items:center;gap:8px;margin-top:6px;background:var(--card2);border-radius:12px;padding:8px 10px;text-decoration:none;color:var(--txt);font-size:13.5px;font-weight:600}
+.lee a small{display:block;color:var(--txt2);font-weight:500;font-size:11.5px}
+.srcs{margin-top:14px}.srcs p{margin:0 0 6px;font-size:12.5px}
 .err{align-self:center;color:#FCA5A5;font-size:13.5px;text-align:center;max-width:90%}
 .dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--txt2);animation:b 1s infinite}
 .dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
@@ -102,6 +106,7 @@ textarea:focus{border-color:var(--lime)}
     <h2>Hola, ¿en qué te ayudo?</h2>
     <p>Pregunta por escrito o con el micrófono: ciclismo, dónde comer o parar, qué ver cerca o dudas generales de salud.</p>
     <div class="chips" id="chips"></div>
+    <div class="srcs lee" id="srcs"><p>📚 Para saber más, webs de ciclismo recomendadas:</p></div>
   </div>
 </main>
 
@@ -141,6 +146,27 @@ let busy=false,tts=st.get('tts',true),conv=st.get('conv',false);
 /* ---------- Preguntas rápidas ---------- */
 const CHIPS=[['🍽️ ¿Dónde como cerca?','¿Dónde puedo comer o tomar algo cerca de aquí?',true],['💧 Fuente de agua','¿Hay alguna fuente de agua cerca?',true],['🔧 Taller de bicis','¿Hay algún taller o tienda de bicis cerca?',true],['👕 ¿Qué ropa me pongo?','Con el tiempo que hace hoy aquí, ¿qué ropa me pongo para salir en bici?',true],['🛞 Arreglar un pinchazo','Explícame paso a paso cómo arreglar un pinchazo en ruta',false],['🦵 Tengo calambres','Me han dado calambres en las piernas en ruta, ¿qué hago?',false]];
 CHIPS.forEach(([l,q,needLoc])=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.onclick=async()=>{if(needLoc&&!ctx.ll)await getLoc();ask(q)};$('chips').appendChild(b)});
+
+
+/* ---------- v1.3: Lecturas recomendadas (enlaces a webs especializadas; no se copia su contenido) ---------- */
+const FUENTES={
+  tmb:{n:'TodoMountainBike · Consejos',d:'Seguridad en el monte, MTB, mantenimiento',u:'https://www.todomountainbike.net/categoria/consejos'},
+  yoc:{n:'YoCiclismo · Entrenamiento',d:'Planes y consejos para entrenar',u:'https://www.yociclismo.com/entrenamiento-ciclista/'},
+  cofE:{n:'Cofidis Likes Ciclismo · Entrenamiento',d:'Entrenar, recuperar y alimentación',u:'https://cofidislikesciclismo.com/consejos/entrenamiento/'},
+  cofM:{n:'Cofidis Likes Ciclismo · Mantenimiento',d:'Cuidar y ajustar tu bici',u:'https://cofidislikesciclismo.com/consejos/mantenimiento/'},
+  bp:{n:'Buen Pedaleo · Trucos de ciclismo',d:'Pedalada, cadencia, cambios y molestias',u:'https://buenpedaleo.com/trucos-ciclista/trucos-de-ciclismo-para-ciclistas/'}
+};
+const TEMAS=[
+  [/(entren|series|forma f[ií]sica|fuerza|resistencia|potencia|vatios|rodillo|plan de|mejorar|subir mejor|puertos?|pulsaciones|ritmo)/i,['yoc','cofE']],
+  [/(cadena|freno|pastilla|cambio|desviador|cassette|pi[ññ]|limpi|engras|lubric|pinchaz|c[aá]mara|cubierta|neum[aá]tic|presi[oó]n|rueda|tubeless|mantenim|ajust)/i,['cofM','bp']],
+  [/(cadencia|pedalad|pedalear|t[eé]cnica|marchas|desarrollo|gafas|empa[ñn]|manos dormid|hormigueo|dolor de (pies|manos|rodilla|espalda)|sill[ií]n|truco)/i,['bp','yoc']],
+  [/(comer en ruta|alimentaci|nutrici|hidrat|beber|gel|barrita|recuper|calambre|pájara|pajara)/i,['cofE','yoc']],
+  [/(mtb|monta[ñn]a|sendero|senda|pista|barro|tormenta|rayo|granizo|perro|noche|r[ií]o|vadear|herido|cobertura|perdid|se[ñn]ales|gr\b|pr\b|e-?bike|el[eé]ctrica)/i,['tmb','bp']]
+];
+function fuentesPara(t){const out=[];for(const [re,ks] of TEMAS){if(re.test(t))for(const k of ks)if(!out.includes(k))out.push(k);if(out.length>=2)break}return out.slice(0,2)}
+function linkFuente(k){const f=FUENTES[k];const a=document.createElement('a');a.href=f.u;a.target='_blank';a.rel='noopener';
+  const sp=document.createElement('span');sp.textContent='📖';const dv=document.createElement('div');dv.textContent=f.n;const sm=document.createElement('small');sm.textContent=f.d;dv.appendChild(sm);a.append(sp,dv);return a}
+Object.keys(FUENTES).forEach(k=>{if(k!=='cofM')$('srcs').appendChild(linkFuente(k))});
 
 /* ---------- Utilidades ---------- */
 function add(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;$('chat').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d}
@@ -270,7 +296,9 @@ async function ask(text){
   const act=document.createElement('div');act.className='act';
   const b1=document.createElement('button');b1.textContent='🔊 Escuchar';b1.onclick=()=>speak(out);
   const b2=document.createElement('button');b2.textContent='📋 Copiar';b2.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(out).then(()=>{b2.textContent='✓ Copiado'}).catch(()=>{})};
-  act.append(b1,b2);d.appendChild(act);d.scrollIntoView({behavior:'smooth',block:'end'});
+  act.append(b1,b2);d.appendChild(act);
+  const fs=fuentesPara(text);if(fs.length){const lee=document.createElement('div');lee.className='lee';lee.textContent='Para leer más:';fs.forEach(k=>lee.appendChild(linkFuente(k)));d.appendChild(lee)}
+  d.scrollIntoView({behavior:'smooth',block:'end'});
   if(tts)speak(out,()=>{if(conv)listen()});else if(conv)listen();
 }
 
