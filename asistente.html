@@ -13,8 +13,8 @@
 <style>
 :root{--bg:#0E1A2B;--card:#16263D;--card2:#1C2F4A;--line:#2A3B55;--lime:#C8DC3C;--on-lime:#0E1A2B;--txt:#fff;--txt2:#9AA8BC;--red:#EF4444;--green:#22C55E;--r:20px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-body{display:flex;flex-direction:column;max-width:640px;margin:0 auto}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+body{max-width:640px;margin:0 auto}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 a{color:var(--lime)}
 header{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;padding-top:max(14px,env(safe-area-inset-top))}
@@ -23,7 +23,7 @@ header h1{font-size:21px;margin:0;font-weight:800;flex:1;line-height:1.1}
 header h1 small{display:block;font-size:12px;font-weight:600;color:var(--txt2)}
 .beta{background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:4px 9px;border-radius:99px;letter-spacing:.5px}
 .cfg{width:42px;height:42px;border-radius:50%;background:var(--card);font-size:18px;flex:none}
-#loc{margin:0 16px 8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+#loc{margin:0 16px 8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}#loc .t{min-width:150px}
 #loc .t{flex:1;font-size:13.5px;color:var(--txt2);line-height:1.35}
 #loc .t b{color:var(--txt);font-size:14.5px}
 #loc button{background:var(--card2);border:1px solid var(--line);padding:9px 12px;border-radius:12px;font-weight:700;font-size:13px;white-space:nowrap}
@@ -35,7 +35,7 @@ header h1 small{display:block;font-size:12px;font-weight:600;color:var(--txt2)}
 #near li span{flex:1}
 #near li small{color:var(--txt2)}
 #near li a{font-size:12px;font-weight:700;text-decoration:none;background:var(--card2);padding:6px 9px;border-radius:10px;white-space:nowrap}
-main{flex:1;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px}
+main{padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px;min-height:40vh}
 .hello{background:var(--card);border-radius:var(--r);padding:16px}
 .hello h2{margin:0 0 6px;font-size:18px}
 .hello p{margin:0 0 12px;color:var(--txt2);font-size:14px;line-height:1.45}
@@ -66,7 +66,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:co
 #loc.mini{padding:6px 8px 6px 12px;border-radius:12px}#loc.mini .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#loc.mini .t br{display:none}#loc.mini .t b{font-size:13.5px;margin-right:6px}#loc.mini button{padding:6px 10px;font-size:12px}
 #near.mini summary{padding:0 2px;font-size:12.5px}
 header.mini{padding-bottom:4px}header.mini .back,header.mini .cfg{width:36px;height:36px;font-size:16px}header.mini h1{font-size:18px}header.mini h1 small{display:none}
-footer{padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
+footer{position:sticky;bottom:0;z-index:5;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
 .opts{display:flex;gap:8px;margin-bottom:8px}
 .tog{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--txt2);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px}
 .tog.on{color:var(--on-lime);background:var(--lime);border-color:var(--lime)}
@@ -88,6 +88,7 @@ textarea:focus{border-color:var(--lime)}
 #sheet .row{display:flex;gap:8px;margin-top:12px}
 #sheet .row button{flex:1;padding:12px;border-radius:14px;font-weight:700;background:var(--card2)}
 #sheet .row button.ok{background:var(--lime);color:var(--on-lime)}
+@media (max-height:760px){header h1 small{display:none}.hello p{font-size:13.5px}}
 </style>
 </head>
 <body>
@@ -106,11 +107,11 @@ textarea:focus{border-color:var(--lime)}
     <h2>Hola, ¿en qué te ayudo?</h2>
     <p>Pregunta por escrito o con el micrófono: ciclismo, dónde comer o parar, qué ver cerca o dudas generales de salud.</p>
     <div class="chips" id="chips"></div>
-    <div class="srcs lee" id="srcs"><p>📚 Para saber más, webs de ciclismo recomendadas:</p></div>
+    <details class="srcs lee" id="srcs"><summary style="cursor:pointer;font-weight:700">📚 Para saber más: webs de ciclismo recomendadas</summary></details>
   </div>
 </main>
 
-<a class="gem" id="gem" href="https://gemini.google.com/app" target="_blank" rel="noopener"><i>✨</i><div><b>¿Quieres hablar en directo o enseñar algo con la cámara?</b><br>Abre Gemini Live (app de Google, fuera de RideSafe)</div><span>›</span></a>
+<a class="gem mini" id="gem" href="https://gemini.google.com/app" target="_blank" rel="noopener"><i>✨</i><div><b>¿Quieres hablar en directo o enseñar algo con la cámara?</b><br>Abre Gemini Live (app de Google, fuera de RideSafe)</div><span>›</span></a>
 
 <footer>
   <div class="opts">
