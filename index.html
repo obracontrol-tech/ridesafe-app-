@@ -500,6 +500,12 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgroup{border-radius:18px!important;padding:8px 12px!important;font-size:13px!important;max-height:84px;overflow-y:auto}
 .lvgroup .gm{color:#fff}
 .lvalert{margin-bottom:0!important;gap:6px!important}
+.lvalert .a-ptt{grid-column:1/-1;background:rgba(200,220,60,.9)!important;color:#0E1A2B!important;border-color:#C8DC3C!important;font-size:15.5px!important;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.lvalert .a-ptt.talk{background:#DC2626!important;color:#fff!important;border-color:#fff!important;animation:pttp 1s infinite}
+.lvalert .a-ptt.busy{opacity:.7}
+@keyframes pttp{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8)}50%{box-shadow:0 0 0 10px rgba(220,38,38,0)}}
+#pttMsg{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9500;background:rgba(14,26,43,.94);color:#fff;border:2px solid #C8DC3C;border-radius:22px;padding:10px 16px;font-weight:800;font-size:16px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:92vw}
+#pttMsg.show{display:flex}#pttMsg span{white-space:nowrap}#pttMsg button{white-space:nowrap;background:#C8DC3C;color:#0E1A2B;border:0;border-radius:14px;padding:6px 12px;font-weight:900;font-size:14px}
 .lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
 .lvalert .a-more{border-color:rgba(167,139,250,.9)!important}.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
 .lvbtns{gap:6px!important}
@@ -908,12 +914,12 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
     <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
-    <div class="lvgrid"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
+    <div class="lvgrid" onclick="sumSay()" title="Toca para oír el resumen" style="cursor:pointer"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
     </div>
     <button class="lvwind" id="lvWind" style="display:none" onclick="lwSay(true)" aria-label="Viento: toca para oírlo"></button>
     <div class="lvgrid nav" id="lvNavRow" style="display:none"><div><b class="num" id="lvLeft">—</b><span>km restantes</span></div><div><b class="num" id="lvEta">—</b><span>llegada</span></div><div><b class="num" id="lvUp">0</b><span>m subidos</span></div></div>
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
-    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button></div>
+    <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button><button class="a-ptt" id="lvPtt" aria-label="Walkie: mantén pulsado para hablar al grupo">🎙️ Mantén pulsado y habla al grupo</button></div>
     <div class="lvmus" id="lvMus" style="display:none"></div>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvmoon" onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
@@ -971,6 +977,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="btn btn-lime" onclick="openCreate()"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4m-4 7v5m-2.5-2.5h5"/></svg>Crear salida</button>
     <button class="btn btn-line" onclick="openAllRides()"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Ver salidas</button>
   </div>
+  <!-- v5.15: Asistente RideSafe (beta) -->
+  <a class="li" href="asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente RideSafe <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
@@ -1075,6 +1083,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
   <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -1091,7 +1100,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.13.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.16</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1417,7 +1426,7 @@ const store={
   set(k,v){try{localStorage.setItem('velogo_'+k,JSON.stringify(v))}catch(e){}}
 };
 let toastT;
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function toast(m,ms){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),ms||2600)}
 function cleanData(v,depth){depth=depth||0;if(v==null)return v;if(depth>30)return null;
   if(typeof v==='string')return v.startsWith('data:image/')?(SAFE_IMG_RE.test(v)?v:''):v.replace(/[<>]/g,'').replace(/"/g,'”');
   if(Array.isArray(v))return v.map(x=>cleanData(x,depth+1));
@@ -1981,7 +1990,7 @@ function myPos(){return new Promise(res=>{
   const fb=()=>{if(meMarker){const l=meMarker.getLngLat();res({lat:l.lat,lng:l.lng})}else res(null)};
   if(!navigator.geolocation){fb();return}
   navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),fb,{enableHighAccuracy:true,timeout:12000,maximumAge:30000})})}
-function otherAppUrl(d){return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?`https://maps.apple.com/?daddr=${d.lat},${d.lng}&dirflg=d`:`geo:${d.lat},${d.lng}?q=${d.lat},${d.lng}`}
+function otherAppUrl(d){d={lat:+d.lat||0,lng:+d.lng||0};return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?`https://maps.apple.com/?daddr=${d.lat},${d.lng}&dirflg=d`:`geo:${d.lat},${d.lng}?q=${d.lat},${d.lng}`}
 async function guideKey(k,rideId){const g=GD[k];if(g)guideTo(g.name,g.ll,rideId)}
 async function guideTo(name,ll,rideId){
   if(live.on){liveGuide(name,ll);return}
@@ -2191,7 +2200,7 @@ function renderStats(){
    FASE 5 — MI GRUPO · ACTIVIDAD DE LA COMUNIDAD · LOGROS · RANKING
    =================================================================== */
 let myGroup=null,groupUnsub=null,feed=[],feedUnsub=null;
-const CODE_CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_CH='ACDEFGHJKLMNPQRTUVWXY23456789';   // v5.14.2: sin B/S/Z (se confunden con 8/5/2)
 const newCode=()=>Array.from({length:6},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
 const gNames=g=>Object.values(g?.members||{});
 
@@ -2254,7 +2263,7 @@ const canManage=r=>!!r&&(isOwner(r)||isBossOf(r.group)||isGpResp(r));
 const roleOf=(g,k)=>k===g.byUid?'👑 Creador':(g.admins||{})[k]?'🛡️ Administrador':(g.captains||{})[k]?'⭐ Jefe de pelotón':'';
 function askChoice(title,opts){return new Promise(res=>{
   const d=document.createElement('div');d.className='cfm';
-  d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${esc(i)}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${o[0]}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
+  d.innerHTML=`<div class="cfm-b"><h3>${esc(title)}</h3><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button class="cfm-opt" data-i="${esc(i)}" style="min-height:46px;border-radius:23px;font-weight:800;font-size:15px;${o[1]==='red'?'background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.5)':'background:var(--card2);color:var(--txt);border:1px solid var(--line)'}">${esc(o[0])}</button>`).join('')}<button class="cfm-no" style="min-height:46px;border-radius:23px;font-weight:800">Cancelar</button></div></div>`;
   const end=v=>{d.remove();res(v)};
   d.onclick=e=>{const b=e.target.closest('.cfm-opt');if(b)end(+b.dataset.i);else if(e.target===d||e.target.closest('.cfm-no'))end(-1)};
   document.body.appendChild(d);
@@ -2611,13 +2620,22 @@ async function createGroup(){
   }catch(e){fbErr(e,'crear el grupo')}
 }
 function joinGroupAsk(){const c=(prompt('Escribe el código de tu club (6 letras/números)','')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c)joinGroup(c)}
+function codeVariants(code){
+  const SW={'8':['B'],'B':['8'],'5':['S'],'S':['5'],'2':['Z'],'Z':['2'],'0':['O','D','Q'],'O':['0','D','Q'],'D':['0','O'],'Q':['0','O'],'1':['I','L','7'],'I':['1','L'],'L':['1','I'],'6':['G'],'G':['6'],'U':['V'],'V':['U']};
+  let out=[''];for(const ch of code){const opts=[ch,...(SW[ch]||[])];const nx=[];for(const o of out)for(const c of opts)nx.push(o+c);out=nx.slice(0,64)}
+  return out.filter(c=>c!==code).slice(0,40);
+}
 async function joinGroup(code){
   if(!ready())return;
   if(code.length!==6){toast('El código tiene 6 caracteres');return}
   if(myGroup&&myGroup.id===code){openGroup();return}
   try{
-    const s=await db.collection('groups').doc(code).get();
-    if(!s.exists){toast('No existe ningún club con ese código');return}
+    // v5.14.3 — siempre al servidor (no a la copia guardada en el móvil)
+    let s=await db.collection('groups').doc(code).get({source:'server'}).catch(()=>db.collection('groups').doc(code).get());
+    // v5.14.2 — letras que se confunden al copiar el código (8/B, 5/S, 2/Z, 0/O/D, 1/I/L): probamos las variantes
+    if(!s.exists){toast('Buscando el club…');const alt=codeVariants(code);const rs=await Promise.all(alt.map(c=>db.collection('groups').doc(c).get({source:'server'}).catch(()=>null)));const k=rs.findIndex(t=>t&&t.exists);if(k>=0){s=rs[k];code=alt[k]}}
+    if(!s.exists){alert('No encuentro ningún club con el código «'+code+'».\n\nRevisa letra a letra que es el mismo código que te han pasado.\n\nMás fácil: pide a tu club el ENLACE de invitación por WhatsApp y tócalo, o búscalo en Comunidad → «Clubes cerca».');return}
+    if(myGroup&&myGroup.id===code){openGroup();return}
     const g=s.data();
     if(myGroup&&!confirm(`Ya estás en "${myGroup.name}". ¿Cambiar al club "${g.name}"? Dejarás de ver los datos del club actual.`))return;
     if(myGroup&&myGroup.id!==code)await leaveGroup(true);
@@ -3041,37 +3059,92 @@ async function shareLive(){famShare()}
 async function famShare(){
   if(!ready())return;
   if(fam.on){famSend();return}
-  let hours=0;
-  if(!live.on){
-    const i=await askChoice('📍 Compartir mi ubicación con la familia',[['Durante 1 hora','','1'],['Durante 3 horas','','3'],['Durante 8 horas','','8']]);if(i<0)return;hours=[1,3,8][i];
-  }
+  const hours=await famAskTime('📍 ¿Cuánto tiempo quieres que te sigan?');if(hours==null)return;
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
-  fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on};
-  if(!live.on){
-    fam.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;if(c.accuracy>80)return;famPush([c.latitude,c.longitude],c.speed!=null?c.speed*3.6:0,false)},e=>{if(e.code===1)toast('Activa el permiso de ubicación')},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
-    fam.timer=setInterval(()=>{if(fam.until&&Date.now()>fam.until)famStop(true)},30000);
-  }
-  await famPush(live.pts&&live.pts.at(-1)||null,live.speed||0,true);
+  fam={on:true,id:Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8),trail:[],last:0,started:Date.now(),until:hours?Date.now()+hours*3600000:0,fromLive:live.on&&!hours};
+  famStart();
+  let p=live.on&&live.pts&&live.pts.at(-1)||null;
+  if(!p){try{p=await gpsOnce()}catch(e){}}
+  await famPush(p,live.speed||0,true);
   famBar();famSend();
-  if(live.on&&$('lvShare'))$('lvShare').classList.add('on');
+  setTimeout(()=>toast('📍 Para que tu familia te vea moverte, deja RideSafe IA abierta en pantalla',6000),2500);
 }
+/* v5.13.10 — el ciclista elige SIEMPRE cuánto tiempo (también en ruta) y lo puede cambiar */
+const FAM_H=[0.5,1,2,3,5,8,0];
+async function famAskTime(title){
+  const o=[['30 minutos'],['1 hora'],['2 horas'],['3 horas'],['5 horas'],['8 horas'],[live.on?'🚴 Hasta que termine la ruta':'✋ Hasta que lo pare yo']];
+  const i=await askChoice(title,o);if(i<0)return null;return FAM_H[i];
+}
+async function famTime(){
+  if(!fam.on)return;
+  const h=await famAskTime('⏱️ ¿Cuánto tiempo más quieres que te sigan?');if(h==null)return;
+  fam.until=h?Date.now()+h*3600000:0;fam.fromLive=!h&&live.on;famSave();famBar();famPush(null,live.speed||0,true);
+  toast(h?'⏱️ Te seguirán '+(h<1?'30 minutos':h+(h>1?' horas':' hora'))+' más':'Te seguirán hasta que '+(live.on?'termines la ruta':'lo pares'));
+}
+/* v5.13.9 — arranque común (también al reabrir la app): GPS propio, latido y pantalla encendida */
+function famStart(){
+  famSave();
+  if(!live.on&&fam.watch==null){
+    fam.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;
+      if(c.accuracy>(fam.hasPos?150:1000))return;
+      fam.acc=Math.round(c.accuracy);famPush([c.latitude,c.longitude],c.speed!=null&&c.speed>=0?c.speed*3.6:0,false)},
+      e=>{if(e.code===1)toast('Activa el permiso de ubicación para compartirla')},{enableHighAccuracy:true,maximumAge:10000,timeout:60000});
+  }
+  clearInterval(fam.timer);fam.timer=setInterval(famBeat,30000);
+  famWake();
+  if($('lvShare')&&live.on)$('lvShare').classList.add('on');
+}
+async function famWake(){try{if(fam.on&&!live.on&&'wakeLock' in navigator&&document.visibilityState==='visible'&&!(fam.wl&&!fam.wl.released))fam.wl=await navigator.wakeLock.request('screen')}catch(e){}}
+/* Latido: aunque estés parado, la familia ve "actualizado ahora mismo" */
+async function famBeat(force){
+  if(!fam.on)return;
+  if(fam.until&&Date.now()>fam.until){famStop(true);return}
+  if(document.visibilityState!=='visible'&&!force)return;
+  if(!force&&Date.now()-fam.last<25000)return;
+  let p=live.on&&live.pts&&live.pts.at(-1)||null;
+  if(!p&&!live.on){try{p=await gpsOnce()}catch(e){}}
+  if(!p&&live.on&&meMarker){const l=meMarker.getLngLat();p=[l.lat,l.lng]}
+  famPush(p,live.on?live.speed:0,true);
+}
+function famSave(){try{if(fam.on)localStorage.setItem('rsFamBk',JSON.stringify({id:fam.id,started:fam.started,until:fam.until,fromLive:fam.fromLive,trail:fam.trail}));else localStorage.removeItem('rsFamBk')}catch(e){}}
+/* Si el móvil cerró la app mientras compartías, al abrirla se sigue compartiendo con el MISMO enlace */
+async function famResume(){
+  let bk=null;try{bk=JSON.parse(localStorage.getItem('rsFamBk')||'null')}catch(e){}
+  if(!bk||!bk.id||fam.on)return;
+  for(let k=0;k<30&&!(db&&uid);k++)await new Promise(r=>setTimeout(r,1000));
+  if(!db||!uid)return;
+  if((bk.until&&Date.now()>bk.until)||(!bk.until&&!bk.fromLive&&Date.now()-(bk.started||0)>12*3600000)){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}
+  if(bk.fromLive){for(let k=0;k<60&&!live.on;k++)await new Promise(r=>setTimeout(r,2000));
+    if(!live.on){db.collection('share').doc(bk.id).set({active:false,t:Date.now()},{merge:true}).catch(()=>{});localStorage.removeItem('rsFamBk');return}}
+  if(fam.on)return;
+  fam={on:true,id:bk.id,trail:Array.isArray(bk.trail)?bk.trail:[],last:0,started:bk.started||Date.now(),until:bk.until||0,fromLive:!!bk.fromLive};
+  famStart();famBar();famBeat(true);
+  toast('📍 Sigues compartiendo tu ubicación con la familia');
+}
+document.addEventListener('visibilitychange',()=>{if(fam.on&&document.visibilityState==='visible'){famWake();famBeat(true)}});
 function famSend(){
   const t=`📍 ${myName()} te comparte su ubicación en directo${live.on?' mientras rueda en bici 🚴':''}.\n\nToca el enlace para verla en el mapa (no hace falta instalar nada):\n${famUrl(fam.id)}`;
   if(navigator.share)navigator.share({title:'Mi ubicación en directo',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 async function famPush(p,speed,force){
   if(!fam.on||!db||!uid)return;const now=Date.now();
-  if(!force&&now-fam.last<10000&&!(p&&!fam.hasPos))return;if(p)fam.hasPos=true;
+  if(!force&&now-fam.last<10000&&!(p&&!fam.hasPos)){
+    if(p){fam.pend=[p,speed];if(!fam.pendT)fam.pendT=setTimeout(()=>{fam.pendT=null;const q=fam.pend;fam.pend=null;if(q)famPush(q[0],q[1],false)},10100-(now-fam.last))}
+    return}
+  if(p)fam.hasPos=true;
   if(p){const lp=fam.trail.at(-1);if(!lp||hav(lp,p)>0.02){fam.trail.push([+p[0].toFixed(5),+p[1].toFixed(5)]);if(fam.trail.length>300)fam.trail.shift()}}
   fam.last=now;
   const d={uid,name:myName(),t:now,active:true,started:fam.started,until:fam.until||null,speed:Math.round(speed||0),km:live.on?+live.km.toFixed(2):null,riding:!!live.on,trail:fam.trail.map(x=>({a:x[0],o:x[1]}))};
   if(p){d.lat=+p[0].toFixed(6);d.lng=+p[1].toFixed(6)}
-  return db.collection('share').doc(fam.id).set(d,{merge:true}).catch(e=>console.warn('fam',e));
+  if(fam.acc&&!live.on)d.acc=fam.acc;
+  if(fam.trail.length%5===0)famSave();
+  return db.collection('share').doc(fam.id).set(d,{merge:true}).then(()=>{fam.err=0}).catch(e=>{console.warn('fam',e);fam.err=(fam.err||0)+1;fam.last=0});
 }
 function pushShare(){if(fam.on&&live.on)famPush(live.pts.at(-1),live.speed,false)}
 function famStop(auto){
   if(!fam.on)return;
-  if(fam.watch!=null)navigator.geolocation.clearWatch(fam.watch);clearInterval(fam.timer);
+  if(fam.watch!=null)navigator.geolocation.clearWatch(fam.watch);clearInterval(fam.timer);try{fam.wl&&fam.wl.release()}catch(e){}
+  try{localStorage.removeItem('rsFamBk')}catch(e){}
   if(db&&fam.id)db.collection('share').doc(fam.id).set({uid,name:myName(),active:false,t:Date.now()}).catch(()=>{});
   fam={on:false};famBar();if($('lvShare'))$('lvShare').classList.remove('on');
   toast(auto?'⏱️ Se acabó el tiempo: ya no compartes tu ubicación':'Has dejado de compartir tu ubicación');
@@ -3081,10 +3154,10 @@ function famBar(){
   if(!fam.on){if(b)b.remove();return}
   if(!b){b=document.createElement('div');b.id='famBar';document.body.appendChild(b)}
   const left=fam.until?Math.max(0,Math.round((fam.until-Date.now())/60000)):null;
-  b.innerHTML=`<span>📍 Compartiendo${left!=null?` · ${left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'}`:''}</span><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
+  b.innerHTML=`<span>📍 ${fam.err>2?'⚠️ sin conexión':left!=null?(left>=60?Math.floor(left/60)+' h '+(left%60)+' min':left+' min'):'Compartiendo'}</span><button onclick="famTime()">⏱️ Tiempo</button><button onclick="famSend()">Reenviar</button><button onclick="famStop()">Parar</button>`;
 }
 setInterval(()=>{if(fam.on)famBar()},60000);
-function endShare(L){if(fam.on&&fam.fromLive)famStop()}
+function endShare(L){if(fam.on&&fam.fromLive)famStop();else if(fam.on)setTimeout(()=>{if(fam.on&&!live.on)famStart()},500)}
 /* Vista para la familia: #vivo=ID */
 let viewer=null;
 function openViewer(id){
@@ -3331,7 +3404,7 @@ function devSendSheet(br){
   $('rideBody').innerHTML=sheetHead('📲 Pasar la ruta al ciclocomputador')+
    `<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
    tabs+`<ol class="steps" style="margin:4px 0 12px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">${steps}</ol>`+
-   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) salen también en la pantalla del aparato: pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
+   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) solo salen en el aparato o el reloj si muestra notificaciones de otras apps (algunos solo enseñan llamadas y SMS): pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
    `<button class="btn btn-lime" onclick="closeSheets()">Entendido</button>`;
   openRideId=null;openSheet('sh-ride');
 }
@@ -3419,22 +3492,16 @@ function r3Color(f){f=Math.max(0,Math.min(1,f));const A=[[250,204,21],[249,115,2
 function r3Style(){return{version:8,sources:{
   sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:18,attribution:'© Esri'},
   osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'},
-  mbh:{type:'raster',tiles:[MBX('satellite-streets-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
-  mbo:{type:'raster',tiles:[MBX('outdoors-v12')],tileSize:512,maxzoom:22,attribution:MB_ATTR},
-  dem:{type:'raster-dem',tiles:['https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token='+MAPBOX_TOKEN],tileSize:256,encoding:'mapbox',maxzoom:15,attribution:'Relieve © Mapbox'},
-  dema:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
+  dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,attribution:'Relieve: Terrain Tiles'},
   dem2:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}},
-  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat',layout:{visibility:'none'}},{id:'mbo',type:'raster',source:'mbo',layout:{visibility:'none'}},{id:'mbh',type:'raster',source:'mbh'},
+  layers:[{id:'osm',type:'raster',source:'osm',layout:{visibility:'none'}},{id:'sat',type:'raster',source:'sat'},
     {id:'shade',type:'hillshade',source:'dem2',paint:{'hillshade-exaggeration':0.35,'hillshade-shadow-color':'#000000'}}]}}
-function plan3D(){const r=plan.route;if(!r||!r.coords||r.coords.length<2){toast('Primero calcula una ruta');return}
-  const d=new Date();const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  open3D({id:0,plan:true,name:'Ruta planificada',date:ds,km:r.km,mins:r.mins||0,c:r.coords,pd:(r.prof||[]).map(x=>x.d),pe:(r.prof||[]).map(x=>x.e)})}
 function open3D(id,autoRec){
-  const a=(id&&typeof id==='object')?id:acts.find(x=>x.id===id);if(!a||!(a.poly||a.c))return;
+  const a=acts.find(x=>x.id===id);if(!a||!a.poly)return;
   if(typeof maplibregl==='undefined'){toast('El mapa necesita conexión a internet');return}
-  const c=a.c||decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
+  const c=decodePoly(a.poly);if(c.length<2){toast('Esta actividad no tiene recorrido');return}
   const cum=cumDist(c);const ele=r3Ele(a,c,cum);
-  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true,mbFail:false,mbErr:0,demId:'dem',demErr:0});
+  Object.assign(R3,{lbls:[],zOff:0,spd:+store.get('r3spd',1)||1,places:[],plTok:R3.plTok+1,a,c,cum,ele,t:0,play:false,dur:Math.max(15000,Math.min(40000,(a.km||cum.at(-1))*600)),flat:false,sat:true});
   $('r3Name').textContent=a.name||'Salida';$('r3Date').textContent=fmtDate(a.date)+' · '+fmtNum(a.km||cum.at(-1),1)+' km';
   $('r3Dim').textContent='2D';$('r3Sat').textContent='🗺️';$('r3Play').textContent='▶';$('r3Seek').value=0;
   closeSheets(true);$('scrim').classList.remove('show');$('r3d').classList.add('show');
@@ -3443,11 +3510,10 @@ function open3D(id,autoRec){
     const m=new maplibregl.Map({container:'r3dMap',style:r3Style(),preserveDrawingBuffer:true,center:[c[0][1],c[0][0]],zoom:13,pitch:60,bearing:0,maxPitch:75,attributionControl:{compact:true}});
     R3.map=m;
     m.on('load',()=>{
-      try{m.setTerrain({source:R3.demId||'dem',exaggeration:1.6})}catch(e){}
+      try{m.setTerrain({source:'dem',exaggeration:1.6})}catch(e){}
       const ok=ele.some(v=>v!=null);const lo=ok?Math.min(...ele.filter(v=>v!=null)):0,hi=ok?Math.max(...ele.filter(v=>v!=null)):1;
       const tot=cum.at(-1)||1;const stops=[];const n=Math.min(48,c.length-1);
       for(let k=0;k<=n;k++){const i=Math.round(k/n*(c.length-1));const f=ok&&hi>lo?(ele[i]-lo)/(hi-lo):0.5;stops.push(cum[i]/tot,r3Color(f))}
-      if(a.plan&&a.pd&&a.pd.length>1){stops.length=0;const T=a.pd.at(-1)||1;for(let i=1;i<a.pd.length;i++){const dd=(a.pd[i]-a.pd[i-1])*1000;const s=dd>0?(a.pe[i]-a.pe[i-1])/dd*100:0;const col=s>=12?'#EF4444':s>=7?'#F97316':'#C8DC3C';stops.push(a.pd[i-1]/T,col,Math.max(a.pd[i-1]/T,a.pd[i]/T-1e-4),col)}}
       for(let k=2;k<stops.length;k+=2){if(stops[k]<=stops[k-2])stops[k]=Math.min(1,stops[k-2]+1e-6)}
       m.addSource('r3',{type:'geojson',lineMetrics:true,data:{type:'Feature',geometry:{type:'LineString',coordinates:c.map(p=>[p[1],p[0]])}}});
       m.addLayer({id:'r3-case',type:'line',source:'r3',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#000','line-opacity':.45,'line-width':5}});
@@ -3462,10 +3528,7 @@ function open3D(id,autoRec){
       m.on('zoom',e=>{if(e.originalEvent&&!R3V.on)R3.zOff=Math.max(-3,Math.min(3,m.getZoom()-r3Z()))});
       if(autoRec)setTimeout(rec3D,1800);
     });
-    m.on('error',e=>{const id=e&&e.sourceId;
-      if((id==='mbh'||id==='mbo')&&!R3.mbFail&&++R3.mbErr>=3){R3.mbFail=true;r3Base(m)}
-      if(id==='dem'&&R3.demId==='dem'&&++R3.demErr>=3){R3.demId='dema';if(!R3.flat){try{m.setTerrain({source:'dema',exaggeration:1.6})}catch(_){}}}
-      console.warn('3d',e&&e.error)});
+    m.on('error',e=>console.warn('3d',e&&e.error));
   }catch(e){console.warn(e);toast('Este móvil no puede mostrar el mapa en 3D');close3D()}
 }
 function r3At(t){const c=R3.c,cum=R3.cum,tot=cum.at(-1);const d=t*tot;let i=1;while(i<cum.length-1&&cum[i]<d)i++;const f=cum[i]>cum[i-1]?(d-cum[i-1])/(cum[i]-cum[i-1]):0;
@@ -3486,10 +3549,9 @@ function play3D(){if(!R3.map||!R3.mk)return;if(R3.play){R3.play=false;cancelAnim
   if(R3.t>=1)R3.t=0;R3.play=true;R3.last=0;$('r3Play').textContent='❚❚';const p=r3At(R3.t);
   R3.map.easeTo({center:[p.lng,p.lat],zoom:r3Z()+R3.zOff,pitch:R3.flat?0:62,duration:900});setTimeout(()=>{if(R3.play)R3.raf=requestAnimationFrame(r3Loop)},950)}
 function seek3D(f){R3.t=+f;if(R3.play){R3.play=false;cancelAnimationFrame(R3.raf);$('r3Play').textContent='▶'}r3Frame(true)}
-function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:R3.demId||'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
-function r3Base(m){const mb=!R3.mbFail;const v={mbh:mb&&R3.sat,mbo:mb&&!R3.sat,sat:!mb&&R3.sat,osm:!mb&&!R3.sat};for(const k in v){try{m.setLayoutProperty(k,'visibility',v[k]?'visible':'none')}catch(e){}}}
-function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;r3Base(m);$('r3Sat').textContent=R3.sat?'🗺️':'🛰️';toast(R3.sat?'Híbrido: satélite con calles':'Outdoors: caminos y senderos')}
-function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a&&!R3.a.plan)openActDetail(R3.a.id)}
+function toggle3DView(){const m=R3.map;if(!m)return;R3.flat=!R3.flat;try{m.setTerrain(R3.flat?null:{source:'dem',exaggeration:1.6})}catch(e){}m.easeTo({pitch:R3.flat?0:60,duration:600});$('r3Dim').textContent=R3.flat?'3D':'2D';toast(R3.flat?'Vista en plano':'Vista en 3D')}
+function toggle3DSat(){const m=R3.map;if(!m)return;R3.sat=!R3.sat;m.setLayoutProperty('sat','visibility',R3.sat?'visible':'none');m.setLayoutProperty('osm','visibility',R3.sat?'none':'visible');$('r3Sat').textContent=R3.sat?'🗺️':'🛰️'}
+function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimationFrame(R3.raf);$('r3d').classList.remove('show');if(R3.map){try{R3.map.remove()}catch(e){}R3.map=null}R3.mk=null;if(R3.a)openActDetail(R3.a.id)}
 /* ===================================================================
    v4.9 — VÍDEO DEL RECORRIDO EN 3D para WhatsApp y redes
    Se graba en el propio móvil (vertical 720×1280) con el mapa, el punto que avanza,
@@ -4217,13 +4279,14 @@ async function garminTest(){
   toast(`⌚ Bloquea el móvil y mira el ${devName()}: llega en 5 segundos`);
   setTimeout(async()=>{
     try{const reg=await navigator.serviceWorker.ready;
-      await reg.showNotification('🔧 '+(String(myName()||'Toni').split(' ')[0])+': PINCHAZO',{body:`Prueba de RideSafe IA · si lo ves en tu ${devName()}, te llegarán los avisos`,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba',renotify:true,vibrate:[600,200,600,200,600],data:{url:'./'}})}
+      // v5.14.4: una sola prueba, sin emojis, con el mismo formato que un aviso de salida de verdad
+      await reg.showNotification('Nueva salida: Prueba de '+(String(myName()||'RideSafe').split(' ')[0]),{body:'Si ves este aviso, te llegarán las salidas de tu club',icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba-'+Date.now(),renotify:true,vibrate:[600,200,600],data:{url:'./'}})}
     catch(e){toast('No se pudo lanzar la prueba')}
     setTimeout(async()=>{if(document.visibilityState!=='visible')await new Promise(r=>{const f=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',f);r()}};document.addEventListener('visibilitychange',f)});
       const i=await askChoice(`¿Te ha salido el aviso en el ${devName()}?`,[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
       if(i===0){store.set('garminOk',Date.now());toast(`¡Perfecto! Te llegarán los avisos del pelotón al ${devName()}`)}
       if(i===1){openGarmin();setTimeout(()=>toast('Revisa los pasos 2 y 3. Si tu modelo solo enseña llamadas y SMS, el aviso solo llegará al móvil'),400)}
-    },6500);
+    },10500);
   },5000);
 }
 /* ===== v2.0 — Avisos al pelotón: pinchazo, esperad, ayuda (pantalla + sirena) ===== */
@@ -5127,34 +5190,6 @@ function profileSVG(prof){
   <div class="proflbl"><span>${Math.round(mn)} m</span><span>🟢 llano · 🟠 ≥7% · 🔴 ≥12%</span><span>${Math.round(mx)} m</span></div></div>`;
 }
 
-/* v-rampas: tramos duros pintados sobre la ruta del mapa (naranja ≥7 %, rojo ≥12 %) */
-function steepPaint(m,r){
-  try{
-    if(!m||!(m.style&&m.style._loaded))return;
-    const feats=[];
-    if(r&&r.prof&&r.prof.length>1&&r.coords&&r.coords.length>1){
-      const c=r.coords,cd=cumDist(c);
-      const at=d=>{let j=0;while(j<cd.length-2&&cd[j+1]<d)j++;const f=cd[j+1]>cd[j]?Math.max(0,Math.min(1,(d-cd[j])/(cd[j+1]-cd[j]))):0;return[c[j][1]+(c[j+1][1]-c[j][1])*f,c[j][0]+(c[j+1][0]-c[j][0])*f]};
-      const P=r.prof;let cur=null;
-      for(let i=1;i<P.length;i++){
-        const dd=(P[i].d-P[i-1].d)*1000;const s=dd>0?(P[i].e-P[i-1].e)/dd*100:0;
-        const lv=s>=12?2:s>=7?1:0;
-        if(lv&&cur&&cur.lv===lv){cur.d1=P[i].d}
-        else{if(cur)feats.push(cur);cur=lv?{lv,d0:P[i-1].d,d1:P[i].d}:null}
-      }
-      if(cur)feats.push(cur);
-      for(let k=0;k<feats.length;k++){const f=feats[k];const pts=[at(f.d0)];
-        for(let j=0;j<cd.length;j++){if(cd[j]>f.d0&&cd[j]<f.d1)pts.push([c[j][1],c[j][0]])}
-        pts.push(at(f.d1));feats[k]={type:'Feature',properties:{lv:f.lv},geometry:{type:'LineString',coordinates:pts}}}
-    }
-    const data={type:'FeatureCollection',features:feats};
-    const s=m.getSource('steep');
-    if(s)s.setData(data);
-    else if(feats.length){m.addSource('steep',{type:'geojson',data});
-      m.addLayer({id:'steep-line',type:'line',source:'steep',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['case',['==',['get','lv'],2],'#EF4444','#F97316'],'line-width':6}})}
-  }catch(e){}
-}
-
 /* Línea de la ruta en un mapa */
 function setLine(m,coords,id,color){
   if(!m)return;id=id||'plan';color=color||'#C8DC3C';
@@ -5162,7 +5197,6 @@ function setLine(m,coords,id,color){
   m.__pend=m.__pend||{};
   if(!(m.style&&m.style._loaded)){const first=!(id in m.__pend);m.__pend[id]=[coords,color];if(first)m.once('load',()=>{if(!(id in m.__pend))return;const q=m.__pend[id];delete m.__pend[id];setLine(m,q[0],id,q[1])});return}
   delete m.__pend[id];
-  if(id==='plan'&&!(coords&&coords.length>1))steepPaint(m,null);
   const data={type:'FeatureCollection',features:coords&&coords.length>1?[{type:'Feature',geometry:{type:'LineString',coordinates:coords.map(p=>[p[1],p[0]])}}]:[]};
   const s=m.getSource(id);
   if(s)s.setData(data);
@@ -5598,7 +5632,7 @@ function renderPlan(){
     <div><b class="num">${r.prof?'−'+Math.round(r.down):'…'}</b><span>m bajada</span></div>
     <div><b class="num" style="font-size:17px">${r.mins?(r.mins<60?Math.round(r.mins)+' min':Math.floor(r.mins/60)+' h '+String(Math.round(r.mins%60)).padStart(2,'0')):'…'}</b><span>aprox.</span></div>`:'';
   $('pStats').style.display=r?'grid':'none';
-  try{steepPaint(map,r)}catch(e){}const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof)+'<button class="btn btn-line" style="width:100%;margin:2px 0 10px;border-color:var(--lime)" onclick="plan3D()">⛰️ Ver ruta en 3D</button>':'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
+  const pr=r&&(r.prof||r.profFail);$('pProf').innerHTML=pr?(r.prof?profileSVG(r.prof):'<small style="display:block;color:var(--txt2);margin:4px 2px 8px">⛰️ El desnivel no está disponible ahora mismo (servicio sin respuesta).</small>')+confHTML(r)+stopsHTML(r):'';if(pr&&!r.conf&&!r.confBusy)computeConf(r);
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';$('bEdit').style.display=v&&r?'block':'none';
@@ -5994,7 +6028,7 @@ async function startLive(opt){
   rideMarkers.forEach(m=>m.remove());
   $('lvVoice').textContent=live.voice?'🔊':'🔇';
   $('lvGroup').style.display=live.rideId?'block':'none';
-  $('lvAlert').style.display=live.rideId?'grid':'none';alarmUnlock();live.alSeen={};
+  $('lvAlert').style.display=live.rideId?'grid':'none';alarmUnlock();live.alSeen={};if(live.rideId){pttBind();setTimeout(pttListen,800)}
   $('lvBanner').style.display='none';
   setLine(map,null,'track','#60A5FA');
   if(opt.route)navRoute(opt.route,opt.wps);
@@ -6074,6 +6108,21 @@ function lwText(){const w=live.wx;const rel=windRel(w,live.hdg??null);live.wxSai
 const tempCls=w=>{const f=w.feel??w.temp;return f==null?'':f>=32?'hot':f<=5?'cold':''};
 function tempText(w){if(w.temp==null)return '';const f=w.feel??w.temp;
   return `Temperatura exterior de ${w.temp} grados${w.feel!=null&&Math.abs(w.feel-w.temp)>=2?', sensación de '+w.feel:''}.`}
+/* v5.16: resumen por voz cada media hora (km, tiempo, media, desnivel, altitud y viento) */
+function sumText(){
+  const ms=elapsed(),h=Math.floor(ms/3600000),m=Math.round((ms%3600000)/60000);
+  const mm=n=>n+(n===1?' minuto':' minutos');const t=h?`${h} ${h>1?'horas':'hora'}${m?' y '+mm(m):''}`:mm(m);
+  const km=live.km||0,kmT=km<10?km.toFixed(1).replace('.',','):String(Math.round(km));
+  const avg=ms>60000?km/(ms/3600000):0;
+  let s=`Resumen. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
+  if((live.up||0)>=15)s+=` Has subido ${Math.round(live.up)} metros.`;
+  if(live.alt!=null)s+=` Estás a ${Math.round(live.alt)} metros de altitud.`;
+  if(live.nav&&live.nav.left!=null&&live.nav.left>0.2)s+=` Te quedan ${live.nav.left<10?live.nav.left.toFixed(1).replace('.',','):Math.round(live.nav.left)} kilómetros.`;
+  if(live.wx){const rel=windRel(live.wx,live.hdg??null);s+=live.wx.spd<8?' Viento flojo.':` Viento de ${live.wx.spd} kilómetros por hora${rel&&rel!=='flojo'?', '+REL_T[rel][1]:''}.`}
+  return s;
+}
+function sumSay(){if(!live.on){toast('Empieza una salida para oír el resumen');return}const t=sumText();if(!live.voice)toast('🗣️ '+t);speak(t)}
+setTimeout(()=>{const e=$('swRes');if(e)e.checked=store.get('resumen',true)},0);
 function lwSay(tap){
   if(!live.wx){if(tap)toast('Buscando el viento…');return}
   const t=lwText();if(tap&&!live.voice)toast('🌬️ '+t);speak(t);
@@ -6113,6 +6162,7 @@ async function lwTick(){
     if(rel&&rel!=='flojo'&&rel!==live.wxSaidRel){if(live.wxCand===rel&&now-(live.wxSaidT||0)>5*60000){live.wxCand=null;Q.push(rel==='contra'?`Ahora el viento ${REL_T.contra[1]}. Ve a rueda y reserva fuerzas.`:rel==='favor'?`Ahora el viento ${REL_T.favor[1]}.`:`Ahora el viento ${REL_T[rel][1]}.`);live.wxSaidRel=rel;live.wxSaidT=now}else live.wxCand=rel}
     else live.wxCand=null;
     lwRender();}
+  if(store.get('resumen',true)){const slot=Math.floor(elapsed()/1800000);if(live.sumSlot==null)live.sumSlot=slot;else if(slot>live.sumSlot){live.sumSlot=slot;Q.unshift(sumText())}}
   await lwBattery(Q);
   if(Q.length&&live.on)speak(Q.join(' '));
 }
@@ -6155,7 +6205,7 @@ function onFix(pos){
   if(live.nav)navUpdate(p);
   if(live.rideId)pushPos(p,now);
   if(live.catchTo)catchCheck(p,now);
-  if(live.shareId)pushShare();
+  if(fam.on)pushShare();
   if(!lowPow()&&now-(live.rT||0)>800){live.rT=now;renderLive()}
 }
 
@@ -6192,6 +6242,89 @@ function pushPos(p,now){
   live.lastPush=now;live.lastPushLL=p;
   db.collection('rides').doc(live.rideId).collection('live').doc(uid).set({name:myName(),lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),speed:Math.round(live.speed||0),t:now,km:+live.km.toFixed(2),...(live.catchTo?{late:true}:{})}).catch(e=>console.warn('live',e));
 }
+/* ===== v5.14 — 🎙️ WALKIE DEL PELOTÓN: mensajes de voz que suenan solos a todo el grupo ===== */
+const PTT_MAX=15000;
+const ptt={rec:null,chunks:[],t0:0,stream:null,toggle:false,played:{},queue:[],playing:false,unsub:null,since:0};
+function pttMime(){const L=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
+function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||'🎙️ Mantén pulsado y habla al grupo'}
+async function pttStart(){
+  if(ptt.rec)return;ptt.cancel=0;
+  if(!live.on||!live.rideId){toast('El walkie funciona en una salida en grupo');return}
+  if(!window.MediaRecorder||!navigator.mediaDevices){toast('Este móvil no permite grabar audio desde la app');return}
+  alarmUnlock();
+  try{ptt.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+  catch(e){toast(e&&e.name==='NotAllowedError'?'Permite el micrófono para usar el walkie':'No se pudo abrir el micrófono');pttBtn();return}
+  const mime=pttMime();
+  try{ptt.rec=new MediaRecorder(ptt.stream,{...(mime?{mimeType:mime}:{}),audioBitsPerSecond:24000})}catch(e){try{ptt.rec=new MediaRecorder(ptt.stream)}catch(e2){pttKill();toast('No se pudo grabar audio');return}}
+  ptt.chunks=[];ptt.t0=Date.now();
+  ptt.rec.ondataavailable=e=>{if(e.data&&e.data.size)ptt.chunks.push(e.data)};
+  ptt.rec.onstop=pttSend;
+  if(ptt.cancel){ptt.cancel=0;ptt.rec=null;pttKill();toast('🎙️ Micrófono listo: mantén pulsado el botón mientras hablas');return}
+  ptt.rec.start();vib(60);beepPtt(880);
+  pttBtn('rec',ptt.toggle?'🔴 Hablando… toca para enviar':'🔴 Hablando… suelta para enviar');
+  clearTimeout(ptt.maxT);ptt.maxT=setTimeout(pttStop,PTT_MAX);
+  musDuck(PTT_MAX);
+}
+function pttStop(){clearTimeout(ptt.maxT);if(ptt.rec&&ptt.rec.state!=='inactive'){try{ptt.rec.stop()}catch(e){pttKill()}}}
+function pttKill(){try{ptt.stream&&ptt.stream.getTracks().forEach(t=>t.stop())}catch(e){}ptt.stream=null;ptt.rec=null;ptt.toggle=false;pttBtn()}
+async function pttSend(){
+  const dur=Date.now()-ptt.t0;const type=(ptt.rec&&ptt.rec.mimeType)||pttMime()||'audio/webm';const chunks=ptt.chunks;pttKill();
+  if(dur<700){toast('Mantén pulsado mientras hablas');return}
+  const blob=new Blob(chunks,{type});
+  if(blob.size>190000){toast('Mensaje demasiado largo');return}
+  pttBtn('busy','📤 Enviando…');beepPtt(660);
+  const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]||'');fr.onerror=()=>r('');fr.readAsDataURL(blob)});
+  if(!b64){pttBtn();toast('No se pudo preparar el audio');return}
+  try{
+    await db.collection('rides').doc(live.rideId).collection('voice').add({uid,name:myName(),t:Date.now(),dur:Math.round(dur/100)/10,mime:type.slice(0,60),audio:b64});
+    pttBtn();toast('🎙️ Mensaje enviado al grupo');vib([40,60,40]);
+  }catch(e){console.warn('walkie',e);pttBtn();toast(e&&e.code==='permission-denied'?'El walkie aún no está activado en el servidor':'Sin conexión: no se pudo enviar')}
+}
+/* Pulsar y mantener = hablar. Un toque corto = se queda grabando hasta otro toque (con guantes es más fácil) */
+function pttBind(){
+  const b=$('lvPtt');if(!b||b.__ok)return;b.__ok=1;
+  let down=0;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}
+    if(ptt.toggle){ptt.toggle=false;pttStop();down=0;return}down=Date.now();pttStart()});
+  const up=e=>{if(!down)return;const held=Date.now()-down;down=0;
+    if(held<450){ptt.toggle=true;if(ptt.rec)pttBtn('rec','🔴 Hablando… toca para enviar');return}
+    if(ptt.rec)pttStop();else ptt.cancel=1};
+  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);document.addEventListener('pointerup',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+}
+function beepPtt(f){try{alarmUnlock();if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(.35,AC.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.16);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.18)}catch(e){}}
+/* Escuchar: los mensajes de los demás suenan solos, uno detrás de otro */
+function pttListen(){
+  if(ptt.unsub||!db||!live.rideId)return;
+  ptt.since=Date.now()-120000;ptt.played={};
+  ptt.unsub=db.collection('rides').doc(live.rideId).collection('voice').where('t','>',ptt.since).onSnapshot(s=>{
+    s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.t-b.t).forEach(v=>{
+      if(ptt.played[v.id])return;ptt.played[v.id]=1;
+      if(v.uid===uid||Date.now()-v.t>180000||!v.audio||!/^audio\/[a-z0-9.+;=, -]{1,50}$/i.test(String(v.mime||'')))return;
+      ptt.queue.push(v);
+    });
+    pttPlayNext();
+  },e=>console.warn('walkie',e));
+}
+function pttUnlisten(rid){if(ptt.unsub){ptt.unsub();ptt.unsub=null}if(rid&&db&&uid)db.collection('rides').doc(rid).collection('voice').where('uid','==',uid).get().then(q=>q.docs.forEach(d=>d.ref.delete().catch(()=>{}))).catch(()=>{});ptt.queue=[];pttKill();$('pttMsg')&&$('pttMsg').classList.remove('show')}
+function pttPlayNext(){
+  if(ptt.playing||!ptt.queue.length)return;
+  const v=ptt.queue.shift();const name=String(v.name||'Un ciclista').split(' ')[0];
+  if(ptt.rec){ptt.queue.unshift(v);setTimeout(pttPlayNext,1500);return}   // si estoy hablando, espero
+  ptt.playing=true;
+  let m=$('pttMsg');if(!m){m=document.createElement('div');m.id='pttMsg';document.body.appendChild(m)}
+  m.innerHTML=`<span>🎙️ ${esc(name)} habla…</span><button onclick="pttReplay()">↻ Repetir</button>`;m.classList.add('show');
+  ptt.last=v;
+  if(document.visibilityState!=='visible')bgNotify('🎙️ '+name+' te habla',(live.rideTitle||'Salida en grupo')+' · mensaje de voz',false);
+  musDuck((v.dur||5)*1000+2500);beepPtt(990);vib([80,60,80]);
+  setTimeout(()=>{
+    const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.volume=1;
+    const done=()=>{ptt.playing=false;setTimeout(()=>{if(!ptt.playing)m.classList.remove('show')},2500);setTimeout(pttPlayNext,600)};
+    a.onended=done;a.onerror=()=>{toast('🎙️ '+name+' ha enviado un audio que este móvil no puede reproducir');done()};
+    a.play().catch(()=>{m.innerHTML=`<span>🎙️ ${esc(name)} te ha hablado</span><button onclick="pttReplay()">▶ Escuchar</button>`;ptt.playing=false;setTimeout(pttPlayNext,600)});
+  },350);
+}
+function pttReplay(){const v=ptt.last;if(!v)return;try{const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);musDuck((v.dur||5)*1000+1500);a.play().catch(()=>{})}catch(e){}}
 function listenGroup(){
   live.unsub=db.collection('rides').doc(live.rideId).collection('live').onSnapshot(s=>{
     const m={};s.docs.forEach(d=>{if(d.id!==uid)m[d.id]=d.data()});live.members=m;drawMembers();checkStragglers();renderLive();checkAlerts();
@@ -6309,7 +6442,7 @@ async function finishLive(save){
   (L.camMk||[]).forEach(m=>m.remove());
   try{L.wake&&L.wake.release()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
-  if(L.unsub)L.unsub();
+  if(L.unsub)L.unsub();pttUnlisten(L.rideId);
   endShare(L);
   Object.values(L.mMarkers||{}).forEach(m=>m.remove());
   if(L.rideId&&db&&uid)db.collection('rides').doc(L.rideId).collection('live').doc(uid).delete().catch(()=>{});
@@ -6540,6 +6673,7 @@ async function liveResume(bk,finish){
   if(finish)finishLive(true);else toast('▶ Seguimos grabando tu salida');
 }
 window.addEventListener('load',()=>setTimeout(liveRecoverCheck,2500));
+window.addEventListener('load',()=>setTimeout(famResume,4000));
 
 /* Botones que arrancan el modo en vivo */
 function toggleRec(){startLive({})}
