@@ -4119,7 +4119,7 @@ function setLayer(m,k){
   m.__layer=k;
   if(m===map&&trailsOn())trailsSet(m,true);
 }
-function newMap(opt){const m=new maplibregl.Map({style:BASE_STYLE,...opt});m.__noMbo=opt&&opt.attributionControl===false;m.on('load',()=>{addLayers(m);if(LAYER!=='normal')setLayer(m,LAYER);if(m===map&&trailsOn())trailsSet(m,true)});return m}
+function newMap(opt){const m=new maplibregl.Map({style:BASE_STYLE,...opt});m.__noMbo=opt&&opt.attributionControl===false;m.on('load',()=>{addLayers(m);if(LAYER!=='normal')setLayer(m,LAYER);if(m===map&&trailsOn())trailsSet(m,true);if(!m.__noMbo&&radarOn())radarSet(m,true)});return m}
 function satToggle(m,on){setLayer(m,on?'satst':'normal')}
 function layerThumb(k,m){
   const st=LAYER_BY[k][3];const c=m&&m.getCenter?m.getCenter():{lng:0.62,lat:41.6};const z=13;
@@ -4127,12 +4127,12 @@ function layerThumb(k,m){
   return st?`https://api.mapbox.com/styles/v1/mapbox/${st}/tiles/256/${z}/${x}/${y}?access_token=${MAPBOX_TOKEN}`:null;
 }
 function layerMenu(m){
-  if(!m)return;let d=$('layMenu');if(d){d.remove();return}
+  if(!m)return;radarMap=m;let d=$('layMenu');if(d){d.remove();return}
   d=document.createElement('div');d.id='layMenu';
   const cur=m.__layer||'normal';const on=navigator.onLine;
   d.innerHTML='<div class="lm-h"><b>Capas del mapa</b><button class="lm-x" aria-label="Cerrar">✕</button></div><div class="lm-g">'+LAYERS.map(([k,t,sub,st])=>{
     const th=layerThumb(k,m);
-    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
+    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
   d.onclick=ev=>{if(ev.target.closest('.lm-x')){d.remove();return}const b=ev.target.closest('.lm-c');if(!b)return;const k=b.dataset.k;
     if(LAYER_BY[k][3]&&!navigator.onLine){toast('Esta capa necesita conexión');return}
     LAYER=k;try{localStorage.setItem('velogo_layer',k)}catch(e){}
@@ -4140,6 +4140,54 @@ function layerMenu(m){
   document.body.appendChild(d);
   setTimeout(()=>document.addEventListener('pointerdown',function f(ev){if(!d.isConnected){document.removeEventListener('pointerdown',f,true);return}if(!d.contains(ev.target)){d.remove();document.removeEventListener('pointerdown',f,true)}},true),0);
 }
+
+/* ---- v5.18: Radar de lluvia (RainViewer, gratis: últimas 2 h, cada 10 min) ---- */
+let radarMap=null,radarFrame=null,radarTimer=null,radarLoading=null;
+const radarOn=()=>!!store.get('radarOn',false);
+function radarAgo(){if(!radarFrame)return '';const min=Math.max(0,Math.round((Date.now()/1000-radarFrame.time)/60));return min<1?'ahora mismo':'hace '+min+' min'}
+function radarInfo(){return radarFrame&&radarOn()?'Lluvia de '+radarAgo()+' · RainViewer':'Dónde llueve ahora · últimas 2 h · RainViewer'}
+async function radarFetch(force){
+  if(radarFrame&&!force&&Date.now()/1000-radarFrame.time<11*60)return radarFrame;
+  if(radarLoading)return radarLoading;
+  radarLoading=(async()=>{try{
+    const ac=new AbortController();const t=setTimeout(()=>ac.abort(),10000);
+    const r=await fetch('https://api.rainviewer.com/public/weather-maps.json',{signal:ac.signal,cache:'no-store'});clearTimeout(t);
+    const j=await r.json();const past=(j&&j.radar&&j.radar.past)||[];const f=past[past.length-1];
+    if(j&&j.host&&f&&f.path)radarFrame={time:f.time,url:j.host+f.path+'/256/{z}/{x}/{y}/2/1_1.png'};
+  }catch(e){}finally{radarLoading=null}return radarFrame})();
+  return radarLoading;
+}
+async function radarSet(m,on){
+  if(!m||!m.getStyle||!m.getStyle())return;
+  if(!(m.style&&m.style._loaded)){m.once('load',()=>radarSet(m,on));return}
+  if(!on){if(m.getLayer('rain'))m.setLayoutProperty('rain','visibility','none');return}
+  const f=await radarFetch();if(!f||!radarOn())return false;
+  if(m.getSource('rain')&&m.__rain!==f.url){if(m.getLayer('rain'))m.removeLayer('rain');m.removeSource('rain')}
+  if(!m.getSource('rain')){
+    m.addSource('rain',{type:'raster',tiles:[f.url],tileSize:256,maxzoom:7,attribution:'Radar de lluvia © <a href="https://www.rainviewer.com" target="_blank">RainViewer</a>'});
+    const before=((m.getStyle().layers||[]).find(l=>/-case$/.test(l.id))||{}).id;
+    m.addLayer({id:'rain',type:'raster',source:'rain',paint:{'raster-opacity':0.6,'raster-fade-duration':0}},before);m.__rain=f.url;
+  }
+  m.setLayoutProperty('rain','visibility','visible');
+  return true;
+}
+function radarMaps(){return [map,radarMap,typeof pmap!=='undefined'?pmap:null].filter((x,i,a)=>x&&a.indexOf(x)===i)}
+function radarLoop(on){clearInterval(radarTimer);radarTimer=null;
+  if(on)radarTimer=setInterval(async()=>{if(document.visibilityState!=='visible'||!navigator.onLine)return;await radarFetch(true);radarMaps().forEach(m=>radarSet(m,true));const t=$('lmRadarT');if(t)t.textContent=radarInfo()},10*60*1000)}
+async function radarToggle(on){
+  vib(15);
+  if(on&&!navigator.onLine){toast('🌧️ El radar de lluvia necesita conexión');const c=$('lmRadar');if(c)c.checked=false;return}
+  store.set('radarOn',!!on);radarLoop(!!on);
+  if(!on){radarMaps().forEach(m=>radarSet(m,false));toast('🌧️ Radar de lluvia quitado');return}
+  toast('🌧️ Cargando radar de lluvia…');
+  await radarFetch();
+  const ok=(await Promise.all(radarMaps().map(m=>radarSet(m,true)))).some(x=>x!==false);
+  const t=$('lmRadarT');if(t)t.textContent=radarInfo();
+  if(!radarFrame){toast('🌧️ No he podido cargar el radar. Prueba en un momento.');store.set('radarOn',false);radarLoop(false);const c=$('lmRadar');if(c)c.checked=false;return}
+  toast('🌧️ Lluvia de '+radarAgo()+' · más oscuro = más fuerte',4000);
+  const m=radarMap||map;if(ok&&m&&m.getZoom&&m.getZoom()>10)m.easeTo({zoom:9,duration:600});
+}
+if(radarOn())radarLoop(true);
 
 /* Cálculo de teselas */
 const lon2x=(lon,z)=>Math.floor((lon+180)/360*2**z);
