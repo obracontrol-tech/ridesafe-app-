@@ -1100,7 +1100,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.16</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.17.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2903,7 +2903,7 @@ function musAutoResume(){clearInterval(mus.resT);const t0=Date.now();
     a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().then(()=>{clearInterval(mus.resT);musUI()}).catch(()=>{})},500)}
 function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
   a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',()=>{if(mus.want&&!a.ended)musAutoResume();musUI()});
-  a.addEventListener('error',()=>{toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
+  a.addEventListener('error',()=>{const c=mus.list[mus.i];if(c&&c.radio){radioErr(c);return}toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
   try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('stop',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
   return a}
 const musOn=()=>!!(mus.a&&!mus.a.paused);
@@ -2919,8 +2919,8 @@ function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mu
 function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
 function musPause(){mus.want=false;clearInterval(mus.resT);if(mus.a)mus.a.pause();musUI()}
 function musToggle(){(musOn()||mus.want&&mus.a&&mus.a.paused&&musSpeaking())?musPause():musPlay()}
-function musNext(auto){if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
-function musPrev(){if(!mus.list.length)return;if(mus.a&&mus.a.currentTime>4){mus.a.currentTime=0;return}musLoad(mus.i-1,true)}
+function musNext(auto){if(mus.list[mus.i]&&mus.list[mus.i].radio){if(auto!==true)radioStep(1);return}if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
+function musPrev(){if(mus.list[mus.i]&&mus.list[mus.i].radio){radioStep(-1);return}if(!mus.list.length)return;if(mus.a&&mus.a.currentTime>4){mus.a.currentTime=0;return}musLoad(mus.i-1,true)}
 function musVol(v){mus.vol=Math.max(0,Math.min(1,+v));store.set('musVol',mus.vol);if(mus.a&&!mus.ducked)mus.a.volume=mus.vol}
 function musRamp(to,ms){const a=mus.a;if(!a)return;clearInterval(mus.rampT);const from=a.volume,t0=Date.now();
   mus.rampT=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/ms);try{a.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1)clearInterval(mus.rampT)},40)}
@@ -2943,10 +2943,58 @@ const SPOT_URL='https://open.spotify.com/';
 /* v5.13.4 — Botón para reanudar: abre Spotify (allí pulsas ▶️) y vuelves a RideSafe */
 function musResume(){store.set('musVoz',true);window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
 function musVozSet(on){store.set('musVoz',!!on);toast(on?'🗣️ Voz del móvil: no parará la música':'🗣️ Voz de Google (más natural)')}
+/* ===== v5.17 — 📻 Radio en directo (gratis, sin registro) =====
+   Las direcciones de cada emisora se buscan en Radio Browser (directorio libre y abierto de radios).
+   Suena dentro de RideSafe: la voz de la app baja la radio y luego la vuelve a subir. */
+const RADIOS=[['Los40','Los40'],['Cadena Dial','Cadena Dial'],['Europa FM','Europa FM'],['Cadena 100','Cadena 100'],['Rock FM','Rock FM'],['Kiss FM','Kiss FM'],['Flaix FM','Flaix FM'],['RAC1','RAC1'],['Catalunya Ràdio','Catalunya Radio'],['Cadena SER','Cadena SER'],['COPE','COPE'],['Radio 3','Radio 3']];
+const RB_HOSTS=['https://de1.api.radio-browser.info','https://fi1.api.radio-browser.info','https://at1.api.radio-browser.info','https://nl1.api.radio-browser.info'];
+async function rbSearch(q,cc){
+  const qs=`name=${encodeURIComponent(q)}${cc?'&countrycode=ES':''}&hidebroken=true&order=clickcount&reverse=true&limit=15`;
+  for(const h of RB_HOSTS){try{const ac=new AbortController();const to=setTimeout(()=>ac.abort(),6000);
+    const r=await fetch(`${h}/json/stations/search?${qs}`,{signal:ac.signal});clearTimeout(to);if(!r.ok)continue;
+    const j=await r.json();return (j||[]).filter(x=>/^https:\/\//.test(x.url_resolved||'')&&/mp3|aac|ogg/i.test(x.codec||'mp3')).map(x=>({n:String(x.name||'').trim().slice(0,50),u:x.url_resolved,fav:x.favicon||''}))}catch(e){}}
+  return null;
+}
+async function radioPlay(name,q){
+  toast('📻 Conectando con '+name+'…');
+  let urls=store.get('radioU_'+q,null);
+  if(!urls||!urls.length){const L=await rbSearch(q,true);if(L===null){toast('Sin conexión: no puedo buscar la emisora');return}
+    const key=q.toLowerCase().replace(/[^a-z0-9]/g,'');
+    urls=L.filter(x=>x.n.toLowerCase().replace(/[^a-z0-9]/g,'').includes(key)).map(x=>x.u).slice(0,4);
+    if(!urls.length)urls=L.map(x=>x.u).slice(0,2);
+    if(!urls.length){toast('No encuentro '+name+' ahora mismo');return}
+    store.set('radioU_'+q,urls)}
+  mus.list.forEach(x=>{if(x.url&&x.url.startsWith('blob:'))try{URL.revokeObjectURL(x.url)}catch(e){}});
+  mus.list=[{n:'📻 '+name,url:urls[0],alts:urls.slice(1),radio:true,q,name,tries:0}];mus.i=0;
+  store.set('radioLast',[name,q]);musLoad(0,true);
+}
+function radioStep(d){const last=store.get('radioLast',null);let k=RADIOS.findIndex(r=>last&&r[1]===last[1]);k=(k+d+RADIOS.length)%RADIOS.length;radioPlay(RADIOS[k][0],RADIOS[k][1])}
+function radioErr(c){
+  if(c.alts&&c.alts.length){c.url=c.alts.shift();if(!c.q.startsWith('_'))store.set('radioU_'+c.q,[c.url,...c.alts]);mus.a.src=c.url;if(mus.want)mus.a.play().catch(()=>{});return}
+  if(!navigator.onLine||c.tries<2){c.tries++;setTimeout(()=>{if(mus.want&&mus.list[mus.i]===c){store.set('radioU_'+c.q,null);mus.a.src=c.url;mus.a.play().catch(()=>{})}},5000);toast('📻 Sin señal: reconectando…');return}
+  store.set('radioU_'+c.q,null);toast('📻 '+c.name+' no responde ahora. Prueba otra emisora');musPause();
+}
+async function radioFind(){
+  const q=($('radQ').value||'').trim();if(q.length<2){toast('Escribe el nombre de la emisora');return}
+  const B=$('radRes');B.innerHTML='<div class="empty" style="padding:10px">Buscando…</div>';
+  const L=await rbSearch(q,false);
+  if(L===null){B.innerHTML='<div class="empty" style="padding:10px">Sin conexión.</div>';return}
+  if(!L.length){B.innerHTML='<div class="empty" style="padding:10px">No encuentro esa emisora.</div>';return}
+  window.__radRes=L.slice(0,8);
+  B.innerHTML=__radRes.map((x,i)=>`<button class="li" style="margin-top:6px;padding:10px 12px" onclick="radioPick(${i})"><span class="em">📻</span><div><b>${esc(x.n)}</b></div></button>`).join('');
+}
+function radioPick(i){const x=(window.__radRes||[])[i];if(!x)return;mus.list=[{n:'📻 '+x.n,url:x.u,alts:[],radio:true,q:'_'+x.n,name:x.n,tries:0}];mus.i=0;store.set('radioLast',[x.n,'_'+x.n]);musLoad(0,true);toast('📻 '+x.n)}
 function renderMusic(){
   /* Versión sencilla: la música va con Spotify */
   const B=$('musBody');if(!B)return;const vz=store.get('musVoz',false);
   B.innerHTML=`<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">🔈 <b>Por el altavoz</b> del móvil o de manillar. 🚫 Con auriculares está prohibido en bici (multa 200 €).</div>
+   <div style="background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">📶 <b>Truco para no gastar datos:</b> descarga la música o los podcasts en casa con WiFi. En ruta suenan sin cobertura y gratis.</div>
+   ${(()=>{const c=mus.list[mus.i];return c?`<div class="li" style="cursor:default;border-color:var(--lime);margin-bottom:10px"><span class="em">${musOn()?'🔊':'⏸'}</span><div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</b><small>${musOn()?'Sonando · sin gastar datos':'En pausa'} · ${mus.i+1} de ${mus.list.length}</small></div><button class="btn btn-lime" style="padding:10px 18px;min-height:0;width:auto;flex:none;font-size:18px" onclick="musToggle()">${musOn()?'⏸':'▶️'}</button></div>`:''})()}
+   <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
+   <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
+   <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+   <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
+   <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>
    <div class="set" style="margin-top:12px;flex-wrap:wrap">🗣️ Voz que no para la música <label class="sw"><input type="checkbox" ${vz?'checked':''} onchange="musVozSet(this.checked)"><span></span></label><small style="flex-basis:100%;color:var(--txt2);margin-top:4px;line-height:1.4">Usa la voz del móvil para el tiempo, los avisos y los giros. La voz de Google es más natural, pero Android para Spotify al oírla.</small></div>
    <div class="list" style="margin-top:12px">
