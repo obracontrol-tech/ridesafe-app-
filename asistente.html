@@ -92,6 +92,7 @@ textarea:focus{border-color:var(--lime)}
 .chip.mec{border-color:#7C5A1E;background:#2A2416}
 #foto{background:var(--card2);border:1px solid var(--line)}
 #foto.hint{background:var(--lime);color:var(--on-lime);border-color:var(--lime);animation:p 1.2s 3}
+#fmenu{display:none;gap:8px;margin-bottom:8px}#fmenu.on{display:flex}#fmenu button{flex:1;background:var(--card2);border:1px solid var(--lime);border-radius:14px;padding:12px 8px;font-weight:700;font-size:14.5px}
 #fotos{display:none;gap:8px;margin-bottom:8px;align-items:center}
 #fotos.on{display:flex}
 #fotos .th{position:relative;width:58px;height:58px;flex:none}
@@ -136,10 +137,12 @@ textarea:focus{border-color:var(--lime)}
     <button class="tog" id="ttsTog">🔊 Leer respuestas</button>
     <button class="tog" id="convTog">💬 Modo conversación</button>
   </div>
+  <div id="fmenu"><button id="fCam">📸 Hacer foto</button><button id="fGal">🖼️ Galería</button></div>
   <div id="fotos"></div>
   <div class="bar">
     <button class="rb" id="foto" aria-label="Añadir foto de la bici">📷</button>
     <input type="file" id="fotoIn" accept="image/*" multiple hidden>
+    <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
     <button class="rb" id="mic" aria-label="Hablar">🎙️</button>
     <textarea id="q" rows="1" placeholder="Escribe tu pregunta…" maxlength="600"></textarea>
     <button class="rb" id="send" aria-label="Enviar" disabled>➤</button>
@@ -186,7 +189,10 @@ function renderFotos(){const F=$('fotos');F.innerHTML='';F.classList.toggle('on'
   fotos.forEach((src,i)=>{const d=document.createElement('div');d.className='th';const im=document.createElement('img');im.src=src;im.alt='Foto '+(i+1);
     const x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','Quitar foto');x.onclick=()=>{fotos.splice(i,1);renderFotos();autosize()};d.append(im,x);F.appendChild(d)});
   if(fotos.length){const sm=document.createElement('small');sm.textContent=fotos.length<MAX_FOTOS?'Cuéntame qué le pasa y envía ➤':'Máximo '+MAX_FOTOS+' fotos';F.appendChild(sm)}}
-$('foto').onclick=()=>{if(fotos.length>=MAX_FOTOS){note('Puedes enviar como máximo '+MAX_FOTOS+' fotos por pregunta.');return}$('fotoIn').click()};
+$('foto').onclick=()=>{if(fotos.length>=MAX_FOTOS){note('Puedes enviar como máximo '+MAX_FOTOS+' fotos por pregunta.');return}$('fmenu').classList.toggle('on')};
+$('fCam').onclick=()=>{$('fmenu').classList.remove('on');$('camIn').click()};
+$('fGal').onclick=()=>{$('fmenu').classList.remove('on');$('fotoIn').click()};
+$('camIn').onchange=e=>$('fotoIn').onchange(e);
 $('fotoIn').onchange=async e=>{const fs=[...(e.target.files||[])];e.target.value='';
   for(const f of fs){if(fotos.length>=MAX_FOTOS)break;if(!/^image\//.test(f.type||'image/')){continue}
     try{fotos.push(await shrink(f))}catch(err){note('No he podido abrir esa foto. Prueba con otra.')}}
