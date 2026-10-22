@@ -88,6 +88,22 @@ textarea:focus{border-color:var(--lime)}
 #sheet .row{display:flex;gap:8px;margin-top:12px}
 #sheet .row button{flex:1;padding:12px;border-radius:14px;font-weight:700;background:var(--card2)}
 #sheet .row button.ok{background:var(--lime);color:var(--on-lime)}
+.sub{margin:14px 0 8px;font-size:13.5px;font-weight:700;color:var(--txt)}
+.chip.mec{border-color:#7C5A1E;background:#2A2416}
+#foto{background:var(--card2);border:1px solid var(--line)}
+#foto.hint{background:var(--lime);color:var(--on-lime);border-color:var(--lime);animation:p 1.2s 3}
+#fotos{display:none;gap:8px;margin-bottom:8px;align-items:center}
+#fotos.on{display:flex}
+#fotos .th{position:relative;width:58px;height:58px;flex:none}
+#fotos .th img{width:58px;height:58px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+#fotos .th button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:800;line-height:22px}
+#fotos small{color:var(--txt2);font-size:12px;line-height:1.3}
+.me .fts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.me .fts img{width:64px;height:64px;object-fit:cover;border-radius:10px}
+.grav{display:block;font-weight:800;font-size:14.5px;padding:9px 11px;border-radius:12px;margin-bottom:10px;white-space:normal}
+.grav.VERDE{background:rgba(34,197,94,.15);color:#86EFAC;border:1px solid #22C55E}
+.grav.ÁMBAR{background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid #F59E0B}
+.grav.ROJO{background:rgba(239,68,68,.18);color:#FCA5A5;border:1px solid #EF4444}
 @media (max-height:760px){header h1 small{display:none}.hello p{font-size:13.5px}}
 </style>
 </head>
@@ -105,8 +121,10 @@ textarea:focus{border-color:var(--lime)}
 <main id="chat">
   <div class="hello" id="hello">
     <h2>Hola, ¿en qué te ayudo?</h2>
-    <p>Pregunta por escrito o con el micrófono: ciclismo, dónde comer o parar, qué ver cerca o dudas generales de salud.</p>
+    <p>Pregunta por escrito, con el micrófono o con una foto 📷: ciclismo, averías de la bici, dónde comer o parar, qué ver cerca o dudas generales de salud.</p>
     <div class="chips" id="chips"></div>
+    <p class="sub">🔧 ¿Avería en la bici? Elige, cuéntalo y añade una foto</p>
+    <div class="chips" id="chipsMec"></div>
     <details class="srcs lee" id="srcs"><summary style="cursor:pointer;font-weight:700">📚 Para saber más: webs de ciclismo recomendadas</summary></details>
   </div>
 </main>
@@ -118,7 +136,10 @@ textarea:focus{border-color:var(--lime)}
     <button class="tog" id="ttsTog">🔊 Leer respuestas</button>
     <button class="tog" id="convTog">💬 Modo conversación</button>
   </div>
+  <div id="fotos"></div>
   <div class="bar">
+    <button class="rb" id="foto" aria-label="Añadir foto de la bici">📷</button>
+    <input type="file" id="fotoIn" accept="image/*" multiple hidden>
     <button class="rb" id="mic" aria-label="Hablar">🎙️</button>
     <textarea id="q" rows="1" placeholder="Escribe tu pregunta…" maxlength="600"></textarea>
     <button class="rb" id="send" aria-label="Enviar" disabled>➤</button>
@@ -148,6 +169,35 @@ let busy=false,tts=st.get('tts',true),conv=st.get('conv',false);
 const CHIPS=[['🍽️ ¿Dónde como cerca?','¿Dónde puedo comer o tomar algo cerca de aquí?',true],['💧 Fuente de agua','¿Hay alguna fuente de agua cerca?',true],['🔧 Taller de bicis','¿Hay algún taller o tienda de bicis cerca?',true],['👕 ¿Qué ropa me pongo?','Con el tiempo que hace hoy aquí, ¿qué ropa me pongo para salir en bici?',true],['🛞 Arreglar un pinchazo','Explícame paso a paso cómo arreglar un pinchazo en ruta',false],['🦵 Tengo calambres','Me han dado calambres en las piernas en ruta, ¿qué hago?',false]];
 CHIPS.forEach(([l,q,needLoc])=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.onclick=async()=>{if(needLoc&&!ctx.ll)await getLoc();ask(q)};$('chips').appendChild(b)});
 
+/* ---------- v1.4: Averías de la bici (botones, fotos y semáforo de gravedad) ---------- */
+let mecChip=false,fotos=[];
+const MAX_FOTOS=3;
+const MEC_CHIPS=[['🛑 Frenos','Avería en los frenos: '],['⛓️ Cadena / cambio','Avería en la cadena o el cambio: '],['🔊 Ruido raro','La bici hace un ruido raro: '],['🎯 Holgura / algo suelto','Noto holgura o algo suelto en la bici: '],['⭕ Rueda / radios','Problema en una rueda o en los radios: '],['⚡ E-Bike','Problema con mi bici eléctrica: ']];
+MEC_CHIPS.forEach(([l,q])=>{const b=document.createElement('button');b.className='chip mec';b.textContent=l;b.onclick=()=>{mecChip=true;const t=$('q');t.value=q;autosize();t.focus();try{t.setSelectionRange(q.length,q.length)}catch(e){}
+  const f=$('foto');f.classList.remove('hint');void f.offsetWidth;f.classList.add('hint')};$('chipsMec').appendChild(b)});
+const MEC=/(aver[ií]a|\bfren|pastillas? de freno|\bdiscos?\b|cadena|desviador|\bcambios?\b|pi[ñn][oó]n|cassette|ruido|cruj|chirr|holgura|suelt|manillar|juego de direcci|\bruedas?\b|\bradios?\b|llanta|\bbuje|\beje\b|cubierta|c[aá]mara de la rueda|pinch|tubeless|v[aá]lvula|\bpedal(es)?\b|biela|tija|horquilla|amortigu|\bcuadro\b|e-?bike|bici el[eé]ctrica|bater[ií]a|\bmotor\b)/i;
+const MEC_INST='[Consulta de avería mecánica de bicicleta. Instrucciones para la IA: empieza tu respuesta SIEMPRE con una primera línea exacta "GRAVEDAD: VERDE" (puede seguir rodando con precaución), "GRAVEDAD: ÁMBAR" (hay que arreglarlo antes de seguir; se puede hacer en ruta) o "GRAVEDAD: ROJO" (no debe seguir rodando; llevarla al taller). Frenos que no frenan bien, dirección o manillar suelto, cuadro u horquilla con grietas, rueda o eje suelto, radios rotos o llanta dañada son siempre ROJO. Ante la duda en algo de seguridad, elige la gravedad más alta. Después da: la causa probable (nunca la des por segura), pasos sencillos numerados para revisarlo o arreglarlo y las herramientas necesarias. Si hay fotos y no se ve bien el problema, pide otra foto más cerca o con más luz. Lenguaje sencillo, para alguien sin experiencia en mecánica.]\n\nPregunta del ciclista: ';
+const GRAV={VERDE:['🟢 Puedes seguir con precaución','Gravedad baja: puedes seguir con precaución'],'ÁMBAR':['🟠 Arréglalo antes de seguir','Gravedad media: arréglalo antes de seguir'],ROJO:['🔴 No sigas rodando · llévala al taller','Gravedad alta: no sigas rodando y llévala al taller']};
+async function shrink(file){const url=URL.createObjectURL(file);try{
+  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+  const M=1024,s=Math.min(1,M/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',0.75)}finally{URL.revokeObjectURL(url)}}
+function renderFotos(){const F=$('fotos');F.innerHTML='';F.classList.toggle('on',fotos.length>0);
+  fotos.forEach((src,i)=>{const d=document.createElement('div');d.className='th';const im=document.createElement('img');im.src=src;im.alt='Foto '+(i+1);
+    const x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','Quitar foto');x.onclick=()=>{fotos.splice(i,1);renderFotos();autosize()};d.append(im,x);F.appendChild(d)});
+  if(fotos.length){const sm=document.createElement('small');sm.textContent=fotos.length<MAX_FOTOS?'Cuéntame qué le pasa y envía ➤':'Máximo '+MAX_FOTOS+' fotos';F.appendChild(sm)}}
+$('foto').onclick=()=>{if(fotos.length>=MAX_FOTOS){note('Puedes enviar como máximo '+MAX_FOTOS+' fotos por pregunta.');return}$('fotoIn').click()};
+$('fotoIn').onchange=async e=>{const fs=[...(e.target.files||[])];e.target.value='';
+  for(const f of fs){if(fotos.length>=MAX_FOTOS)break;if(!/^image\//.test(f.type||'image/')){continue}
+    try{fotos.push(await shrink(f))}catch(err){note('No he podido abrir esa foto. Prueba con otra.')}}
+  $('foto').classList.remove('hint');renderFotos();autosize()};
+function sinFotos(m){if(!Array.isArray(m.content))return m;const t=(m.content.find(c=>c.type==='text')||{}).text||'';return {role:m.role,content:'(Envié '+(m.content.length-1)+' foto/s de la bici) '+t}}
+async function llamarIA(msgs){let res=null,err='';
+  try{const r=await fetch(workerUrl(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs,context:contextText()})});
+    let j={};try{j=await r.json()}catch(e){}
+    if(r.ok&&j.text)res=j.text;else err=j.error||('http_'+r.status)}
+  catch(e){err=navigator.onLine?'red':'offline'}
+  return {res,err}}
 
 /* ---------- v1.3: Lecturas recomendadas (enlaces a webs especializadas; no se copia su contenido) ---------- */
 const FUENTES={
@@ -269,38 +319,53 @@ function showSOS(){
 function workerUrl(){return st.get('url','')||WORKER_DEFAULT}
 function usoHoy(){const d=new Date().toISOString().slice(0,10);const u=st.get('uso',{d,n:0});return u.d===d?u:{d,n:0}}
 async function ask(text){
-  text=String(text||'').trim();if(!text||busy)return;
+  text=String(text||'').trim();if(busy)return;
+  const fotosEnv=fotos.slice();if(!text&&fotosEnv.length)text='¿Qué le pasa a mi bici? Te mando una foto.';if(!text)return;
+  const esMec=fotosEnv.length>0||mecChip||MEC.test(text);mecChip=false;
+  fotos=[];renderFotos();$('foto').classList.remove('hint');
   $('hello')&&$('hello').remove();['gem','loc','near'].forEach(i=>$(i).classList.add('mini'));document.querySelector('header').classList.add('mini');
-  stopSpeak();add('me',text);$('q').value='';autosize();
+  stopSpeak();const meD=add('me',text);$('q').value='';autosize();
+  if(fotosEnv.length){const fw=document.createElement('div');fw.className='fts';fotosEnv.forEach(s=>{const im=document.createElement('img');im.src=s;im.alt='Foto de la bici';fw.appendChild(im)});meD.appendChild(fw)}
   const u=usoHoy();if(u.n>=LIMITE_DIA){note(`Has llegado al límite de ${LIMITE_DIA} preguntas de hoy (versión beta). Mañana más.`);return}
   if(EMERG.test(text))showSOS();
   if(ctx.ll&&!ctx.sitios.length&&/(comer|como|cenar|desayun|almorz|restaurant|bar|caf[eé]|tapa|bocadillo|fuente|agua|taller|tienda de bici|cerca|visitar|ver )/i.test(text)){
     $('locT').lastChild&&($('near').querySelector('summary').textContent='Buscando sitios cercanos…');
     ctx.sitios=await overpass(ctx.ll);renderNear()}
-  hist.push({role:'user',content:text});
+  const envTxt=esMec?MEC_INST+text:text;
+  hist.push({role:'user',content:fotosEnv.length?[...fotosEnv.map(s=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:s.split(',')[1]}})),{type:'text',text:envTxt}]:envTxt});
   busy=true;$('send').disabled=true;
   const w=document.createElement('div');w.className='msg ai dots';w.innerHTML='<span></span><span></span><span></span>';$('chat').appendChild(w);w.scrollIntoView({behavior:'smooth',block:'end'});
-  let res=null,err='';
-  try{const r=await fetch(workerUrl(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist.slice(-8),context:contextText()})});
-    let j={};try{j=await r.json()}catch(e){}
-    if(r.ok&&j.text)res=j.text;else err=j.error||('http_'+r.status)}
-  catch(e){err=navigator.onLine?'red':'offline'}
+  const msgs=hist.slice(-8).map((m,i,a)=>i===a.length-1?m:sinFotos(m));
+  let {res,err}=await llamarIA(msgs);
+  let fotoFallo=false;
+  if(!res&&fotosEnv.length&&!['offline','limite_diario','no_permitido'].includes(err)){
+    // Si el servidor no acepta fotos, repetimos solo con el texto
+    hist[hist.length-1]={role:'user',content:envTxt+' (El ciclista intentó enviar una foto pero no se pudo; pídele que describa lo que ve.)'};
+    ({res,err}=await llamarIA(hist.slice(-8).map(sinFotos)));fotoFallo=!!res}
+  if(hist.length&&Array.isArray(hist[hist.length-1].content))hist[hist.length-1]=sinFotos(hist[hist.length-1]);
   w.remove();busy=false;$('send').disabled=!$('q').value.trim();
   if(!res){hist.pop();
     note({offline:'Sin conexión. El asistente necesita internet. Si es una emergencia, llama al 112.',limite_diario:'El asistente ha llegado a su límite gratuito de hoy. Vuelve a probar mañana.',no_permitido:'El asistente solo funciona desde app.ridesafeia.es.',ia_no_disponible:'La IA no responde ahora mismo. Prueba en un momento.'}[err]||'No he podido conectar con el asistente. Prueba otra vez en un momento.');
     return}
   st.set('uso',{d:u.d,n:u.n+1});
+  if(fotoFallo)note('No he podido enviar la foto al asistente. Te respondo solo con lo que has escrito.');
+  let grav=null;const gm=String(res).match(/^\s*[*_#\s]*GRAVEDAD\s*:\s*\**\s*(VERDE|[ÁA]MBAR|ROJO)[^\n]*\n*/i);
+  if(gm){grav=gm[1].toUpperCase().replace('AMBAR','ÁMBAR');res=String(res).slice(gm[0].length)}
   let out=clean(res);
   if(SALUD.test(text)&&!out.includes('no sustituye'))out+='\n\n'+AVISO;
   hist.push({role:'assistant',content:out});
   const d=add('ai',out);
+  const dice=(grav?GRAV[grav][1]+'. ':'')+out;
+  if(grav){const g=document.createElement('span');g.className='grav '+grav;g.textContent=GRAV[grav][0];d.prepend(g)}
   const act=document.createElement('div');act.className='act';
-  const b1=document.createElement('button');b1.textContent='🔊 Escuchar';b1.onclick=()=>speak(out);
+  const b1=document.createElement('button');b1.textContent='🔊 Escuchar';b1.onclick=()=>speak(dice);
   const b2=document.createElement('button');b2.textContent='📋 Copiar';b2.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(out).then(()=>{b2.textContent='✓ Copiado'}).catch(()=>{})};
-  act.append(b1,b2);d.appendChild(act);
+  act.append(b1,b2);
+  if(grav&&grav!=='VERDE'){const b3=document.createElement('button');b3.textContent='🔧 Talleres cerca';b3.onclick=async()=>{if(!ctx.ll)await getLoc();if(ctx.ll){$('near').open=true;$('near').scrollIntoView({behavior:'smooth',block:'start'})}};act.appendChild(b3)}
+  d.appendChild(act);
   const fs=fuentesPara(text);if(fs.length){const lee=document.createElement('div');lee.className='lee';lee.textContent='Para leer más:';fs.forEach(k=>lee.appendChild(linkFuente(k)));d.appendChild(lee)}
   d.scrollIntoView({behavior:'smooth',block:'end'});
-  if(tts)speak(out,()=>{if(conv)listen()});else if(conv)listen();
+  if(tts)speak(dice,()=>{if(conv)listen()});else if(conv)listen();
 }
 
 /* ---------- Voz: hablar y escuchar (del propio Chrome, gratis) ---------- */
@@ -324,7 +389,7 @@ function listen(){
 }
 
 /* ---------- Interfaz ---------- */
-function autosize(){const q=$('q');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';$('send').disabled=busy||!q.value.trim()}
+function autosize(){const q=$('q');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';$('send').disabled=busy||!(q.value.trim()||fotos.length)}
 $('q').addEventListener('input',autosize);
 $('q').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask($('q').value)}});
 $('send').onclick=()=>ask($('q').value);
@@ -337,7 +402,7 @@ setTog();
 $('cfgBtn').onclick=()=>{$('urlIn').value=workerUrl();const u=usoHoy();$('cnt').textContent=`Preguntas hoy: ${u.n} de ${LIMITE_DIA}.`;$('sheet').style.display='flex'};
 $('sheet').onclick=e=>{if(e.target.id==='sheet')$('sheet').style.display='none'};
 $('okBtn').onclick=()=>{const v=$('urlIn').value.trim();st.set('url',/^https:\/\/[\w.-]+(\/.*)?$/.test(v)&&v!==WORKER_DEFAULT?v:'');$('sheet').style.display='none'};
-$('clrBtn').onclick=()=>{hist=[];document.querySelectorAll('#chat > :not(#hello)').forEach(e=>e.remove());$('sheet').style.display='none'};
+$('clrBtn').onclick=()=>{hist=[];fotos=[];renderFotos();autosize();document.querySelectorAll('#chat > :not(#hello)').forEach(e=>e.remove());$('sheet').style.display='none'};
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopSpeak();rec&&recOn&&rec.stop()}});
 </script>
 </body>
