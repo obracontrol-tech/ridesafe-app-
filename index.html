@@ -433,6 +433,13 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .act b{display:block}
 .act small{color:var(--txt2)}
 
+/* v5.18 — Modo casco */
+.li .casco-ic{width:44px;height:36px;font-size:0;flex-shrink:0}
+.casco-hero{width:150px;height:105px;margin:4px auto 10px}
+.casco-law{background:rgba(253,186,116,.12);border:1px solid #FDBA74;border-radius:14px;padding:12px;font-size:14px;margin-bottom:12px}
+.casco-steps{margin:6px 0 12px;padding-left:20px;font-size:15px}
+.casco-steps li{margin:4px 0}
+.casco-note{color:var(--txt2);font-size:13px;margin:6px 0 12px}
 /* Perfil */
 .prof{text-align:center;padding:10px 0 20px}
 .prof .avatar{width:96px;height:96px;font-size:40px;margin:0 auto 12px}
@@ -1086,6 +1093,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
   <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li" style="margin-bottom:10px" onclick="openCasco()"><span class="em casco-ic"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></span><div><b>Mi casco con altavoces</b><small id="cascoSub">Voz por el casco, botones y aviso de luz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -1100,7 +1108,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.17.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.18.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2904,7 +2912,7 @@ function musAutoResume(){clearInterval(mus.resT);const t0=Date.now();
 function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
   a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',()=>{if(mus.want&&!a.ended)musAutoResume();musUI()});
   a.addEventListener('error',()=>{const c=mus.list[mus.i];if(c&&c.radio){radioErr(c);return}toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
-  try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('stop',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev())}}catch(e){}
+  try{if('mediaSession' in navigator){const ms=navigator.mediaSession;ms.setActionHandler('play',()=>musPlay());ms.setActionHandler('pause',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('stop',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});ms.setActionHandler('nexttrack',()=>musNext());ms.setActionHandler('previoustrack',()=>musPrev());if(CASCO.on)cascoHandlers()}}catch(e){}
   return a}
 const musOn=()=>!!(mus.a&&!mus.a.paused);
 function musName(f){return String(f.name||'Canción').replace(/\.[a-z0-9]{2,4}$/i,'').replace(/[_]+/g,' ').slice(0,60)}
@@ -6073,6 +6081,7 @@ async function ttsGet(t){
 }
 async function speak(t){
   if(!live.voice||!t)return;
+  CASCO.last=t;   // v5.18: para repetirlo con el botón del casco
   musDuck(Math.max(3200,String(t).length*85));
   if(!ttsOk()||store.get('musVoz',false)){speakLocal(t);return}   // v5.13.4: con música, voz del móvil (no para Spotify)
   try{
@@ -6083,6 +6092,112 @@ async function speak(t){
     await ttsAudio.play();
   }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+60000;speakLocal(t)}
 }
+/* ===================================================================
+   v5.18 — 🎧 MODO CASCO (casco con altavoces y micrófono, p. ej. Sena)
+   La voz sale sola por el casco al emparejarlo por Bluetooth.
+   Botones del casco (play/pausa, siguiente, anterior) durante la salida:
+     · Play/Pausa → repite la última indicación
+     · Siguiente  → resumen (km, tiempo, lo que queda)
+     · Anterior   → viento y tiempo
+   Si suena la Música en ruta, los botones controlan la música.
+   La luz del casco solo la enciende el casco: aquí solo se recuerda.
+   =================================================================== */
+var CASCO={on:false,last:'',a:null,t:null,sunSaid:false};
+const cascoOn=()=>!!store.get('casco',false);
+function cascoSay(t){const v=live.voice;live.voice=true;speak(t);live.voice=v}
+function cascoSilence(){const sr=8000,n=sr*10,b=new ArrayBuffer(44+n*2),v=new DataView(b);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
+function cascoMusic(){return !!(mus.list.length&&mus.want)}
+function cascoKeep(){try{if(CASCO.a&&CASCO.a.paused)CASCO.a.play().catch(()=>{});navigator.mediaSession.playbackState='playing'}catch(e){}}
+function cascoRepeat(){cascoSay(CASCO.last||'Todavía no hay indicaciones.')}
+function cascoHandlers(){
+  if(!('mediaSession' in navigator))return;const ms=navigator.mediaSession;
+  const set=(a,f)=>{try{ms.setActionHandler(a,()=>{f();cascoKeep()})}catch(e){}};
+  const musPauseLike=()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()};
+  set('play',()=>{if(cascoMusic())musPlay();else cascoRepeat()});
+  set('pause',()=>{if(cascoMusic())musPauseLike();else cascoRepeat()});
+  set('nexttrack',()=>{if(cascoMusic())musNext();else if(live.on)cascoSay(sumText());else cascoRepeat()});
+  set('previoustrack',()=>{if(cascoMusic())musPrev();else if(live.on&&live.wx)cascoSay(lwText());else cascoSay('Todavía no tengo el viento.')});
+}
+function cascoMusicHandlers(){
+  if(!('mediaSession' in navigator))return;const ms=navigator.mediaSession;
+  const set=(a,f)=>{try{ms.setActionHandler(a,f)}catch(e){}};
+  if(mus.a){set('play',()=>musPlay());set('pause',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});
+    set('stop',()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()});set('nexttrack',()=>musNext());set('previoustrack',()=>musPrev())}
+  else['play','pause','nexttrack','previoustrack'].forEach(a=>set(a,null));
+}
+function cascoSunset(lat,lng){const d=new Date(),r=Math.PI/180;
+  const jd=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())/864e5+2440587.5;
+  const n=Math.ceil(jd-2451545+0.0008),Js=n-lng/360;
+  const M=(357.5291+0.98560028*Js)%360,C=1.9148*Math.sin(M*r)+0.02*Math.sin(2*M*r)+0.0003*Math.sin(3*M*r);
+  const L=(M+C+180+102.9372)%360,Jt=2451545+Js+0.0053*Math.sin(M*r)-0.0069*Math.sin(2*L*r);
+  const dec=Math.asin(Math.sin(L*r)*Math.sin(23.44*r));
+  const cw=(Math.sin(-0.83*r)-Math.sin(lat*r)*Math.sin(dec))/(Math.cos(lat*r)*Math.cos(dec));
+  if(cw<-1||cw>1)return null;return new Date((Jt+Math.acos(cw)/r/360-2440587.5)*864e5)}
+function cascoLightTick(){
+  if(!live.on||CASCO.sunSaid||!store.get('cascoLuz',true))return;
+  const p=live.pts&&live.pts.at(-1);if(!p)return;
+  const ss=cascoSunset(+p[0],+p[1]);if(!ss)return;
+  if(Date.now()>=ss.getTime()-20*60000){CASCO.sunSaid=true;
+    const after=Date.now()>=ss.getTime();
+    toast('💡 Enciende la luz trasera del casco');
+    speak(after?'Ya ha anochecido. Enciende la luz trasera del casco y las luces de la bici.':'Queda poco para anochecer. Enciende la luz trasera del casco y las luces de la bici.')}
+}
+function cascoStart(){
+  if(!cascoOn())return;
+  CASCO.on=true;CASCO.sunSaid=false;
+  if(store.get('cascoBtn',true)&&'mediaSession' in navigator){
+    try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
+      CASCO.a.play().then(()=>{cascoHandlers();
+        if(!mus.a)try{navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Modo casco',artist:live.rideTitle||'En ruta'})}catch(e){}
+      }).catch(e=>console.warn('casco: botones no disponibles',e))}catch(e){}
+  }
+  if(store.get('cascoLuz',true))setTimeout(()=>{if(live.on)speak('Recuerda encender la luz trasera del casco.')},2500);
+  clearInterval(CASCO.t);CASCO.t=setInterval(cascoLightTick,60000);setTimeout(cascoLightTick,15000);
+}
+function cascoStop(){
+  if(!CASCO.on)return;CASCO.on=false;clearInterval(CASCO.t);
+  try{if(CASCO.a)CASCO.a.pause()}catch(e){}
+  cascoMusicHandlers();
+  try{if(!musOn())navigator.mediaSession.playbackState='none'}catch(e){}
+}
+function cascoSet(k,on,el){
+  if(k==='casco'&&on&&!store.get('cascoLaw',0)){
+    const ok=confirm('⚠️ Antes de activar el Modo casco\n\nEl Reglamento General de Circulación (art. 18.2) prohíbe circular, también en bici, con cascos o auriculares conectados a aparatos de sonido. Multa de 200 €.\n\nCon los cascos con altavoces integrados la norma no está clara y algunos agentes multan. Tú decides si lo usas y bajo tu responsabilidad.\n\nRecomendación: volumen bajo y solo para indicaciones y avisos, nunca música.\n\n¿Activar el Modo casco?');
+    if(!ok){if(el)el.checked=false;return}
+    store.set('cascoLaw',1);
+  }
+  store.set(k,!!on);
+  if(k==='casco'){toast(on?'🎧 Modo casco activado: se pondrá en marcha al empezar una salida':'Modo casco desactivado');if(!on)cascoStop()}
+  else toast(on?'Activado':'Desactivado');
+  renderCasco();
+}
+function cascoTest(){cascoSay('Hola, soy RideSafe. Si me oyes por el casco, todo funciona correctamente.')}
+function openCasco(){
+  $('rideBody').innerHTML=sheetHead('🎧 Mi casco con altavoces')+'<div id="cascoBody"></div>';openRideId=null;openSheet('sh-ride');renderCasco();
+}
+function renderCasco(){
+  const b=$('cascoBody');if(!b)return;const on=cascoOn();
+  const sw=(k,def,t,sub,dis)=>`<div class="set" style="flex-wrap:wrap${dis?';opacity:.5':''}">${t} <label class="sw"><input type="checkbox" ${store.get(k,def)?'checked':''} ${dis?'disabled':''} onchange="cascoSet(${jsq(k)},this.checked,this)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${sub}</small></div>`;
+  b.innerHTML=`<div class="casco-hero"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></div>
+   <div class="casco-law">⚠️ <b>Atención:</b> la ley (art. 18.2 del Reglamento General de Circulación) prohíbe circular con cascos o auriculares conectados al móvil, con multa de 200 €. Con los cascos con altavoces integrados la norma no está clara. Úsalo bajo tu responsabilidad, con volumen bajo y solo para indicaciones.</div>
+   ${sw('casco',false,'🎧 Modo casco','Se pone en marcha solo al empezar una salida.',false)}
+   ${sw('cascoBtn',true,'🔘 Botones del casco','Play/Pausa repite la última indicación · Siguiente da el resumen (km y tiempo) · Anterior dice el viento. Si suena la música de la app, controlan la música.',!on)}
+   ${sw('cascoLuz',true,'💡 Recordar la luz trasera','Al empezar la salida y 20 minutos antes de anochecer. La luz se enciende con el botón del casco.',!on)}
+   <button class="btn btn-lime" style="width:100%;margin:4px 0 14px" onclick="cascoTest()">🔊 Probar sonido del casco</button>
+   <b>Cómo conectarlo</b>
+   <ol class="casco-steps">
+     <li>Pon el casco en modo emparejamiento (mira la guía rápida de tu casco).</li>
+     <li>En el móvil: <b>Ajustes → Bluetooth</b> → toca el casco cuando aparezca.</li>
+     <li>Pulsa <b>Probar sonido</b>: si se oye por el casco, ya está.</li>
+   </ol>
+   <p class="casco-note">📱 Los botones del casco funcionan con la pantalla encendida (RideSafe la mantiene encendida durante la salida).<br>🎧 Si escuchas Spotify, apaga «Botones del casco» para que no lo interrumpa.<br>🔧 La luz y el intercomunicador entre cascos se manejan con la app de la marca del casco.</p>`;
+  const s=$('cascoSub');if(s)s.textContent=on?'Activado · voz, botones y aviso de luz':'Voz por el casco, botones y aviso de luz';
+}
+setTimeout(()=>{const s=$('cascoSub');if(s&&cascoOn())s.textContent='Activado · voz, botones y aviso de luz'},0);
 function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 async function keepAwake(){try{if('wakeLock' in navigator&&live.on&&document.visibilityState==='visible')live.wake=await navigator.wakeLock.request('screen')}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(live.on&&document.visibilityState==='visible')keepAwake()});
@@ -6129,7 +6244,7 @@ async function startLive(opt){
   setLine(map,null,'track','#60A5FA');
   if(opt.route)navRoute(opt.route,opt.wps);
   else setLine(map,null,'plan');
-  fallStart();
+  fallStart();cascoStart();
   live.watch=navigator.geolocation.watchPosition(onFix,e=>{if(e.code===1)toast('Activa el permiso de ubicación para grabar')},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   live.timer=setInterval(renderLive,1000);
   live.bkTimer=setInterval(liveBackup,15000);setTimeout(liveBackup,1500);
@@ -6532,7 +6647,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  saverOff();fallStop();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
+  saverOff();fallStop();cascoStop();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);clearInterval(L.bkTimer);clearInterval(L.wxT);liveBackupClear();
   if(CAM.open){CAM.closeAfter=false;if(CAM.rec&&CAM.rec.state==='recording'){CAM.closeAfter=true;CAM.rec.stop()}else camClose()}
   (L.camMk||[]).forEach(m=>m.remove());
