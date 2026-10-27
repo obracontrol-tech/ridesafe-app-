@@ -582,6 +582,22 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 #s-rutas .seg{padding:2px;border-radius:16px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
 #s-rutas .seg button{width:34px;height:26px;border-radius:13px}
 #s-rutas .seg .i{width:17px;height:17px}
+/* v5.18.1 — Disciplinas más visibles: icono + nombre + color propio */
+#s-rutas .seg{padding:3px;gap:2px;border-radius:18px;background:rgba(11,18,32,.94);border:1px solid var(--line)}
+#s-rutas .seg button{width:auto;min-width:62px;height:42px;padding:3px 8px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#CBD5E1;transition:background .15s,color .15s}
+#s-rutas .seg button .sl{font-size:10.5px;font-weight:800;line-height:1;letter-spacing:.2px;white-space:nowrap}
+#s-rutas .seg button.sp-road .i{color:#60A5FA}
+#s-rutas .seg button.sp-mtb .i{color:#FDBA74}
+#s-rutas .seg button.sp-hike .i{color:#4ADE80}
+#s-rutas .seg button.on .i{color:#0B1220}
+#s-rutas .seg button.on{color:#0B1220;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+#s-rutas .seg button.sp-road.on{background:#60A5FA}
+#s-rutas .seg button.sp-mtb.on{background:#FDBA74}
+#s-rutas .seg button.sp-hike.on{background:#4ADE80}
+#s-rutas .zone{height:42px;border-radius:18px}
+#s-rutas .zone{white-space:nowrap}
+#s-rutas .mside{top:calc(110px + env(safe-area-inset-top))}
+@media(max-width:390px){#s-rutas .zone{font-size:11.5px;padding:0 9px}#s-rutas .seg button{min-width:52px;padding:3px 5px}#s-rutas .seg button .sl{font-size:10px}}
 #s-rutas .mside{right:10px;top:calc(100px + env(safe-area-inset-top));gap:0;background:var(--bg);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 #s-rutas .mside button{width:38px;height:38px;border-radius:0;border:0;box-shadow:none;background:transparent;font-size:16px!important}
 #s-rutas .mside button+button{border-top:1px solid var(--line)}
@@ -897,9 +913,9 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="mrow">
       <button class="zone" onclick="openAqui()" aria-label="Qué hay por aquí: rutas para salir ya, salidas cerca, rutas del club y paradas">📍 ¿Qué hay por aquí?</button>
       <div class="seg" role="group" aria-label="Tipo de bici">
-        <button class="on" aria-label="Carretera" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3"/></svg></button>
-        <button aria-label="Montaña" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M15 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 10.5V12l-3-3 4-3 2 3h3M3 21l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></button>
-        <button aria-label="Senderismo" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="M11 22l2-7 3 3v4M9 11l3-4 3 3 3 1M12 7l-2 6-3 2M18 9l1 13"/></svg></button>
+        <button class="on sp-road" aria-label="Carretera" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3"/></svg><span class="sl">Carretera</span></button>
+        <button class="sp-mtb" aria-label="Montaña" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M15 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 10.5V12l-3-3 4-3 2 3h3M3 21l3-2 3 2 3-2 3 2 3-2 3 2"/></svg><span class="sl">MTB</span></button>
+        <button class="sp-hike" aria-label="Senderismo" onclick="segBike(this)"><svg class="i" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="M11 22l2-7 3 3v4M9 11l3-4 3 3 3 1M12 7l-2 6-3 2M18 9l1 13"/></svg><span class="sl">A pie</span></button>
       </div>
     </div>
   </div>
@@ -1108,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.18.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.18.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
