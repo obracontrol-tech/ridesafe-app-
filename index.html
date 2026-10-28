@@ -1124,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2975,7 +2975,11 @@ function openMusic(){
 }
 const SPOT_URL='https://open.spotify.com/';
 /* v5.13.4 — Botón para reanudar: abre Spotify (allí pulsas ▶️) y vuelves a RideSafe */
-function musResume(){store.set('musVoz',true);window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
+/* v5.19.4 — Abrir Spotify activa la voz del móvil solo para esa salida (6 horas), no para siempre.
+   Antes se quedaba activada y la navegación hablaba siempre con la voz del móvil. */
+if(store.get('musVozMig',0)!==1){if(store.get('musVoz',false)===true)store.set('musVoz',false);store.set('musVozMig',1)}   // se había quedado activada para siempre
+const musVozOn=()=>{const v=store.get('musVoz',false);return v===true||(typeof v==='number'&&Date.now()<v)};
+function musResume(){if(!musVozOn())store.set('musVoz',Date.now()+6*3600000);window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
 function musVozSet(on){store.set('musVoz',!!on);toast(on?'🗣️ Voz del móvil: no parará la música':'🗣️ Voz de Google (más natural)')}
 /* ===== v5.17 — 📻 Radio en directo (gratis, sin registro) =====
    Las direcciones de cada emisora se buscan en Radio Browser (directorio libre y abierto de radios).
@@ -3020,7 +3024,7 @@ async function radioFind(){
 function radioPick(i){const x=(window.__radRes||[])[i];if(!x)return;mus.list=[{n:'📻 '+x.n,url:x.u,alts:[],radio:true,q:'_'+x.n,name:x.n,tries:0}];mus.i=0;store.set('radioLast',[x.n,'_'+x.n]);musLoad(0,true);toast('📻 '+x.n)}
 function renderMusic(){
   /* Versión sencilla: la música va con Spotify */
-  const B=$('musBody');if(!B)return;const vz=store.get('musVoz',false);
+  const B=$('musBody');if(!B)return;const vz=musVozOn();
   B.innerHTML=`<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">🔈 <b>Por el altavoz</b> del móvil o de manillar. 🚫 Con auriculares está prohibido en bici (multa 200 €).</div>
    <div style="background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">📶 <b>Truco para no gastar datos:</b> descarga la música o los podcasts en casa con WiFi. En ruta suenan sin cobertura y gratis.</div>
    ${(()=>{const c=mus.list[mus.i];return c?`<div class="li" style="cursor:default;border-color:var(--lime);margin-bottom:10px"><span class="em">${musOn()?'🔊':'⏸'}</span><div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</b><small>${musOn()?'Sonando · sin gastar datos':'En pausa'} · ${mus.i+1} de ${mus.list.length}</small></div><button class="btn btn-lime" style="padding:10px 18px;min-height:0;width:auto;flex:none;font-size:18px" onclick="musToggle()">${musOn()?'⏸':'▶️'}</button></div>`:''})()}
@@ -6100,7 +6104,7 @@ document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new
 function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>{musVoiceStart();musHold()};u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 async function ttsGet(t){
   if(ttsCache.has(t))return ttsCache.get(t);
-  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),3500);
+  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),6000);
   try{
     const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+GOOGLE_TTS_KEY,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json'},
       body:JSON.stringify({input:{text:t},voice:{languageCode:'es-ES',name:TTS_VOICE},audioConfig:{audioEncoding:'MP3',speakingRate:1.0,effectsProfileId:['handset-class-device']}})});
@@ -6120,7 +6124,7 @@ async function ttsCheck(){
     box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Con tu música de RideSafe, la música bajará al nivel elegido.';
     const a=ttsAudio||new Audio();a.src=src;a.play().catch(()=>{});
   }catch(e){
-    const m=window.ttsLastErr||String(e&&e.name==='AbortError'?'Tarda demasiado en responder (más de 3,5 s)':e&&e.message||e);
+    const m=window.ttsLastErr||String(e&&e.name==='AbortError'?'Tarda demasiado en responder (más de 6 s)':e&&e.message||e);
     let why='';
     if(/API key not valid|API_KEY_INVALID/i.test(m))why='La clave no es válida: revisa que la clave «RideSafe Voz» esté copiada bien en la app.';
     else if(/referer|referrer/i.test(m))why='La clave no deja usarla desde esta web: en «Restricciones de aplicaciones» añade https://app.ridesafeia.es/*';
@@ -6143,8 +6147,8 @@ async function speak(t){
 async function voiceSay(t){
   if(!t)return;
   const inApp=!!(mus.want&&mus.list.length);
-  const local=!ttsOk()||(store.get('musVoz',false)&&!inApp);
-  musDuck(Math.max(3200,String(t).length*85)+(local?0:3500));
+  const local=!ttsOk()||(musVozOn()&&!inApp);
+  musDuck(Math.max(3200,String(t).length*85)+(local?0:6000));
   if(local){speakLocal(t);return}
   try{
     const src=await ttsGet(t);
@@ -6153,7 +6157,7 @@ async function voiceSay(t){
     if(!ttsAudio._rs){ttsAudio._rs=1;ttsAudio.addEventListener('play',()=>{musVoiceStart();musHold()});ttsAudio.addEventListener('ended',musAfterVoice);ttsAudio.addEventListener('error',musAfterVoice);ttsAudio.addEventListener('pause',()=>{if(!ttsAudio.ended)musAfterVoice()})}
     ttsAudio.pause();ttsAudio.src=src;
     await ttsAudio.play();
-  }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+60000;speakLocal(t)}
+  }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t)}
 }
 /* ===================================================================
    v5.18 — 🎧 MODO CASCO (casco con altavoces y micrófono, p. ej. Sena)
