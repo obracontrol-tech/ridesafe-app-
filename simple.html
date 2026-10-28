@@ -1042,7 +1042,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
-  <button class="li rs-pro" style="margin-top:12px" onclick="openPro()"><span class="em">⭐</span><div><b>¿Ya la dominas? Pásate a RideSafe IA Pro</b><small>Clubs, salidas en grupo, pelotón en vivo, walkie, ranking, Modo Casco y música. Tu cuenta y tus actividades se mantienen.</small></div></button>
+  <button class="li rs-pro" style="margin-top:12px" onclick="openPro()"><span class="em">⭐</span><div><b>¿Ya la dominas? Pásate a RideSafe IA Pro</b><small><b style="color:var(--lime)">Sigue siendo totalmente gratis.</b> Clubs, salidas en grupo, pelotón en vivo, walkie, ranking, Modo Casco y música. Tu cuenta y tus actividades se mantienen.</small></div></button>
   <div id="catchHome"></div>
   <div class="block">
     <div class="sec"><h3>Próximas salidas</h3><a onclick="openAllRides()">Ver todas <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
@@ -1161,9 +1161,9 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
-  <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small>Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
+  <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.0.0 (base 5.19.5)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.0.1 (base 5.19.5)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1181,6 +1181,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 <div class="sheet" id="sh-pro">
   <div class="grab"></div>
   <h2>⭐ Pasar a RideSafe IA Pro</h2>
+  <p style="color:var(--lime);font-weight:800;margin:0 0 6px">✅ Sigue siendo totalmente gratis</p>
   <p style="color:var(--txt2);margin:0 0 12px">La Pro tiene clubs, salidas en grupo, pelotón en vivo, walkie, ranking, Modo Casco y música. Tu cuenta y tus actividades se mantienen.</p>
   <label class="l" for="proIn">Para confirmar, escribe <b style="color:var(--lime)">PASAME</b></label>
   <input class="inp" id="proIn" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PASAME" oninput="proCheck()" style="width:100%;margin:8px 0 14px;text-transform:uppercase;font-size:20px;letter-spacing:2px;text-align:center">
