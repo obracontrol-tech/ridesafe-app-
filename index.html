@@ -1124,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.18.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5535,7 +5535,7 @@ function trackRejoin(p,done){
   live.lastReroute=Date.now();const n=live.nav;if(!n)return;
   let t=n.cum.findIndex(x=>x>=done+0.3);if(t<0)return;
   const T=n.coords[t];
-  navSteps([{lat:p[0],lng:p[1]},{lat:T[0],lng:T[1]}]).then(g=>{if(!live.on)return;prepNav(g.coords.concat(n.coords.slice(t+1)),g.steps);live.off=0;speak('Te llevo de vuelta a la ruta');toast('🧭 Volviendo a la ruta')}).catch(()=>{});
+  navSteps([{lat:p[0],lng:p[1]},{lat:T[0],lng:T[1]}]).then(g=>{if(!live.on)return;prepNav(g.coords.concat(n.coords.slice(t+1)),g.steps);live.off=0;live.offN=0;live.lastReroute=Date.now();speak('Te llevo de vuelta a la ruta');toast('🧭 Volviendo a la ruta')}).catch(()=>{});
 }
 /* Altitud de cada punto para el GPX */
 function gpxEles(c,prof){
@@ -6429,35 +6429,67 @@ function onFix(pos){
       if(!lowPow()&&now-(live.lineT||0)>=(live.eco?10000:3000)){live.lineT=now;setLine(map,live.pts,'track','#60A5FA')}
     }
   }
-  if(live.nav)navUpdate(p);
+  if(live.nav)navUpdate(p,c.accuracy);
   if(live.rideId)pushPos(p,now);
   if(live.catchTo)catchCheck(p,now);
   if(fam.on)pushShare();
   if(!lowPow()&&now-(live.rT||0)>800){live.rT=now;renderLive()}
 }
 
-/* Navegación: siguiente indicación, restante, fuera de ruta */
-function navUpdate(p){
-  const n=live.nav;const[i,dm]=nearestIdx(n.coords,p,n.last||0);
-  if(dm<60){n.last=i;live.off=0}else live.off++;
-  const done=n.cum[n.last||0];n.left=Math.max(0,n.total-done);
+/* Navegación: siguiente indicación, restante, fuera de ruta
+   v5.19 — Detección de "fuera de ruta" más fiable (ideas de OsmAnd y Ferrostar, código abierto):
+   · Distancia a los TRAMOS de la ruta, no a los puntos sueltos (en rectas largas los puntos
+     quedan a cientos de metros y antes saltaba "te has salido" sin motivo).
+   · Margen según la precisión del GPS: 2 × (30 m + precisión), entre 60 y 140 m.
+   · Solo se da por fuera de ruta si se confirma: 3 lecturas seguidas, 8 segundos y 25 m recorridos
+     (parado en un semáforo o con el GPS bailando no cuenta).
+   · Tras recalcular, 15 s de gracia; y para volver "a la ruta" basta con acercarse a menos del 60 % del margen. */
+function navSeg(c,p,from){
+  const r=Math.PI/180,kx=111.32*Math.cos(p[0]*r),ky=110.57;
+  const a0=Math.max(0,from-20),b0=Math.min(c.length-1,from+300);
+  const scan=(a,b,best)=>{for(let i=a;i<b;i++){const A=c[i],B=c[i+1];
+      const ax=(A[1]-p[1])*kx,ay=(A[0]-p[0])*ky,bx=(B[1]-p[1])*kx,by=(B[0]-p[0])*ky,dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy;
+      let t=L?-(ax*dx+ay*dy)/L:0;t=Math.max(0,Math.min(1,t));const x=ax+t*dx,y=ay+t*dy,d=Math.sqrt(x*x+y*y);
+      if(d<best.d){best.d=d;best.i=i;best.t=t}}return best};
+  let best=scan(a0,b0,{d:1e9,i:Math.max(0,from),t:0});
+  if(best.d>0.3)best=scan(0,c.length-1,best);
+  if(c.length<2)best={d:c.length?hav(c[0],p):1e9,i:0,t:0};
+  return best;   // d en km
+}
+function navUpdate(p,acc){
+  const n=live.nav;if(!n||!n.coords.length)return;const now=Date.now();
+  const s=navSeg(n.coords,p,n.last||0);const dm=s.d*1000;
+  const tol=30+Math.min(Math.max(acc||10,5),40);const allow=Math.max(60,Math.min(140,2*tol));
+  const segLen=(n.cum[s.i+1]??n.cum[s.i])-n.cum[s.i];const along=n.cum[s.i]+s.t*segLen;
+  const grace=now-(live.lastReroute||0)<15000;
+  if(dm<=allow){                                   // en la ruta (o dentro del margen)
+    n.last=s.i;n.done=Math.max(n.done||0,along);
+    if(live.off>=2&&dm<allow*0.6){live.off=0;live.offN=0;live.offT=0;speak('De nuevo en la ruta');toast('✅ De nuevo en la ruta')}
+    else if(live.off<2){live.offN=0;live.offT=0;live.off=0}
+  }else if(!grace&&live.off<2){                     // posible desvío: hay que confirmarlo
+    if(!live.offN){live.offT=now;live.offLL=p}
+    live.offN=(live.offN||0)+1;
+    const moved=live.offLL?hav(live.offLL,p)*1000:0;
+    if(live.offN>=3&&now-live.offT>=8000&&moved>=25){live.off=2;speak('Te has salido de la ruta');vib([300,100,300]);toast('⚠️ Fuera de ruta')}
+  }
+  const done=n.done!=null?n.done:n.cum[n.last||0];n.left=Math.max(0,n.total-done);
   // Llegada
   if(n.left<0.05&&!n.arrived){n.arrived=true;speak('Has llegado a tu destino');vib([200,100,200]);toast('🏁 ¡Has llegado!')}
-  // Siguiente maniobra
-  const st=n.steps.find(s=>s.at>done+0.01&&s.type!=='depart');
+  // Siguiente maniobra (no se anuncian giros mientras estás fuera de ruta)
+  const st=n.steps.find(x=>x.at>done+0.01&&x.type!=='depart');
   n.next=st||null;
-  if(st){const dist=(st.at-done)*1000;n.nextDist=dist;
+  if(st&&live.off<2){const dist=(st.at-done)*1000;n.nextDist=dist;
     const key=n.steps.indexOf(st);
     if(dist<180&&dist>60&&!n.spoke[key+'a']){n.spoke[key+'a']=1;speak('En '+Math.round(dist/10)*10+' metros, '+st.txt)}
     if(dist<=35&&!n.spoke[key+'b']){n.spoke[key+'b']=1;speak(st.txt);vib(120)}}
-  // Fuera de ruta: aviso y recálculo
-  if(live.off===2){speak('Te has salido de la ruta');vib([300,100,300]);toast('⚠️ Fuera de ruta')}
-  if(live.off>=3&&Date.now()-live.lastReroute>25000&&live.fixTrk&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_')){trackRejoin(p,done);return}
-  if(live.off>=3&&Date.now()-live.lastReroute>25000&&live.wps&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_')){
-    live.lastReroute=Date.now();
+  // Fuera de ruta confirmado: recalcular (como mucho cada 30 s)
+  if(live.off<2||dm<=allow||now-(live.lastReroute||0)<30000||!MAPBOX_TOKEN||MAPBOX_TOKEN.startsWith('PON_'))return;
+  if(live.fixTrk){trackRejoin(p,done);return}
+  if(live.wps){
+    live.lastReroute=now;
     const rest=live.wps.filter((w,k)=>k>0&&n.cum[nearestIdx(n.coords,[w.lat,w.lng],0)[0]]>done+0.05);
     if(!rest.length)return;
-    navSteps([{lat:p[0],lng:p[1]},...rest].slice(0,25)).then(r=>{if(!live.on)return;prepNav(r.coords,r.steps);live.off=0;speak('Ruta recalculada');toast('Ruta recalculada')}).catch(()=>{});
+    navSteps([{lat:p[0],lng:p[1]},...rest].slice(0,25)).then(r=>{if(!live.on)return;prepNav(r.coords,r.steps);live.off=0;live.offN=0;live.lastReroute=Date.now();speak('Ruta recalculada');toast('Ruta recalculada')}).catch(()=>{});
   }
 }
 
