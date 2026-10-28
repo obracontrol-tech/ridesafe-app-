@@ -1124,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2916,7 +2916,7 @@ const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,
 /* v5.13.2 — Android avisa «pausa» a la página cuando la app habla. Esa pausa NO es tuya: la música vuelve después */
 const musSysPause=()=>Date.now()<mus.speakUntil+1500||musSpeaking();
 function musVoiceStart(ms){mus.speakUntil=Math.max(mus.speakUntil,Date.now()+(ms||60000))}
-function musAfterVoice(){mus.speakUntil=Date.now()+200;if(mus.want&&mus.a&&mus.a.paused)setTimeout(()=>{if(mus.want&&mus.a.paused&&!musSpeaking()){mus.a.volume=mus.ducked?mus.vol*0.15:mus.vol;mus.a.play().then(musUI).catch(()=>musAutoResume())}},450)}
+function musAfterVoice(){mus.speakUntil=Date.now()+200;if(mus.ducked){clearTimeout(mus.duckT);mus.duckT=setTimeout(musUnduckTry,700)}if(mus.want&&mus.a&&mus.a.paused)setTimeout(()=>{if(mus.want&&mus.a.paused&&!musSpeaking()){mus.a.volume=mus.ducked?musLow():mus.vol;mus.a.play().then(musUI).catch(()=>musAutoResume())}},450)}
 /* v5.13.1 — En Android, cuando la app habla (tiempo, viento, indicaciones…) el sistema pausa la música.
    Si la pausa no la has pedido tú, la música vuelve sola en cuanto termina de hablar. */
 function musSpeaking(){try{if('speechSynthesis' in window&&speechSynthesis.speaking)return true}catch(e){}return !!(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused&&!ttsAudio.ended)}
@@ -2924,7 +2924,7 @@ function musAutoResume(){clearInterval(mus.resT);const t0=Date.now();
   mus.resT=setInterval(()=>{const a=mus.a;if(!a||!mus.want||Date.now()-t0>90000){clearInterval(mus.resT);return}
     if(!a.paused){clearInterval(mus.resT);return}
     if(musSpeaking()||Date.now()-t0<700)return;
-    a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().then(()=>{clearInterval(mus.resT);musUI()}).catch(()=>{})},500)}
+    a.volume=mus.ducked?musLow():mus.vol;a.play().then(()=>{clearInterval(mus.resT);musUI()}).catch(()=>{})},500)}
 function musAudio(){if(mus.a)return mus.a;const a=new Audio();a.preload='auto';a.volume=mus.vol;
   a.addEventListener('ended',()=>musNext(true));a.addEventListener('play',musUI);a.addEventListener('pause',()=>{if(mus.want&&!a.ended)musAutoResume();musUI()});
   a.addEventListener('error',()=>{const c=mus.list[mus.i];if(c&&c.radio){radioErr(c);return}toast('No se puede reproducir esa canción');musNext(true)});mus.a=a;
@@ -2940,7 +2940,7 @@ function musPick(inp){const fs=[...(inp.files||[])].filter(f=>/^audio\//.test(f.
 function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mus.list.length;const a=musAudio();a.src=mus.list[mus.i].url;
   try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'RideSafe IA · Música en ruta'})}catch(e){}
   if(play)musPlay();else musUI()}
-function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?mus.vol*0.15:mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
+function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?musLow():mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
 function musPause(){mus.want=false;clearInterval(mus.resT);if(mus.a)mus.a.pause();musUI()}
 function musToggle(){(musOn()||mus.want&&mus.a&&mus.a.paused&&musSpeaking())?musPause():musPlay()}
 function musNext(auto){if(mus.list[mus.i]&&mus.list[mus.i].radio){if(auto!==true)radioStep(1);return}if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
@@ -2948,9 +2948,18 @@ function musPrev(){if(mus.list[mus.i]&&mus.list[mus.i].radio){radioStep(-1);retu
 function musVol(v){mus.vol=Math.max(0,Math.min(1,+v));store.set('musVol',mus.vol);if(mus.a&&!mus.ducked)mus.a.volume=mus.vol}
 function musRamp(to,ms){const a=mus.a;if(!a)return;clearInterval(mus.rampT);const from=a.volume,t0=Date.now();
   mus.rampT=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/ms);try{a.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1)clearInterval(mus.rampT)},40)}
-/* Baja la música mientras suena un aviso o una indicación, y luego la vuelve a subir */
-function musDuck(ms){musVoiceStart(Math.max(1500,ms||3000));if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(mus.vol*0.15,250);clearTimeout(mus.duckT);
-  mus.duckT=setTimeout(()=>{mus.ducked=false;musRamp(mus.vol,900);if(mus.want&&mus.a&&mus.a.paused)musAutoResume()},Math.max(1500,ms||3000))}
+/* Baja la música mientras suena un aviso o una indicación, y luego la vuelve a subir
+   v5.19.1 — La música se queda baja hasta que la voz TERMINA de verdad (antes volvía a subir
+   a mitad de frase en los avisos largos o si la voz de Google tardaba en llegar).
+   El nivel de la música durante los avisos se elige en Música en ruta (por defecto 10 %). */
+function musLow(){return mus.vol*Math.max(0,Math.min(0.4,+store.get('musDuckLvl',0.1)))}
+function musHold(){if(!mus.a||(!musOn()&&!mus.want))return;if(!mus.ducked){mus.ducked=true;musRamp(musLow(),200)}clearTimeout(mus.duckT);mus.duckT=setTimeout(musUnduckTry,60000)}
+function musUnduckTry(){clearTimeout(mus.duckT);
+  if(musSpeaking()||Date.now()<mus.speakUntil){mus.duckT=setTimeout(musUnduckTry,400);return}
+  if(!mus.ducked)return;mus.ducked=false;musRamp(mus.vol,900);if(mus.want&&mus.a&&mus.a.paused)musAutoResume()}
+function musDuck(ms){musVoiceStart(Math.max(1500,ms||3000));if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(musLow(),250);clearTimeout(mus.duckT);
+  mus.duckT=setTimeout(musUnduckTry,Math.max(1500,ms||3000))}
+function musDuckLvl(v){v=Math.max(0,Math.min(0.4,(+v)/100));store.set('musDuckLvl',v);const t=$('musDuckTxt');if(t)t.textContent=v?Math.round(v*100)+' %':'Silencio';if(mus.ducked&&mus.a)mus.a.volume=musLow()}
 function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}musDuck(3800);setTimeout(()=>speakLocal('Aviso de prueba. Esperad, que hay un pinchazo.'),300)}
 function musUI(){
   const on=musOn(),cur=mus.list[mus.i];
@@ -3014,6 +3023,10 @@ function renderMusic(){
   B.innerHTML=`<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">🔈 <b>Por el altavoz</b> del móvil o de manillar. 🚫 Con auriculares está prohibido en bici (multa 200 €).</div>
    <div style="background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.45);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13.5px;line-height:1.45">📶 <b>Truco para no gastar datos:</b> descarga la música o los podcasts en casa con WiFi. En ruta suenan sin cobertura y gratis.</div>
    ${(()=>{const c=mus.list[mus.i];return c?`<div class="li" style="cursor:default;border-color:var(--lime);margin-bottom:10px"><span class="em">${musOn()?'🔊':'⏸'}</span><div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</b><small>${musOn()?'Sonando · sin gastar datos':'En pausa'} · ${mus.i+1} de ${mus.list.length}</small></div><button class="btn btn-lime" style="padding:10px 18px;min-height:0;width:auto;flex:none;font-size:18px" onclick="musToggle()">${musOn()?'⏸':'▶️'}</button></div>`:''})()}
+   <div class="set" style="flex-wrap:wrap;gap:8px">🔉 Música durante los avisos <b id="musDuckTxt" style="color:var(--lime)">${(()=>{const v=+store.get('musDuckLvl',0.1);return v?Math.round(v*100)+' %':'Silencio'})()}</b>
+     <input type="range" min="0" max="40" step="5" value="${Math.round(+store.get('musDuckLvl',0.1)*100)}" oninput="musDuckLvl(this.value)" aria-label="Volumen de la música durante los avisos" style="flex-basis:100%;accent-color:var(--lime)">
+     <small style="flex-basis:100%;color:var(--txt2);line-height:1.4">Cuando la app habla (giros, tiempo, viento, avisos del grupo) la música baja a este nivel y sube sola al terminar. Para tu música del móvil y la radio.</small>
+     <button class="btn btn-line" style="flex-basis:100%;min-height:44px;font-size:15px" onclick="musTest()">🔊 Probar con un aviso</button></div>
    <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
    <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
    <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -6081,7 +6094,7 @@ const ttsCache=new Map();let ttsAudio=null,ttsOff=0;
 function ttsOk(){return GOOGLE_TTS_KEY&&!GOOGLE_TTS_KEY.startsWith('PON_')&&Date.now()>ttsOff}
 // Los móviles solo dejan sonar audio si antes hubo un toque: lo "despertamos" en el primer toque
 document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new Audio();ttsAudio.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA';ttsAudio.play().catch(()=>{})}catch(e){}document.removeEventListener('pointerdown',un)},{once:true});
-function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>musVoiceStart();u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>{musVoiceStart();musHold()};u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 async function ttsGet(t){
   if(ttsCache.has(t))return ttsCache.get(t);
   const ac=new AbortController();const to=setTimeout(()=>ac.abort(),3500);
@@ -6098,12 +6111,13 @@ async function ttsGet(t){
 async function speak(t){
   if(!live.voice||!t)return;
   CASCO.last=t;   // v5.18: para repetirlo con el botón del casco
-  musDuck(Math.max(3200,String(t).length*85));
+  musDuck(Math.max(3200,String(t).length*85)+(ttsOk()&&!store.get('musVoz',false)?3500:0));
   if(!ttsOk()||store.get('musVoz',false)){speakLocal(t);return}   // v5.13.4: con música, voz del móvil (no para Spotify)
   try{
     const src=await ttsGet(t);
     try{speechSynthesis.cancel()}catch(e){}
-    if(!ttsAudio){ttsAudio=new Audio();ttsAudio.addEventListener('play',()=>musVoiceStart());ttsAudio.addEventListener('ended',musAfterVoice);ttsAudio.addEventListener('error',musAfterVoice)}
+    if(!ttsAudio)ttsAudio=new Audio();
+    if(!ttsAudio._rs){ttsAudio._rs=1;ttsAudio.addEventListener('play',()=>{musVoiceStart();musHold()});ttsAudio.addEventListener('ended',musAfterVoice);ttsAudio.addEventListener('error',musAfterVoice);ttsAudio.addEventListener('pause',()=>{if(!ttsAudio.ended)musAfterVoice()})}
     ttsAudio.pause();ttsAudio.src=src;
     await ttsAudio.play();
   }catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+60000;speakLocal(t)}
@@ -6579,7 +6593,7 @@ function pttPlayNext(){
   setTimeout(()=>{
     const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.volume=1;
     const done=()=>{ptt.playing=false;setTimeout(()=>{if(!ptt.playing)m.classList.remove('show')},2500);setTimeout(pttPlayNext,600)};
-    a.onended=done;a.onerror=()=>{toast('🎙️ '+name+' ha enviado un audio que este móvil no puede reproducir');done()};
+    a.onended=()=>{musAfterVoice();done()};a.onerror=()=>{musAfterVoice();toast('🎙️ '+name+' ha enviado un audio que este móvil no puede reproducir');done()};
     a.play().catch(()=>{m.innerHTML=`<span>🎙️ ${esc(name)} te ha hablado</span><button onclick="pttReplay()">▶ Escuchar</button>`;ptt.playing=false;setTimeout(pttPlayNext,600)});
   },350);
 }
