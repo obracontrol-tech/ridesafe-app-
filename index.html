@@ -1124,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2960,7 +2960,8 @@ function musUnduckTry(){clearTimeout(mus.duckT);
 function musDuck(ms){musVoiceStart(Math.max(1500,ms||3000));if(!musOn()&&!mus.want)return;if(!mus.a)return;mus.ducked=true;musRamp(musLow(),250);clearTimeout(mus.duckT);
   mus.duckT=setTimeout(musUnduckTry,Math.max(1500,ms||3000))}
 function musDuckLvl(v){v=Math.max(0,Math.min(0.4,(+v)/100));store.set('musDuckLvl',v);const t=$('musDuckTxt');if(t)t.textContent=v?Math.round(v*100)+' %':'Silencio';if(mus.ducked&&mus.a)mus.a.volume=musLow()}
-function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}musDuck(3800);setTimeout(()=>speakLocal('Aviso de prueba. Esperad, que hay un pinchazo.'),300)}
+/* v5.19.2 — La prueba usa la misma voz que en ruta (antes usaba la del móvil, que en Android PARA la música en vez de bajarla) */
+function musTest(){if(!musOn()){toast('Pon primero una canción ▶️');return}voiceSay('Aviso de prueba. Así suena la música mientras te hablo. Esperad, que hay un pinchazo.')}
 function musUI(){
   const on=musOn(),cur=mus.list[mus.i];
   const bar=$('lvMus');if(bar){bar.style.display=mus.list.length?'flex':'none';
@@ -3033,7 +3034,7 @@ function renderMusic(){
    <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
    <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>
-   <div class="set" style="margin-top:12px;flex-wrap:wrap">🗣️ Voz que no para la música <label class="sw"><input type="checkbox" ${vz?'checked':''} onchange="musVozSet(this.checked)"><span></span></label><small style="flex-basis:100%;color:var(--txt2);margin-top:4px;line-height:1.4">Usa la voz del móvil para el tiempo, los avisos y los giros. La voz de Google es más natural, pero Android para Spotify al oírla.</small></div>
+   <div class="set" style="margin-top:12px;flex-wrap:wrap">🗣️ Voz que no para la música <label class="sw"><input type="checkbox" ${vz?'checked':''} onchange="musVozSet(this.checked)"><span></span></label><small style="flex-basis:100%;color:var(--txt2);margin-top:4px;line-height:1.4">Solo para Spotify: usa la voz del móvil para que Android no pare Spotify al hablar. Con tu música del móvil o la radio de RideSafe se usa siempre la voz de Google, que baja la música sin pararla.</small></div>
    <div class="list" style="margin-top:12px">
     <div class="li" style="cursor:default"><span class="em">1️⃣</span><div><b>Pon tu música en Spotify</b><small>Dale a ▶️ y vuelve a RideSafe. Sigue sonando detrás.</small></div></div>
     <div class="li" style="cursor:default"><span class="em">2️⃣</span><div><b>Si se para, botón 🎵</b><small>En la salida: «⋯» → 🎵 abre Spotify. Pulsas ▶️ y vuelves.</small></div></div>
@@ -6111,8 +6112,18 @@ async function ttsGet(t){
 async function speak(t){
   if(!live.voice||!t)return;
   CASCO.last=t;   // v5.18: para repetirlo con el botón del casco
-  musDuck(Math.max(3200,String(t).length*85)+(ttsOk()&&!store.get('musVoz',false)?3500:0));
-  if(!ttsOk()||store.get('musVoz',false)){speakLocal(t);return}   // v5.13.4: con música, voz del móvil (no para Spotify)
+  return voiceSay(t);
+}
+/* v5.19.2 — Si suena la música de RideSafe (tu música del móvil o la radio), se usa SIEMPRE la voz de Google:
+   suena dentro de la app y la música solo BAJA al nivel elegido. La voz del móvil hace que Android
+   pare la música, por eso el control «Música durante los avisos» no se notaba.
+   Con Spotify (música fuera de la app) sigue valiendo «Voz que no para la música». */
+async function voiceSay(t){
+  if(!t)return;
+  const inApp=!!(mus.want&&mus.list.length);
+  const local=!ttsOk()||(store.get('musVoz',false)&&!inApp);
+  musDuck(Math.max(3200,String(t).length*85)+(local?0:3500));
+  if(local){speakLocal(t);return}
   try{
     const src=await ttsGet(t);
     try{speechSynthesis.cancel()}catch(e){}
