@@ -1124,7 +1124,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA · versión 5.19.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3027,7 +3027,9 @@ function renderMusic(){
    <div class="set" style="flex-wrap:wrap;gap:8px">🔉 Música durante los avisos <b id="musDuckTxt" style="color:var(--lime)">${(()=>{const v=+store.get('musDuckLvl',0.1);return v?Math.round(v*100)+' %':'Silencio'})()}</b>
      <input type="range" min="0" max="40" step="5" value="${Math.round(+store.get('musDuckLvl',0.1)*100)}" oninput="musDuckLvl(this.value)" aria-label="Volumen de la música durante los avisos" style="flex-basis:100%;accent-color:var(--lime)">
      <small style="flex-basis:100%;color:var(--txt2);line-height:1.4">Cuando la app habla (giros, tiempo, viento, avisos del grupo) la música baja a este nivel y sube sola al terminar. Para tu música del móvil y la radio.</small>
-     <button class="btn btn-line" style="flex-basis:100%;min-height:44px;font-size:15px" onclick="musTest()">🔊 Probar con un aviso</button></div>
+     <button class="btn btn-line" style="flex-basis:100%;min-height:44px;font-size:15px" onclick="musTest()">🔊 Probar con un aviso</button>
+     <button class="btn btn-line" style="flex-basis:100%;min-height:44px;font-size:15px" onclick="ttsCheck()">🔎 Comprobar la voz de Google</button>
+     <div id="ttsDiag" style="flex-basis:100%;font-size:13px;line-height:1.45"></div></div>
    <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
    <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
    <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -6102,12 +6104,32 @@ async function ttsGet(t){
   try{
     const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+GOOGLE_TTS_KEY,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json'},
       body:JSON.stringify({input:{text:t},voice:{languageCode:'es-ES',name:TTS_VOICE},audioConfig:{audioEncoding:'MP3',speakingRate:1.0,effectsProfileId:['handset-class-device']}})});
-    if(!r.ok)throw new Error('tts '+r.status);
+    if(!r.ok){let m='';try{const j=await r.json();m=(j.error&&j.error.message)||''}catch(_){}window.ttsLastErr='Error '+r.status+(m?': '+m:'');throw new Error('tts '+r.status+' '+m)}
     const d=await r.json();if(!d.audioContent)throw new Error('tts vacío');
     const src='data:audio/mp3;base64,'+d.audioContent;
     if(ttsCache.size>80)ttsCache.delete(ttsCache.keys().next().value);
     ttsCache.set(t,src);return src;
   }finally{clearTimeout(to)}
+}
+/* v5.19.3 — Comprueba la voz de Google y dice por qué falla (clave, API sin activar, facturación, dominio…) */
+async function ttsCheck(){
+  const box=$('ttsDiag');if(!box)return;box.innerHTML='Comprobando…';
+  if(!navigator.onLine){box.innerHTML='📵 Sin conexión: la voz de Google necesita datos.';return}
+  ttsCache.clear();window.ttsLastErr='';
+  try{const src=await ttsGet('Hola, soy la voz de Google de RideSafe.');ttsOff=0;
+    box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Con tu música de RideSafe, la música bajará al nivel elegido.';
+    const a=ttsAudio||new Audio();a.src=src;a.play().catch(()=>{});
+  }catch(e){
+    const m=window.ttsLastErr||String(e&&e.name==='AbortError'?'Tarda demasiado en responder (más de 3,5 s)':e&&e.message||e);
+    let why='';
+    if(/API key not valid|API_KEY_INVALID/i.test(m))why='La clave no es válida: revisa que la clave «RideSafe Voz» esté copiada bien en la app.';
+    else if(/referer|referrer/i.test(m))why='La clave no deja usarla desde esta web: en «Restricciones de aplicaciones» añade https://app.ridesafeia.es/*';
+    else if(/has not been used|is disabled|SERVICE_DISABLED|not been enabled/i.test(m))why='La API Cloud Text-to-Speech no está activada en el proyecto «velogo».';
+    else if(/billing|BILLING/i.test(m))why='El proyecto «velogo» no tiene una cuenta de facturación activa (Google la pide para esta API).';
+    else if(/blocked|API_KEY_SERVICE_BLOCKED|not authorized|PERMISSION_DENIED/i.test(m))why='La clave tiene restringidas las API: en «Restricciones de API» marca Cloud Text-to-Speech API.';
+    else if(/quota|RESOURCE_EXHAUSTED/i.test(m))why='Se ha gastado la cuota de la API.';
+    box.innerHTML='<span style="color:#F87171;font-weight:700">❌ La voz de Google no funciona.</span><br>'+(why?'<b>'+esc(why)+'</b><br>':'')+'<small style="color:var(--txt2)">Mensaje de Google: '+esc(m)+'</small>';
+  }
 }
 async function speak(t){
   if(!live.voice||!t)return;
