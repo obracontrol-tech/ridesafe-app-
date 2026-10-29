@@ -7391,6 +7391,7 @@ function renderVA(){
      <div style="display:grid;gap:8px"><a class="btn btn-lime" style="text-decoration:none" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola, soy miembro de VillorvinAdventure y quiero solicitar la Pro de la app. Mi nombre es: ')}" target="_blank" rel="noopener">⭐ Solicita la Pro</a>
      <button class="btn btn-line" onclick="joinGroupAsk()">🔗 Ya tengo el código</button></div></div>`;
   }else b.innerHTML='';
+  if(b.firstElementChild)b.firstElementChild.insertAdjacentHTML('beforeend',`<div style="display:grid;gap:8px;margin-top:8px"><button class="btn btn-line" style="border-color:var(--red)" onclick="sos()">🆘 Alertas de seguridad</button><button class="btn btn-line" onclick="famShare()">📍 Ubicación para la familia</button></div><a class="btn" style="margin-top:8px;width:100%;text-decoration:none;background:#25D366;color:#fff;font-weight:800" target="_blank" rel="noopener" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola VillorvinAdventure, soy '+(me&&me.name?me.name:'')+'. ')}">💬 Chatea por WhatsApp</a>`);
 }
 /* Envía el aviso al chat del club (lo ve la organización aunque no esté en la salida) */
 function vaClubAlert(kind,p,title,club){
