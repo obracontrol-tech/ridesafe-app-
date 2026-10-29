@@ -929,6 +929,28 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 </style>
 </head>
 <body>
+<!-- VillorvinAdventure: vídeo de bienvenida (va-intro.mp4). Si no existe, sale el logo animado. Se salta tocando la pantalla. -->
+<div id="vaIntro" style="position:fixed;inset:0;z-index:99999;background:#06162E;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .5s" onclick="vaIntroEnd()">
+  <video id="vaIntroV" muted playsinline autoplay preload="auto" style="width:100%;height:100%;object-fit:cover;display:none" onended="vaIntroEnd()" onerror="vaIntroLogo()"><source src="va-intro.mp4" type="video/mp4" onerror="vaIntroLogo()"></video>
+  <div id="vaIntroL" style="display:none;text-align:center;padding:24px;animation:vaIn 1.2s ease both">
+    <img src="va-logo.png" alt="VillorvinAdventure" style="width:280px;max-width:78vw;height:auto">
+    <div style="color:#D4D4D4;font-family:system-ui,sans-serif;font-size:14px;letter-spacing:4px;text-transform:uppercase;font-style:italic;margin-top:12px">Passion led us here</div>
+  </div>
+  <button type="button" onclick="event.stopPropagation();vaIntroEnd()" style="position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.5);background:rgba(0,0,0,.35);color:#fff;font:700 15px system-ui,sans-serif">Saltar ›</button>
+</div>
+<style>@keyframes vaIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}</style>
+<script>
+(function(){
+  var done=false,shown=false;
+  try{if(sessionStorage.getItem('vaIntro')||location.hash){var e=document.getElementById('vaIntro');if(e)e.remove();done=true;return}sessionStorage.setItem('vaIntro','1')}catch(x){}
+  window.vaIntroEnd=function(){if(done)return;done=true;var e=document.getElementById('vaIntro');if(!e)return;e.style.opacity='0';setTimeout(function(){e.remove()},520)};
+  window.vaIntroLogo=function(){if(done||shown)return;shown=true;var v=document.getElementById('vaIntroV');if(v)v.style.display='none';var l=document.getElementById('vaIntroL');if(l)l.style.display='block';setTimeout(window.vaIntroEnd,2600)};
+  var v=document.getElementById('vaIntroV');
+  v.addEventListener('playing',function(){if(!shown){shown=true;v.style.display='block'}});
+  setTimeout(function(){if(!shown)window.vaIntroLogo()},1200);   // si el vídeo tarda o no existe: logo
+  setTimeout(window.vaIntroEnd,9000);                             // nunca más de 9 segundos
+})();
+</script>
 <div id="app">
 
 <!-- ============ RUTAS ============ -->
