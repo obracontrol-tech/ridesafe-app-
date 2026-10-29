@@ -2694,7 +2694,7 @@ function watchGroup(){
   },e=>{console.warn('grupo',e);myGroup=null;renderGroup()});
 }
 function renderGroup(){
-  const g=myGroup;try{renderVA();vaWatch();vaInit();vaFillTel()}catch(e){console.warn('VA',e)}
+  const g=myGroup;try{vaData();renderVA();vaWatch();vaInit();vaFillTel()}catch(e){console.warn('VA',e)}
   $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún club.<br><small style="color:var(--txt2)">Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas.</small>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="joinGroupAsk()">🔗 Unirme a mi club</button><button class="btn btn-line" onclick="createGroup()">➕ Crear club</button></div></div>`;
@@ -7448,7 +7448,8 @@ function renderVA(){
      <div style="display:grid;gap:8px"><a class="btn btn-lime" style="text-decoration:none" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola, soy miembro de VillorvinAdventure y quiero solicitar la Pro de la app. Mi nombre es: ')}" target="_blank" rel="noopener">⭐ Solicita la Pro</a>
      <button class="btn btn-line" onclick="vaCodeBtn()">🔗 Ya tengo el código</button></div></div>`;
   }else b.innerHTML='';
-  if(b.firstElementChild)b.firstElementChild.insertAdjacentHTML('beforeend',`<div style="display:grid;gap:8px;margin-top:8px"><button class="btn btn-line" style="border-color:var(--red)" onclick="sos()">🆘 Alertas de seguridad</button><button class="btn btn-line" onclick="famShare()">📍 Ubicación para la familia</button></div><a class="btn" style="margin-top:8px;width:100%;text-decoration:none;background:#25D366;color:#fff;font-weight:800" target="_blank" rel="noopener" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola VillorvinAdventure, soy '+(me&&me.name?me.name:'')+'. ')}">💬 Chatea por WhatsApp</a>`);
+  if(b.firstElementChild&&vaAvisoOn())b.insertAdjacentHTML('afterbegin',vaAvisoHTML());
+  const card=b.querySelector('.plc');if(card)card.insertAdjacentHTML('beforeend',`${vaBtns()}<div style="display:grid;gap:8px;margin-top:8px"><button class="btn btn-line" style="border-color:var(--red)" onclick="sos()">🆘 Alertas de seguridad</button><button class="btn btn-line" onclick="famShare()">📍 Ubicación para la familia</button></div><a class="btn" style="margin-top:8px;width:100%;text-decoration:none;background:#25D366;color:#fff;font-weight:800" target="_blank" rel="noopener" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola VillorvinAdventure, soy '+(me&&me.name?me.name:'')+'. ')}">💬 Chatea por WhatsApp</a>`);
 }
 /* Envía el aviso al chat del club (lo ve la organización aunque no esté en la salida) */
 function vaClubAlert(kind,p,title,club){
@@ -7531,6 +7532,65 @@ function vaInit(){
   if(vaAsked)return;vaAsked=true;
   setTimeout(()=>{const t=(prompt('VillorvinAdventure: escribe tu número de móvil para que la asistencia pueda llamarte si tienes una avería o un problema.','')||'').trim().slice(0,20);
     if(t&&telNorm(t).length>=9){store.set('vaTel',t);vaReg();toast('✅ Móvil guardado')}else if(t)toast('Revisa el número de móvil')},2500);
+}
+/* ===== v2.0 — Rutas del club, Novedades, Consultas y Aviso general (desde la consola) ===== */
+let VA={rutas:[],news:[],sup:[],aviso:null,on:false,subs:[]};
+const vaSee=gp=>!gp||!!(myGroup&&vaIn()&&(myGps().includes(gp)||vaOrg()));
+const vaGpName=gp=>gp?((myGroup&&myGroup.grupetas||{})[gp]||{}).name||'':'';
+const vaUrl=u=>/^https?:\/\//i.test(String(u||'').trim())?String(u).trim():'';
+function vaData(){
+  if(VA.on||!db||!uid)return;VA.on=true;
+  const fresh=()=>{try{renderVA()}catch(e){}};
+  VA.subs.push(db.collection('va_rutas').onSnapshot(s=>{VA.rutas=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.t||0)-(a.t||0));fresh();if($('vaRutL'))vaRutas()},e=>console.warn('VA rutas',e)));
+  VA.subs.push(db.collection('va_news').onSnapshot(s=>{const before=VA.news.length;VA.news=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));fresh();
+    const nu=VA.news.filter(n=>vaSee(n.gp)&&(n.t||0)>store.get('vaNewsSeen',0));if(nu.length&&before===0)toast('🆕 '+nu[0].title,3500);if($('vaNewL'))vaNews()},e=>console.warn('VA novedades',e)));
+  VA.subs.push(db.collection('va_config').doc('aviso').onSnapshot(s=>{VA.aviso=s.exists?s.data():null;fresh()},e=>console.warn('VA aviso',e)));
+  VA.subs.push(db.collection('va_support').where('uid','==',uid).onSnapshot(s=>{const old=new Set(VA.sup.filter(x=>x.reply).map(x=>x.id+x.replyAt));VA.sup=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));
+    if(VA.sup.some(x=>x.reply&&!x.seen&&!old.has(x.id+x.replyAt))&&old.size+VA.sup.length>0)toast('💬 VillorvinAdventure ha respondido tu consulta',3500);fresh();if($('vaSupL'))vaSupList()},e=>console.warn('VA consultas',e)));
+}
+const vaAvisoOn=()=>!!(VA.aviso&&VA.aviso.active&&VA.aviso.text&&store.get('vaAvisoHide',0)!==VA.aviso.t);
+function vaAvisoHTML(){return `<div class="ann" style="border:2px solid #F59E0B;margin-bottom:10px"><span style="font-size:22px">📣</span><p><b>Aviso de VillorvinAdventure</b><br>${esc(VA.aviso.text)}</p><button class="x" style="width:30px;height:30px;flex-shrink:0" aria-label="Cerrar aviso" onclick="store.set('vaAvisoHide',${+VA.aviso.t||0});renderVA()">✕</button></div>`}
+function vaBtns(){
+  const nR=VA.rutas.filter(r=>vaSee(r.gp)).length,nN=VA.news.filter(n=>vaSee(n.gp)&&(n.t||0)>store.get('vaNewsSeen',0)).length,nS=VA.sup.filter(x=>x.reply&&!x.seen).length;
+  const bd=n=>n?` <span style="background:#EF4444;color:#fff;border-radius:99px;padding:1px 8px;font-size:12px">${n}</span>`:'';
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+   <button class="btn btn-line" style="grid-column:1/-1" onclick="vaRutas()">🗺️ Rutas del club${nR?` <small style="opacity:.75">(${nR})</small>`:''}</button>
+   <button class="btn btn-line" onclick="vaNews()">🆕 Novedades${bd(nN)}</button>
+   <button class="btn btn-line" onclick="vaSup()">❓ Consultas${bd(nS)}</button></div>`;
+}
+function vaRutas(){
+  const L=VA.rutas.filter(r=>vaSee(r.gp));
+  $('rideBody').innerHTML=sheetHead('🗺️ Rutas del club')+`<p style="color:var(--txt2);margin:-8px 0 12px">Fichas de VillorvinAdventure: información, PDF y tracks de cada día.</p><div id="vaRutL">`+(L.length?L.map(r=>{
+    const days=(r.days||[]).filter(d=>d.title||d.km||d.gpx);const km=days.reduce((s,d)=>s+(parseFloat(String(d.km).replace(',','.'))||0),0);
+    return `<div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">${r.gp?esc(vaGpName(r.gp)||'Club'):'Todos'}</span><b>${esc(r.title)}</b></div>
+     <small style="display:block;color:var(--txt2);margin:4px 0 6px">${r.date?'📅 '+esc(String(r.date).split('-').reverse().join('/'))+' · ':''}${days.length>1?days.length+' días · ':''}${km?fmtNum(km,0)+' km':''}</small>
+     ${r.info?`<p style="font-size:14.5px;line-height:1.45;white-space:pre-line;margin-bottom:8px">${esc(r.info)}</p>`:''}
+     ${days.map((d,i)=>`<div class="li" style="cursor:default;margin-bottom:6px"><span class="em">${days.length>1?i+1:'🚴'}</span><div><b>${esc(d.title||('Día '+(i+1)))}</b><small>${d.km?esc(d.km)+' km':''}</small></div>${vaUrl(d.gpx)?`<a class="mini" style="text-decoration:none" href="${esc(vaUrl(d.gpx))}" target="_blank" rel="noopener">⬇️ Track</a>`:''}</div>`).join('')}
+     ${vaUrl(r.pdf)?`<a class="btn btn-lime" style="text-decoration:none;margin-top:6px" href="${esc(vaUrl(r.pdf))}" target="_blank" rel="noopener">📄 Descargar PDF con toda la información</a>`:''}</div>`}).join('')
+    :'<div class="empty">Todavía no hay rutas publicadas.</div>')+'</div>';
+  openRideId=null;if(!$('sh-ride').classList.contains('show'))openSheet('sh-ride');
+}
+function vaNews(){
+  const L=VA.news.filter(n=>vaSee(n.gp));if(L.length)store.set('vaNewsSeen',Math.max(store.get('vaNewsSeen',0),L[0].t||0));
+  $('rideBody').innerHTML=sheetHead('🆕 Novedades')+`<div id="vaNewL">`+(L.length?L.map(n=>`<div class="plc" style="margin-bottom:10px"><div class="pc-h"><span class="pc-tag">${new Date(n.t||Date.now()).toLocaleDateString('es-ES')}</span><b>${esc(n.title)}</b></div><p style="font-size:14.5px;line-height:1.45;white-space:pre-line;margin-top:6px">${esc(n.text)}</p>${vaUrl(n.link)?`<a href="${esc(vaUrl(n.link))}" target="_blank" rel="noopener" style="color:var(--lime);font-weight:700;display:inline-block;margin-top:6px">Ver más ›</a>`:''}</div>`).join(''):'<div class="empty">Aún no hay novedades.</div>')+'</div>';
+  openRideId=null;if(!$('sh-ride').classList.contains('show'))openSheet('sh-ride');setTimeout(()=>{try{renderVA()}catch(e){}},300);
+}
+function vaSup(){
+  $('rideBody').innerHTML=sheetHead('❓ Consultas')+`<p style="color:var(--txt2);margin:-8px 0 12px">Pregunta a VillorvinAdventure. Te responderán aquí mismo. Para una urgencia en ruta usa 🆘 Alertas de seguridad.</p>
+   <label class="l" for="vaSupTx">Tu consulta</label><textarea class="inp" id="vaSupTx" maxlength="1500" rows="4" placeholder="Ej. ¿A qué hora sale la ruta del domingo?" style="width:100%;resize:vertical"></textarea>
+   <button class="btn btn-lime" style="margin-top:10px" onclick="vaSupSend()">📤 Enviar consulta</button>
+   <div class="sec" style="margin-top:16px"><h3 style="font-size:17px">Mis consultas</h3></div><div id="vaSupL"></div>`;
+  openRideId=null;if(!$('sh-ride').classList.contains('show'))openSheet('sh-ride');vaSupList();
+}
+function vaSupList(){
+  const l=$('vaSupL');if(!l)return;
+  l.innerHTML=VA.sup.length?VA.sup.map(x=>`<div class="plc" style="margin-bottom:10px"><small style="color:var(--txt2)">${new Date(x.t||Date.now()).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small><p style="white-space:pre-line;margin:4px 0">${esc(x.text)}</p>${x.reply?`<div style="border-left:3px solid var(--lime);padding:6px 10px;margin-top:6px;background:rgba(77,163,255,.08);border-radius:8px"><b>VillorvinAdventure:</b><p style="white-space:pre-line;margin-top:2px">${esc(x.reply)}</p></div>`:'<small style="color:var(--txt2)">⏳ Pendiente de respuesta</small>'}</div>`).join(''):'<div class="empty" style="padding:12px">Aún no has enviado consultas.</div>';
+  VA.sup.filter(x=>x.reply&&!x.seen).forEach(x=>db.collection('va_support').doc(x.id).update({seen:true}).catch(()=>{}));
+}
+async function vaSupSend(){
+  if(!db||!uid){toast('Conectando… inténtalo en unos segundos');return}
+  const t=($('vaSupTx').value||'').trim().slice(0,1500);if(!t){toast('Escribe tu consulta');return}
+  try{await db.collection('va_support').add({uid,name:myName().slice(0,40),tel:String(store.get('vaTel','')).slice(0,20),text:t,t:Date.now()});$('vaSupTx').value='';toast('✅ Consulta enviada')}catch(e){console.warn(e);toast('No se pudo enviar. Revisa la conexión')}
 }
 /* Punto 10: tu posición en el mapa del track de la salida */
 function vaMeOn(m){
