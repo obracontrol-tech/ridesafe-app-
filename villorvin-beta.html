@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <script>
-/* v5.19.5 — Los usuarios nuevos empiezan en RideSafe IA Simple. Los de siempre siguen en Pro.
+/* v5.19.5 — Los usuarios nuevos empiezan en VillorvinAdventure Simple. Los de siempre siguen en Pro.
    No se desvía si el enlace trae datos (invitación a club, salida, familia, Strava…). */
 (function(){try{
   if(location.hash||location.search)return;
@@ -13,10 +13,10 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>VillorvinAdventure · Passion led us here (beta)</title>
-<meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
-<meta name="theme-color" content="#0E1A2B">
-<link rel="manifest" href="manifest.json">
+<title>VillorvinAdventure</title>
+<meta name="description" content="VillorvinAdventure · Passion led us here. Rutas, comunidad y asistencia en ruta.">
+<meta name="theme-color" content="#06162E">
+<link rel="manifest" href="villorvin-manifest.json">
 <link rel="icon" type="image/png" href="va-icon.png">
 <link rel="apple-touch-icon" href="va-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1011,8 +1011,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="btn btn-lime" onclick="openCreate()"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4m-4 7v5m-2.5-2.5h5"/></svg>Crear salida</button>
     <button class="btn btn-line" onclick="openAllRides()"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Ver salidas</button>
   </div>
-  <!-- v5.15: Asistente RideSafe (beta) -->
-  <a class="li" href="asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(77,163,255,.16),rgba(77,163,255,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente RideSafe <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+  <!-- v5.15: Asistente VillorvinAdventure (beta) -->
+  <a class="li" href="villorvin-asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(77,163,255,.16),rgba(77,163,255,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente VillorvinAdventure <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
@@ -1128,14 +1128,14 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="list">
     <button class="li" onclick="openSupport()"><span class="em">💬</span><div><b>Consultas e incidencias <span class="sup-dot" id="supDot" style="display:none">Respuesta nueva</span></b><small>Pregúntanos y te contestamos aquí, en la app</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openHelp()"><span class="em">❓</span><div><b>Cómo funciona</b><small>Preguntas rápidas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-    <button class="li" onclick="openNews()"><span class="em">🆕</span><div><b>Novedades y próximas actualizaciones</b><small id="newsSub">Lo último de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-    <button class="li" onclick="openEthics()"><span class="em">📜</span><div><b>Código ético del ciclista</b><small>Las normas de convivencia de RideSafe IA</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="openNews()"><span class="em">🆕</span><div><b>Novedades y próximas actualizaciones</b><small id="newsSub">Lo último de VillorvinAdventure</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="openEthics()"><span class="em">📜</span><div><b>Código ético del ciclista</b><small>Las normas de convivencia de VillorvinAdventure</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="li" onclick="openInvite()"><span class="em">📣</span><div><b>Invitar a amigos</b><small>Código QR, WhatsApp y cartel para el club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-    <a class="li" style="text-decoration:none;color:inherit" href="privacidad.html"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+    <a class="li" style="text-decoration:none;color:inherit" href="https://www.villorvinadventure.com/pol%C3%ADtica-y-condiciones" target="_blank" rel="noopener"><span class="em">📄</span><div><b>Privacidad y condiciones</b><small>Qué datos guardamos y por qué</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.19.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">VillorvinAdventure Pro · versión 5.19.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1429,7 +1429,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 <!-- Vista en vivo para la familia (#vivo=ID) -->
 <div id="viewer">
   <div id="vmap"></div>
-  <div class="vtop"><div class="logo">RideSafe <span>IA</span></div><div id="vInfo"><b>Cargando…</b></div></div>
+  <div class="vtop"><div class="logo">VillorvinAdventure <span>IA</span></div><div id="vInfo"><b>Cargando…</b></div></div>
   <div class="vbot"><a class="btn btn-lime" id="vMaps" target="_blank" rel="noopener" style="text-decoration:none">🧭 Cómo llegar</a><button class="btn" style="background:var(--card);border:1px solid var(--line);color:var(--txt)" onclick="closeViewer()">Cerrar</button></div>
 </div>
 
@@ -1444,7 +1444,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 </div>
 
 <script>
-/* ===== Configuración Firebase (proyecto RideSafe IA) ===== */
+/* ===== Configuración Firebase (proyecto VillorvinAdventure) ===== */
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",
   authDomain:"velogo-fba42.firebaseapp.com",
@@ -1615,7 +1615,7 @@ const PIN_SVG=c=>`<svg viewBox="0 0 40 52" width="40" height="52"><path d="M20 5
 const appUrl=()=>location.origin+location.pathname;
 function shareText(r){
   const meet=r.meet&&r.meet!==r.start?`\n📍 Encuentro: ${r.meet}${r.meetHour?' a las '+r.meetHour:''}`:'';
-  return `${isHikeRide(r)?'🥾':'🚴'} ${r.title||'Salida en grupo'} — RideSafe IA\n📅 ${fmtDate(r.date)} · 🕘 ${r.hour}\n🚩 Salida: ${r.start}${meet}${r.plan&&r.plan.text?'\n🧭 Recorrido: '+r.plan.text:''}${r.stop&&r.stop.place?'\n'+stopText(r.stop):''}${r.wind&&r.wind.spd!=null?'\n🌬️ Viento: '+windShort(r.wind)+' · '+(r.wind.short||''):''}${[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).length?'\n📏 '+[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).join(' · '):''}${r.note?'\n💬 '+r.note:''}\n\n¿Te apuntas? ${appUrl()}#salida=${r.id}`;
+  return `${isHikeRide(r)?'🥾':'🚴'} ${r.title||'Salida en grupo'} — VillorvinAdventure\n📅 ${fmtDate(r.date)} · 🕘 ${r.hour}\n🚩 Salida: ${r.start}${meet}${r.plan&&r.plan.text?'\n🧭 Recorrido: '+r.plan.text:''}${r.stop&&r.stop.place?'\n'+stopText(r.stop):''}${r.wind&&r.wind.spd!=null?'\n🌬️ Viento: '+windShort(r.wind)+' · '+(r.wind.short||''):''}${[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).length?'\n📏 '+[r.km?r.km+' km':'',r.type,r.pace].filter(Boolean).join(' · '):''}${r.note?'\n💬 '+r.note:''}\n\n¿Te apuntas? ${appUrl()}#salida=${r.id}`;
 }
 function shareRide(id){const r=rides.find(x=>x.id===id);if(r)window.open('https://wa.me/?text='+encodeURIComponent(shareText(r)),'_blank')}
 /* ===== v1.9 — Tarjeta de la salida para WhatsApp ===== */
@@ -1626,7 +1626,7 @@ function openCard(id){
   cardRender(r).catch(e=>{console.warn('card',e);$('cdWait').textContent='No se pudo crear la tarjeta. Usa "Solo texto".'});
 }
 function cardText(){if(cardRide)shareRide(cardRide.id)}
-const cardName=r=>'ridesafe-salida-'+(r?.date||'')+'.jpg';
+const cardName=r=>'villorvin-salida-'+(r?.date||'')+'.jpg';
 function loadImg(src){return new Promise(res=>{const i=new Image();i.crossOrigin='anonymous';const t=setTimeout(()=>res(null),7000);i.onload=()=>{clearTimeout(t);res(i)};i.onerror=()=>{clearTimeout(t);res(null)};i.src=src})}
 async function cardRender(r){
   const seq=++cardSeq;
@@ -1644,8 +1644,8 @@ async function cardRender(r){
   // Fondo
   const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#16263D');bg.addColorStop(1,'#0B1422');g.fillStyle=bg;g.fillRect(0,0,W,H);
   // Cabecera: marca + etiqueta
-  g.textBaseline='alphabetic';g.textAlign='left';g.font=F(800,50);g.fillStyle='#fff';g.fillText('RideSafe',M,105);
-  const bw=g.measureText('RideSafe ').width;g.fillStyle=LIME;g.fillText('IA',M+bw,105);
+  g.textBaseline='alphabetic';g.textAlign='left';g.font=F(800,50);g.fillStyle='#fff';g.fillText('VillorvinAdventure',M,105);
+  const bw=g.measureText('VillorvinAdventure ').width;g.fillStyle=LIME;g.fillText('IA',M+bw,105);
   const lg=rideLogo(r);const lgi=lg?await loadImg(lg):null;
   g.font=F(800,26);const tag=lgi?'SALIDA DEL CLUB':'SALIDA EN GRUPO';const tw=g.measureText(tag).width+44;rr(W-M-tw,62,tw,56,28);g.fillStyle=LIME;g.fill();g.fillStyle=NAVY;g.textAlign='center';g.fillText(tag,W-M-tw/2,100);g.textAlign='left';
   if(lgi){const L=110,lx=W-M-tw-L-20,ly=35;rr(lx,ly,L,L,22);g.fillStyle='#fff';g.fill();const k=Math.min((L-14)/lgi.naturalWidth,(L-14)/lgi.naturalHeight);g.drawImage(lgi,lx+(L-lgi.naturalWidth*k)/2,ly+(L-lgi.naturalHeight*k)/2,lgi.naturalWidth*k,lgi.naturalHeight*k)}
@@ -1707,7 +1707,7 @@ async function cardRender(r){
   // Pie
   const fh=110;g.fillStyle=LIME;g.fillRect(0,H-fh,W,fh);
   g.fillStyle=NAVY;g.font=F(800,40);g.fillText('¿Te apuntas?',M,H-fh+68);
-  g.textAlign='right';g.font=F(700,32);g.fillText(location.host||'app.ridesafeia.es',W-M,H-fh+66);g.textAlign='left';
+  g.textAlign='right';g.font=F(700,32);g.fillText('villorvinadventure.com',W-M,H-fh+66);g.textAlign='left';
   await new Promise(res=>{const done=b=>{if(seq!==cardSeq)return res();cardBlob=b;$('cdPrev').src=URL.createObjectURL(b);$('cdPrev').style.display='block';$('cdWait').style.display='none';res()};
     try{cv.toBlob(b=>b?done(b):res(),'image/jpeg',0.9)}catch(e){ // si el mapa bloquea la imagen, la repetimos sin mapa
       res(cardRender(Object.assign({},r,{startLL:null,meetLL:null,route:null})))}});
@@ -2349,9 +2349,9 @@ const ETICA=[
  ['🔒','Privacidad','No compartir datos, ubicación ni fotos de otros sin su permiso.'],
 ];
 function openEthics(){
-  $('rideBody').innerHTML=sheetHead('📜 Código ético del ciclista')+`<p style="color:var(--txt2);margin:-8px 0 14px">Todos los que usamos RideSafe IA nos comprometemos a respetar estas normas. Quien no las cumpla puede recibir un aviso, una suspensión temporal o la expulsión de la app, y un club puede ser suspendido.</p>
+  $('rideBody').innerHTML=sheetHead('📜 Código ético del ciclista')+`<p style="color:var(--txt2);margin:-8px 0 14px">Todos los que usamos VillorvinAdventure nos comprometemos a respetar estas normas. Quien no las cumpla puede recibir un aviso, una suspensión temporal o la expulsión de la app, y un club puede ser suspendido.</p>
    ${ETICA.map(([e,t,d])=>`<div class="li" style="cursor:default;margin-bottom:8px"><span class="em">${e}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}
-   <p style="color:var(--txt2);font-size:13px;margin-top:12px">¿Has visto una conducta contraria a este código? Usa «Reportar» en la salida, ruta o publicación, o escribe a info@ridesafeia.es.</p>`;
+   <p style="color:var(--txt2);font-size:13px;margin-top:12px">¿Has visto una conducta contraria a este código? Usa «Reportar» en la salida, ruta o publicación, o escribe a info@villorvinadventure.com.</p>`;
   openRideId=null;openSheet('sh-ride');
 }
 let modDoc=null,modUnsub=null;
@@ -2361,19 +2361,19 @@ function banNow(){
   if(me&&me.banned)return{reason:'',legacy:1};
   return null;
 }
-const banTxt=b=>b.expelled||(!b.until&&!b.legacy)?'Tu cuenta ha sido expulsada de RideSafe IA':b.until?'Tu cuenta está suspendida hasta el '+fmtDate(iso(new Date(b.until))):'Tu cuenta está bloqueada';
-function showBan(b){alert(`${banTxt(b)}${b.reason?'.\n\nMotivo: '+b.reason:''}${b.note?'\n'+b.note:''}\n\nMientras tanto no puedes publicar ni unirte a salidas. Si crees que es un error escribe a info@ridesafeia.es`)}
+const banTxt=b=>b.expelled||(!b.until&&!b.legacy)?'Tu cuenta ha sido expulsada de VillorvinAdventure':b.until?'Tu cuenta está suspendida hasta el '+fmtDate(iso(new Date(b.until))):'Tu cuenta está bloqueada';
+function showBan(b){alert(`${banTxt(b)}${b.reason?'.\n\nMotivo: '+b.reason:''}${b.note?'\n'+b.note:''}\n\nMientras tanto no puedes publicar ni unirte a salidas. Si crees que es un error escribe a info@villorvinadventure.com`)}
 function renderMod(){
   const el=$('modBox');if(!el)return;const b=banNow();let h='';
   if(b)h+=`<div class="ann" style="border-color:var(--red)"><span style="font-size:22px">🚫</span><p><b>${esc(banTxt(b))}</b>${b.reason?'<br>Motivo: '+esc(b.reason):''}</p></div>`;
   const g=myGroup;
-  if(g&&g.suspended)h+=`<div class="ann" style="border-color:var(--red)"><span style="font-size:22px">⛔</span><p><b>Tu club «${esc(g.name)}» está suspendido</b> por el equipo de RideSafe IA${g.suspendReason?'<br>Motivo: '+esc(g.suspendReason):''}</p></div>`;
-  if(g&&g.warn&&isClubAdm()&&store.get('clubWarnHide',0)!==g.warn.t)h+=`<div class="ann"><span style="font-size:22px">⚠️</span><p><b>Aviso del equipo de RideSafe IA a tu club</b><br>${esc(g.warn.reason||'')}${g.warn.note?' · '+esc(g.warn.note):''}</p><button class="x" style="width:30px;height:30px;flex-shrink:0" aria-label="Cerrar" onclick="store.set('clubWarnHide',${+g.warn.t||0});renderMod()">✕</button></div>`;
+  if(g&&g.suspended)h+=`<div class="ann" style="border-color:var(--red)"><span style="font-size:22px">⛔</span><p><b>Tu club «${esc(g.name)}» está suspendido</b> por el equipo de VillorvinAdventure${g.suspendReason?'<br>Motivo: '+esc(g.suspendReason):''}</p></div>`;
+  if(g&&g.warn&&isClubAdm()&&store.get('clubWarnHide',0)!==g.warn.t)h+=`<div class="ann"><span style="font-size:22px">⚠️</span><p><b>Aviso del equipo de VillorvinAdventure a tu club</b><br>${esc(g.warn.reason||'')}${g.warn.note?' · '+esc(g.warn.note):''}</p><button class="x" style="width:30px;height:30px;flex-shrink:0" aria-label="Cerrar" onclick="store.set('clubWarnHide',${+g.warn.t||0});renderMod()">✕</button></div>`;
   el.innerHTML=h;
 }
 async function checkWarn(){
   const m=modDoc;if(!m||!m.warn||!m.warn.t||(m.ack||0)>=m.warn.t||window.__warnOpen)return;window.__warnOpen=1;
-  const ok=await askConfirm('⚠️ Aviso del equipo de RideSafe IA',`Motivo: ${m.warn.reason||''}${m.warn.note?'. '+m.warn.note:''}. Te pedimos que respetes el código ético del ciclista. Si se repite, tu cuenta puede ser suspendida.`,'Entendido',true);
+  const ok=await askConfirm('⚠️ Aviso del equipo de VillorvinAdventure',`Motivo: ${m.warn.reason||''}${m.warn.note?'. '+m.warn.note:''}. Te pedimos que respetes el código ético del ciclista. Si se repite, tu cuenta puede ser suspendida.`,'Entendido',true);
   window.__warnOpen=0;if(!ok)return;
   try{await db.collection('mod').doc(uid).update({ack:Date.now()})}catch(e){}
   openEthics();
@@ -2383,7 +2383,7 @@ function watchUpdates(){if(!db)return;db.collection('config').doc('updates').onS
 const updItems=()=>((updData&&updData.items)||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
 function renderUpd(){
   const el=$('updBox');if(!el)return;const l=updItems();const last=l[0];
-  if($('newsSub'))$('newsSub').textContent=l.length?`${l.filter(x=>x.status==='soon').length} próximamente · ${l.filter(x=>x.status!=='soon').length} ya disponibles`:'Lo último de RideSafe IA';
+  if($('newsSub'))$('newsSub').textContent=l.length?`${l.filter(x=>x.status==='soon').length} próximamente · ${l.filter(x=>x.status!=='soon').length} ya disponibles`:'Lo último de VillorvinAdventure';
   if(!last||store.get('updSeen',0)>=last.t){el.innerHTML='';return}
   el.innerHTML=`<button class="ann" style="width:100%;text-align:left;cursor:pointer" onclick="openNews()"><span style="font-size:22px">🆕</span><p><b>${last.status==='soon'?'Próximamente':'Novedad'}${last.v?' · v'+esc(last.v):''}: ${esc(last.title||'')}</b><br><span style="color:var(--txt2)">Toca para ver las novedades</span></p></button>`;
 }
@@ -2637,7 +2637,7 @@ function watchGroup(){
   },e=>{console.warn('grupo',e);myGroup=null;renderGroup()});
 }
 function renderGroup(){
-  const g=myGroup;try{renderVA();vaWatch()}catch(e){console.warn('VA',e)}
+  const g=myGroup;try{renderVA();vaWatch();vaInit()}catch(e){console.warn('VA',e)}
   $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún club.<br><small style="color:var(--txt2)">Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas.</small>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="joinGroupAsk()">🔗 Unirme a mi club</button><button class="btn btn-line" onclick="createGroup()">➕ Crear club</button></div></div>`;
@@ -2694,7 +2694,7 @@ async function leaveGroup(silent){
 }
 function shareGroup(){
   if(!myGroup)return;
-  const t=`🚴 Únete a nuestro club "${myGroup.name}" en RideSafe IA\n\nCódigo del club: ${myGroup.id}\n👉 ${appUrl()}#grupo=${myGroup.id}`;
+  const t=`🚴 Únete a nuestro club "${myGroup.name}" en VillorvinAdventure\n\nCódigo del club: ${myGroup.id}\n👉 ${appUrl()}#grupo=${myGroup.id}`;
   window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 function openGroup(){
@@ -2921,7 +2921,7 @@ async function aquiComm(id){
 }
 function aquiStops(){closeSheets();if(!map)return;const h=aqui.here;if(h)map.jumpTo({center:[h.lng,h.lat],zoom:Math.max(map.getZoom(),14)});setTimeout(()=>{if(osmOn)osmClear();osmShow()},300)}
 /* ===== v5.13 — 🎵 Música en ruta (prueba) =====
-   Tus canciones del móvil suenan dentro de RideSafe (por el altavoz). Cuando llega un aviso del grupo
+   Tus canciones del móvil suenan dentro de VillorvinAdventure (por el altavoz). Cuando llega un aviso del grupo
    o una indicación de voz, la música baja sola y luego vuelve a subir. En España no se puede ir en bici
    con auriculares (Reglamento General de Circulación, art. 18.2). */
 const mus={list:[],i:0,a:null,vol:store.get('musVol',0.7),shuf:false,duckT:null,rampT:null,ducked:false,want:false,resT:null,speakUntil:0};
@@ -2950,7 +2950,7 @@ function musPick(inp){const fs=[...(inp.files||[])].filter(f=>/^audio\//.test(f.
   mus.list=fs.map(f=>({n:musName(f),url:URL.createObjectURL(f)}));mus.i=0;inp.value='';
   musLoad(0,true);toast(`🎵 ${fs.length} ${fs.length===1?'canción':'canciones'}`)}
 function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mus.list.length;const a=musAudio();a.src=mus.list[mus.i].url;
-  try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'RideSafe IA · Música en ruta'})}catch(e){}
+  try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'VillorvinAdventure · Música en ruta'})}catch(e){}
   if(play)musPlay();else musUI()}
 function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?musLow():mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
 function musPause(){mus.want=false;clearInterval(mus.resT);if(mus.a)mus.a.pause();musUI()}
@@ -2986,16 +2986,16 @@ function openMusic(){
   if(!store.get('musLaw',0)){store.set('musLaw',1);setTimeout(()=>alert('🔈 Usa el altavoz del móvil o un altavoz de manillar.\n\n🚫 En España está prohibido ir en bici con auriculares o cascos conectados al móvil (Reglamento General de Circulación, art. 18.2). Multa de 200 €.\n\nLa música baja sola cuando llega un aviso del grupo o una indicación.'),300)}
 }
 const SPOT_URL='https://open.spotify.com/';
-/* v5.13.4 — Botón para reanudar: abre Spotify (allí pulsas ▶️) y vuelves a RideSafe */
+/* v5.13.4 — Botón para reanudar: abre Spotify (allí pulsas ▶️) y vuelves a VillorvinAdventure */
 /* v5.19.4 — Abrir Spotify activa la voz del móvil solo para esa salida (6 horas), no para siempre.
    Antes se quedaba activada y la navegación hablaba siempre con la voz del móvil. */
 if(store.get('musVozMig',0)!==1){if(store.get('musVoz',false)===true)store.set('musVoz',false);store.set('musVozMig',1)}   // se había quedado activada para siempre
 const musVozOn=()=>{const v=store.get('musVoz',false);return v===true||(typeof v==='number'&&Date.now()<v)};
-function musResume(){if(!musVozOn())store.set('musVoz',Date.now()+6*3600000);window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
+function musResume(){if(!musVozOn())store.set('musVoz',Date.now()+6*3600000);window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a VillorvinAdventure')}
 function musVozSet(on){store.set('musVoz',!!on);toast(on?'🗣️ Voz del móvil: no parará la música':'🗣️ Voz de Google (más natural)')}
 /* ===== v5.17 — 📻 Radio en directo (gratis, sin registro) =====
    Las direcciones de cada emisora se buscan en Radio Browser (directorio libre y abierto de radios).
-   Suena dentro de RideSafe: la voz de la app baja la radio y luego la vuelve a subir. */
+   Suena dentro de VillorvinAdventure: la voz de la app baja la radio y luego la vuelve a subir. */
 const RADIOS=[['Los40','Los40'],['Cadena Dial','Cadena Dial'],['Europa FM','Europa FM'],['Cadena 100','Cadena 100'],['Rock FM','Rock FM'],['Kiss FM','Kiss FM'],['Flaix FM','Flaix FM'],['RAC1','RAC1'],['Catalunya Ràdio','Catalunya Radio'],['Cadena SER','Cadena SER'],['COPE','COPE'],['Radio 3','Radio 3']];
 const RB_HOSTS=['https://de1.api.radio-browser.info','https://fi1.api.radio-browser.info','https://at1.api.radio-browser.info','https://nl1.api.radio-browser.info'];
 async function rbSearch(q,cc){
@@ -3047,14 +3047,14 @@ function renderMusic(){
      <button class="btn btn-line" style="flex-basis:100%;min-height:44px;font-size:15px" onclick="ttsCheck()">🔎 Comprobar la voz de Google</button>
      <div id="ttsDiag" style="flex-basis:100%;font-size:13px;line-height:1.45"></div></div>
    <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
-   <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
+   <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de VillorvinAdventure y la voz de la app los baja sola. 0 datos.</small>
    <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
    <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
    <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>
-   <div class="set" style="margin-top:12px;flex-wrap:wrap">🗣️ Voz que no para la música <label class="sw"><input type="checkbox" ${vz?'checked':''} onchange="musVozSet(this.checked)"><span></span></label><small style="flex-basis:100%;color:var(--txt2);margin-top:4px;line-height:1.4">Solo para Spotify: usa la voz del móvil para que Android no pare Spotify al hablar. Con tu música del móvil o la radio de RideSafe se usa siempre la voz de Google, que baja la música sin pararla.</small></div>
+   <div class="set" style="margin-top:12px;flex-wrap:wrap">🗣️ Voz que no para la música <label class="sw"><input type="checkbox" ${vz?'checked':''} onchange="musVozSet(this.checked)"><span></span></label><small style="flex-basis:100%;color:var(--txt2);margin-top:4px;line-height:1.4">Solo para Spotify: usa la voz del móvil para que Android no pare Spotify al hablar. Con tu música del móvil o la radio de VillorvinAdventure se usa siempre la voz de Google, que baja la música sin pararla.</small></div>
    <div class="list" style="margin-top:12px">
-    <div class="li" style="cursor:default"><span class="em">1️⃣</span><div><b>Pon tu música en Spotify</b><small>Dale a ▶️ y vuelve a RideSafe. Sigue sonando detrás.</small></div></div>
+    <div class="li" style="cursor:default"><span class="em">1️⃣</span><div><b>Pon tu música en Spotify</b><small>Dale a ▶️ y vuelve a VillorvinAdventure. Sigue sonando detrás.</small></div></div>
     <div class="li" style="cursor:default"><span class="em">2️⃣</span><div><b>Si se para, botón 🎵</b><small>En la salida: «⋯» → 🎵 abre Spotify. Pulsas ▶️ y vuelves.</small></div></div>
    </div>
    <small style="display:block;color:var(--txt2);margin:12px 2px 0;line-height:1.45">ℹ️ YouTube Music gratis se para al cambiar de app: para que suene detrás hace falta YouTube Premium.</small>`;
@@ -3141,7 +3141,7 @@ function startNear(){if(nearTimer)return;setTimeout(pushNear,3000);nearTimer=set
 function setNear(on){store.set('nearOn',on);if(!on&&db&&uid)db.collection('nearby').doc(uid).delete().catch(()=>{});else pushNear();toast(on?'Apareces en "Ciclistas cercanos"':'Ya no apareces en "Ciclistas cercanos"')}
 async function openNearby(){
   if(!db){toast('Sin conexión');return}
-  $('rideBody').innerHTML=sheetHead('Ciclistas de tu club cerca')+`<p style="color:var(--txt2);margin:-8px 0 14px">Ciclistas de tu club con RideSafe IA abierto a menos de 2 km en la última media hora. La posición es aproximada.</p><div id="nearList"><div class="empty">Buscando…</div></div>`;
+  $('rideBody').innerHTML=sheetHead('Ciclistas de tu club cerca')+`<p style="color:var(--txt2);margin:-8px 0 14px">Ciclistas de tu club con VillorvinAdventure abierto a menos de 2 km en la última media hora. La posición es aproximada.</p><div id="nearList"><div class="empty">Buscando…</div></div>`;
   openRideId=null;openSheet('sh-ride');
   let h=null;try{h=await gpsOnce()}catch(e){h=hereLL()}
   if(!me?.group){$('nearList').innerHTML='<div class="empty">Únete a tu club para ver quién rueda cerca.</div>';return}
@@ -3171,7 +3171,7 @@ async function famShare(){
   if(!p){try{p=await gpsOnce()}catch(e){}}
   await famPush(p,live.speed||0,true);
   famBar();famSend();
-  setTimeout(()=>toast('📍 Para que tu familia te vea moverte, deja RideSafe IA abierta en pantalla',6000),2500);
+  setTimeout(()=>toast('📍 Para que tu familia te vea moverte, deja VillorvinAdventure abierta en pantalla',6000),2500);
 }
 /* v5.13.10 — el ciclista elige SIEMPRE cuánto tiempo (también en ruta) y lo puede cambiar */
 const FAM_H=[0.5,1,2,3,5,8,0];
@@ -3334,8 +3334,8 @@ async function fillWxDetail(r){
    Para las salidas programadas con días de antelación: se vuelve a mirar el tiempo (3 modelos),
    se compara con la última vez que lo miraste, semáforo, hora a hora, luz del día y lista de cosas. */
 const RV_CHECK=[['ruedas','🛞 Ruedas y presión'],['frenos','🛑 Frenos'],['cadena','⛓️ Cadena limpia y engrasada'],['luces','🔦 Luces cargadas'],
-  ['kit','🔧 Cámara, desmontables y bomba'],['agua','💧 Bidones llenos'],['comida','🍌 Comida o geles'],['movil','📱 Móvil cargado y RideSafe IA'],['casco','⛑️ Casco y gafas'],['dni','🪪 DNI, tarjeta sanitaria y algo de dinero']];
-const RV_HIKE=[['calzado','🥾 Calzado de montaña'],['agua','💧 Agua (1 l cada 2 h)'],['comida','🍎 Comida'],['movil','📱 Móvil cargado y RideSafe IA'],['botiquin','🩹 Botiquín pequeño'],['frontal','🔦 Frontal'],['dni','🪪 DNI y tarjeta sanitaria']];
+  ['kit','🔧 Cámara, desmontables y bomba'],['agua','💧 Bidones llenos'],['comida','🍌 Comida o geles'],['movil','📱 Móvil cargado y VillorvinAdventure'],['casco','⛑️ Casco y gafas'],['dni','🪪 DNI, tarjeta sanitaria y algo de dinero']];
+const RV_HIKE=[['calzado','🥾 Calzado de montaña'],['agua','💧 Agua (1 l cada 2 h)'],['comida','🍎 Comida'],['movil','📱 Móvil cargado y VillorvinAdventure'],['botiquin','🩹 Botiquín pequeño'],['frontal','🔦 Frontal'],['dni','🪪 DNI y tarjeta sanitaria']];
 async function rvForecast(r){
   const ll=rideLL(r);if(!ll)return null;
   const days=(new Date(r.date+'T'+(r.hour||'09:00'))-new Date())/86400000;
@@ -3423,7 +3423,7 @@ function rvBtns(r,V,s){
 async function rvShare(id){
   const r=rides.find(x=>x.id===id);if(!r)return;let F;try{F=await rvForecast(r)}catch(e){toast('Sin conexión');return}if(!F||F.far)return;
   const V=rvVerdict(F,isHikeRide(r)),s=F.sum;const ico={green:'🟢',amber:'🟡',red:'🔴'}[V.lvl];
-  const t=`${ico} *Parte para la salida* — ${r.title||'Salida en grupo'}\n📅 ${fmtDate(r.date)} · ${r.hour}\n🌡️ ${s.tmin}° a ${s.tmax}° · 💧 lluvia ${s.pp}% · 💨 ${s.wind} km/h (rachas ${s.gust})\n${V.title}${[...V.bad,...V.warn].length?'\n'+[...V.bad,...V.warn].join('\n'):''}\n\nMás detalles en RideSafe IA: ${appUrl()}#revisar=${r.id}`;
+  const t=`${ico} *Parte para la salida* — ${r.title||'Salida en grupo'}\n📅 ${fmtDate(r.date)} · ${r.hour}\n🌡️ ${s.tmin}° a ${s.tmax}° · 💧 lluvia ${s.pp}% · 💨 ${s.wind} km/h (rachas ${s.gust})\n${V.title}${[...V.bad,...V.warn].length?'\n'+[...V.bad,...V.warn].join('\n'):''}\n\nMás detalles en VillorvinAdventure: ${appUrl()}#revisar=${r.id}`;
   window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 
@@ -3437,7 +3437,7 @@ function calText(r){const meet=r.meet&&r.meet!==r.start?`\\nEncuentro: ${r.meet}
 function addToCalendar(id){
   const r=rides.find(x=>x.id===id);if(!r)return;const[s,e]=calDates(r);
   const esc2=t=>String(t).replace(/[,;]/g,m=>'\\'+m);
-  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//RideSafe IA//ES','BEGIN:VEVENT','UID:'+r.id+'@velogo','DTSTAMP:'+s,'DTSTART:'+s,'DTEND:'+e,
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//VillorvinAdventure//ES','BEGIN:VEVENT','UID:'+r.id+'@velogo','DTSTAMP:'+s,'DTSTART:'+s,'DTEND:'+e,
     'SUMMARY:🚴 '+esc2(r.title||'Salida en grupo'),'LOCATION:'+esc2(r.meet||r.start),'DESCRIPTION:'+esc2(calText(r)),
     'BEGIN:VALARM','TRIGGER:-PT12H','ACTION:DISPLAY','DESCRIPTION:Mañana sales en bici','END:VALARM',
     'BEGIN:VALARM','TRIGGER:-PT1H','ACTION:DISPLAY','DESCRIPTION:Salida en bici en 1 hora','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
@@ -3473,7 +3473,7 @@ function notifyChange(id){
 function downloadGPX(coords,name,prof,quiet){
   if(!coords||coords.length<2){toast('No hay ruta para exportar');return}
   const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="VillorvinAdventure" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
   const fn=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
   a.download=fn;document.body.appendChild(a);a.click();a.remove();
@@ -3508,14 +3508,14 @@ function devSendSheet(br){
   $('rideBody').innerHTML=sheetHead('📲 Pasar la ruta al ciclocomputador')+
    `<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
    tabs+`<ol class="steps" style="margin:4px 0 12px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">${steps}</ol>`+
-   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) solo salen en el aparato o el reloj si muestra notificaciones de otras apps (algunos solo enseñan llamadas y SMS): pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
+   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 VillorvinAdventure sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) solo salen en el aparato o el reloj si muestra notificaciones de otras apps (algunos solo enseñan llamadas y SMS): pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
    `<button class="btn btn-lime" onclick="closeSheets()">Entendido</button>`;
   openRideId=null;openSheet('sh-ride');
 }
-function gpxPlan(){if(plan.route)downloadGPX(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
-function devPlan(){if(plan.route)sendToDevice(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
-function devRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)sendToDevice(decodePoly(r.route.poly),r.title||'Salida RideSafe IA')}
-function gpxRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)downloadGPX(decodePoly(r.route.poly),r.title||'Salida RideSafe IA')}
+function gpxPlan(){if(plan.route)downloadGPX(plan.route.coords,$('planTitle').textContent||'Ruta VillorvinAdventure',plan.route.prof)}
+function devPlan(){if(plan.route)sendToDevice(plan.route.coords,$('planTitle').textContent||'Ruta VillorvinAdventure',plan.route.prof)}
+function devRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)sendToDevice(decodePoly(r.route.poly),r.title||'Salida VillorvinAdventure')}
+function gpxRide(id){const r=rides.find(x=>x.id===id);if(r&&r.route)downloadGPX(decodePoly(r.route.poly),r.title||'Salida VillorvinAdventure')}
 
 
 /* ===================================================================
@@ -3544,7 +3544,7 @@ async function linkGoogle(){
   }catch(e){await authErr(e,'link')}
 }
 async function signInGoogle(){
-  if(!confirm('Vas a entrar con una cuenta de Google que ya usaste en RideSafe IA. Los puntos de este móvil (si no estaban guardados) se perderán; tus actividades de este móvil se añadirán a esa cuenta. ¿Continuar?'))return;
+  if(!confirm('Vas a entrar con una cuenta de Google que ya usaste en VillorvinAdventure. Los puntos de este móvil (si no estaban guardados) se perderán; tus actividades de este móvil se añadirán a esa cuenta. ¿Continuar?'))return;
   try{await firebase.auth().signInWithPopup(gProvider());toast('Cuenta recuperada');setTimeout(()=>location.reload(),600)}
   catch(e){await authErr(e,'signin')}
 }
@@ -3552,7 +3552,7 @@ async function authErr(e,mode){
   console.warn(e);const c=e&&e.code||'';
   if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request')return;
   if(c==='auth/credential-already-in-use'||c==='auth/email-already-in-use'){
-    if(confirm('Esa cuenta de Google ya tiene datos en RideSafe IA. ¿Entrar con ella? (Tus actividades de este móvil se añadirán)')){
+    if(confirm('Esa cuenta de Google ya tiene datos en VillorvinAdventure. ¿Entrar con ella? (Tus actividades de este móvil se añadirán)')){
       try{await firebase.auth().signInWithCredential(e.credential);toast('Cuenta recuperada');setTimeout(()=>location.reload(),600)}catch(e2){toast('No se pudo entrar. Inténtalo de nuevo')}
     }return;
   }
@@ -3659,7 +3659,7 @@ function close3D(){if(R3V.on)r3vCancel();r3vClose();R3.play=false;cancelAnimatio
 /* ===================================================================
    v4.9 — VÍDEO DEL RECORRIDO EN 3D para WhatsApp y redes
    Se graba en el propio móvil (vertical 720×1280) con el mapa, el punto que avanza,
-   los datos (km, tiempo, altitud, media) y la marca RideSafe IA. No se sube a ningún sitio.
+   los datos (km, tiempo, altitud, media) y la marca VillorvinAdventure. No se sube a ningún sitio.
    =================================================================== */
 
 /* v4.9.1 — Pueblos y carreteras por donde pasaste + velocidad del 3D */
@@ -3713,7 +3713,7 @@ function r3vDraw(endHold){
   // cabecera
   let gr=g.createLinearGradient(0,0,0,250);gr.addColorStop(0,'rgba(8,14,24,.92)');gr.addColorStop(1,'rgba(8,14,24,0)');g.fillStyle=gr;g.fillRect(0,0,W,250);
   if(R3V.logo)g.drawImage(R3V.logo,36,40,64,64);
-  g.fillStyle='#fff';g.font='800 34px "Plus Jakarta Sans",sans-serif';g.fillText('RideSafe',114,84);const rw=g.measureText('RideSafe ').width;g.fillStyle='#4DA3FF';g.fillText('IA',114+rw,84);
+  g.fillStyle='#fff';g.font='800 34px "Plus Jakarta Sans",sans-serif';g.fillText('VillorvinAdventure',114,84);const rw=g.measureText('VillorvinAdventure ').width;g.fillStyle='#4DA3FF';g.fillText('IA',114+rw,84);
   const a=R3.a;let nm=a.name||'Salida';g.font='800 40px "Plus Jakarta Sans",sans-serif';g.fillStyle='#fff';while(g.measureText(nm).width>W-72&&nm.length>4)nm=nm.slice(0,-2);if(nm!==(a.name||'Salida'))nm+='…';
   g.fillText(nm,36,160);g.font='600 26px "Plus Jakarta Sans",sans-serif';g.fillStyle='#C9D3E0';g.fillText(fmtDate(a.date)+(a.sport==='hike'?' · 🥾 a pie':''),36,200);
   const here=r3HereTxt((R3.cum.at(-1)||0)*(endHold?1:R3.t));if(here&&!endHold){g.font='800 28px "Plus Jakarta Sans",sans-serif';let ht='📍 '+here;while(g.measureText(ht).width>W-72&&ht.length>6)ht=ht.slice(0,-2);g.fillStyle='rgba(11,20,34,.75)';const hw=g.measureText(ht).width+28;r3vRound(g,30,222,hw,46,23);g.fill();g.fillStyle='#4DA3FF';g.fillText(ht,44,255)}
@@ -3727,7 +3727,7 @@ function r3vDraw(endHold){
   const cw=(W-72-30)/4;st.forEach((v,i)=>{const cx=36+i*(cw+10);g.fillStyle='rgba(255,255,255,.08)';r3vRound(g,cx,H-230,cw,118,18);g.fill();
     g.textAlign='center';g.fillStyle='#fff';g.font='800 40px "Plus Jakarta Sans",sans-serif';g.fillText(v[0],cx+cw/2,H-165);g.fillStyle='#A9B6C8';g.font='600 21px "Plus Jakarta Sans",sans-serif';g.fillText(v[1],cx+cw/2,H-130);g.textAlign='left'});
   g.fillStyle='rgba(255,255,255,.18)';r3vRound(g,36,H-86,W-72,10,5);g.fill();g.fillStyle='#4DA3FF';r3vRound(g,36,H-86,Math.max(10,(W-72)*t),10,5);g.fill();
-  g.fillStyle='#A9B6C8';g.font='600 22px "Plus Jakarta Sans",sans-serif';g.textAlign='center';g.fillText('Hecho con RideSafe IA · app.ridesafeia.es',W/2,H-36);g.textAlign='left';
+  g.fillStyle='#A9B6C8';g.font='600 22px "Plus Jakarta Sans",sans-serif';g.textAlign='center';g.fillText('Hecho con VillorvinAdventure · villorvinadventure.com',W/2,H-36);g.textAlign='left';
 }
 async function rec3D(){
   if(R3V.on)return;const m=R3.map;if(!m||!R3.mk){toast('Espera a que cargue el mapa');return}
@@ -3759,7 +3759,7 @@ async function rec3D(){
 }
 function r3vEnd(cancelled){R3V.on=false;cancelAnimationFrame(R3V.raf);try{R3V.wake&&R3V.wake.release()}catch(e){}$('r3vBox').classList.remove('show');if(cancelled)toast('Vídeo cancelado')}
 function r3vCancel(){R3V.cancel=true;if(!R3V.rec||R3V.rec.state!=='recording')r3vEnd(true)}
-function r3vName(){const a=R3.a||{};return 'RideSafe_3D_'+String(a.name||'salida').replace(/[^\wÁÉÍÓÚÑáéíóúñ-]+/g,'_').slice(0,30)+'.'+(/mp4/.test(R3V.blob.type)?'mp4':'webm')}
+function r3vName(){const a=R3.a||{};return 'VillorvinAdventure_3D_'+String(a.name||'salida').replace(/[^\wÁÉÍÓÚÑáéíóúñ-]+/g,'_').slice(0,30)+'.'+(/mp4/.test(R3V.blob.type)?'mp4':'webm')}
 function r3vShow(){
   if(R3V.url)URL.revokeObjectURL(R3V.url);R3V.url=URL.createObjectURL(R3V.blob);
   const mb=(R3V.blob.size/1048576).toFixed(1).replace('.',',');const webm=!/mp4/.test(R3V.blob.type);
@@ -3771,7 +3771,7 @@ function r3vShow(){
 }
 async function r3vShare(){
   const f=new File([R3V.blob],r3vName(),{type:R3V.blob.type});
-  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Mi recorrido en 3D',text:'Mi salida en 3D con RideSafe IA 🚴 app.ridesafeia.es'});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Mi recorrido en 3D',text:'Mi salida en 3D con VillorvinAdventure 🚴 villorvinadventure.com'});return}}catch(e){if(e&&e.name==='AbortError')return}
   r3vSave();toast('Guardado en Descargas: compártelo desde la galería o WhatsApp');
 }
 function r3vSave(){const a=document.createElement('a');a.href=R3V.url;a.download=r3vName();document.body.appendChild(a);a.click();a.remove();toast('💾 Vídeo guardado en Descargas')}
@@ -4056,11 +4056,11 @@ let installEvt=null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;renderInstall()});
-window.addEventListener('appinstalled',()=>{installEvt=null;store.set('installed',true);renderInstall();toast('📲 ¡RideSafe IA instalada!')});
+window.addEventListener('appinstalled',()=>{installEvt=null;store.set('installed',true);renderInstall();toast('📲 ¡VillorvinAdventure instalada!')});
 function renderInstall(){
   const el=$('installBox');if(!el)return;
   const show=!isStandalone()&&!store.get('installHide',false)&&(installEvt||isIOS());
-  el.innerHTML=show?`<div class="install"><span style="font-size:28px">📲</span><div><b>Instala RideSafe IA</b><small>Ábrela como una app, a pantalla completa</small></div><button class="mini ok" onclick="doInstall()">Instalar</button><button class="x" style="width:32px;height:32px" aria-label="Ocultar" onclick="store.set('installHide',true);renderInstall()"><svg class="i" viewBox="0 0 24 24" style="width:16px"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`:'';
+  el.innerHTML=show?`<div class="install"><span style="font-size:28px">📲</span><div><b>Instala VillorvinAdventure</b><small>Ábrela como una app, a pantalla completa</small></div><button class="mini ok" onclick="doInstall()">Instalar</button><button class="x" style="width:32px;height:32px" aria-label="Ocultar" onclick="store.set('installHide',true);renderInstall()"><svg class="i" viewBox="0 0 24 24" style="width:16px"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`:'';
 }
 async function doInstall(){
   if(installEvt){installEvt.prompt();const r=await installEvt.userChoice.catch(()=>null);installEvt=null;renderInstall();return}
@@ -4069,7 +4069,7 @@ async function doInstall(){
 }
 function openInvite(){
   $('rideBody').innerHTML=sheetHead('📣 Invitar a amigos')+`
-   <div style="background:#fff;border-radius:22px;padding:16px;text-align:center;margin-bottom:12px"><svg style="width:230px;height:230px;display:block;margin:0 auto" role="img" aria-label="Código QR de RideSafe IA" viewBox="0 0 370 370" xmlns="http://www.w3.org/2000/svg" width="370" height="370" class="segno"><g transform="scale(10)"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#0e1a2b" d="M2 2.5h7m3 0h1m1 0h5m2 0h1m3 0h2m1 0h7m-33 1h1m5 0h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m3 0h5m2 0h3m3 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h4m2 0h1m1 0h2m7 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m4 0h3m2 0h2m5 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m2 0h1m1 0h4m1 0h1m1 0h1m1 0h3m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m1 0h7m1 0h2m1 0h1m2 0h1m-21 1h4m3 0h1m2 0h1m2 0h8m1 0h2m3 0h1m-31 1h1m3 0h1m1 0h3m2 0h1m2 0h2m5 0h2m3 0h1m2 0h1m-31 1h2m1 0h2m1 0h4m1 0h1m3 0h1m1 0h1m1 0h5m1 0h4m2 0h1m-32 1h2m1 0h1m3 0h1m1 0h2m3 0h2m1 0h1m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m-31 1h3m1 0h2m2 0h4m2 0h1m2 0h3m2 0h2m1 0h2m3 0h2m-33 1h1m3 0h1m2 0h1m2 0h4m2 0h2m3 0h3m6 0h2m-31 1h2m1 0h3m2 0h11m3 0h2m1 0h1m1 0h2m1 0h1m-32 1h1m1 0h4m1 0h3m1 0h1m1 0h5m1 0h3m1 0h1m1 0h1m1 0h3m2 0h1m-30 1h4m1 0h1m2 0h2m3 0h3m1 0h2m1 0h1m2 0h1m1 0h1m1 0h2m-31 1h2m2 0h1m2 0h1m1 0h1m1 0h5m6 0h3m1 0h1m3 0h2m-32 1h1m1 0h2m1 0h2m4 0h1m3 0h1m2 0h1m1 0h1m1 0h4m1 0h2m-30 1h2m1 0h2m2 0h5m1 0h1m1 0h1m1 0h2m1 0h2m4 0h1m1 0h1m2 0h2m-33 1h1m2 0h1m1 0h2m2 0h1m1 0h2m2 0h3m1 0h4m5 0h2m-30 1h2m5 0h1m2 0h1m3 0h2m1 0h3m2 0h1m1 0h3m3 0h2m-29 1h1m1 0h8m3 0h4m2 0h3m2 0h3m1 0h1m-30 1h1m2 0h1m6 0h1m3 0h3m2 0h1m1 0h1m3 0h2m2 0h2m-33 1h2m1 0h5m2 0h1m1 0h4m2 0h2m1 0h1m2 0h6m1 0h2m-25 1h1m1 0h3m2 0h1m1 0h1m1 0h3m2 0h1m3 0h4m-32 1h7m1 0h1m1 0h1m4 0h1m2 0h1m5 0h1m1 0h1m1 0h4m-32 1h1m5 0h1m1 0h2m1 0h9m2 0h3m3 0h1m2 0h2m-33 1h1m1 0h3m1 0h1m1 0h5m2 0h3m2 0h1m1 0h1m1 0h5m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h6m1 0h2m1 0h4m2 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h3m-31 1h1m5 0h1m2 0h1m1 0h6m1 0h3m1 0h3m2 0h2m1 0h1m-31 1h7m3 0h3m1 0h2m4 0h1m1 0h4m1 0h1m2 0h1m1 0h1"/></g></svg><b style="color:#0E1A2B;display:block;margin-top:6px">Enséñalo: que lo escaneen con la cámara</b></div>
+   <div style="background:#fff;border-radius:22px;padding:16px;text-align:center;margin-bottom:12px"><svg style="width:230px;height:230px;display:block;margin:0 auto" role="img" aria-label="Código QR de VillorvinAdventure" viewBox="0 0 370 370" xmlns="http://www.w3.org/2000/svg" width="370" height="370" class="segno"><g transform="scale(10)"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#0e1a2b" d="M2 2.5h7m3 0h1m1 0h5m2 0h1m3 0h2m1 0h7m-33 1h1m5 0h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m3 0h5m2 0h3m3 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h4m2 0h1m1 0h2m7 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m4 0h3m2 0h2m5 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m2 0h1m1 0h4m1 0h1m1 0h1m1 0h3m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m1 0h7m1 0h2m1 0h1m2 0h1m-21 1h4m3 0h1m2 0h1m2 0h8m1 0h2m3 0h1m-31 1h1m3 0h1m1 0h3m2 0h1m2 0h2m5 0h2m3 0h1m2 0h1m-31 1h2m1 0h2m1 0h4m1 0h1m3 0h1m1 0h1m1 0h5m1 0h4m2 0h1m-32 1h2m1 0h1m3 0h1m1 0h2m3 0h2m1 0h1m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m-31 1h3m1 0h2m2 0h4m2 0h1m2 0h3m2 0h2m1 0h2m3 0h2m-33 1h1m3 0h1m2 0h1m2 0h4m2 0h2m3 0h3m6 0h2m-31 1h2m1 0h3m2 0h11m3 0h2m1 0h1m1 0h2m1 0h1m-32 1h1m1 0h4m1 0h3m1 0h1m1 0h5m1 0h3m1 0h1m1 0h1m1 0h3m2 0h1m-30 1h4m1 0h1m2 0h2m3 0h3m1 0h2m1 0h1m2 0h1m1 0h1m1 0h2m-31 1h2m2 0h1m2 0h1m1 0h1m1 0h5m6 0h3m1 0h1m3 0h2m-32 1h1m1 0h2m1 0h2m4 0h1m3 0h1m2 0h1m1 0h1m1 0h4m1 0h2m-30 1h2m1 0h2m2 0h5m1 0h1m1 0h1m1 0h2m1 0h2m4 0h1m1 0h1m2 0h2m-33 1h1m2 0h1m1 0h2m2 0h1m1 0h2m2 0h3m1 0h4m5 0h2m-30 1h2m5 0h1m2 0h1m3 0h2m1 0h3m2 0h1m1 0h3m3 0h2m-29 1h1m1 0h8m3 0h4m2 0h3m2 0h3m1 0h1m-30 1h1m2 0h1m6 0h1m3 0h3m2 0h1m1 0h1m3 0h2m2 0h2m-33 1h2m1 0h5m2 0h1m1 0h4m2 0h2m1 0h1m2 0h6m1 0h2m-25 1h1m1 0h3m2 0h1m1 0h1m1 0h3m2 0h1m3 0h4m-32 1h7m1 0h1m1 0h1m4 0h1m2 0h1m5 0h1m1 0h1m1 0h4m-32 1h1m5 0h1m1 0h2m1 0h9m2 0h3m3 0h1m2 0h2m-33 1h1m1 0h3m1 0h1m1 0h5m2 0h3m2 0h1m1 0h1m1 0h5m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h6m1 0h2m1 0h4m2 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h3m-31 1h1m5 0h1m2 0h1m1 0h6m1 0h3m1 0h3m2 0h2m1 0h1m-31 1h7m3 0h3m1 0h2m4 0h1m1 0h4m1 0h1m2 0h1m1 0h1"/></g></svg><b style="color:#0E1A2B;display:block;margin-top:6px">Enséñalo: que lo escaneen con la cámara</b></div>
    <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn btn-lime" onclick="inviteFriends()">💬 Enviar invitación</button>
     <a class="btn btn-line" style="text-decoration:none" href="web.html" target="_blank" rel="noopener">🌐 Página de presentación</a>
@@ -4078,8 +4078,8 @@ function openInvite(){
   openRideId=null;openSheet('sh-ride');
 }
 function inviteFriends(){
-  const t=`🚴 Te invito a RideSafe IA, la app para organizar salidas en bici con la comunidad: día, hora, punto de encuentro, rutas y pelotón en vivo. Es gratis 👇\n${appUrl()}`;
-  if(navigator.share)navigator.share({title:'RideSafe IA',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
+  const t=`🚴 Te invito a VillorvinAdventure, la app para organizar salidas en bici con la comunidad: día, hora, punto de encuentro, rutas y pelotón en vivo. Es gratis 👇\n${appUrl()}`;
+  if(navigator.share)navigator.share({title:'VillorvinAdventure',text:t}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 const HELP=[
  ['🆘','¿Y si tengo un problema en ruta?','Comunidad → Alertas de seguridad: llamar a la Asistencia VillorvinAdventure (610 200 580) o enviar tu ubicación por WhatsApp. Mientras grabas también tienes el botón SOS y 📡 para que tu familia te siga.'],
@@ -4098,19 +4098,19 @@ const HELP=[
  ['🧪','El aviso de caída no salta al probarlo','Es normal si estás parado: en ruta solo salta si ibas a más de 8 km/h antes del golpe y luego te quedas quieto 15 segundos. Así se evitan falsas alarmas. Para probar el sensor sin moverte usa Seguridad → Alertas de seguridad → "📳 Probar el sensor de verdad".','caida no salta prueba probar parado sensible sensibilidad funciona detecta'],
  ['👨‍👩‍👧','¿Cómo ve mi familia dónde estoy?','Pulsa "📍 Ubicación para la familia" (o 📡 mientras grabas) y envíales el enlace por WhatsApp. Lo abren sin instalar nada. Si sufres una caída, en su pantalla sale una alerta roja; deben pulsar una vez "🔔 Activar alarma sonora" para que suene.','familia ubicacion compartir enlace seguir donde estoy alarma sonora'],
  ['🔊','No oigo la voz de la navegación','Toca la pantalla una vez después de abrir la app, comprueba que el botón de voz está en 🔊 y sube el volumen multimedia del móvil (no el del timbre). Si el móvil está en silencio, puede no sonar.','voz sonido oigo suena silencio volumen audio navegacion habla'],
- ['🔄','No veo los cambios nuevos de la app','Cierra la app del todo (quítala de recientes) y vuelve a abrirla. Si sigue igual, abre en Chrome app.ridesafeia.es/?v=2 para forzar la versión nueva.','actualizar actualizacion version nueva cambios novedades aparece antigua vieja cache'],
- ['💻','¿Puedo usarla en el ordenador?','Sí. Abre app.ridesafeia.es en Chrome o Edge y pulsa el icono de instalar de la barra de direcciones. Entra con la misma cuenta que en el móvil. En el PC puedes crear salidas y planificar rutas; grabar y navegar se hace con el móvil.','ordenador pc portatil windows instalar escritorio jefe'],
+ ['🔄','No veo los cambios nuevos de la app','Cierra la app del todo (quítala de recientes) y vuelve a abrirla. Si sigue igual, vuelve a abrir el enlace de la app para cargar la versión nueva.','actualizar actualizacion version nueva cambios novedades aparece antigua vieja cache'],
+ ['💻','¿Puedo usarla en el ordenador?','Sí. Abre el enlace de la app en Chrome o Edge y pulsa el icono de instalar de la barra de direcciones. Entra con la misma cuenta que en el móvil. En el PC puedes crear salidas y planificar rutas; grabar y navegar se hace con el móvil.','ordenador pc portatil windows instalar escritorio jefe'],
  ['🧭','¿Cómo voy a un sitio concreto?','En Rutas pulsa "🧭 Ir a un destino", escribe el sitio y elígelo. La app calcula la ruta en bici desde donde estás. Pulsa "▲ Iniciar" para que te guíe con voz.','destino ir llegar navegar guiar buscar sitio'],
  ['📍','El GPS no me sitúa bien','Activa la ubicación del móvil en modo "alta precisión" y da permiso de ubicación al navegador (Chrome → ⋮ → Configuración → Configuración de sitios → Ubicación). Al aire libre funciona mucho mejor que dentro de casa.','gps ubicacion localizacion permiso situa posicion precision']
 ];
 function openHelp(){
   $('rideBody').innerHTML=sheetHead('❓ Cómo funciona')+HELP.map(([e,q,a])=>`<details class="faq"><summary><span>${e}</span>${q}</summary><p>${a}</p></details>`).join('')+
-   `<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px"><button class="btn btn-lime" onclick="openInvite()">📣 Invitar a amigos</button><a class="btn btn-line" style="text-decoration:none" href="privacidad.html">📄 Privacidad y condiciones</a></div>`;
+   `<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px"><button class="btn btn-lime" onclick="openInvite()">📣 Invitar a amigos</button><a class="btn btn-line" style="text-decoration:none" href="https://www.villorvinadventure.com/pol%C3%ADtica-y-condiciones" target="_blank" rel="noopener">📄 Privacidad y condiciones</a></div>`;
   openRideId=null;openSheet('sh-ride');
 }
 async function deleteAccount(){
   if(!ready())return;
-  if(!confirm('¿Borrar tu cuenta y tus datos de RideSafe IA?\n\nSe borrarán tu perfil, puntos, actividades, publicaciones y bicis. Tus puntos ciclistas y rutas compartidas se quedarán para la comunidad (sin tu nombre si lo pides por correo).\n\nNo se puede deshacer.'))return;
+  if(!confirm('¿Borrar tu cuenta y tus datos de VillorvinAdventure?\n\nSe borrarán tu perfil, puntos, actividades, publicaciones y bicis. Tus puntos ciclistas y rutas compartidas se quedarán para la comunidad (sin tu nombre si lo pides por correo).\n\nNo se puede deshacer.'))return;
   if((prompt('Para confirmar escribe BORRAR','')||'').trim().toUpperCase()!=='BORRAR'){toast('No se ha borrado nada');return}
   toast('Borrando tus datos…');window.__deleting=true;
   try{
@@ -4124,8 +4124,8 @@ async function deleteAccount(){
     await db.collection('users').doc(uid).delete();
     try{await u.delete()}catch(e){console.warn('auth delete',e)}
     try{Object.keys(localStorage).filter(k=>k.startsWith('velogo_')).forEach(k=>localStorage.removeItem(k))}catch(e){}
-    alert('Tu cuenta y tus datos se han borrado. ¡Gracias por usar RideSafe IA!');location.reload();
-  }catch(e){console.error(e);window.__deleting=false;toast('No se pudo borrar todo. Escríbenos a info@ridesafeia.es')}
+    alert('Tu cuenta y tus datos se han borrado. ¡Gracias por usar VillorvinAdventure!');location.reload();
+  }catch(e){console.error(e);window.__deleting=false;toast('No se pudo borrar todo. Escríbenos a info@villorvinadventure.com')}
 }
 
 
@@ -4391,9 +4391,9 @@ function openGarmin(br){
   if(br)store.set('devBrand',br);const B=store.get('devBrand','garmin');
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const perm='Notification' in window?Notification.permission:'no';
-  const app=isIOS?'RideSafe IA':'Chrome',appNote=isIOS?'':' (en Android los avisos de RideSafe IA llegan a través de Chrome)';
+  const app=isIOS?'VillorvinAdventure':'Chrome',appNote=isIOS?'':' (en Android los avisos de VillorvinAdventure llegan a través de Chrome)';
   const tabs=`<div class="chips" style="margin:0 0 12px;flex-wrap:wrap">${[['garmin','⌚ Garmin'],['igps','🚴 iGPSPORT'],['otro','📟 Wahoo, Bryton, reloj…']].map(([k,t])=>`<button class="chip${B===k?' on':''}" onclick="openGarmin(${jsq(k)})">${t}</button>`).join('')}</div>`;
-  const step1=`<li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>`;
+  const step1=`<li><b>VillorvinAdventure</b>: Perfil → enciende <b>🔔 Avisos con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>`;
   let steps,models;
   if(B==='igps'){
     steps=step1+`<li><b>App iGPSPORT</b> del móvil: entra en tu aparato (Dispositivo) → busca <b>Notificaciones</b> / «Recordatorio de mensajes» y actívalo. Si te deja elegir apps, marca <b>${app}</b>${appNote}.</li>
@@ -4415,24 +4415,24 @@ function openGarmin(br){
     <p style="margin-top:6px;font-size:14px"><b style="color:var(--red)">❌ No</b> (solo llamadas y SMS): ${GARMIN_NO.join(' · ')}</p>`;
   }
   const n=devName();
-  $('rideBody').innerHTML=sheetHead('⌚ Avisos en tu cuentakilómetros')+tabs+`<p style="color:var(--txt2);margin:-2px 0 12px">Cuando alguien del grupo avisa (pinchazo, esperad, ayuda, caída…), RideSafe IA manda una notificación a tu móvil. Si tu ${esc(n)} muestra las notificaciones del móvil, el aviso <b>aparece también en su pantalla</b> con pitido y vibración. También los avisos de lluvia, rachas fuertes y las salidas.</p>
+  $('rideBody').innerHTML=sheetHead('⌚ Avisos en tu cuentakilómetros')+tabs+`<p style="color:var(--txt2);margin:-2px 0 12px">Cuando alguien del grupo avisa (pinchazo, esperad, ayuda, caída…), VillorvinAdventure manda una notificación a tu móvil. Si tu ${esc(n)} muestra las notificaciones del móvil, el aviso <b>aparece también en su pantalla</b> con pitido y vibración. También los avisos de lluvia, rachas fuertes y las salidas.</p>
    <button class="btn btn-lime" onclick="garminTest()">⌚ Probar aviso en mi ${esc(n)}</button>
    <small style="display:block;color:var(--txt2);margin:6px 4px 14px">Pulsa, <b>bloquea el móvil</b> y mira el ${esc(n)}: en 5 segundos llega una notificación de prueba.</small>
    <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Paso a paso</span><b>Cómo activarlo</b></div>
     <ol style="margin:8px 0 0 18px;line-height:1.55;font-size:14.5px">${steps}</ol></div>
    <div class="plc" style="margin-bottom:12px"><div class="pc-h"><span class="pc-tag">Modelos</span><b>¿Funciona con el mío?</b></div>${models}
-    <small style="display:block;color:var(--txt2);margin-top:6px">Si tu aparato no es compatible, el aviso te llega igualmente al móvil con sonido y vibración, y suena la sirena si llevas RideSafe IA abierta en el manillar.</small></div>`;
+    <small style="display:block;color:var(--txt2);margin-top:6px">Si tu aparato no es compatible, el aviso te llega igualmente al móvil con sonido y vibración, y suena la sirena si llevas VillorvinAdventure abierta en el manillar.</small></div>`;
   openRideId=null;openSheet('sh-ride');
 }
 async function garminTest(){
   if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('Este móvil no permite notificaciones');return}
   let perm=Notification.permission;if(perm==='default'){try{perm=await Notification.requestPermission()}catch(e){}}
-  if(perm!=='granted'){alert('Las notificaciones de RideSafe IA están bloqueadas.\n\nActívalas en: Ajustes del móvil → Aplicaciones → Chrome (o RideSafe IA) → Notificaciones → Permitir.');return}
+  if(perm!=='granted'){alert('Las notificaciones de VillorvinAdventure están bloqueadas.\n\nActívalas en: Ajustes del móvil → Aplicaciones → Chrome (o VillorvinAdventure) → Notificaciones → Permitir.');return}
   toast(`⌚ Bloquea el móvil y mira el ${devName()}: llega en 5 segundos`);
   setTimeout(async()=>{
     try{const reg=await navigator.serviceWorker.ready;
       // v5.14.4: una sola prueba, sin emojis, con el mismo formato que un aviso de salida de verdad
-      await reg.showNotification('Nueva salida: Prueba de '+(String(myName()||'RideSafe').split(' ')[0]),{body:'Si ves este aviso, te llegarán las salidas de tu club',icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-prueba-'+Date.now(),renotify:true,vibrate:[600,200,600],data:{url:'./'}})}
+      await reg.showNotification('Nueva salida: Prueba de '+(String(myName()||'VillorvinAdventure').split(' ')[0]),{body:'Si ves este aviso, te llegarán las salidas de tu club',icon:'va-icon-192.png',badge:'va-icon-192.png',tag:'villorvin-prueba-'+Date.now(),renotify:true,vibrate:[600,200,600],data:{url:'./'}})}
     catch(e){toast('No se pudo lanzar la prueba')}
     setTimeout(async()=>{if(document.visibilityState!=='visible')await new Promise(r=>{const f=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',f);r()}};document.addEventListener('visibilitychange',f)});
       const i=await askChoice(`¿Te ha salido el aviso en el ${devName()}?`,[['✅ Sí, lo he visto','',''],['❌ No ha salido','','']]);
@@ -4509,9 +4509,9 @@ async function sendAlert(kind,btext){
   db.collection('rides').doc(live.rideId).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
   vib(200);
   try{const rr=rides.find(x=>x.id===live.rideId);vaClubAlert(kind,p,live.rideTitle||(rr&&rr.title)||'',rr&&rr.group)}catch(e){}
-  live.waText=`${ALERTS[kind].ico} RideSafe · ${live.rideTitle||'Salida en grupo'}\n*${myName()}*: ${bmsg}\n📍 https://maps.google.com/?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
+  live.waText=`${ALERTS[kind].ico} VillorvinAdventure · ${live.rideTitle||'Salida en grupo'}\n*${myName()}*: ${bmsg}\n📍 https://maps.google.com/?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
   if(kind==='ok'){alarmShow('ok','Aviso enviado: seguimos','¿Lo avisas también en el grupo de WhatsApp?',[['📲 Enviar por WhatsApp','al-main','alertWA();alarmClose()'],['No hace falta','al-sec','alarmClose()']]);setTimeout(()=>{if($('alTitle').textContent.startsWith('Aviso enviado: seguimos'))alarmClose()},12000);return}
-  alarmShow(kind,'Aviso enviado al grupo',`Lo ve quien tenga RideSafe abierto. Para que suene a TODOS aunque tengan la app cerrada, mándalo también por WhatsApp:`,[['📲 Enviar también por WhatsApp','al-main','alertWA()'],['✅ Solucionado, seguimos','al-sec',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
+  alarmShow(kind,'Aviso enviado al grupo',`Lo ve quien tenga VillorvinAdventure abierto. Para que suene a TODOS aunque tengan la app cerrada, mándalo también por WhatsApp:`,[['📲 Enviar también por WhatsApp','al-main','alertWA()'],['✅ Solucionado, seguimos','al-sec',"sendAlert('ok')"],['Ocultar','al-sec','alarmClose()']]);
 }
 function checkAlerts(){
   if(!live.on)return;const now=Date.now();const me=live.pts.at(-1);live.alSeen=live.alSeen||{};
@@ -4530,19 +4530,19 @@ function checkAlerts(){
     }
     setTimeout(()=>speak(`Atención. ${name} ${a.type==='late'&&a.text?'dice: '+a.text:A.say}.${dist!=null&&!SOFT_AL[a.type]?' Está '+dtx+'.':a.type==='late'&&dist!=null?' Está '+dtx+'.':''}`),SOFT_AL[a.type]?900:2200);
     toast(`${A.ico} ${name} ${A.t}`);
-    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name}: ${a.type==='late'&&a.text?a.text:A.s}`,(dtx?dtx+' · ':'')+(live.rideTitle||'RideSafe IA'),!SOFT_AL[a.type]);
+    if(document.visibilityState!=='visible')bgNotify(`${A.ico} ${name}: ${a.type==='late'&&a.text?a.text:A.s}`,(dtx?dtx+' · ':'')+(live.rideTitle||'VillorvinAdventure'),!SOFT_AL[a.type]);
   });
 }
 async function bgNotify(title,body,urgent){
   try{if(!('Notification' in window)||Notification.permission!=='granted')return;const reg=await navigator.serviceWorker.ready;
-    reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'ridesafe-alert',renotify:true,requireInteraction:urgent,vibrate:urgent?[700,200,700,200,700,200,700]:[200,100,200]})}catch(e){}
+    reg.showNotification(title,{body,icon:'va-icon-192.png',badge:'va-icon-192.png',tag:'ridesafe-alert',renotify:true,requireInteraction:urgent,vibrate:urgent?[700,200,700,200,700,200,700]:[200,100,200]})}catch(e){}
 }
 function groupTips(){
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}catch(e){}
   if(store.get('noGroupTip',0))return;
   setTimeout(()=>{if(!live.on)return;
     const d=document.createElement('div');d.className='cfm';
-    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>📍 Lleva <b>RideSafe abierto</b> en el soporte del manillar: oirás la sirena si alguien pincha o pide ayuda.<br><br>🔔 Si lo llevas en el bolsillo, activa <b>Avisos del pelotón</b> en Perfil (también llegan a tu <b>Garmin</b>).<br><br>🔊 Sube el volumen.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se pone negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 4px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
+    d.innerHTML=`<div class="cfm-b"><h3>📱 Para no perderte ningún aviso</h3><p>📍 Lleva <b>VillorvinAdventure abierto</b> en el soporte del manillar: oirás la sirena si alguien pincha o pide ayuda.<br><br>🔔 Si lo llevas en el bolsillo, activa <b>Avisos del pelotón</b> en Perfil (también llegan a tu <b>Garmin</b>).<br><br>🔊 Sube el volumen.<br><br>🌙 Para ahorrar batería pulsa la luna: la pantalla se pone negra y el GPS sigue grabando.</p><label style="display:flex;gap:8px;align-items:center;color:var(--txt2);font-size:14px;margin:-6px 0 4px"><input type="checkbox" id="gtNo"> No volver a mostrar</label><div class="cfm-r" style="grid-template-columns:1fr"><button class="cfm-ok" style="background:var(--lime);color:var(--on-lime)">Entendido</button></div></div>`;
     d.onclick=e=>{if(e.target.closest('.cfm-ok')||e.target===d){if($('gtNo').checked)store.set('noGroupTip',1);d.remove()}};
     document.body.appendChild(d)},1200);
 }
@@ -4565,7 +4565,7 @@ async function setPush(on){
   }
   try{
     const perm=await Notification.requestPermission();
-    if(perm!=='granted'){sw.checked=false;alert('Has bloqueado las notificaciones.\n\nPara activarlas: ajustes del móvil → Aplicaciones → Chrome (o RideSafe) → Notificaciones → Permitir.');return}
+    if(perm!=='granted'){sw.checked=false;alert('Has bloqueado las notificaciones.\n\nPara activarlas: ajustes del móvil → Aplicaciones → Chrome (o VillorvinAdventure) → Notificaciones → Permitir.');return}
     const t=await pushToken();if(!t)throw new Error('sin token');
     await ref.set({tokens:{[t]:Date.now()},name:myName()},{merge:true});
     store.set('push',1);store.set('pushTok',t);sw.checked=true;toast('🔔 ¡Listo! Te avisaremos aunque la app esté cerrada');
@@ -4736,7 +4736,7 @@ async function pollClose(id){if(!await askConfirm('¿Cerrar la encuesta?','Ya no
 async function pollDel(id){if(!await askConfirm('¿Borrar la encuesta?','Se borra para todo el club.','Borrar'))return;
   db.collection('groups').doc(me.group).collection('polls').doc(id).delete().catch(netErr)}
 function pollShare(id){const p=clubPolls.find(x=>x.id===id);if(!p)return;const n=Object.keys(p.votes||{}).length;
-  const t=`📊 *${p.q}*\n${p.opts.map((o,i)=>`• ${o}: ${Object.values(p.votes||{}).filter(v=>v===i).length}`).join('\n')}\n(${n} votos)\n\nVota en RideSafe IA: ${appUrl()}#encuestas`;
+  const t=`📊 *${p.q}*\n${p.opts.map((o,i)=>`• ${o}: ${Object.values(p.votes||{}).filter(v=>v===i).length}`).join('\n')}\n(${n} votos)\n\nVota en VillorvinAdventure: ${appUrl()}#encuestas`;
   window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')}
 /* ---- Chat del club ---- */
 function openClubChat(){
@@ -4955,7 +4955,7 @@ function fallAsk(test){
     <button class="fbtn fok" onclick="fallOk()">✅ Estoy bien</button><button class="fbtn fsec" onclick="fallHelp()">🆘 Necesito ayuda ya</button>`};
   draw();B.classList.add('show');vib([400,200,400,200,400]);
   alarmSound('fall',2);setTimeout(()=>speak('¿Estás bien? Pulsa estoy bien. Si no respondes, pediremos ayuda.'),1600);
-  if(document.visibilityState!=='visible')bgNotify('🚑 ¿Estás bien?','Hemos detectado una posible caída. Abre RideSafe para responder.',true);
+  if(document.visibilityState!=='visible')bgNotify('🚑 ¿Estás bien?','Hemos detectado una posible caída. Abre VillorvinAdventure para responder.',true);
   clearInterval(fd.cd);fd.cd=setInterval(()=>{s--;if(s<=0){clearInterval(fd.cd);fallHelp(true)}else{const n=B.querySelector('.fnum');if(n)n.textContent=s;if(s%10===0){vib([300,150,300]);alarmSound('fall',1)}}},1000);
 }
 /* Avisa a la familia (página de ubicación en directo) */
@@ -4975,7 +4975,7 @@ function fallPos(){const p=live.on&&live.pts&&live.pts.at(-1);return p?'https://
 function fallHelp(auto){
   clearInterval(fd.cd);fd.state='help';
   const c=store.get('sosContact',{})||{},tel=telNorm(c.tel),nm=c.name||'tu contacto';
-  const loc=fallPos();const msg=`🚑 AVISO DE CAÍDA — RideSafe IA\n${myName()} puede haber sufrido una caída en bici y no responde.${loc?'\n📍 Ubicación: '+loc:''}\nAsistencia VillorvinAdventure: 610 200 580.`;
+  const loc=fallPos();const msg=`🚑 AVISO DE CAÍDA — VillorvinAdventure\n${myName()} puede haber sufrido una caída en bici y no responde.${loc?'\n📍 Ubicación: '+loc:''}\nAsistencia VillorvinAdventure: 610 200 580.`;
   if(!fd.test&&live.on&&live.rideId){try{sendAlert('fall')}catch(e){}}
   if(!fd.test&&!(live.on&&live.rideId)){try{vaClubAlert('fall',live.on&&live.pts.length?live.pts.at(-1):(meMarker?hereLL():null),'')}catch(e){}}
   const famOn=fam.on;famAlert('fall',fd.test);
@@ -5009,7 +5009,7 @@ function fallSensorTest(){
   if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')DeviceMotionEvent.requestPermission().then(r=>r==='granted'?go():toast('Sin permiso de movimiento')).catch(()=>toast('Sin permiso de movimiento'));else go();
 }
 /* ===== v3.15 — Consultas e incidencias por WhatsApp ===== */
-const SUPPORT_WA='34643223301',SUPPORT_MAIL='info@ridesafeia.es';
+const SUPPORT_WA='34610200580',SUPPORT_MAIL='info@villorvinadventure.com';
 function supDevice(){const u=navigator.userAgent;const os=/Android/i.test(u)?'Android':/iPhone|iPad/i.test(u)?'iPhone':/Windows/i.test(u)?'Windows':/Mac/i.test(u)?'Mac':'Otro';
   const br=/Edg\//.test(u)?'Edge':/SamsungBrowser/.test(u)?'Samsung Internet':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':/Firefox/.test(u)?'Firefox':'Otro';
   return `${os} · ${br}${matchMedia('(display-mode: standalone)').matches?' · app instalada':''}`}
@@ -5025,7 +5025,7 @@ function openSupport(){
    <label class="l" for="supTxt">Cuéntanos</label>
    <textarea class="inp" id="supTxt" rows="5" maxlength="800" placeholder="Ej.: Al planificar una ruta circular no me aparece el semáforo…" style="resize:vertical" oninput="supSuggest()"></textarea>
    <div id="supSug"></div>
-   <button class="btn btn-lime" style="min-height:58px;margin-top:10px" onclick="supSendApp()">📨 Enviar a RideSafe IA</button>
+   <button class="btn btn-lime" style="min-height:58px;margin-top:10px" onclick="supSendApp()">📨 Enviar a VillorvinAdventure</button>
    <small style="display:block;color:var(--txt2);margin:8px 0 6px;text-align:center">Te contestamos <b>aquí, en la app</b>, y te llega un aviso al móvil.</small>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><button class="btn btn-line" style="font-size:14px" onclick="supSend('wa')">📲 Por WhatsApp</button><button class="btn btn-line" style="font-size:14px" onclick="supSend('mail')">✉️ Por correo</button></div>
    <small style="display:block;color:var(--txt2);margin:6px 0 0;text-align:center">Para mandar una captura de pantalla, usa WhatsApp.</small>
@@ -5070,7 +5070,7 @@ function supMineRender(){const b=$('supMine');if(!b)return;
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(x.type||'Consulta')}</b>${st(x)}</div>
     <small style="color:var(--txt2)">${x.createdAt?new Date(x.createdAt).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</small>
     <p class="sup-q">${esc(x.text||'')}</p>
-    ${x.reply?`<div class="sup-a"><b>💬 RideSafe IA te responde:</b><p>${esc(x.reply)}</p></div>`:''}</div>`).join('');
+    ${x.reply?`<div class="sup-a"><b>💬 VillorvinAdventure te responde:</b><p>${esc(x.reply)}</p></div>`:''}</div>`).join('');
 }
 function supMarkSeen(){supList.filter(x=>x.reply&&!x.seen).forEach(x=>{x.seen=true;db.collection('support').doc(x.id).update({seen:true}).catch(()=>{})});const d=$('supDot');if(d)d.style.display='none'}
 async function supSendApp(){
@@ -5088,9 +5088,9 @@ function supSend(how){
   const t=(document.querySelector('#supType button.on')||{}).dataset?.t||'Consulta';
   const txt=$('supTxt').value.trim();
   if(!txt){toast('Escribe primero tu mensaje');$('supTxt').focus();return}
-  const msg=`🚴 RideSafe IA — ${t}\n\n${txt}\n\n—\nDe: ${myName()}\nDispositivo: ${supDevice()}\nSección: ${store.get('tab','rutas')}`;
+  const msg=`🚴 VillorvinAdventure — ${t}\n\n${txt}\n\n—\nDe: ${myName()}\nDispositivo: ${supDevice()}\nSección: ${store.get('tab','rutas')}`;
   if(how==='wa')window.open('https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent(msg),'_blank');
-  else location.href='mailto:'+SUPPORT_MAIL+'?subject='+encodeURIComponent('RideSafe IA — '+t)+'&body='+encodeURIComponent(msg);
+  else location.href='mailto:'+SUPPORT_MAIL+'?subject='+encodeURIComponent('VillorvinAdventure — '+t)+'&body='+encodeURIComponent(msg);
   toast('Abriendo '+(how==='wa'?'WhatsApp':'el correo')+'…');
 }
 function sendLoc(){
@@ -6135,13 +6135,13 @@ async function ttsCheck(){
   const box=$('ttsDiag');if(!box)return;box.innerHTML='Comprobando…';
   if(!navigator.onLine){box.innerHTML='📵 Sin conexión: la voz de Google necesita datos.';return}
   ttsCache.clear();window.ttsLastErr='';
-  try{const src=await ttsGet('Hola, soy la voz de Google de RideSafe.');ttsOff=0;
-    box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Con tu música de RideSafe, la música bajará al nivel elegido.';
+  try{const src=await ttsGet('Hola, soy la voz de Google de VillorvinAdventure.');ttsOff=0;
+    box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Con tu música de VillorvinAdventure, la música bajará al nivel elegido.';
     const a=ttsAudio||new Audio();a.src=src;a.play().catch(()=>{});
   }catch(e){
     const m=window.ttsLastErr||String(e&&e.name==='AbortError'?'Tarda demasiado en responder (más de 6 s)':e&&e.message||e);
     let why='';
-    if(/API key not valid|API_KEY_INVALID/i.test(m))why='La clave no es válida: revisa que la clave «RideSafe Voz» esté copiada bien en la app.';
+    if(/API key not valid|API_KEY_INVALID/i.test(m))why='La clave no es válida: revisa que la clave «clave de voz» esté copiada bien en la app.';
     else if(/referer|referrer/i.test(m))why='La clave no deja usarla desde esta web: en «Restricciones de aplicaciones» añade https://app.ridesafeia.es/*';
     else if(/has not been used|is disabled|SERVICE_DISABLED|not been enabled/i.test(m))why='La API Cloud Text-to-Speech no está activada en el proyecto «velogo».';
     else if(/billing|BILLING/i.test(m))why='El proyecto «velogo» no tiene una cuenta de facturación activa (Google la pide para esta API).';
@@ -6155,7 +6155,7 @@ async function speak(t){
   CASCO.last=t;   // v5.18: para repetirlo con el botón del casco
   return voiceSay(t);
 }
-/* v5.19.2 — Si suena la música de RideSafe (tu música del móvil o la radio), se usa SIEMPRE la voz de Google:
+/* v5.19.2 — Si suena la música de VillorvinAdventure (tu música del móvil o la radio), se usa SIEMPRE la voz de Google:
    suena dentro de la app y la música solo BAJA al nivel elegido. La voz del móvil hace que Android
    pare la música, por eso el control «Música durante los avisos» no se notaba.
    Con Spotify (música fuera de la app) sigue valiendo «Voz que no para la música». */
@@ -6234,7 +6234,7 @@ function cascoStart(){
   if(store.get('cascoBtn',true)&&'mediaSession' in navigator){
     try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
       CASCO.a.play().then(()=>{cascoHandlers();
-        if(!mus.a)try{navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Modo casco',artist:live.rideTitle||'En ruta'})}catch(e){}
+        if(!mus.a)try{navigator.mediaSession.metadata=new MediaMetadata({title:'VillorvinAdventure · Modo casco',artist:live.rideTitle||'En ruta'})}catch(e){}
       }).catch(e=>console.warn('casco: botones no disponibles',e))}catch(e){}
   }
   if(store.get('cascoLuz',true))setTimeout(()=>{if(live.on)speak('Recuerda encender la luz trasera del casco.')},2500);
@@ -6257,7 +6257,7 @@ function cascoSet(k,on,el){
   else toast(on?'Activado':'Desactivado');
   renderCasco();
 }
-function cascoTest(){cascoSay('Hola, soy RideSafe. Si me oyes por el casco, todo funciona correctamente.')}
+function cascoTest(){cascoSay('Hola, soy VillorvinAdventure. Si me oyes por el casco, todo funciona correctamente.')}
 function openCasco(){
   $('rideBody').innerHTML=sheetHead('🎧 Mi casco con altavoces')+'<div id="cascoBody"></div>';openRideId=null;openSheet('sh-ride');renderCasco();
 }
@@ -6276,7 +6276,7 @@ function renderCasco(){
      <li>En el móvil: <b>Ajustes → Bluetooth</b> → toca el casco cuando aparezca.</li>
      <li>Pulsa <b>Probar sonido</b>: si se oye por el casco, ya está.</li>
    </ol>
-   <p class="casco-note">📱 Los botones del casco funcionan con la pantalla encendida (RideSafe la mantiene encendida durante la salida).<br>🎧 Si escuchas Spotify, apaga «Botones del casco» para que no lo interrumpa.<br>🔧 La luz y el intercomunicador entre cascos se manejan con la app de la marca del casco.</p>`;
+   <p class="casco-note">📱 Los botones del casco funcionan con la pantalla encendida (VillorvinAdventure la mantiene encendida durante la salida).<br>🎧 Si escuchas Spotify, apaga «Botones del casco» para que no lo interrumpa.<br>🔧 La luz y el intercomunicador entre cascos se manejan con la app de la marca del casco.</p>`;
   const s=$('cascoSub');if(s)s.textContent=on?'Activado · voz, botones y aviso de luz':'Voz por el casco, botones y aviso de luz';
 }
 setTimeout(()=>{const s=$('cascoSub');if(s&&cascoOn())s.textContent='Activado · voz, botones y aviso de luz'},0);
@@ -6424,7 +6424,7 @@ function lwWarn(key,txt,voice,Q){
   live.wxWarned=live.wxWarned||{};if(Date.now()-(live.wxWarned[key]||0)<45*60000)return;
   live.wxWarned[key]=Date.now();live.wxWarn={txt,t:Date.now()};
   toast(txt);vib([300,150,300]);Q.push(voice);   // se dice todo junto al final (una voz no corta a la otra)
-  if(document.visibilityState!=='visible')bgNotify(txt,live.rideTitle||'RideSafe IA',false);
+  if(document.visibilityState!=='visible')bgNotify(txt,live.rideTitle||'VillorvinAdventure',false);
   lwRender();
 }
 async function lwTick(){
@@ -6792,7 +6792,7 @@ async function finishLive(save){
 }
 
 /* ===================================================================
-   v4.7 — CÁMARA DENTRO DE LA APP: fotos y vídeos sin salir de RideSafe.
+   v4.7 — CÁMARA DENTRO DE LA APP: fotos y vídeos sin salir de VillorvinAdventure.
    La ruta sigue grabando (GPS, voz, pelotón y avisos) mientras usas la cámara.
    Se guardan en el propio móvil junto a la salida, con el punto del mapa donde se hicieron.
    =================================================================== */
@@ -6805,7 +6805,7 @@ async function mPut(o){const d=await mdb();return new Promise((res,rej)=>{const 
 async function mDel(id){const d=await mdb();return new Promise((res,rej)=>{const t=d.transaction('m','readwrite');t.objectStore('m').delete(id);t.oncomplete=()=>res();t.onerror=t.onabort=()=>rej(t.error)})}
 async function mGet(id){const d=await mdb();return new Promise((res,rej)=>{const q=d.transaction('m').objectStore('m').get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}
 async function mList(ride){if(!ride)return [];const d=await mdb();return new Promise((res,rej)=>{const q=d.transaction('m').objectStore('m').index('ride').getAll(ride);q.onsuccess=()=>res((q.result||[]).sort((a,b)=>a.t-b.t));q.onerror=()=>rej(q.error)})}
-function mName(m){const d=new Date(m.t),p=n=>String(n).padStart(2,'0');return `RideSafe_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}.${m.type==='video'?(/mp4/.test(m.mime)?'mp4':'webm'):'jpg'}`}
+function mName(m){const d=new Date(m.t),p=n=>String(n).padStart(2,'0');return `VillorvinAdventure_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}.${m.type==='video'?(/mp4/.test(m.mime)?'mp4':'webm'):'jpg'}`}
 function mSaveFile(m,silent){
   if(!m||!m.blob)return;
   if(camIOS&&!silent){mShare(m);return}
@@ -6814,7 +6814,7 @@ function mSaveFile(m,silent){
 }
 async function mShare(m){
   try{const f=new File([m.blob],mName(m),{type:m.mime});
-    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'RideSafe IA'});return}
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'VillorvinAdventure'});return}
   }catch(e){if(e&&e.name==='AbortError')return}
   mSaveFile(m,true);toast('💾 Guardado en Descargas del móvil');
 }
@@ -6849,7 +6849,7 @@ async function camStart(){
     CAM.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:CAM.facing},width:{ideal:1920},height:{ideal:1080}},audio:false});
     if(!CAM.open){camStopStream();return}
     const v=$('camV');v.srcObject=CAM.stream;v.style.transform=CAM.facing==='user'?'scaleX(-1)':'';await v.play().catch(()=>{});
-  }catch(e){console.warn('cámara',e);camMsg(e&&e.name==='NotAllowedError'?'Permite la cámara a RideSafe IA: toca el candado 🔒 junto a la dirección → Cámara → Permitir':'No se pudo abrir la cámara',5000)}
+  }catch(e){console.warn('cámara',e);camMsg(e&&e.name==='NotAllowedError'?'Permite la cámara a VillorvinAdventure: toca el candado 🔒 junto a la dirección → Cámara → Permitir':'No se pudo abrir la cámara',5000)}
 }
 function camStopStream(){try{CAM.stream&&CAM.stream.getTracks().forEach(t=>t.stop())}catch(e){}CAM.stream=null;try{CAM.aud&&CAM.aud.getTracks().forEach(t=>t.stop())}catch(e){}CAM.aud=null}
 function camClose(){
@@ -6927,7 +6927,7 @@ function mgTap(i){const m=MG.list[i];if(!m)return;if(MG.pick){const f=MG.pick;mg
 function mgClose(){$('mGal').classList.remove('show');MG.urls.forEach(u=>URL.revokeObjectURL(u));MG.urls=[];$('mgGrid').innerHTML=''}
 async function mgSaveAll(){
   const l=MG.list.slice();if(!l.length)return;
-  if(camIOS){try{const fs=l.map(m=>new File([m.blob],mName(m),{type:m.mime}));if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,title:'RideSafe IA'});return}}catch(e){if(e&&e.name==='AbortError')return}}
+  if(camIOS){try{const fs=l.map(m=>new File([m.blob],mName(m),{type:m.mime}));if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,title:'VillorvinAdventure'});return}}catch(e){if(e&&e.name==='AbortError')return}}
   toast(`💾 Guardando ${l.length} archivos en Descargas…`);
   for(const m of l){mSaveFile(m,true);await new Promise(r=>setTimeout(r,700))}
 }
@@ -7042,7 +7042,7 @@ async function fixUp(a){
 function phCaption(a){
   const vm=a.mins>0?a.km/(a.mins/60):0;const club=a.group&&myGroup&&myGroup.name?myGroup.name:'';
   const t=a.mins>=60?Math.floor(a.mins/60)+'h '+String(a.mins%60).padStart(2,'0')+'min':(a.mins||0)+' min';
-  return `${a.group?(a.sport==='hike'?'Ruta en grupo':'Salida en grupo'):(a.sport==='hike'?'Ruta de senderismo':'Salida en bici')}${club?' con '+club:''}\nDistancia ${fmtNum(a.km,1)} km · Tiempo ${t}${vm?' · Media '+fmtNum(vm,1)+' km/h':''}${a.up?' · Desnivel +'+a.up+' m':''}\n\n${a.sport==='hike'?'#senderismo #hiking #montaña':'#ciclismo #bici #cycling'}${club?' #'+club.replace(/[^\wÁÉÍÓÚÑáéíóúñ]/g,''):''} #RideSafeIA\nRegistrada con RideSafe IA · app.ridesafeia.es`;
+  return `${a.group?(a.sport==='hike'?'Ruta en grupo':'Salida en grupo'):(a.sport==='hike'?'Ruta de senderismo':'Salida en bici')}${club?' con '+club:''}\nDistancia ${fmtNum(a.km,1)} km · Tiempo ${t}${vm?' · Media '+fmtNum(vm,1)+' km/h':''}${a.up?' · Desnivel +'+a.up+' m':''}\n\n${a.sport==='hike'?'#senderismo #hiking #montaña':'#ciclismo #bici #cycling'}${club?' #'+club.replace(/[^\wÁÉÍÓÚÑáéíóúñ]/g,''):''} #VillorvinAdventure\nRegistrada con VillorvinAdventure · villorvinadventure.com`;
 }
 async function phCopy(silent){const t=$('phCap').value;try{await navigator.clipboard.writeText(t);if(!silent)toast('Texto copiado ✓');return true}catch(e){if(!silent){$('phCap').select();toast('Mantén pulsado el texto para copiarlo')}return false}}
 function openPhoto(id,auto){
@@ -7075,7 +7075,7 @@ async function phRender(){
   const a=phAct,W=1080,H=phFmt==='story'?1920:phFmt==='square'?1080:1350;
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const F=(w,s)=>`${w} ${s}px "Plus Jakarta Sans", system-ui, sans-serif`;
-  // Fondo: foto recortada a pantalla completa o degradado RideSafe IA
+  // Fondo: foto recortada a pantalla completa o degradado VillorvinAdventure
   if(phImg){
     const r=Math.max(W/phImg.naturalWidth,H/phImg.naturalHeight),iw=phImg.naturalWidth*r,ih=phImg.naturalHeight*r;
     g.drawImage(phImg,(W-iw)/2,(H-ih)/2,iw,ih);
@@ -7086,9 +7086,9 @@ async function phRender(){
   let gr=g.createLinearGradient(0,0,0,260);gr.addColorStop(0,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,W,260);
   gr=g.createLinearGradient(0,H*0.42,0,H);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(0.45,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,.85)');g.fillStyle=gr;g.fillRect(0,H*0.42,W,H*0.58);
   g.textBaseline='alphabetic';g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=12;
-  // Marca RideSafe IA arriba a la derecha y fecha a la izquierda
+  // Marca VillorvinAdventure arriba a la derecha y fecha a la izquierda
   g.font=F(800,64);g.textAlign='right';
-  const goW=g.measureText('IA').width;g.fillStyle='#4DA3FF';g.fillText('IA',W-70,130);g.fillStyle='#fff';g.fillText('RideSafe ',W-70-goW,130);
+  const goW=g.measureText('IA').width;g.fillStyle='#4DA3FF';g.fillText('IA',W-70,130);g.fillStyle='#fff';g.fillText('VillorvinAdventure ',W-70-goW,130);
   g.textAlign='left';g.font=F(600,phFmt==='square'?32:36);g.fillStyle='rgba(255,255,255,.9)';
   const d=new Date(a.date+'T12:00');g.fillText(d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),70,phFmt==='square'?190:195);
   // Escudo del club (arriba a la izquierda)
@@ -7228,7 +7228,7 @@ function shopSplash(){
   const s=store.get('shop',null);if(!s||!s.n||window.__hash0||$('shopSp'))return;
   const d=document.createElement('div');d.id='shopSp';if(s.bg==='light')d.classList.add('light');
   const lg=s.logo&&SHOP_IMG.test(s.logo);
-  d.innerHTML=`<div class="ssp-in">${lg?`<img src="${s.logo}" alt="${esc(s.n)}">`:`<div class="ssp-ini">${esc(String(s.n).trim().slice(0,2).toUpperCase())}</div><b>${esc(s.n)}</b>`}<small>te recomienda</small><b>RideSafe IA</b><span class="ssp-app">SALIR JUNTOS. VOLVER TODOS.</span></div>`;
+  d.innerHTML=`<div class="ssp-in">${lg?`<img src="${s.logo}" alt="${esc(s.n)}">`:`<div class="ssp-ini">${esc(String(s.n).trim().slice(0,2).toUpperCase())}</div><b>${esc(s.n)}</b>`}<small>te recomienda</small><b>VillorvinAdventure</b><span class="ssp-app">SALIR JUNTOS. VOLVER TODOS.</span></div>`;
   document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add('show'));
   const close=()=>{d.classList.remove('show');setTimeout(()=>d.remove(),400)};d.onclick=close;setTimeout(close,2600);
 }
@@ -7255,7 +7255,7 @@ let onbI=0;
 function showOnb(){if($('onb').classList.contains('show'))return;onbI=0;paintOnb();$('onb').classList.add('show')}
 function paintOnb(){
   const [e,t,p]=ONB[onbI];
-  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name"><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="privacidad.html" style="color:var(--lime)">privacidad y condiciones</a> de RideSafe IA.</small>':''}${onbI===3?safeFormHTML('onb'):''}`;
+  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name"><input class="inp" id="onbTel" type="tel" inputmode="tel" placeholder="Tu móvil (ej. 600 123 456)" maxlength="20" autocomplete="tel" style="margin-top:8px"><small style="color:var(--txt2);max-width:320px;margin-top:6px">Tu móvil es para que la asistencia de VillorvinAdventure pueda llamarte si tienes una avería o un problema.</small><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="https://www.villorvinadventure.com/pol%C3%ADtica-y-condiciones" target="_blank" rel="noopener" style="color:var(--lime)">privacidad y condiciones</a> de VillorvinAdventure.</small>':''}${onbI===3?safeFormHTML('onb'):''}`;
   $('onbDots').innerHTML=ONB.map((_,i)=>`<i class="${i===onbI?'on':''}"></i>`).join('');
   $('onbNext').textContent=onbI===3?'💾 Guardar y empezar':onbI===2?'Continuar':'Siguiente';
 }
@@ -7294,17 +7294,19 @@ $('onbNext').onclick=()=>{
   if(onbI<2){onbI++;paintOnb();return}
   if(onbI===3){if(safeSave('onb'))onbDone(false);return}
   const n=$('onbName').value.trim().slice(0,24);if(!n){toast('Escribe tu nombre');return}
+  const vt=($('onbTel').value||'').trim().slice(0,20);if(telNorm(vt).length<9){toast('Escribe tu número de móvil');return}
   if(!db||!uid){toast('Conectando… inténtalo en unos segundos');return}
+  store.set('vaTel',vt);store.set('vaRegd','');
   me={name:n,pts:0,created:0};store.set('me',me);window.__sn=1;
   db.collection('users').doc(uid).set({name:n,pts:0,created:0,since:FV.serverTimestamp()},{merge:true}).catch(netErr);
-  paintName();
+  paintName();vaReg();
   if((store.get('sosContact',{})||{}).tel){onbDone(false);return}
   onbI=3;paintOnb();
 };
 
 /* ===== Firebase: conexión y datos en tiempo real ===== */
 function startFirebase(){
-  if(typeof firebase==='undefined'){toast('Sin conexión. Abre RideSafe IA con internet');ridesLoaded=true;renderRides();if(!me)showOnb();return}
+  if(typeof firebase==='undefined'){toast('Sin conexión. Abre VillorvinAdventure con internet');ridesLoaded=true;renderRides();if(!me)showOnb();return}
   firebase.initializeApp(FIREBASE_CONFIG);
   db=firebase.firestore();FV=firebase.firestore.FieldValue;
   // v3.2 — Seguridad: todo lo que llega de la base de datos se limpia antes de mostrarlo (evita que alguien meta código en un texto)
@@ -7313,7 +7315,7 @@ function startFirebase(){
   const auth=firebase.auth();
   auth.getRedirectResult().then(r=>{if(r&&r.user&&!r.user.isAnonymous){toast('✅ Cuenta guardada con Google');setTimeout(renderAccount,500)}}).catch(e=>authErr(e,'link'));
   auth.onAuthStateChanged(u=>{
-    if(!u){auth.signInAnonymously().catch(e=>{console.error(e);toast('No se pudo conectar con RideSafe IA');});return}
+    if(!u){auth.signInAnonymously().catch(e=>{console.error(e);toast('No se pudo conectar con VillorvinAdventure');});return}
     if(uid===u.uid)return;
     uid=u.uid;
     // Perfil
@@ -7396,7 +7398,8 @@ function vaClubAlert(kind,p,title,club){
   const C=club||me?.group;if(!C)return;
   const A=ALERTS[kind]||{ico:'🆘',s:'AVISO'};const ref=Math.random().toString(36).slice(2,6).toUpperCase();
   const loc=p&&p[0]!=null?' · 📍 https://maps.google.com/?q='+(+p[0]).toFixed(5)+','+(+p[1]).toFixed(5):'';
-  const text=('🆘 ALERTA · '+A.ico+' '+A.s+' · '+myName()+(title?' · '+title:'')+' · ref '+ref+loc).slice(0,300);
+  const tl=store.get('vaTel','');
+  const text=('🆘 ALERTA · '+A.ico+' '+A.s+' · '+myName()+(tl?' · 📞 '+tl:'')+(title?' · '+title:'')+' · ref '+ref+loc).slice(0,300);
   db.collection('groups').doc(C).collection('msgs').add({uid,name:myName(),text,ts:Date.now()}).catch(e=>console.warn('VA aviso',e));
   vaWaitAck(C,ref,kind);
 }
@@ -7439,17 +7442,36 @@ function vaWatch(){
       seen[id]=Date.now();store.set('vaSeen',Object.fromEntries(Object.entries(seen).filter(([,t])=>Date.now()-t<86400000)));
       const tx=String(m.text);const ref=(tx.match(/ref ([A-Z0-9]{4})/)||[])[1]||'';const link=(tx.match(/https:\/\/maps\.google\.com\/\?q=[-0-9.,]+/)||[])[0]||'';
       const kind=tx.includes('ACCIDENTE')?'fall':tx.includes('PERDIDO')?'lost':tx.includes('AVERÍA')?'mech':'help';
-      const k=vaAl.push({ref,link,name:m.name||'Un ciclista'})-1;const A=ALERTS[kind];
+      const tel=((tx.match(/📞 ([+0-9 ]{9,20})/)||[])[1]||'').trim();
+      const k=vaAl.push({ref,link,tel,name:m.name||'Un ciclista'})-1;const A=ALERTS[kind];
       alarmSound(kind==='mech'||kind==='lost'?'mech':'fall',kind==='fall'?4:2);
       speak('Atención. '+String(m.name||'Un ciclista').split(' ')[0]+' '+A.say);
       alarmShow(kind,'🆘 '+(m.name||'Un ciclista')+': '+A.s,'Tú decides si hay que llamar al 112.'+(link?'':' (Sin ubicación)'),
-        [['✅ Recibido, lo gestiono','al-main','vaAck('+k+')'],...(link?[['📍 Ver dónde está','al-sec','vaMap('+k+')']]:[]),['🚑 Llamar al 112','al-sec',"location.href='tel:112'"],['Cerrar','al-sec','alarmClose()']]);
+        [['✅ Recibido, lo gestiono','al-main','vaAck('+k+')'],...(tel?[['📞 Llamar al ciclista','al-sec','vaCall('+k+')']]:[]),...(link?[['📍 Ver dónde está','al-sec','vaMap('+k+')']]:[]),['🚑 Llamar al 112','al-sec',"location.href='tel:112'"],['Cerrar','al-sec','alarmClose()']]);
       if(document.visibilityState!=='visible')bgNotify('🆘 '+(m.name||'Un ciclista')+': '+A.s,'Abre la app para gestionar el aviso',true);
     })},e=>console.warn('VA organización',e));
 }
 function vaAck(k){const a=vaAl[k];if(!a||!me?.group)return;alarmClose();
   db.collection('groups').doc(me.group).collection('msgs').add({uid,name:myName(),text:('✅ RECIBIDO · La organización ha recibido el aviso de '+a.name+' (ref '+a.ref+'). Te estamos atendiendo.').slice(0,300),ts:Date.now()}).then(()=>toast('✅ '+a.name+' ya sabe que lo estás gestionando')).catch(netErr)}
 function vaMap(k){const a=vaAl[k];if(a&&a.link)window.open(a.link,'_blank')}
+function vaCodeBtn(){if(typeof RS_SIMPLE!=='undefined'&&RS_SIMPLE)openPro();else joinGroupAsk()}
+function vaCall(k){const a=vaAl[k];if(a&&a.tel)location.href='tel:+'+telNorm(a.tel)}
+/* Ficha del ciclista para la consola de VillorvinAdventure (va_members/{uid}) */
+function vaReg(){
+  const t=store.get('vaTel','');if(!db||!uid||!t||!me||!me.name)return;
+  const app=typeof RS_SIMPLE!=='undefined'&&RS_SIMPLE?'simple':'pro';
+  const key=uid+'|'+me.name+'|'+t+'|'+app;if(store.get('vaRegd','')===key)return;
+  db.collection('va_members').doc(uid).set({name:String(me.name).slice(0,40),tel:String(t).slice(0,20),t:Date.now(),app})
+    .then(()=>store.set('vaRegd',key)).catch(e=>console.warn('VA ficha',e));
+}
+let vaAsked=false;
+function vaInit(){
+  if(!me||!me.name||!uid)return;
+  if(store.get('vaTel','')){vaReg();return}
+  if(vaAsked)return;vaAsked=true;
+  setTimeout(()=>{const t=(prompt('VillorvinAdventure: escribe tu número de móvil para que la asistencia pueda llamarte si tienes una avería o un problema.','')||'').trim().slice(0,20);
+    if(t&&telNorm(t).length>=9){store.set('vaTel',t);vaReg();toast('✅ Móvil guardado')}else if(t)toast('Revisa el número de móvil')},2500);
+}
 /* Punto 10: tu posición en el mapa del track de la salida */
 function vaMeOn(m){
   if(!navigator.geolocation||!m)return;

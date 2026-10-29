@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consola VillorvinAdventure</title>
+<meta name="theme-color" content="#06162E">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="va-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#06162E;--card:#0C2446;--card2:#112E57;--line:#1E4373;--blue:#4DA3FF;--on-blue:#04142B;--txt:#fff;--txt2:#A9BCD6;--red:#EF4444;--green:#22C55E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+button,input{font-family:inherit;font-size:16px}
+a{color:var(--blue)}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.top img{height:54px;width:auto}
+.top .t{flex:1;min-width:200px}
+.top h1{font-size:22px}
+.top small{color:var(--txt2);font-style:italic;letter-spacing:2px;text-transform:uppercase;font-size:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--txt);font-weight:700;cursor:pointer;text-decoration:none}
+.btn.pri{background:var(--blue);color:var(--on-blue);border-color:var(--blue)}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:11px}
+#gate{min-height:100vh;display:grid;place-items:center;padding:20px}
+.gbox{max-width:420px;width:100%;text-align:center;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:30px 22px}
+.gbox img{width:80%;max-width:300px;margin-bottom:10px}
+.gbox p{color:var(--txt2);margin:14px 0 20px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px}
+.stat b{display:block;font-size:30px}
+.stat span{color:var(--txt2);font-size:14px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.bar input{flex:1 1 240px;min-height:46px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--txt);padding:0 14px}
+.tbl{background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);font-size:15px}
+th{color:var(--txt2);font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:800}
+.tag.pro{background:var(--blue);color:var(--on-blue)}
+.tag.simple{background:var(--card2);color:var(--txt2);border:1px solid var(--line)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.empty{padding:30px;text-align:center;color:var(--txt2)}
+.foot{margin-top:24px;text-align:center;color:var(--txt2);font-size:13px}
+#app{display:none}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gbox">
+    <img src="va-logo.png" alt="VillorvinAdventure">
+    <div style="font-style:italic;letter-spacing:3px;text-transform:uppercase;font-size:12px;color:#D4D4D4">Passion led us here</div>
+    <p id="gMsg">Consola de la organización.<br>Entra con tu cuenta de Google.</p>
+    <button class="btn pri" id="gBtn" onclick="signIn()" style="width:100%">Entrar con Google</button>
+    <button class="btn" id="gOut" onclick="signOut()" style="width:100%;margin-top:10px;display:none">Cambiar de cuenta</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="wrap">
+    <div class="top">
+      <img src="va-logo.png" alt="VillorvinAdventure">
+      <div class="t"><h1>Consola de la organización</h1><small>Passion led us here</small></div>
+      <button class="btn sm" onclick="signOut()">Salir</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="sTot">0</b><span>Ciclistas registrados</span></div>
+      <div class="stat"><b id="sPro">0</b><span>En la Pro</span></div>
+      <div class="stat"><b id="sSim">0</b><span>En la Simple</span></div>
+      <div class="stat"><b id="sNew">0</b><span>Nuevos esta semana</span></div>
+    </div>
+
+    <div class="bar">
+      <label for="q" style="position:absolute;left:-9999px">Buscar ciclista</label>
+      <input id="q" type="search" placeholder="Buscar por nombre o móvil…" oninput="render()">
+      <button class="btn" onclick="csv()">⬇️ Descargar lista (Excel)</button>
+    </div>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Ciclista</th><th>Móvil</th><th>App</th><th>Alta / último cambio</th><th>Contactar</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="5" class="empty">Cargando…</td></tr></tbody>
+    </table></div>
+
+    <p class="foot">Datos que cada ciclista da al entrar en la app (nombre y móvil) para la asistencia en caso de avería o problema.<br>Asistencia VillorvinAdventure · 610 200 580 · <a href="https://www.villorvinadventure.com/inicio" target="_blank" rel="noopener">villorvinadventure.com</a></p>
+  </div>
+</div>
+
+<script>
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",
+  authDomain:"velogo-fba42.firebaseapp.com",
+  projectId:"velogo-fba42",
+  storageBucket:"velogo-fba42.firebasestorage.app",
+  messagingSenderId:"675190202425",
+  appId:"1:675190202425:web:2040bd6db96829c8242de8"
+};
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth=firebase.auth(),db=firebase.firestore();
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function telNorm(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(d.length===9)d='34'+d;return d}
+const fmt=t=>t?new Date(t).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+let L=[],unsub=null;
+
+function gate(msg,showIn,showOut){$('gate').style.display='grid';$('app').style.display='none';$('gMsg').innerHTML=msg;$('gBtn').style.display=showIn?'flex':'none';$('gOut').style.display=showOut?'flex':'none'}
+function signIn(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(/popup/.test(e.code||''))auth.signInWithRedirect(p);else gate('No se pudo entrar: '+esc(e.code||e.message),true,false)})}
+function signOut(){if(unsub){unsub();unsub=null}auth.signOut().then(()=>gate('Sesión cerrada.',true,false))}
+auth.getRedirectResult().catch(()=>{});
+auth.onAuthStateChanged(u=>{
+  if(!u||u.isAnonymous){gate('Consola de la organización.<br>Entra con tu cuenta de Google.',true,false);return}
+  gate('Comprobando permisos…',false,false);
+  if(unsub)unsub();
+  unsub=db.collection('va_members').onSnapshot(s=>{
+    L=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));
+    $('gate').style.display='none';$('app').style.display='block';render();
+  },e=>{console.warn(e);gate('🔒 <b>Acceso restringido.</b><br>Esta cuenta no tiene permiso para ver los ciclistas de VillorvinAdventure.',false,true)});
+});
+
+function render(){
+  const q=($('q').value||'').trim().toLowerCase();
+  const wk=Date.now()-7*864e5;
+  $('sTot').textContent=L.length;
+  $('sPro').textContent=L.filter(x=>x.app==='pro').length;
+  $('sSim').textContent=L.filter(x=>x.app!=='pro').length;
+  $('sNew').textContent=L.filter(x=>(x.t||0)>wk).length;
+  const v=L.filter(x=>!q||String(x.name||'').toLowerCase().includes(q)||String(x.tel||'').replace(/\s/g,'').includes(q.replace(/\s/g,'')));
+  $('rows').innerHTML=v.length?v.map(x=>{const n=telNorm(x.tel);return `<tr>
+    <td><b>${esc(x.name)}</b></td>
+    <td>${esc(x.tel)}</td>
+    <td><span class="tag ${x.app==='pro'?'pro':'simple'}">${x.app==='pro'?'PRO':'SIMPLE'}</span></td>
+    <td>${fmt(x.t)}</td>
+    <td><div class="acts">${n?`<a class="btn sm" href="tel:+${n}">📞 Llamar</a><a class="btn sm" href="https://wa.me/${n}" target="_blank" rel="noopener">💬 WhatsApp</a>`:'—'}</div></td>
+  </tr>`}).join(''):`<tr><td colspan="5" class="empty">${L.length?'Ningún ciclista coincide con la búsqueda':'Todavía no hay ciclistas registrados'}</td></tr>`;
+}
+function csv(){
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Ciclista','Móvil','App','Alta / último cambio']].concat(L.map(x=>[x.name,x.tel,x.app==='pro'?'Pro':'Simple',fmt(x.t)]));
+  const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(';')).join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ciclistas-villorvinadventure.csv';document.body.appendChild(a);a.click();a.remove();
+}
+</script>
+</body>
+</html>
