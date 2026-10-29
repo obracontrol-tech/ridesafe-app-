@@ -905,6 +905,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .r3-lbl div{background:rgba(11,20,34,.9);color:#fff;border-radius:8px;padding:3px 8px;font-weight:900;font-size:17px;line-height:1.05;text-align:left}
 .r3-lbl div small{display:block;font-size:10px;color:#C9D3E0;font-weight:800;letter-spacing:.05em}
 .r3-lbl i{display:block;width:2px;height:30px;background:rgba(11,20,34,.9)}
+#vaBox .plc small{color:#C9D6EA!important}
 </style>
 </head>
 <body>
@@ -1107,9 +1108,14 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <div class="f">
     <label class="l" for="nameIn">Tu nombre</label>
-    <div class="row2"><input class="inp" id="nameIn" maxlength="24"><button class="mini" onclick="saveName()">Guardar</button></div>
+    <div class="row2"><input class="inp" id="nameIn" maxlength="24" placeholder="Ej. Joan Puig" autocomplete="name"><button class="mini" onclick="saveName()">Guardar</button></div>
+    <small style="display:block;color:var(--txt2);margin:6px 4px 0">Escribe tu <b>nombre y apellido</b>, no el correo. Así te verán la organización y los demás ciclistas.</small>
+    <label class="l" for="vaTelIn" style="margin-top:14px">Tu móvil</label>
+    <div class="row2"><input class="inp" id="vaTelIn" type="tel" inputmode="tel" maxlength="20" placeholder="Ej. 600 123 456" autocomplete="tel"><button class="mini" onclick="vaSaveTel()">Guardar</button></div>
+    <small style="display:block;color:var(--txt2);margin:6px 4px 0">Para que la asistencia de VillorvinAdventure pueda llamarte si tienes una avería o un problema.</small>
   </div>
-  <div class="sec" style="margin-top:6px"><h3 style="font-size:18px">Tu cuenta</h3></div>
+  <div class="sec" style="margin-top:6px"><h3 style="font-size:18px">Tu cuenta de Google</h3></div>
+  <p style="color:var(--txt2);font-size:14px;margin:-4px 4px 10px;line-height:1.45">Es tu <b>correo de Gmail</b>. Sirve para guardar tus datos y no perderlos si cambias de móvil. <b>No hace falta escribirlo:</b> pulsa el botón y elige tu correo en la ventana de Google.</p>
   <div id="acctBox" style="margin-bottom:16px"></div>
   <div class="sec"><h3 style="font-size:18px">🗺️ Mapas sin conexión</h3></div>
   <div id="offBox" style="margin-bottom:16px"></div>
@@ -2637,7 +2643,7 @@ function watchGroup(){
   },e=>{console.warn('grupo',e);myGroup=null;renderGroup()});
 }
 function renderGroup(){
-  const g=myGroup;try{renderVA();vaWatch();vaInit()}catch(e){console.warn('VA',e)}
+  const g=myGroup;try{renderVA();vaWatch();vaInit();vaFillTel()}catch(e){console.warn('VA',e)}
   $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún club.<br><small style="color:var(--txt2)">Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas.</small>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="joinGroupAsk()">🔗 Unirme a mi club</button><button class="btn btn-line" onclick="createGroup()">➕ Crear club</button></div></div>`;
@@ -3531,8 +3537,8 @@ function renderAccount(){
     el.innerHTML=`<div class="li" style="cursor:default;border-color:var(--lime)"><span class="em">✅</span><div><b>Cuenta guardada con Google</b><small>${esc(maskMail(u.email)||'Tu cuenta de Google')}</small></div></div>
      <p style="color:var(--txt2);font-size:13px;margin:8px 4px 0">Si cambias de móvil, entra con esta misma cuenta y recuperarás tus puntos y actividades.</p>`;
   }else{
-    el.innerHTML=`<button class="li" onclick="linkGoogle()"><span class="em">🔒</span><div><b>Guardar mi cuenta con Google</b><small>Para no perder puntos ni actividades si cambias de móvil</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-     <button class="li" style="margin-top:8px" onclick="signInGoogle()"><span class="em">🔑</span><div><b>Ya tengo cuenta: entrar con Google</b><small>Recupera tus datos de otro móvil</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`;
+    el.innerHTML=`<button class="li" onclick="linkGoogle()"><span class="em">🔒</span><div><b>Guardar mi cuenta con Google</b><small>Pulsa y elige tu correo de Gmail</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+     <button class="li" style="margin-top:8px" onclick="signInGoogle()"><span class="em">🔑</span><div><b>Ya tengo cuenta: entrar con Google</b><small>Si ya la guardaste en otro móvil, elige el mismo correo de Gmail</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`;
   }
 }
 function gProvider(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});return p}
@@ -7210,7 +7216,7 @@ function saveName(){
   b.set(db.collection('users').doc(uid),{name:v},{merge:true});
   upcoming().filter(joined).forEach(r=>{const u={['people.'+uid]:v};if(isOwner(r))u.by=v;b.update(db.collection('rides').doc(r.id),u)});
   if(myGroup)b.update(db.collection('groups').doc(myGroup.id),{['members.'+uid]:v});
-  b.commit().catch(netErr);toast('Nombre guardado');
+  b.commit().catch(netErr);toast('Nombre guardado');try{vaReg()}catch(e){}
 }
 function setTheme(light){document.documentElement.dataset.theme=light?'light':'dark';$('swLight').checked=light;store.set('light',light);document.querySelector('meta[name=theme-color]').content=light?'#F4F6F9':'#0E1A2B'}
 
@@ -7255,7 +7261,7 @@ let onbI=0;
 function showOnb(){if($('onb').classList.contains('show'))return;onbI=0;paintOnb();$('onb').classList.add('show')}
 function paintOnb(){
   const [e,t,p]=ONB[onbI];
-  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name"><input class="inp" id="onbTel" type="tel" inputmode="tel" placeholder="Tu móvil (ej. 600 123 456)" maxlength="20" autocomplete="tel" style="margin-top:8px"><small style="color:var(--txt2);max-width:320px;margin-top:6px">Tu móvil es para que la asistencia de VillorvinAdventure pueda llamarte si tienes una avería o un problema.</small><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="https://www.villorvinadventure.com/pol%C3%ADtica-y-condiciones" target="_blank" rel="noopener" style="color:var(--lime)">privacidad y condiciones</a> de VillorvinAdventure.</small>':''}${onbI===3?safeFormHTML('onb'):''}`;
+  $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre y apellido (no el correo)" maxlength="24" autocomplete="name"><input class="inp" id="onbTel" type="tel" inputmode="tel" placeholder="Tu móvil (ej. 600 123 456)" maxlength="20" autocomplete="tel" style="margin-top:8px"><small style="color:var(--txt2);max-width:320px;margin-top:6px">Tu móvil es para que la asistencia de VillorvinAdventure pueda llamarte si tienes una avería o un problema.</small><small style="color:var(--txt2);max-width:320px">Al empezar aceptas la <a href="https://www.villorvinadventure.com/pol%C3%ADtica-y-condiciones" target="_blank" rel="noopener" style="color:var(--lime)">privacidad y condiciones</a> de VillorvinAdventure.</small>':''}${onbI===3?safeFormHTML('onb'):''}`;
   $('onbDots').innerHTML=ONB.map((_,i)=>`<i class="${i===onbI?'on':''}"></i>`).join('');
   $('onbNext').textContent=onbI===3?'💾 Guardar y empezar':onbI===2?'Continuar':'Siguiente';
 }
@@ -7375,7 +7381,7 @@ function renderVA(){
   const b=$('vaBox');if(!b)return;const g=myGroup;
   if(vaIn()){
     const n=gNames(g).length,lg=clubLogo(g);
-    b.innerHTML=`<div class="plc" style="border:2px solid var(--lime);margin-bottom:12px;background:linear-gradient(180deg,#0B3A78,#06162E)">
+    b.innerHTML=`<div class="plc" style="border:2px solid var(--lime);margin-bottom:12px;background:linear-gradient(180deg,#0B3A78,#06162E);color:#fff">
      ${VA_HEAD}
      <div style="display:flex;align-items:center;gap:12px">
       <div style="flex:1;min-width:0;text-align:center"><b style="display:block;font-size:17px">Comunidad VillorvinAdventure</b><small style="color:var(--txt2)">${n} ${n===1?'miembro':'miembros'} · ${vaOrg()?'🛡️ Eres de la organización':'Estás protegido por la organización'}</small></div></div>
@@ -7385,7 +7391,7 @@ function renderVA(){
       ${vaOrg()?`<button class="btn btn-lime" style="grid-column:1/-1" onclick="openClubAdmin('members')">🛡️ Panel de la organización</button>`:''}
      </div></div>`;
   }else if(!g){
-    b.innerHTML=`<div class="plc" style="border:2px solid var(--lime);margin-bottom:12px;background:linear-gradient(180deg,#0B3A78,#06162E)">${VA_HEAD}
+    b.innerHTML=`<div class="plc" style="border:2px solid var(--lime);margin-bottom:12px;background:linear-gradient(180deg,#0B3A78,#06162E);color:#fff">${VA_HEAD}
      <b style="display:block;font-size:18px;text-align:center">¿Eres miembro de VillorvinAdventure?</b>
      <small style="display:block;color:var(--txt2);margin:4px 0 12px;text-align:center">Solicita la Pro: te protegemos en nuestras rutas y también cuando sales solo.</small>
      <div style="display:grid;gap:8px"><a class="btn btn-lime" style="text-decoration:none" href="https://wa.me/34${VA_TEL}?text=${encodeURIComponent('Hola, soy miembro de VillorvinAdventure y quiero solicitar la Pro de la app. Mi nombre es: ')}" target="_blank" rel="noopener">⭐ Solicita la Pro</a>
@@ -7455,6 +7461,8 @@ function vaWatch(){
 function vaAck(k){const a=vaAl[k];if(!a||!me?.group)return;alarmClose();
   db.collection('groups').doc(me.group).collection('msgs').add({uid,name:myName(),text:('✅ RECIBIDO · La organización ha recibido el aviso de '+a.name+' (ref '+a.ref+'). Te estamos atendiendo.').slice(0,300),ts:Date.now()}).then(()=>toast('✅ '+a.name+' ya sabe que lo estás gestionando')).catch(netErr)}
 function vaMap(k){const a=vaAl[k];if(a&&a.link)window.open(a.link,'_blank')}
+function vaSaveTel(){const i=$('vaTelIn');const t=(i&&i.value||'').trim().slice(0,20);if(telNorm(t).length<9){toast('Revisa el número de móvil');return}store.set('vaTel',t);store.set('vaRegd','');vaReg();toast('✅ Móvil guardado')}
+function vaFillTel(){const i=$('vaTelIn');if(i&&!i.value)i.value=store.get('vaTel','')}
 function vaCodeBtn(){if(typeof RS_SIMPLE!=='undefined'&&RS_SIMPLE)openPro();else joinGroupAsk()}
 function vaCall(k){const a=vaAl[k];if(a&&a.tel)location.href='tel:+'+telNorm(a.tel)}
 /* Ficha del ciclista para la consola de VillorvinAdventure (va_members/{uid}) */
