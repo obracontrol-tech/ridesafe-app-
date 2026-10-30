@@ -195,8 +195,21 @@ function rowsCic(v){
     <td><span class="tag ${x.app==='pro'?'pro':'simple'}">${x.app==='pro'?'PRO':'SIMPLE'}</span></td>
     <td>${g.length?g.map(n=>`<span class="tag gp">${esc(n)}</span>`).join(''):'<span style="color:var(--txt2)">—</span>'}</td>
     <td>${fmt(x.t)}</td>
-    <td><div class="acts">${n?`<a class="btn sm" href="tel:+${n}">📞 Llamar</a><a class="btn sm" href="https://wa.me/${n}" target="_blank" rel="noopener">💬 WhatsApp</a>`:'—'}</div></td></tr>`}).join('')
+    <td><div class="acts">${n?`<a class="btn sm" href="tel:+${n}">📞 Llamar</a><a class="btn sm" href="https://wa.me/${n}" target="_blank" rel="noopener">💬 WhatsApp</a>`:''}<button class="btn sm red" onclick="cicDel(${jsq(x.id)})" aria-label="Borrar a ${esc(x.name)}">🗑️ Borrar</button></div></td></tr>`}).join('')
     :`<tr><td colspan="6" class="empty">${S.members.length?'Ningún ciclista coincide con la búsqueda':'Todavía no hay ciclistas registrados'}</td></tr>`;
+}
+async function cicDel(id){
+  const x=S.members.find(m=>m.id===id);if(!x)return;
+  const inClub=!!(S.club&&(S.club.members||{})[id]);
+  let msg='¿Borrar a «'+(x.name||'Ciclista')+'» ('+(x.tel||'sin móvil')+') de la lista de ciclistas?\n\nÚsalo para duplicados o fichas que ya no sirven.';
+  if(inClub&&S.isAdm)msg+='\n\nTambién está en el club: se le sacará del club y de sus grupetas.';
+  msg+='\n\nSi vuelve a entrar en la app y cambia su nombre o su móvil, volverá a aparecer.';
+  if(!confirm(msg))return;
+  try{
+    await db.collection('va_members').doc(id).delete();
+    if(inClub&&S.isAdm&&S.club.byUid!==id){const up={['members.'+id]:FV.delete(),['gm.'+id]:FV.delete()};if((S.club.admins||{})[id])up['admins.'+id]=FV.delete();if((S.club.captains||{})[id])up['captains.'+id]=FV.delete();await clubRef().update(up).catch(e=>console.warn('club',e))}
+    toast('Ciclista borrado');
+  }catch(e){fail(e)}
 }
 function csv(){
   const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
