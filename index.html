@@ -226,6 +226,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #s-rutas.live .lv{display:flex}
 .lvbanner{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:7;background:#14532D;color:#fff;border-radius:22px;padding:12px 16px;gap:14px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .lvbanner.off{background:#7F1D1D}
+.lvbanner{flex-wrap:wrap}.lvrc{flex-basis:100%;min-height:46px;border-radius:14px;border:none;background:#fff;color:#7F1D1D;font-weight:800;font-size:15.5px;cursor:pointer}
 .lvbanner .ar{font-size:40px;line-height:1}
 .lvbanner .dd{font-size:26px;font-weight:800;display:block}
 .lvbanner .tx{font-size:15px;font-weight:600;opacity:.95}
@@ -941,7 +942,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <span><i></i>Rec</span>
     <button onclick="toggleRec()" id="recBtn">INICIAR</button>
   </div>
-  <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div></div>
+  <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div><button type="button" class="lvrc" id="lvRecalc" onclick="navRecalc()" style="display:none">🔄 Recalcular desde aquí</button></div>
   
   <div class="lv lvpanel">
     <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
@@ -1134,7 +1135,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.21.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.22.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6633,6 +6634,25 @@ function navBackTick(p,now,dT){
   if(dT<prev-15)speak(NAV_VOZ.returning+' Te faltan '+navMetros(dT)+'.');
   else{speak(NAV_VOZ.stillOffRoute+' Está a '+navMetros(dT)+'.');vib([200,100,200])}
 }
+/* v5.22 — «Recalcular desde aquí»: SOLO si el ciclista lo pide (en montaña lo seguro es volver por donde has venido) */
+async function navRecalc(){
+  if(!live.on||!live.nav)return;
+  const p=live.pts.at(-1)||live.lastPushLL;if(!p){toast('Esperando señal GPS…');return}
+  if(!await askConfirm('¿Recalcular desde aquí?','Se calculará un camino nuevo por carretera desde donde estás. Puede ir por vías que no conoces. En montaña o caminos es más seguro volver por donde has venido (línea naranja).','Recalcular'))return;
+  const n=live.nav;const done=n.done||0;let wps,t=-1;
+  if(live.wps){const rest=live.wps.filter((w,k)=>k>0&&n.cum[nearestIdx(n.coords,[w.lat,w.lng],0)[0]]>done+0.05);if(!rest.length){toast('Ya estás cerca del final de la ruta');return}wps=[{lat:p[0],lng:p[1]},...rest].slice(0,25)}
+  else{t=n.cum.findIndex(x=>x>=done+0.3);if(t<0)t=n.coords.length-1;const T=n.coords[t];wps=[{lat:p[0],lng:p[1]},{lat:T[0],lng:T[1]}]}
+  toast('Calculando el camino…');
+  try{
+    const r=await navSteps(wps);if(!live.on)return;
+    const tail=t>=0?n.coords.slice(t+1):[];
+    const steps=t>=0?r.steps.concat(trackSteps(n.coords.slice(t)).map(s=>({...s,at0:undefined}))):r.steps;
+    prepNav(t>=0?r.coords.concat(tail):r.coords,steps);
+    live.navSt='ON_ROUTE';live.off=0;live.offN=0;live.offT=0;live.back=null;live.safeIdx=null;live.safePt=null;live.lastReroute=Date.now();
+    setLine(map,null,'back');try{if(live.backMk){live.backMk.remove();live.backMk=null}}catch(e){}
+    speak('Ruta recalculada. Sigue la línea azul.');toast('🔄 Ruta recalculada');
+  }catch(e){console.warn('recalcular',e);toast('No se pudo recalcular. Vuelve por donde has venido (línea naranja)')}
+}
 function navBackEnd(now){
   live.navSt='ROUTE_RECOVERED';live.recT=now;live.off=0;live.offN=0;live.offT=0;live.back=null;
   setLine(map,null,'back');try{if(live.backMk){live.backMk.remove();live.backMk=null}}catch(e){}
@@ -6786,6 +6806,7 @@ function renderLive(){
   else $('lvBanner').style.display='none';
   if(live.off>=2&&live.back){const T=live.back.at(-1),me=live.pts.at(-1);const d=me&&T?hav(me,T)*1000:0;$('lvBanner').style.display='flex';$('lvArrow').textContent='↩️';$('lvDist').textContent=d>=1000?(d/1000).toFixed(1)+' km':Math.round(d/10)*10+' m';$('lvInstr').textContent='Fuera de ruta: vuelve por donde has venido (línea naranja) hasta la 🚩'}
   if(live.off>=2)$('lvBanner').classList.add('off');else $('lvBanner').classList.remove('off');
+  {const rb=$('lvRecalc');if(rb)rb.style.display=live.off>=2&&live.back&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_')?'block':'none'}
   if(live.rideId){
     const now=Date.now();const ms=Object.values(live.members).filter(v=>now-v.t<600000);
     const me=live.pts.at(-1);
