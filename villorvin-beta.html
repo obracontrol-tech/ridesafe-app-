@@ -7479,6 +7479,7 @@ function renderVA(){
       <button class="btn btn-line" onclick="openClubChat()">💬 Chat</button>
       <button class="btn" style="background:var(--red);color:#fff" onclick="vaSOS()">🆘 Avisar</button>
       ${vaOrg()?`<button class="btn btn-lime" style="grid-column:1/-1" onclick="openClubAdmin('members')">🛡️ Panel de la organización</button>`:''}
+      ${vaOrg()&&!store.get('push',0)?`<button class="btn" style="grid-column:1/-1;background:#F59E0B;color:#1c1300;font-weight:800" onclick="setPush(true).then(()=>renderVA())">🔔 Activa las alarmas con la app cerrada</button>`:''}
      </div></div>`;
   }else if(!g){
     b.innerHTML=`<div class="plc" style="border:2px solid var(--lime);margin-bottom:12px;background:linear-gradient(180deg,#0B3A78,#06162E);color:#fff">${VA_HEAD}
@@ -7498,7 +7499,7 @@ function vaClubAlert(kind,p,title,club){
   const loc=p&&p[0]!=null?' · 📍 https://maps.google.com/?q='+(+p[0]).toFixed(5)+','+(+p[1]).toFixed(5):'';
   const tl=store.get('vaTel','');
   const text=('🆘 ALERTA · '+A.ico+' '+A.s+' · '+myName()+(tl?' · 📞 '+tl:'')+(title?' · '+title:'')+' · ref '+ref+loc).slice(0,300);
-  db.collection('groups').doc(C).collection('msgs').add({uid,name:myName(),text,ts:Date.now()}).catch(e=>console.warn('VA aviso',e));
+  db.collection('groups').doc(C).collection('msgs').add({uid,name:myName(),text,ts:Date.now()}).then(r=>vaPush(C,r.id)).catch(e=>console.warn('VA aviso',e));
   vaWaitAck(C,ref,kind);
 }
 /* El ciclista espera la confirmación de la organización */
@@ -7555,6 +7556,13 @@ function vaMap(k){const a=vaAl[k];if(a&&a.link)window.open(a.link,'_blank')}
 function vaSaveTel(){const i=$('vaTelIn');const t=(i&&i.value||'').trim().slice(0,20);if(telNorm(t).length<9){toast('Revisa el número de móvil');return}store.set('vaTel',t);store.set('vaRegd','');vaReg();toast('✅ Móvil guardado')}
 function vaFillTel(){const i=$('vaTelIn');if(i&&!i.value)i.value=store.get('vaTel','')}
 function vaCodeBtn(){if(typeof RS_SIMPLE!=='undefined'&&RS_SIMPLE)openPro();else joinGroupAsk()}
+/* v2.4 — Push a la organización con la app cerrada (Worker de Cloudflare villorvin-push) */
+const VA_PUSH_URL='https://villorvin-push.pedrosaborrego.workers.dev';
+async function vaPush(C,mid){
+  try{const u=firebase.auth().currentUser;if(!u)return;const idToken=await u.getIdToken();
+    const r=await fetch(VA_PUSH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken,club:C,msg:mid})});
+    console.log('VA push',r.status,await r.text().catch(()=>''))}catch(e){console.warn('VA push',e)}
+}
 function vaCall(k){const a=vaAl[k];if(a&&a.tel)location.href='tel:+'+telNorm(a.tel)}
 /* Ficha del ciclista para la consola de VillorvinAdventure (va_members/{uid}) */
 function vaReg(){
