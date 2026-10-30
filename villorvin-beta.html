@@ -5589,7 +5589,7 @@ function profHide(){profMk&&profMk.remove();$('profTip')&&$('profTip').remove();
 /* ---- Navegar un trazado fijo (GPX o tramos en línea recta) sin cambiarlo ---- */
 const isFixed=r=>!!(r&&(r.fixed||r.mode==='track'));
 function navRoute(u,w){
-  prepNav(u.coords,null);
+  prepNav(u.coords,null);live.navSt='ON_ROUTE';live.off=0;live.offN=0;live.back=null;live.safeIdx=null;live.safePt=null;try{setLine(map,null,'back');if(live.backMk){live.backMk.remove();live.backMk=null}}catch(e){}
   live.fixTrk=isFixed(u)?u.coords:null;live.wps=live.fixTrk?null:(w&&w.length>=2?w:null);
   if(live.wps&&MAPBOX_TOKEN&&!MAPBOX_TOKEN.startsWith('PON_'))navSteps(live.wps.slice(0,25)).then(n=>{if(live.on)prepNav(n.coords,n.steps)}).catch(e=>console.warn('pasos',e));
 }
@@ -6327,9 +6327,31 @@ async function navSteps(wps){
   const steps=[];rt.legs.forEach(l=>l.steps.forEach(s=>steps.push({txt:s.maneuver.instruction,type:s.maneuver.type,mod:s.maneuver.modifier||'straight',loc:[s.maneuver.location[1],s.maneuver.location[0]]})));
   return{coords,steps};
 }
+/* v2.3 — Indicaciones de giro para rutas marcadas (GPX / track fijo).
+   Sin internet ni recálculo: los giros se sacan de la forma del propio track.
+   Mira el rumbo 30 m antes y 30 m después de cada punto; si cambia 30° o más, es un giro. */
+function trackSteps(coords){
+  const cum=cumDist(coords);const tot=cum.at(-1)||0;if(coords.length<3||tot<0.1)return[];
+  const r=Math.PI/180;
+  const at=d=>{let j=1;while(j<cum.length-1&&cum[j]<d)j++;const a=cum[j-1],b=cum[j],t=b>a?(d-a)/(b-a):0;const A=coords[j-1],B=coords[j];return[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,j]};
+  const brg=(A,B)=>{const y=Math.sin((B[1]-A[1])*r)*Math.cos(B[0]*r),x=Math.cos(A[0]*r)*Math.sin(B[0]*r)-Math.sin(A[0]*r)*Math.cos(B[0]*r)*Math.cos((B[1]-A[1])*r);return(Math.atan2(y,x)/r+360)%360};
+  const W=0.03,S=0.005,cand=[];
+  for(let d=W;d<=tot-W;d+=S){const P=at(d),A=at(d-W),B=at(d+W);
+    if(hav(A,P)<0.012||hav(P,B)<0.012)continue;
+    let dl=brg(P,B)-brg(A,P);dl=((dl+540)%360)-180;
+    if(Math.abs(dl)>=30)cand.push({d,dl,p:P})}
+  const turns=[];
+  cand.forEach(c=>{const l=turns.at(-1);if(l&&c.d-l.d<0.04){if(Math.abs(c.dl)>Math.abs(l.dl))turns[turns.length-1]=c}else turns.push(c)});
+  const txt={'slight right':'Gira ligeramente a la derecha','right':'Gira a la derecha','sharp right':'Gira cerrado a la derecha','slight left':'Gira ligeramente a la izquierda','left':'Gira a la izquierda','sharp left':'Gira cerrado a la izquierda','uturn':'Da media vuelta'};
+  const out=turns.filter(t=>t.d>0.03&&t.d<tot-0.03).map(t=>{const a=Math.abs(t.dl),s=t.dl>0?'right':'left';
+    const mod=a>=160?'uturn':a>=120?'sharp '+s:a>=55?s:'slight '+s;
+    return{txt:txt[mod],type:'turn',mod,loc:[t.p[0],t.p[1]],at0:t.d}});
+  return out;
+}
 function prepNav(coords,steps){
   const cum=cumDist(coords);let from=0;
-  (steps||[]).forEach(s=>{const[i]=nearestIdx(coords,s.loc,from);s.at=cum[Math.max(0,i)];from=Math.max(0,i)});
+  if(!steps||!steps.length)steps=trackSteps(coords);
+  (steps||[]).forEach(s=>{if(s.at0!=null){s.at=s.at0;return}const[i]=nearestIdx(coords,s.loc,from);s.at=cum[Math.max(0,i)];from=Math.max(0,i)});
   live.nav={coords,cum,total:cum.at(-1),steps:steps||[],idx:0,spoke:{}};
   setLine(map,coords,'plan','#4DA3FF');
 }
@@ -6550,25 +6572,47 @@ function navSeg(c,p,from){
   if(c.length<2)best={d:c.length?hav(c[0],p):1e9,i:0,t:0};
   return best;   // d en km
 }
+/* v2.2 VillorvinAdventure — FUERA DE RUTA SEGURO
+   Si te sales del track NO se calcula una ruta nueva (podría llevarte por caminos peligrosos o privados).
+   La app te guía de vuelta POR EL MISMO CAMINO por el que has venido (tu rastro GPS al revés)
+   hasta el último punto en el que estabas en la ruta.
+   Estados: ON_ROUTE → OFF_ROUTE → RETURNING_TO_TRACK → ROUTE_RECOVERED → ON_ROUTE
+   · Fuera de ruta: a más de 30 m del track (algo más si el GPS va impreciso), confirmado 3 lecturas / 8 s.
+   · Ruta recuperada: a menos de 15 m del track (o de la precisión del GPS, como mucho 30 m). */
+const NAV_VOZ={
+  offRoute:'Te has salido de la ruta. Da la vuelta y vuelve por donde has venido hasta recuperar el track.',
+  returning:'Sigue volviendo por el mismo camino.',
+  recovered:'Ruta recuperada. Continúa por el track.',
+  stillOffRoute:'Sigues fuera de la ruta. Vuelve hacia el último punto conocido.'
+};
+function navProj(c,s){const A=c[s.i],B=c[Math.min(s.i+1,c.length-1)];return[A[0]+(B[0]-A[0])*s.t,A[1]+(B[1]-A[1])*s.t]}
+function navMetros(m){return m>=1000?(m/1000).toFixed(1).replace('.',',')+' kilómetros':Math.round(m/10)*10+' metros'}
 function navUpdate(p,acc){
   const n=live.nav;if(!n||!n.coords.length)return;const now=Date.now();
   const s=navSeg(n.coords,p,n.last||0);const dm=s.d*1000;
-  const tol=30+Math.min(Math.max(acc||10,5),40);const allow=Math.max(60,Math.min(140,2*tol));
+  const a=Math.min(Math.max(acc||10,5),40);
+  const offM=Math.max(30,Math.min(60,a*1.5)),recM=Math.max(15,Math.min(30,a));
   const segLen=(n.cum[s.i+1]??n.cum[s.i])-n.cum[s.i];const along=n.cum[s.i]+s.t*segLen;
-  const grace=now-(live.lastReroute||0)<15000;
-  if(dm<=allow){                                   // en la ruta (o dentro del margen)
-    n.last=s.i;n.done=Math.max(n.done||0,along);
-    if(live.off>=2&&dm<allow*0.6){live.off=0;live.offN=0;live.offT=0;speak('De nuevo en la ruta');toast('✅ De nuevo en la ruta')}
-    else if(live.off<2){live.offN=0;live.offT=0;live.off=0}
-  }else if(!grace&&live.off<2){                     // posible desvío: hay que confirmarlo
-    if(!live.offN){live.offT=now;live.offLL=p}
-    live.offN=(live.offN||0)+1;
-    const moved=live.offLL?hav(live.offLL,p)*1000:0;
-    if(live.offN>=3&&now-live.offT>=8000&&moved>=25){live.off=2;speak('Te has salido de la ruta');vib([300,100,300]);toast('⚠️ Fuera de ruta')}
+  const st0=live.navSt||'ON_ROUTE';
+  if(st0==='ON_ROUTE'||st0==='ROUTE_RECOVERED'){
+    if(dm<=offM){                                  // en la ruta
+      n.last=s.i;n.done=Math.max(n.done||0,along);live.offN=0;live.offT=0;live.off=0;
+      live.safeIdx=Math.max(0,live.pts.length-1);live.safePt=navProj(n.coords,s);
+      if(st0==='ROUTE_RECOVERED'&&now-(live.recT||0)>8000)live.navSt='ON_ROUTE';
+    }else{                                         // posible desvío: hay que confirmarlo
+      if(!live.offN){live.offT=now;live.offLL=p}
+      live.offN=(live.offN||0)+1;
+      const moved=live.offLL?hav(live.offLL,p)*1000:0;
+      if(live.offN>=3&&now-live.offT>=8000&&moved>=15)navBackStart(p,now,n,s);
+    }
+  }else{                                           // OFF_ROUTE / RETURNING_TO_TRACK
+    const T=live.safePt||navProj(n.coords,s);const dT=hav(p,T)*1000;
+    if(dm<recM||(dT<20&&dm<offM*0.6)){n.last=s.i;n.done=Math.max(n.done||0,along);navBackEnd(now)}
+    else navBackTick(p,now,dT);
   }
   const done=n.done!=null?n.done:n.cum[n.last||0];n.left=Math.max(0,n.total-done);
   // Llegada
-  if(n.left<0.05&&!n.arrived){n.arrived=true;speak('Has llegado a tu destino');vib([200,100,200]);toast('🏁 ¡Has llegado!')}
+  if(n.left<0.05&&!n.arrived&&live.off<2){n.arrived=true;speak('Has llegado a tu destino');vib([200,100,200]);toast('🏁 ¡Has llegado!')}
   // Siguiente maniobra (no se anuncian giros mientras estás fuera de ruta)
   const st=n.steps.find(x=>x.at>done+0.01&&x.type!=='depart');
   n.next=st||null;
@@ -6576,15 +6620,38 @@ function navUpdate(p,acc){
     const key=n.steps.indexOf(st);
     if(dist<180&&dist>60&&!n.spoke[key+'a']){n.spoke[key+'a']=1;speak('En '+Math.round(dist/10)*10+' metros, '+st.txt)}
     if(dist<=35&&!n.spoke[key+'b']){n.spoke[key+'b']=1;speak(st.txt);vib(120)}}
-  // Fuera de ruta confirmado: recalcular (como mucho cada 30 s)
-  if(live.off<2||dm<=allow||now-(live.lastReroute||0)<30000||!MAPBOX_TOKEN||MAPBOX_TOKEN.startsWith('PON_'))return;
-  if(live.fixTrk){trackRejoin(p,done);return}
-  if(live.wps){
-    live.lastReroute=now;
-    const rest=live.wps.filter((w,k)=>k>0&&n.cum[nearestIdx(n.coords,[w.lat,w.lng],0)[0]]>done+0.05);
-    if(!rest.length)return;
-    navSteps([{lat:p[0],lng:p[1]},...rest].slice(0,25)).then(r=>{if(!live.on)return;prepNav(r.coords,r.steps);live.off=0;live.offN=0;live.lastReroute=Date.now();speak('Ruta recalculada');toast('Ruta recalculada')}).catch(()=>{});
+  // Sin recálculo automático hacia el destino (seguridad).
+}
+function navBackStart(p,now,n,s){
+  live.navSt='OFF_ROUTE';live.off=2;
+  const T=live.safePt||navProj(n.coords,s);
+  const i0=live.safeIdx!=null?Math.max(0,Math.min(live.safeIdx,live.pts.length-1)):live.pts.length;
+  const crumbs=live.pts.slice(i0).map(x=>[x[0],x[1]]);          // rastro desde el último punto en ruta
+  live.back=[p,...crumbs.reverse(),T];                          // al revés: de donde estás al punto seguro
+  live.backNoTrail=crumbs.length<2;
+  live.backBest=hav(p,T)*1000;live.backT=now;live.backDrawT=0;
+  setLine(map,live.back,'back','#F59E0B');
+  try{if(live.backMk)live.backMk.remove();const el=document.createElement('div');el.style.cssText='font-size:26px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))';el.textContent='🚩';live.backMk=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([T[1],T[0]]).addTo(map)}catch(e){}
+  speak(NAV_VOZ.offRoute+' '+(live.backNoTrail?'El punto de la ruta está a ':'Te faltan ')+navMetros(live.backBest)+'.');
+  vib([300,100,300,100,300]);toast('⚠️ Fuera de ruta: vuelve por donde has venido (línea naranja)',5000);
+  live.navSt='RETURNING_TO_TRACK';
+}
+function navBackTick(p,now,dT){
+  if(live.back&&live.back.length>2&&now-(live.backDrawT||0)>3000){   // borra lo que ya has desandado
+    live.backDrawT=now;let k=0,b=1e9;for(let i=1;i<live.back.length;i++){const d=hav(p,live.back[i]);if(d<b){b=d;k=i}}
+    if(b<0.04)live.back=[p,...live.back.slice(k+1)];else live.back[0]=p;
+    setLine(map,live.back,'back','#F59E0B');
   }
+  if(now-(live.backT||0)<30000)return;
+  live.backT=now;
+  const prev=live.backBest;live.backBest=dT;                       // compara con el aviso anterior
+  if(dT<prev-15)speak(NAV_VOZ.returning+' Te faltan '+navMetros(dT)+'.');
+  else{speak(NAV_VOZ.stillOffRoute+' Está a '+navMetros(dT)+'.');vib([200,100,200])}
+}
+function navBackEnd(now){
+  live.navSt='ROUTE_RECOVERED';live.recT=now;live.off=0;live.offN=0;live.offT=0;live.back=null;
+  setLine(map,null,'back');try{if(live.backMk){live.backMk.remove();live.backMk=null}}catch(e){}
+  speak(NAV_VOZ.recovered);vib([200,100,200]);toast('✅ Ruta recuperada. Continúa por el track');
 }
 
 /* Pelotón en vivo: mi posición y la del grupo */
@@ -6732,6 +6799,7 @@ function renderLive(){
     $('lvInstr').textContent=n.next.txt;
   }else if(n&&n.arrived){$('lvBanner').style.display='flex';$('lvArrow').textContent='🏁';$('lvDist').textContent='';$('lvInstr').textContent='Has llegado a tu destino'}
   else $('lvBanner').style.display='none';
+  if(live.off>=2&&live.back){const T=live.back.at(-1),me=live.pts.at(-1);const d=me&&T?hav(me,T)*1000:0;$('lvBanner').style.display='flex';$('lvArrow').textContent='↩️';$('lvDist').textContent=d>=1000?(d/1000).toFixed(1)+' km':Math.round(d/10)*10+' m';$('lvInstr').textContent='Fuera de ruta: vuelve por donde has venido (línea naranja) hasta la 🚩'}
   if(live.off>=2)$('lvBanner').classList.add('off');else $('lvBanner').classList.remove('off');
   if(live.rideId){
     const now=Date.now();const ms=Object.values(live.members).filter(v=>now-v.t<600000);
@@ -6789,7 +6857,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  saverOff();fallStop();cascoStop();const L=live;live={on:false};alarmStop();$('alarmBox').classList.remove('show');
+  saverOff();fallStop();cascoStop();const L=live;live={on:false};try{setLine(map,null,'back');if(L.backMk)L.backMk.remove()}catch(e){}alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);clearInterval(L.bkTimer);clearInterval(L.wxT);liveBackupClear();
   if(CAM.open){CAM.closeAfter=false;if(CAM.rec&&CAM.rec.state==='recording'){CAM.closeAfter=true;CAM.rec.stop()}else camClose()}
   (L.camMk||[]).forEach(m=>m.remove());
