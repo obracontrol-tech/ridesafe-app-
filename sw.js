@@ -1,9 +1,10 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5240';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5250';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
-const KEEP = [CACHE, MAPS, VIEW, LIBS];
+const SHARE = 'velogo-share';                // v5.25: GPX recibido desde «Compartir» de Android
+const KEEP = [CACHE, MAPS, VIEW, LIBS, SHARE];
 const CORE = ['./', './index.html', './manifest.json', './privacidad.html', './icons/qr.svg', './icons/icon-192.png', './icons/icon-512.png'];
 const VIEW_MAX = 4000;
 
@@ -43,7 +44,24 @@ async function libFirst(req) {
 }
 
 self.addEventListener('fetch', e => {
-  const req = e.request; if (req.method !== 'GET') return;
+  const req = e.request;
+  // v5.25: «Compartir» un GPX/TCX con RideSafe IA (Android): se guarda y se abre la app para importarlo
+  if (req.method === 'POST' && new URL(req.url).pathname.endsWith('/share-gpx')) {
+    e.respondWith((async () => {
+      try {
+        const fd = await req.formData();
+        const f = fd.getAll('gpx').find(x => x && typeof x !== 'string');
+        if (f) {
+          const c = await caches.open(SHARE);
+          await c.put('./__shared-gpx', new Response(f, { headers: { 'Content-Type': 'application/octet-stream', 'X-Name': encodeURIComponent(f.name || 'ruta.gpx') } }));
+          return Response.redirect('./index.html?gpx=shared', 303);
+        }
+      } catch (_) {}
+      return Response.redirect('./index.html?gpx=error', 303);
+    })());
+    return;
+  }
+  if (req.method !== 'GET') return;
   const u = new URL(req.url);
   if (u.hostname === 'tiles.openfreemap.org') {
     const isData = /\.(pbf|png|jpg|webp|json)$/.test(u.pathname) && !u.pathname.startsWith('/styles/');

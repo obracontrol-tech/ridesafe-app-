@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.24.0 — Capas: elegir qué rutas marcadas ver (Según el modo / BTT / Ciclistas / Senderos).
+/* v5.25.0 — Abrir GPX/TCX con RideSafe: «Compartir» en Android y «Abrir con» en ordenador.
+   v5.24.0 — Capas: elegir qué rutas marcadas ver (Según el modo / BTT / Ciclistas / Senderos).
    v5.23.5 — Tocar rutas: lista desde Waymarked Trails (rápido, lo mismo que se ve); el mapa ya no se mueve al tocar.
    v5.23.4 — Tocar rutas: un solo toque (acerca y busca solo), busca rutas a pie, BTT y bici.
    v5.23.3 — Tocar rutas: acerca el mapa si está lejos y busca en un radio pequeño (antes fallaba por consulta enorme).
@@ -1164,7 +1165,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.24.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.25.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7644,6 +7645,31 @@ setInterval(function(){
     }catch(x){}
   });
 },800);
+})();
+</script>
+<script>
+/* v5.25 — Abrir GPX/TCX desde «Compartir» (Android) o «Abrir con» (ordenador) */
+(function(){
+  function importFile(f){if(!f)return;var inp=document.getElementById('fileIn');if(!inp||!inp.onchange)return;
+    try{if(typeof go==='function')go('actividades')}catch(e){}
+    inp.onchange({target:{files:[f],value:''}});}
+  function clean(){try{history.replaceState(null,'',location.pathname)}catch(e){}}
+  var q=new URLSearchParams(location.search).get('gpx');
+  if(q==='shared'){
+    setTimeout(async function(){
+      clean();
+      try{var c=await caches.open('velogo-share'),r=await c.match('./__shared-gpx');if(!r){toast('No llegó ningún archivo');return}
+        var name=decodeURIComponent(r.headers.get('X-Name')||'ruta.gpx'),b=await r.blob();await c.delete('./__shared-gpx');
+        toast('📂 Abriendo '+name+'…');importFile(new File([b],name,{type:'application/gpx+xml'}));
+      }catch(e){toast('No pudimos abrir el archivo compartido')}
+    },1500);
+  }else if(q==='error'){clean();setTimeout(function(){toast('No pudimos recibir el archivo. Prueba con un GPX o TCX')},1500)}
+  if('launchQueue' in window){
+    window.launchQueue.setConsumer(async function(p){
+      if(!p||!p.files||!p.files.length)return;clean();
+      try{var f=await p.files[0].getFile();setTimeout(function(){importFile(f)},1500)}catch(e){}
+    });
+  }
 })();
 </script>
 </body>
