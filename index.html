@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.23.5 — Tocar rutas: lista desde Waymarked Trails (rápido, lo mismo que se ve); el mapa ya no se mueve al tocar.
+/* v5.24.0 — Capas: elegir qué rutas marcadas ver (Según el modo / BTT / Ciclistas / Senderos).
+   v5.23.5 — Tocar rutas: lista desde Waymarked Trails (rápido, lo mismo que se ve); el mapa ya no se mueve al tocar.
    v5.23.4 — Tocar rutas: un solo toque (acerca y busca solo), busca rutas a pie, BTT y bici.
    v5.23.3 — Tocar rutas: acerca el mapa si está lejos y busca en un radio pequeño (antes fallaba por consulta enorme).
    v5.23.2 — Tocar rutas marcadas también funciona mientras grabas o navegas (solo para verlas).
@@ -800,6 +801,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .profmk{width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid #F97316;box-shadow:0 0 0 3px rgba(0,0,0,.35)}
 #layMenu .lm-tr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 2px 2px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);font-weight:800;font-size:14.5px;color:#fff}
 #layMenu .lm-tr small{display:block;font-weight:600;font-size:12px;opacity:.7}
+#layMenu .lm-tk{display:flex;gap:6px;flex-wrap:wrap;margin:8px 2px 0}
+#layMenu .lm-tk button{flex:1 1 auto;min-height:38px;padding:0 10px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-weight:800;font-size:13px;cursor:pointer}
+#layMenu .lm-tk button.on{background:#C8DC3C;color:#0E1A2B;border-color:#C8DC3C}
 .ppt.dot{width:16px;height:16px;font-size:0;border-width:3px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
 .drw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 8px}
 .drw button{min-height:54px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
@@ -1160,7 +1164,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.24.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4212,7 +4216,7 @@ function layerMenu(m){
   const cur=m.__layer||'normal';const on=navigator.onLine;
   d.innerHTML='<div class="lm-h"><b>Capas del mapa</b><button class="lm-x" aria-label="Cerrar">✕</button></div><div class="lm-g">'+LAYERS.map(([k,t,sub,st])=>{
     const th=layerThumb(k,m);
-    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
+    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label>'+trkChips()+'<label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
   d.onclick=ev=>{if(ev.target.closest('.lm-x')){d.remove();return}const b=ev.target.closest('.lm-c');if(!b)return;const k=b.dataset.k;
     if(LAYER_BY[k][3]&&!navigator.onLine){toast('Esta capa necesita conexión');return}
     LAYER=k;try{localStorage.setItem('velogo_layer',k)}catch(e){}
@@ -5534,7 +5538,14 @@ function editRoute(r){
 
 /* ---- Capa de senderos y rutas marcadas (Waymarked Trails) ---- */
 const trailsOn=()=>!!store.get('trailsOn',false);
-const trailsKind=()=>isHike()?'hiking':isMtb()?'mtb':'cycling';
+/* v5.24: se puede elegir qué rutas ver (BTT, ciclistas o senderos) sin cambiar el modo de la bici */
+const trailsSel=()=>{const s=store.get('trailsSel','auto');return ['mtb','cycling','hiking'].includes(s)?s:'auto'};
+const trailsKind=()=>{const s=trailsSel();return s!=='auto'?s:(isHike()?'hiking':isMtb()?'mtb':'cycling')};
+const TRK_T={auto:'Según el modo',mtb:'🚵 BTT',cycling:'🚴 Ciclistas',hiking:'🥾 Senderos'};
+function trkChips(){const s=trailsSel();return '<div class="lm-tk" id="lmTk">'+Object.keys(TRK_T).map(k=>`<button type="button" class="${k===s?'on':''}" onclick="trailsPick('${k}')">${TRK_T[k]}</button>`).join('')+'</div>'}
+function trailsPick(k){store.set('trailsSel',k);const w=$('lmTk');if(w)w.outerHTML=trkChips();
+  if(!trailsOn())trailsToggle(true);else{trailsSet(map,true);toast((k==='auto'?'Rutas según el modo: ':'Rutas marcadas: ')+({hiking:'🥾 senderos',mtb:'🚵 BTT',cycling:'🚴 ciclistas'})[trailsKind()])}
+  vib(10)}
 function trailsSet(m,on){
   if(!m||!m.getStyle||!m.getStyle())return;
   if(!(m.style&&m.style._loaded)){m.once('load',()=>trailsSet(m,on));return}
@@ -5552,7 +5563,7 @@ function trailsToggle(on){
   const c=$('lmTrails');if(c)c.checked=!!on;
   if(plan.active)renderPlan();
   if(!on&&window.wselClear)wselClear();
-  if(on){toast((isHike()?'🥾 Rutas de senderismo':isMtb()?'🚵 Rutas de BTT':'🚴 Rutas ciclistas')+' marcadas en el mapa · toca una línea para verla');if(map&&map.getZoom()<10)map.easeTo({zoom:11,duration:500})}
+  if(on){toast(({hiking:'🥾 Rutas de senderismo',mtb:'🚵 Rutas de BTT',cycling:'🚴 Rutas ciclistas'})[trailsKind()]+' marcadas en el mapa · toca una línea para verla');if(map&&map.getZoom()<10)map.easeTo({zoom:11,duration:500})}
 }
 
 /* ---- Perfil: tocarlo enseña ese punto en el mapa ---- */
