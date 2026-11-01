@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.27.0 — Intro de bienvenida (globo + logo, 7 s) al abrir la app: una vez al día, con «Saltar».
+/* v5.27.1 — Intro de bienvenida nueva, más realista (Tierra con luces + España con rutas).
+   v5.27.0 — Intro de bienvenida (globo + logo, 7 s) al abrir la app: una vez al día, con «Saltar».
    v5.26.0 — Aviso «NOVEDAD» arriba en Inicio (rutas marcadas + recarga e-bike), se cierra con ✕.
    v5.25.0 — Abrir GPX/TCX con RideSafe: «Compartir» en Android y «Abrir con» en ordenador.
    v5.24.0 — Capas: elegir qué rutas marcadas ver (Según el modo / BTT / Ciclistas / Senderos).
@@ -939,7 +940,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 <body>
 <!-- v5.27: intro de bienvenida (globo + logo). Una vez al día, con «Saltar». No sale si la app se abre desde un enlace. -->
 <div id="splash" style="position:fixed;inset:0;z-index:100000;background:#0E1A2B;display:none;transition:opacity .45s ease">
-  <video id="splashV" src="intro.mp4" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover"></video>
+  <video id="splashV" src="intro.mp4?v=2" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover"></video>
   <button id="splashSkip" type="button" style="position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));min-height:44px;padding:0 18px;border-radius:99px;border:1px solid rgba(255,255,255,.35);background:rgba(14,26,43,.75);color:#fff;font:700 15px 'Plus Jakarta Sans',system-ui,sans-serif">Saltar ›</button>
 </div>
 <script>
@@ -1199,7 +1200,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.27.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.27.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
