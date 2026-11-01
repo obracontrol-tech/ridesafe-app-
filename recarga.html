@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Recarga e-bike · RideSafe IA</title>
+<meta name="theme-color" content="#0E1A2B">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script>
+/* RideSafe IA v5.20.0 — Puntos de recarga para bici eléctrica (toda España)
+   Datos: OpenStreetMap (Overpass API). Búsqueda de lugares: Nominatim (solo España). */
+try{if(JSON.parse(localStorage.getItem('velogo_light')))document.documentElement.dataset.theme='light'}catch(e){}
+</script>
+<style>
+:root{
+  --bg:#0E1A2B; --card:#16263D; --card2:#1C2F4A; --line:#2A3B55;
+  --lime:#C8DC3C; --on-lime:#0E1A2B; --txt:#FFFFFF; --txt2:#9AA8BC;
+  --orange:#FDBA74; --blue:#38BDF8; --violet:#A78BFA;
+}
+[data-theme="light"]{
+  --bg:#F4F6F9; --card:#FFFFFF; --card2:#E9EEF5; --line:#C9D3DF;
+  --lime:#6F8519; --on-lime:#FFFFFF; --txt:#0B1422; --txt2:#3E4C5E;
+  --orange:#C2410C; --blue:#0369A1; --violet:#6D28D9;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;overflow:hidden}
+header{padding:calc(env(safe-area-inset-top) + 12px) 16px 10px;display:flex;align-items:center;gap:10px}
+.back{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);display:grid;place-items:center;text-decoration:none;flex-shrink:0}
+.back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+h1{font-size:19px;font-weight:800;color:var(--orange);line-height:1.15}
+h1 small{display:block;font-size:12px;font-weight:500;color:var(--txt2)}
+.search{display:flex;gap:8px;padding:0 16px 10px}
+.search input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:0 14px;font:inherit;font-size:15px}
+.search input:focus{outline:none;border-color:var(--lime)}
+.ibtn{height:44px;min-width:44px;border-radius:14px;border:0;background:var(--lime);color:var(--on-lime);font:inherit;font-weight:800;font-size:15px;padding:0 12px;cursor:pointer;display:grid;place-items:center}
+.ibtn.alt{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.ibtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.chips{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;height:34px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--txt2);font:inherit;font-size:13px;font-weight:700;padding:0 12px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.chip.on{color:var(--txt);border-color:var(--lime)}
+.chip i{width:10px;height:10px;border-radius:50%;display:inline-block}
+#map{flex:1;min-height:200px;position:relative;z-index:0}
+.status{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:700;padding:7px 14px;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.status:empty{display:none}
+.panel{background:var(--bg);border-top:1px solid var(--line);max-height:38vh;overflow-y:auto;padding:10px 16px calc(env(safe-area-inset-bottom) + 12px)}
+.panel h2{font-size:14px;color:var(--txt2);font-weight:700;margin:2px 0 8px;display:flex;justify-content:space-between}
+.item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.item .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:17px;flex-shrink:0}
+.item div{flex:1;min-width:0}
+.item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item small{display:block;font-size:12px;color:var(--txt2)}
+.item .km{font-weight:800;color:var(--lime);font-size:13px;white-space:nowrap}
+.empty{color:var(--txt2);font-size:13px;line-height:1.5;padding:6px 2px}
+.note{font-size:11px;color:var(--txt2);line-height:1.5;margin-top:6px}
+.note a{color:var(--lime)}
+.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pin span{transform:rotate(45deg);font-size:14px;line-height:1}
+.me{width:16px;height:16px;border-radius:50%;background:#3B82F6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,.25)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--txt)}
+.leaflet-popup-content{margin:12px 14px;font-family:inherit;font-size:13px;line-height:1.45}
+.pp b{font-size:15px;display:block;margin-bottom:2px}
+.pp .t{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-bottom:6px;color:#0E1A2B}
+.pp .row{color:var(--txt2)}
+.pp .go{display:block;text-align:center;margin-top:10px;background:var(--lime);color:var(--on-lime)!important;text-decoration:none;font-weight:800;padding:9px;border-radius:12px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+  <h1>🔋 Recarga e-bike<small>Puntos para cargar tu bici eléctrica en toda España</small></h1>
+</header>
+
+<form class="search" id="fSearch">
+  <input id="q" type="search" placeholder="Buscar pueblo o ciudad…" autocomplete="off" enterkeyhint="search">
+  <button class="ibtn" type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+  <button class="ibtn alt" type="button" id="bMe" aria-label="Mi ubicación"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></button>
+</form>
+
+<div class="chips" id="chips">
+  <button class="chip on" data-k="ebike"><i style="background:var(--lime)"></i>Carga e-bike</button>
+  <button class="chip on" data-k="enchufe"><i style="background:var(--blue)"></i>Enchufe normal</button>
+  <button class="chip on" data-k="tienda"><i style="background:var(--orange)"></i>Tiendas de bicis</button>
+</div>
+
+<div id="map"><div class="status" id="st"></div></div>
+
+<div class="panel">
+  <h2><span id="lTitle">Puntos en esta zona</span><span id="lCount"></span></h2>
+  <div id="list"><div class="empty">Busca un lugar o pulsa el botón de ubicación.</div></div>
+  <p class="note">💡 Las <b>tiendas de bicis</b> suelen dejarte enchufar el cargador si lo pides. Lleva siempre tu cargador: casi todas las bicis eléctricas cargan en un enchufe normal.<br>Datos de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. Pueden faltar puntos o haber alguno fuera de servicio.</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var TYPES={
+  ebike:  {name:'Carga para e-bike', color:'#C8DC3C', ico:'🔋'},
+  enchufe:{name:'Enchufe normal (schuko)', color:'#38BDF8', ico:'🔌'},
+  tienda: {name:'Tienda / taller de bicis', color:'#FDBA74', ico:'🚲'}
+};
+var ON={ebike:true,enchufe:true,tienda:true};
+var SERVERS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+var MIN_ZOOM=11;
+var cache={};          // id -> punto
+var layer, meMarker=null, meLL=null, timer=null, busy=false, lastKey='';
+
+var map=L.map('map',{zoomControl:false,attributionControl:true}).setView([40.2,-3.6],6);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+layer=L.layerGroup().addTo(map);
+
+function status(t){$('st').textContent=t||''}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+function classify(t){
+  if(t.shop==='bicycle')return 'tienda';
+  if(t.amenity==='charging_station'){
+    if(t.bicycle==='yes'||t.bicycle==='designated'||t['capacity:bicycle'])return 'ebike';
+    if(t['socket:schuko']&&t['socket:schuko']!=='0'&&t['socket:schuko']!=='no')return 'enchufe';
+  }
+  return null;
+}
+
+function query(b){
+  var bb=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(4)}).join(',');
+  return '[out:json][timeout:25];('+
+    'nwr["amenity"="charging_station"]["bicycle"~"yes|designated"]('+bb+');'+
+    'nwr["amenity"="charging_station"]["capacity:bicycle"]('+bb+');'+
+    'nwr["amenity"="charging_station"]["socket:schuko"]('+bb+');'+
+    'nwr["shop"="bicycle"]('+bb+');'+
+    ');out center tags 400;';
+}
+
+function fetchOverpass(q,i){
+  i=i||0;
+  return fetch(SERVERS[i],{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+    .catch(function(e){if(i+1<SERVERS.length)return fetchOverpass(q,i+1);throw e});
+}
+
+function load(){
+  if(map.getZoom()<MIN_ZOOM){status('Acerca el mapa para ver los puntos');render();return}
+  var b=map.getBounds().pad(0.15);
+  var key=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(2)}).join(',');
+  if(key===lastKey||busy){render();return}
+  busy=true;status('Buscando puntos de recarga…');
+  fetchOverpass(query(b)).then(function(d){
+    lastKey=key;
+    (d.elements||[]).forEach(function(e){
+      var t=e.tags||{}, k=classify(t); if(!k)return;
+      var lat=e.lat!=null?e.lat:(e.center&&e.center.lat), lon=e.lon!=null?e.lon:(e.center&&e.center.lon);
+      if(lat==null)return;
+      cache[e.type+e.id]={id:e.type+e.id,k:k,lat:lat,lon:lon,t:t};
+    });
+    status('');render();
+  }).catch(function(){status('Sin conexión con el servidor de mapas. Prueba en unos segundos.')})
+  .then(function(){busy=false});
+}
+
+function dist(a,b){var R=6371,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r;
+  var x=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)*Math.sin(dn/2);
+  return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+
+function pinIcon(k){var c=TYPES[k];return L.divIcon({className:'',html:'<div class="pin" style="background:'+c.color+'"><span>'+c.ico+'</span></div>',iconSize:[30,30],iconAnchor:[15,30],popupAnchor:[0,-28]})}
+
+function nameOf(p){var t=p.t;return t.name||t.brand||t.operator||TYPES[p.k].name}
+
+function popup(p){
+  var t=p.t, c=TYPES[p.k], rows=[];
+  var addr=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
+  var city=t['addr:city']||t['addr:town']||t['addr:village']||'';
+  if(addr||city)rows.push('📍 '+esc([addr,city].filter(Boolean).join(', ')));
+  if(t.opening_hours)rows.push('🕒 '+esc(t.opening_hours));
+  if(t.fee==='no')rows.push('✅ Gratis');else if(t.fee==='yes')rows.push('💶 De pago');
+  if(t['capacity:bicycle'])rows.push('🔋 Plazas para bici: '+esc(t['capacity:bicycle']));
+  if(t.phone||t['contact:phone'])rows.push('📞 <a href="tel:'+esc(t.phone||t['contact:phone'])+'" style="color:var(--lime)">'+esc(t.phone||t['contact:phone'])+'</a>');
+  if(p.k==='tienda')rows.push('Pregunta si te dejan cargar la batería.');
+  if(meLL)rows.push('📏 A '+dist(meLL,p).toFixed(1).replace('.',',')+' km');
+  var go='https://www.google.com/maps/dir/?api=1&destination='+p.lat+','+p.lon+'&travelmode=bicycling';
+  return '<div class="pp"><span class="t" style="background:'+c.color+'">'+c.ico+' '+esc(c.name)+'</span><b>'+esc(nameOf(p))+'</b>'+
+    rows.map(function(r){return '<div class="row">'+r+'</div>'}).join('')+
+    '<a class="go" href="'+go+'" target="_blank" rel="noopener">Cómo llegar en bici</a></div>';
+}
+
+function render(){
+  layer.clearLayers();
+  var b=map.getBounds(), center=meLL||{lat:map.getCenter().lat,lon:map.getCenter().lng};
+  var vis=Object.keys(cache).map(function(k){return cache[k]}).filter(function(p){return ON[p.k]&&b.contains([p.lat,p.lon])});
+  vis.forEach(function(p){p.d=dist(center,p)});
+  vis.sort(function(a,b){var o={ebike:0,enchufe:1,tienda:2};return (a.d-b.d)||(o[a.k]-o[b.k])});
+  vis.forEach(function(p){L.marker([p.lat,p.lon],{icon:pinIcon(p.k)}).bindPopup(function(){return popup(p)}).addTo(layer)});
+  $('lTitle').textContent=meLL?'Más cercanos a ti':'Puntos en esta zona';
+  $('lCount').textContent=vis.length?vis.length:'';
+  if(map.getZoom()<MIN_ZOOM){$('list').innerHTML='<div class="empty">Acerca el mapa a una zona (o busca un pueblo) para ver los puntos.</div>';return}
+  if(!vis.length){$('list').innerHTML='<div class="empty">No hay puntos registrados en esta zona. Prueba a alejar un poco el mapa o activa “Tiendas de bicis”.</div>';return}
+  $('list').innerHTML=vis.slice(0,40).map(function(p){var c=TYPES[p.k];
+    return '<div class="item" data-id="'+esc(p.id)+'"><span class="dot" style="background:'+c.color+'33">'+c.ico+'</span><div><b>'+esc(nameOf(p))+'</b><small>'+esc(c.name)+'</small></div><span class="km">'+p.d.toFixed(1).replace('.',',')+' km</span></div>'}).join('');
+}
+
+$('list').addEventListener('click',function(e){
+  var it=e.target.closest('.item'); if(!it)return;
+  var p=cache[it.dataset.id]; if(!p)return;
+  map.setView([p.lat,p.lon],Math.max(map.getZoom(),15));
+  setTimeout(function(){layer.eachLayer(function(m){var ll=m.getLatLng();if(ll.lat===p.lat&&ll.lng===p.lon)m.openPopup()})},350);
+});
+
+$('chips').addEventListener('click',function(e){
+  var c=e.target.closest('.chip'); if(!c)return;
+  ON[c.dataset.k]=!ON[c.dataset.k]; c.classList.toggle('on',ON[c.dataset.k]); render();
+});
+
+map.on('moveend',function(){clearTimeout(timer);timer=setTimeout(load,450)});
+
+function locate(fly){
+  if(!navigator.geolocation){status('Tu móvil no permite la ubicación');return}
+  status('Buscando tu ubicación…');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    meLL={lat:pos.coords.latitude,lon:pos.coords.longitude};
+    if(meMarker)meMarker.setLatLng([meLL.lat,meLL.lon]);
+    else meMarker=L.marker([meLL.lat,meLL.lon],{icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:1000}).addTo(map);
+    status('');
+    if(fly!==false)map.setView([meLL.lat,meLL.lon],13);else render();
+  },function(){status('No se pudo obtener tu ubicación. Busca un pueblo arriba.');setTimeout(function(){status('')},4000)},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+}
+$('bMe').addEventListener('click',function(){locate(true)});
+
+$('fSearch').addEventListener('submit',function(e){
+  e.preventDefault(); var q=$('q').value.trim(); if(!q)return; $('q').blur();
+  status('Buscando “'+q+'”…');
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q))
+    .then(function(r){return r.json()}).then(function(d){
+      if(!d||!d.length){status('No encuentro ese lugar en España');setTimeout(function(){status('')},3000);return}
+      status(''); var bb=d[0].boundingbox;
+      if(bb){var z=map.getBoundsZoom([[+bb[0],+bb[2]],[+bb[1],+bb[3]]]);map.setView([+d[0].lat,+d[0].lon],Math.min(Math.max(z,MIN_ZOOM+1),15))}
+      else map.setView([+d[0].lat,+d[0].lon],13);
+    }).catch(function(){status('Sin conexión. Inténtalo de nuevo.')});
+});
+
+render();
+locate(true);
+})();
+</script>
+</body>
+</html>
