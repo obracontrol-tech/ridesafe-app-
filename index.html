@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.23.4 — Tocar rutas: un solo toque (acerca y busca solo), busca rutas a pie, BTT y bici.
+/* v5.23.5 — Tocar rutas: lista desde Waymarked Trails (rápido, lo mismo que se ve); el mapa ya no se mueve al tocar.
+   v5.23.4 — Tocar rutas: un solo toque (acerca y busca solo), busca rutas a pie, BTT y bici.
    v5.23.3 — Tocar rutas: acerca el mapa si está lejos y busca en un radio pequeño (antes fallaba por consulta enorme).
    v5.23.2 — Tocar rutas marcadas también funciona mientras grabas o navegas (solo para verlas).
    v5.23.1 — Perfil muestra el número de versión correcto.
@@ -1159,7 +1160,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7547,42 +7548,72 @@ async function follow(c,name){
   clearSel();importRouteGpx(c.map(function(p){return [p[0],p[1],NaN,null]}),k,0,name);
   setTimeout(function(){toast('Pulsa ▲ Iniciar para seguirla con voz')},1600);
 }
+function m3857(lat,lng){var x=lng*20037508.34/180,y=Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180)*20037508.34/180;return [x,y]}
+function grpName(g){g=String(g||'').toUpperCase();return /INT/.test(g)?'Internacional':/NAT/.test(g)?'Nacional':/REG/.test(g)?'Regional':/LOC/.test(g)?'Local':''}
+function grpOrd(g){g=String(g||'').toUpperCase();return /INT/.test(g)?0:/NAT/.test(g)?1:/REG/.test(g)?2:/LOC/.test(g)?3:4}
+function fetchT(u,ms){var ac=new AbortController(),to=setTimeout(function(){ac.abort()},ms);return fetch(u,{signal:ac.signal}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).finally(function(){clearTimeout(to)})}
+/* Lista de rutas bajo el dedo: 1º Waymarked Trails (lo mismo que se ve), 2º OpenStreetMap */
+async function listAt(lat,lng,R){
+  var kind=(map&&map.__wmt)||trailsKind(),base='https://'+kind+'.waymarkedtrails.org/api/v1/';
+  try{
+    var c=m3857(lat,lng),d=R/Math.cos(lat*Math.PI/180);
+    var j=await fetchT(base+'list/by_area?limit=20&bbox='+[c[0]-d,c[1]-d,c[0]+d,c[1]+d].map(function(v){return v.toFixed(1)}).join(','),12000);
+    var L=(j.results||[]).filter(function(x){return x.type==='relation'||x.type==null}).map(function(x){return {id:x.id,ref:x.ref||'',name:x.name||(x.ref?'':'Ruta sin nombre'),net:grpName(x.group),ord:grpOrd(x.group),route:kind,src:'wmt'}});
+    return L;
+  }catch(e){console.warn('wmt list',e)}
+  var rk=kinds();
+  var q='[out:json][timeout:20];way(around:'+Math.min(R,60)+','+lat.toFixed(6)+','+lng.toFixed(6)+')->.w;rel(bw.w)["route"~"^('+rk+')$"]->.a;rel(br.a)["route"~"^('+rk+')$"]->.b;(.a;.b;);out tags;';
+  var o=await overpassQ(q);
+  return (o.elements||[]).filter(function(e){return e.type==='relation'}).map(function(e){var t=e.tags||{};
+    return {id:e.id,ref:t.ref||'',name:t.name||t['name:es']||t['name:ca']||(t.ref?'':'Ruta sin nombre'),net:NET[t.network]||'',ord:({iwn:0,icn:0,nwn:1,ncn:1,rwn:2,rcn:2,lwn:3,lcn:3})[t.network]??4,route:t.route,dist:t.distance,src:'osm'}});
+}
+/* Trazado: 1º OpenStreetMap por número de ruta (rápido), 2º Waymarked Trails */
+async function geomOf(id){
+  try{var g=await overpassQ('[out:json][timeout:60];rel('+id+');>>;way._;out geom;');
+    var w=(g.elements||[]).filter(function(e){return e.type==='way'&&e.geometry&&e.geometry.length>1}).map(function(e){return e.geometry.map(function(p){return [p.lat,p.lon]})});
+    if(w.length)return w}catch(e){console.warn('osm geom',e)}
+  var kind=(map&&map.__wmt)||trailsKind(),base='https://'+kind+'.waymarkedtrails.org/api/v1/';
+  var info=await fetchT(base+'details/relation/'+id,12000),bb=info.bbox;
+  var gj=await fetchT(base+'list/segments?relations='+id+'&bbox='+bb.join(','),20000);
+  var inv=function(x,y){return [Math.atan(Math.exp(y*Math.PI/20037508.34))*360/Math.PI-90,x*180/20037508.34]};
+  var out=[];(gj.features||[]).forEach(function(f){var g=f.geometry||{};var ls=g.type==='LineString'?[g.coordinates]:g.type==='MultiLineString'?g.coordinates:[];
+    ls.forEach(function(l){var c=l.map(function(p){return Math.abs(p[0])>180||Math.abs(p[1])>90?inv(p[0],p[1]):[p[1],p[0]]});if(c.length>1)out.push(c)})});
+  return out;
+}
 async function pick(lat,lng){
   if(busy)return;busy=true;
   try{
-    var z=map.getZoom();
-    if(z<14){map.jumpTo({center:[lng,lat],zoom:14.5});z=14.5}
-    var mpp=156543*Math.cos(lat*Math.PI/180)/Math.pow(2,z),R=Math.round(Math.min(200,Math.max(40,mpp*30)));
-    var rk=kinds();toast('🔎 Buscando rutas marcadas aquí…');
-    var q='[out:json][timeout:25];rel(around:'+R+','+lat.toFixed(6)+','+lng.toFixed(6)+')["route"~"^(hiking|foot|walking|bicycle|mtb)$"];out tags;';
-    var d;try{d=await overpassQ(q)}catch(e1){toast('⏳ El servidor va lento, lo intento otra vez…');d=await overpassQ(q)}
-    var L=(d.elements||[]).filter(function(e){return e.type==='relation'});
+    var z=map.getZoom(),mpp=156543*Math.cos(lat*Math.PI/180)/Math.pow(2,z),R=Math.round(Math.min(400,Math.max(30,mpp*25)));
+    toast('🔎 Buscando rutas marcadas aquí…');
+    var L;try{L=await listAt(lat,lng,R)}catch(e1){toast('⏳ El servidor va lento, lo intento otra vez…');L=await listAt(lat,lng,R)}
     if(!L.length){toast('No encuentro rutas marcadas justo ahí. Toca encima de la línea de color');return}
-    var RX=new RegExp('^('+rk+')$');L.sort(function(a,b){var o={iwn:0,icn:0,nwn:1,ncn:1,rwn:2,rcn:2,lwn:3,lcn:3},ta=a.tags||{},tb=b.tags||{};var ka=RX.test(ta.route)?0:1,kb=RX.test(tb.route)?0:1;return (ka-kb)||((o[ta.network]??4)-(o[tb.network]??4))});
-    var opts=L.slice(0,8).map(function(e){var t=e.tags||{},nm=t.name||t['name:es']||t['name:ca']||'Ruta sin nombre';
-      var sub=[NET[t.network],t.distance?(String(t.distance).replace('.',',')+' km'):'',t.operator||''].filter(Boolean).join(' · ');
-      var ic=t.route==='mtb'?'🚵 ':t.route==='bicycle'?'🚴 ':'🥾 ';return [ic+(t.ref?t.ref+' · ':'')+nm+(sub?' — '+sub:''),'',e.id]});
+    var seen={};L=L.filter(function(x){if(seen[x.id])return false;seen[x.id]=1;return true});
+    L.sort(function(a,b){return a.ord-b.ord});
+    var opts=L.slice(0,8).map(function(x){var ic=x.route==='mtb'?'🚵 ':(x.route==='bicycle'||x.route==='cycling')?'🚴 ':'🥾 ';
+      var sub=[x.net,x.dist?(String(x.dist).replace('.',',')+' km'):''].filter(Boolean).join(' · ');
+      return [ic+[x.ref,x.name].filter(Boolean).join(' · ')+(sub?' — '+sub:''),'',x.id]});
     var i=await askChoice('¿Qué ruta quieres ver?',opts);if(i<0)return;
-    var rel=L[i],t=rel.tags||{},title=((t.ref?t.ref+' · ':'')+(t.name||t['name:es']||t['name:ca']||'Ruta marcada')).slice(0,40);
+    var rel=L[i],title=[rel.ref,rel.name].filter(Boolean).join(' · ').slice(0,40);
     toast('⏳ Cargando '+title+'… (las rutas largas tardan un poco)');
-    var g=await overpassQ('[out:json][timeout:60];rel('+rel.id+');>>;way._;out geom;');
-    var ways=(g.elements||[]).filter(function(e){return e.type==='way'&&e.geometry&&e.geometry.length>1}).map(function(e){return e.geometry.map(function(p){return [p.lat,p.lon]})});
+    var ways=await geomOf(rel.id);
     if(!ways.length){toast('No se pudo cargar el trazado de esta ruta');return}
     clearSel();
     map.addSource('wsel',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:ways.map(function(w){return w.map(function(p){return [p[1],p[0]]})})}}});
     map.addLayer({id:'wsel-c',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':10}});
     map.addLayer({id:'wsel',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#C8DC3C','line-width':6}});
-    var all=[].concat.apply([],ways);fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
+    var all=[].concat.apply([],ways);
     var c=chain(ways,[lat,lng]),total=km(c);selRoute={c:c,title:title};
     var isLive=typeof live!=='undefined'&&live.on;
     if(isLive){try{live.follow=false}catch(x){}
+      fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.3),left:40,right:40});
       var jl=await askChoice('🟢 '+title+' · '+Math.round(total)+' km. Estás grabando: la ves en el mapa sin cambiar tu ruta.',[['👍 Vale, solo mirar','','x'],['🙈 Quitar la ruta resaltada','','off'],['📍 Volver a mi posición','','me']]);
       if(jl===1)clearSel();if(jl===1||jl===2){try{toggleFollow()}catch(x){}}else toast('Pulsa ➤ para volver a seguir tu posición');return}
+    fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
     var o2=[];
     if(total<=300)o2.push(['🧭 Seguir la ruta entera ('+Math.round(total)+' km)','','all']);
     if(total>40){o2.push(['➡️ Seguir 40 km desde aquí, en un sentido','','f']);o2.push(['⬅️ Seguir 40 km desde aquí, en el otro sentido','','b'])}
     o2.push(['🙈 Quitar la ruta resaltada','','off']);o2.push(['Solo mirar','','x']);
-    var j=await askChoice('🟢 '+title+' · '+Math.round(total)+' km'+(t.network&&NET[t.network]?' · '+NET[t.network]:''),o2);
+    var j=await askChoice('🟢 '+title+' · '+Math.round(total)+' km'+(rel.net?' · '+rel.net:''),o2);
     if(j<0)return;var a=o2[j][2];
     if(a==='all')follow(c,title);
     else if(a==='f'||a==='b')follow(cut(c,[lat,lng],a==='f'?1:-1,40),title+' (tramo)');
