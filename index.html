@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.22.0 — Rayita lima más visible; ☕ más rápida (consulta ligera, 2 servidores a la vez, zona menor, memoria); 🔋 Recarga e-bike en la taza ☕.
+/* v5.23.0 — Pro: toca una ruta marcada (GR, BTT…) para verla entera y seguirla.
+   v5.22.0 — Rayita lima más visible; ☕ más rápida (consulta ligera, 2 servidores a la vez, zona menor, memoria); 🔋 Recarga e-bike en la taza ☕.
    v5.21.0 — Navegación: desliza hacia abajo los datos para ver solo el mapa.
    v5.20.0 — Nuevo: Recarga e-bike (recarga.html).
    v5.19.5 — Los usuarios nuevos empiezan en RideSafe IA Simple. Los de siempre siguen en Pro.
@@ -5545,7 +5546,8 @@ function trailsToggle(on){
   store.set('trailsOn',!!on);trailsSet(map,!!on);vib(15);
   const c=$('lmTrails');if(c)c.checked=!!on;
   if(plan.active)renderPlan();
-  if(on){toast((isHike()?'🥾 Rutas de senderismo':isMtb()?'🚵 Rutas de BTT':'🚴 Rutas ciclistas')+' marcadas en el mapa');if(map&&map.getZoom()<10)map.easeTo({zoom:11,duration:500})}
+  if(!on&&window.wselClear)wselClear();
+  if(on){toast((isHike()?'🥾 Rutas de senderismo':isMtb()?'🚵 Rutas de BTT':'🚴 Rutas ciclistas')+' marcadas en el mapa · toca una línea para verla');if(map&&map.getZoom()<10)map.easeTo({zoom:11,duration:500})}
 }
 
 /* ---- Perfil: tocarlo enseña ese punto en el mapa ---- */
@@ -7512,6 +7514,83 @@ function recargaOpen(){
   document.body.appendChild(o);
 }
 window.addEventListener('message',function(e){if(e.data==='rcgClose'){var o=document.getElementById('rcgOv');if(o)o.remove()}});
+</script>
+<script>
+/* v5.23 — Tocar una ruta marcada (GR, BTT, ciclista…) para verla entera y seguirla. Solo Pro. */
+(function(){
+var NET={iwn:'Internacional',nwn:'Nacional',rwn:'Regional',lwn:'Local',icn:'Internacional',ncn:'Nacional',rcn:'Regional',lcn:'Local'};
+var busy=false,selRoute=null;
+function kinds(){var k=trailsKind();return k==='hiking'?'hiking|foot':k==='mtb'?'mtb':'bicycle'}
+function clearSel(){try{if(map.getLayer('wsel'))map.removeLayer('wsel');if(map.getLayer('wsel-c'))map.removeLayer('wsel-c');if(map.getSource('wsel'))map.removeSource('wsel')}catch(e){}selRoute=null}
+window.wselClear=clearSel;
+function chain(ways,tap){
+  var K=function(p){return p[0].toFixed(6)+','+p[1].toFixed(6)};
+  var used=new Array(ways.length).fill(false),best=0,bd=1e9;
+  ways.forEach(function(w,i){w.forEach(function(p){var d=hav(p,tap);if(d<bd){bd=d;best=i}})});
+  var line=ways[best].slice();used[best]=true;
+  function ext(atEnd){var go=true;while(go){go=false;var end=atEnd?line[line.length-1]:line[0],ke=K(end);
+    for(var i=0;i<ways.length;i++){if(used[i])continue;var w=ways[i];
+      if(K(w[0])===ke){used[i]=true;var a=w.slice(1);line=atEnd?line.concat(a):a.reverse().concat(line);go=true;break}
+      if(K(w[w.length-1])===ke){used[i]=true;var b=w.slice(0,-1).reverse();line=atEnd?line.concat(b):b.reverse().concat(line);go=true;break}}}}
+  ext(true);ext(false);return line;
+}
+function km(c){var s=0;for(var i=1;i<c.length;i++)s+=hav(c[i-1],c[i]);return s}
+function cut(c,tap,dir,maxKm){var bi=0,bd=1e9;c.forEach(function(p,i){var d=hav(p,tap);if(d<bd){bd=d;bi=i}});
+  var out=[c[bi]],s=0,i=bi;while(true){i+=dir;if(i<0||i>=c.length)break;s+=hav(c[i-dir],c[i]);out.push(c[i]);if(s>=maxKm)break}return out}
+async function follow(c,name){
+  var k=km(c);if(c.length<2){toast('No se pudo preparar la ruta');return}
+  clearSel();importRouteGpx(c.map(function(p){return [p[0],p[1],NaN,null]}),k,0,name);
+  setTimeout(function(){toast('Pulsa ▲ Iniciar para seguirla con voz')},1600);
+}
+async function pick(lat,lng){
+  if(busy)return;busy=true;
+  try{
+    var z=map.getZoom(),mpp=156543*Math.cos(lat*Math.PI/180)/Math.pow(2,z),R=Math.round(Math.min(400,Math.max(25,mpp*22)));
+    var rk=kinds();toast('🔎 Buscando rutas en este punto…');
+    var q='[out:json][timeout:20];way(around:'+R+','+lat.toFixed(6)+','+lng.toFixed(6)+')->.w;rel(bw.w)["route"~"^('+rk+')$"]->.a;rel(br.a)["route"~"^('+rk+')$"]->.b;(.a;.b;);out tags;';
+    var d=await overpassQ(q),L=(d.elements||[]).filter(function(e){return e.type==='relation'});
+    if(!L.length){toast('No hay rutas marcadas justo ahí. Toca encima de la línea de color');return}
+    L.sort(function(a,b){var o={iwn:0,icn:0,nwn:1,ncn:1,rwn:2,rcn:2,lwn:3,lcn:3};return (o[(a.tags||{}).network]??4)-(o[(b.tags||{}).network]??4)});
+    var opts=L.slice(0,8).map(function(e){var t=e.tags||{},nm=t.name||t['name:es']||t['name:ca']||'Ruta sin nombre';
+      var sub=[NET[t.network],t.distance?(String(t.distance).replace('.',',')+' km'):'',t.operator||''].filter(Boolean).join(' · ');
+      return [(t.ref?t.ref+' · ':'')+nm+(sub?' — '+sub:''),'',e.id]});
+    var i=await askChoice('¿Qué ruta quieres ver?',opts);if(i<0)return;
+    var rel=L[i],t=rel.tags||{},title=((t.ref?t.ref+' · ':'')+(t.name||t['name:es']||t['name:ca']||'Ruta marcada')).slice(0,40);
+    toast('⏳ Cargando '+title+'… (las rutas largas tardan un poco)');
+    var g=await overpassQ('[out:json][timeout:60];rel('+rel.id+');>>;way._;out geom;');
+    var ways=(g.elements||[]).filter(function(e){return e.type==='way'&&e.geometry&&e.geometry.length>1}).map(function(e){return e.geometry.map(function(p){return [p.lat,p.lon]})});
+    if(!ways.length){toast('No se pudo cargar el trazado de esta ruta');return}
+    clearSel();
+    map.addSource('wsel',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:ways.map(function(w){return w.map(function(p){return [p[1],p[0]]})})}}});
+    map.addLayer({id:'wsel-c',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':10}});
+    map.addLayer({id:'wsel',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#C8DC3C','line-width':6}});
+    var all=[].concat.apply([],ways);fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
+    var c=chain(ways,[lat,lng]),total=km(c);selRoute={c:c,title:title};
+    var o2=[];
+    if(total<=300)o2.push(['🧭 Seguir la ruta entera ('+Math.round(total)+' km)','','all']);
+    if(total>40){o2.push(['➡️ Seguir 40 km desde aquí, en un sentido','','f']);o2.push(['⬅️ Seguir 40 km desde aquí, en el otro sentido','','b'])}
+    o2.push(['🙈 Quitar la ruta resaltada','','off']);o2.push(['Solo mirar','','x']);
+    var j=await askChoice('🟢 '+title+' · '+Math.round(total)+' km'+(t.network&&NET[t.network]?' · '+NET[t.network]:''),o2);
+    if(j<0)return;var a=o2[j][2];
+    if(a==='all')follow(c,title);
+    else if(a==='f'||a==='b')follow(cut(c,[lat,lng],a==='f'?1:-1,40),title+' (tramo)');
+    else if(a==='off')clearSel();
+  }catch(e){console.warn('wsel',e);toast('No se pudo buscar ahora. Inténtalo otra vez en unos segundos')}
+  finally{busy=false}
+}
+var hooked=null;
+setInterval(function(){
+  if(typeof map==='undefined'||!map||!map.on||hooked===map)return;hooked=map;
+  map.on('click',function(e){
+    try{
+      if(!trailsOn()){if(selRoute)clearSel();return}
+      if(plan.active&&!plan.view)return;
+      if(typeof live!=='undefined'&&live.on)return;
+      pick(e.lngLat.lat,e.lngLat.lng);
+    }catch(x){}
+  });
+},800);
+})();
 </script>
 </body>
 </html>
