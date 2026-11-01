@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
-/* RideSafe IA v5.20.0 — Puntos de recarga para bici eléctrica (toda España)
+/* RideSafe IA v5.22.0 — Puntos de recarga para bici eléctrica (toda España)
    Datos: OpenStreetMap (Overpass API). Búsqueda de lugares: Nominatim (solo España). */
 try{if(JSON.parse(localStorage.getItem('velogo_light')))document.documentElement.dataset.theme='light'}catch(e){}
 </script>
@@ -71,7 +71,7 @@ h1 small{display:block;font-size:12px;font-weight:500;color:var(--txt2)}
 </head>
 <body>
 <header>
-  <a class="back" href="index.html" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+  <a class="back" id="bBack" href="index.html" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
   <h1>🔋 Recarga e-bike<small>Puntos para cargar tu bici eléctrica en toda España</small></h1>
 </header>
 
@@ -243,8 +243,15 @@ $('fSearch').addEventListener('submit',function(e){
     }).catch(function(){status('Sin conexión. Inténtalo de nuevo.')});
 });
 
+// v5.22: abrir en la zona del mapa (desde la taza ☕) y volver sin perder la grabación
+var P=new URLSearchParams(location.search), pLat=parseFloat(P.get('lat')), pLng=parseFloat(P.get('lng'));
+var EMBED=P.get('embed')==='1'&&window.parent!==window;
+$('bBack').addEventListener('click',function(e){
+  if(EMBED){e.preventDefault();window.parent.postMessage('rcgClose','*');return}
+  if(document.referrer&&document.referrer.indexOf(location.origin)===0&&history.length>1){e.preventDefault();history.back()}
+});
 render();
-locate(true);
+if(!isNaN(pLat)&&!isNaN(pLng)){map.setView([pLat,pLng],13);locate(false)}else locate(true);
 })();
 </script>
 </body>
