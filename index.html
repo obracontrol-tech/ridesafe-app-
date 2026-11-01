@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.23.2 — Tocar rutas marcadas también funciona mientras grabas o navegas (solo para verlas).
+/* v5.23.3 — Tocar rutas: acerca el mapa si está lejos y busca en un radio pequeño (antes fallaba por consulta enorme).
+   v5.23.2 — Tocar rutas marcadas también funciona mientras grabas o navegas (solo para verlas).
    v5.23.1 — Perfil muestra el número de versión correcto.
    v5.23.0 — Pro: toca una ruta marcada (GR, BTT…) para verla entera y seguirla.
    v5.22.0 — Rayita lima más visible; ☕ más rápida (consulta ligera, 2 servidores a la vez, zona menor, memoria); 🔋 Recarga e-bike en la taza ☕.
@@ -1157,7 +1158,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5857,6 +5858,7 @@ async function overpassQ(q){
 /* v5.22: consulta ligera para la taza ☕ (solo fuentes, bares/cafés, farmacias y talleres) */
 const OSM_NEAR=bb=>`[out:json][timeout:15];(nwr["amenity"~"^(drinking_water|pharmacy|cafe|bar|bicycle_repair_station)$"](${bb});nwr["man_made"="water_tap"](${bb});nwr["shop"="bicycle"](${bb}););out tags center 400;`;
 const osmCache={};
+if(!Promise.any)Promise.any=function(ps){return new Promise(function(res,rej){var n=ps.length,e=[];ps.forEach(function(p,i){Promise.resolve(p).then(res,function(x){e[i]=x;if(--n===0)rej(e)})})})};
 const OSM_Q=bb=>`[out:json][timeout:25];(nwr["amenity"~"^(drinking_water|pharmacy|cafe|bar|restaurant|bicycle_repair_station|fuel)$"](${bb});nwr["man_made"="water_tap"](${bb});nwr["shop"~"^(bicycle|supermarket|convenience|bakery|general)$"](${bb}););out center 1500;`;
 /* v4.4.4 — «☕» del mapa: ver fuentes, bares y farmacias de la zona que estás mirando, o añadir un punto ciclista */
 let osmMk=[],osmOn=false,osmList=[];
@@ -7522,7 +7524,7 @@ window.addEventListener('message',function(e){if(e.data==='rcgClose'){var o=docu
 (function(){
 var NET={iwn:'Internacional',nwn:'Nacional',rwn:'Regional',lwn:'Local',icn:'Internacional',ncn:'Nacional',rcn:'Regional',lcn:'Local'};
 var busy=false,selRoute=null;
-function kinds(){var k=trailsKind();return k==='hiking'?'hiking|foot':k==='mtb'?'mtb':'bicycle'}
+function kinds(){var k=(map&&map.__wmt)||trailsKind();return k==='hiking'?'hiking|foot':k==='mtb'?'mtb':'bicycle'}
 function clearSel(){try{if(map.getLayer('wsel'))map.removeLayer('wsel');if(map.getLayer('wsel-c'))map.removeLayer('wsel-c');if(map.getSource('wsel'))map.removeSource('wsel')}catch(e){}selRoute=null}
 window.wselClear=clearSel;
 function chain(ways,tap){
@@ -7547,10 +7549,13 @@ async function follow(c,name){
 async function pick(lat,lng){
   if(busy)return;busy=true;
   try{
-    var z=map.getZoom(),mpp=156543*Math.cos(lat*Math.PI/180)/Math.pow(2,z),R=Math.round(Math.min(400,Math.max(25,mpp*22)));
+    var z=map.getZoom();
+    if(z<13.5){map.easeTo({center:[lng,lat],zoom:14.5,duration:700});toast('🔍 He acercado el mapa. Ahora toca encima de la línea de color');return}
+    var mpp=156543*Math.cos(lat*Math.PI/180)/Math.pow(2,z),R=Math.round(Math.min(70,Math.max(20,mpp*14)));
     var rk=kinds();toast('🔎 Buscando rutas en este punto…');
-    var q='[out:json][timeout:20];way(around:'+R+','+lat.toFixed(6)+','+lng.toFixed(6)+')->.w;rel(bw.w)["route"~"^('+rk+')$"]->.a;rel(br.a)["route"~"^('+rk+')$"]->.b;(.a;.b;);out tags;';
-    var d=await overpassQ(q),L=(d.elements||[]).filter(function(e){return e.type==='relation'});
+    var q='[out:json][timeout:25];way(around:'+R+','+lat.toFixed(6)+','+lng.toFixed(6)+')->.w;rel(bw.w)["route"~"^('+rk+')$"]->.a;rel(br.a)["route"~"^('+rk+')$"]->.b;(.a;.b;);out tags;';
+    var d;try{d=await overpassQ(q)}catch(e1){toast('⏳ El servidor va lento, lo intento otra vez…');d=await overpassQ(q)}
+    var L=(d.elements||[]).filter(function(e){return e.type==='relation'});
     if(!L.length){toast('No hay rutas marcadas justo ahí. Toca encima de la línea de color');return}
     L.sort(function(a,b){var o={iwn:0,icn:0,nwn:1,ncn:1,rwn:2,rcn:2,lwn:3,lcn:3};return (o[(a.tags||{}).network]??4)-(o[(b.tags||{}).network]??4)});
     var opts=L.slice(0,8).map(function(e){var t=e.tags||{},nm=t.name||t['name:es']||t['name:ca']||'Ruta sin nombre';
