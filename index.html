@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.23.1 — Perfil muestra el número de versión correcto.
+/* v5.23.2 — Tocar rutas marcadas también funciona mientras grabas o navegas (solo para verlas).
+   v5.23.1 — Perfil muestra el número de versión correcto.
    v5.23.0 — Pro: toca una ruta marcada (GR, BTT…) para verla entera y seguirla.
    v5.22.0 — Rayita lima más visible; ☕ más rápida (consulta ligera, 2 servidores a la vez, zona menor, memoria); 🔋 Recarga e-bike en la taza ☕.
    v5.21.0 — Navegación: desliza hacia abajo los datos para ver solo el mapa.
@@ -1156,7 +1157,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.23.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7567,6 +7568,10 @@ async function pick(lat,lng){
     map.addLayer({id:'wsel',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#C8DC3C','line-width':6}});
     var all=[].concat.apply([],ways);fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
     var c=chain(ways,[lat,lng]),total=km(c);selRoute={c:c,title:title};
+    var isLive=typeof live!=='undefined'&&live.on;
+    if(isLive){try{live.follow=false}catch(x){}
+      var jl=await askChoice('🟢 '+title+' · '+Math.round(total)+' km. Estás grabando: la ves en el mapa sin cambiar tu ruta.',[['👍 Vale, solo mirar','','x'],['🙈 Quitar la ruta resaltada','','off'],['📍 Volver a mi posición','','me']]);
+      if(jl===1)clearSel();if(jl===1||jl===2){try{toggleFollow()}catch(x){}}else toast('Pulsa ➤ para volver a seguir tu posición');return}
     var o2=[];
     if(total<=300)o2.push(['🧭 Seguir la ruta entera ('+Math.round(total)+' km)','','all']);
     if(total>40){o2.push(['➡️ Seguir 40 km desde aquí, en un sentido','','f']);o2.push(['⬅️ Seguir 40 km desde aquí, en el otro sentido','','b'])}
@@ -7586,7 +7591,7 @@ setInterval(function(){
     try{
       if(!trailsOn()){if(selRoute)clearSel();return}
       if(plan.active&&!plan.view)return;
-      if(typeof live!=='undefined'&&live.on)return;
+      if(e.originalEvent&&e.originalEvent.target&&e.originalEvent.target.closest&&e.originalEvent.target.closest('.maplibregl-marker'))return;
       pick(e.lngLat.lat,e.lngLat.lng);
     }catch(x){}
   });
