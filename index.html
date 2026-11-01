@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <script>
-/* v5.25.0 — Abrir GPX/TCX con RideSafe: «Compartir» en Android y «Abrir con» en ordenador.
+/* v5.27.0 — Intro de bienvenida (globo + logo, 7 s) al abrir la app: una vez al día, con «Saltar».
+   v5.26.0 — Aviso «NOVEDAD» arriba en Inicio (rutas marcadas + recarga e-bike), se cierra con ✕.
+   v5.25.0 — Abrir GPX/TCX con RideSafe: «Compartir» en Android y «Abrir con» en ordenador.
    v5.24.0 — Capas: elegir qué rutas marcadas ver (Según el modo / BTT / Ciclistas / Senderos).
    v5.23.5 — Tocar rutas: lista desde Waymarked Trails (rápido, lo mismo que se ve); el mapa ya no se mueve al tocar.
    v5.23.4 — Tocar rutas: un solo toque (acerca y busca solo), busca rutas a pie, BTT y bici.
@@ -935,6 +937,27 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 </style>
 </head>
 <body>
+<!-- v5.27: intro de bienvenida (globo + logo). Una vez al día, con «Saltar». No sale si la app se abre desde un enlace. -->
+<div id="splash" style="position:fixed;inset:0;z-index:100000;background:#0E1A2B;display:none;transition:opacity .45s ease">
+  <video id="splashV" src="intro.mp4" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover"></video>
+  <button id="splashSkip" type="button" style="position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));min-height:44px;padding:0 18px;border-radius:99px;border:1px solid rgba(255,255,255,.35);background:rgba(14,26,43,.75);color:#fff;font:700 15px 'Plus Jakarta Sans',system-ui,sans-serif">Saltar ›</button>
+</div>
+<script>
+(function(){
+  var s=document.getElementById('splash'),v=document.getElementById('splashV'),done=false;
+  function end(){if(done)return;done=true;try{v.pause()}catch(e){}s.style.opacity='0';setTimeout(function(){s.remove()},460)}
+  var today=new Date().toISOString().slice(0,10),show=true;
+  try{if(location.hash||location.search)show=false;else if(localStorage.getItem('velogo_splash_day')===today)show=false}catch(e){}
+  if(!show){s.remove();return}
+  try{localStorage.setItem('velogo_splash_day',today)}catch(e){}
+  s.style.display='block';
+  document.getElementById('splashSkip').onclick=end;s.addEventListener('click',function(e){if(e.target===v)end()});
+  v.addEventListener('ended',end);v.addEventListener('error',end);
+  var p=v.play();if(p&&p.catch)p.catch(end);
+  setTimeout(function(){if(v.currentTime<0.1)end()},2500);   // si no arranca (sin conexión), no esperar
+  setTimeout(end,9000);                                        // tope de seguridad
+})();
+</script>
 <div id="app">
 
 <!-- ============ RUTAS ============ -->
@@ -1031,6 +1054,17 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="modBox"></div>
   <div id="annBox"></div>
   <div id="updBox"></div>
+  <!-- v5.26: aviso de NOVEDAD en Inicio (se puede cerrar) -->
+  <div id="novBox" style="display:none;margin:0 0 12px;position:relative;border-radius:var(--r);border:1.5px solid var(--lime);background:linear-gradient(135deg,rgba(200,220,60,.18),rgba(200,220,60,.04));padding:14px 44px 14px 14px">
+    <button onclick="novClose()" aria-label="Cerrar aviso" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--txt);font-size:16px;cursor:pointer">✕</button>
+    <span style="display:inline-block;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:11px;letter-spacing:.06em;padding:3px 10px;border-radius:99px">★ NOVEDAD</span>
+    <b style="display:block;margin-top:8px;font-size:16px;color:var(--txt)">Miles de rutas marcadas en el mapa</b>
+    <small style="display:block;color:var(--txt2);margin-top:3px;line-height:1.45">Senderos, GR, BTT y carretera en toda España. Toca una ruta y síguela con voz. Y nuevo 🔋 puntos de recarga e-bike.</small>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-lime" style="min-height:42px;padding:0 16px;font-size:14px;width:auto;flex:1" onclick="novTry()">🗺️ Ver rutas</button>
+      <a class="btn btn-line" href="recarga.html" style="min-height:42px;padding:0 16px;font-size:14px;text-decoration:none;width:auto;flex:1">🔋 Recargas</a>
+    </div>
+  </div>
   <div id="installBox"></div>
   <div class="hero">
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><circle cx="45" cy="100" r="32"/><circle cx="155" cy="100" r="32"/><path d="M45 100 80 45h55l20 55M80 45l30 55h45M110 100 135 45M70 32h24M128 32h18l-11 13"/></g></svg>
@@ -1165,7 +1199,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.25.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.27.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7671,6 +7705,12 @@ setInterval(function(){
     });
   }
 })();
+</script>
+<script>
+/* v5.26: aviso NOVEDAD en Inicio */
+(function(){var K='velogo_nov_rutas_526';try{if(!localStorage.getItem(K)){var b=document.getElementById('novBox');if(b)b.style.display='block'}}catch(e){}})();
+function novClose(){try{localStorage.setItem('velogo_nov_rutas_526','1')}catch(e){}var b=document.getElementById('novBox');if(b)b.style.display='none'}
+function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try{if(!trailsOn())trailsToggle(true);else toast('Toca una línea de color para ver la ruta')}catch(e){}},600)}
 </script>
 </body>
 </html>

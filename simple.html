@@ -941,6 +941,27 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 </style>
 </head>
 <body>
+<!-- v5.27: intro de bienvenida (globo + logo). Una vez al día, con «Saltar». No sale si la app se abre desde un enlace. -->
+<div id="splash" style="position:fixed;inset:0;z-index:100000;background:#0E1A2B;display:none;transition:opacity .45s ease">
+  <video id="splashV" src="intro.mp4" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover"></video>
+  <button id="splashSkip" type="button" style="position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));min-height:44px;padding:0 18px;border-radius:99px;border:1px solid rgba(255,255,255,.35);background:rgba(14,26,43,.75);color:#fff;font:700 15px 'Plus Jakarta Sans',system-ui,sans-serif">Saltar ›</button>
+</div>
+<script>
+(function(){
+  var s=document.getElementById('splash'),v=document.getElementById('splashV'),done=false;
+  function end(){if(done)return;done=true;try{v.pause()}catch(e){}s.style.opacity='0';setTimeout(function(){s.remove()},460)}
+  var today=new Date().toISOString().slice(0,10),show=true;
+  try{if(location.hash||location.search)show=false;else if(localStorage.getItem('velogo_splash_day')===today)show=false}catch(e){}
+  if(!show){s.remove();return}
+  try{localStorage.setItem('velogo_splash_day',today)}catch(e){}
+  s.style.display='block';
+  document.getElementById('splashSkip').onclick=end;s.addEventListener('click',function(e){if(e.target===v)end()});
+  v.addEventListener('ended',end);v.addEventListener('error',end);
+  var p=v.play();if(p&&p.catch)p.catch(end);
+  setTimeout(function(){if(v.currentTime<0.1)end()},2500);   // si no arranca (sin conexión), no esperar
+  setTimeout(end,9000);                                        // tope de seguridad
+})();
+</script>
 <div id="app">
 
 <!-- ============ RUTAS ============ -->
@@ -1178,7 +1199,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.4.0 (base 5.23.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.5.0 (base 5.27.0)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
