@@ -158,6 +158,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
     <button class="nav" data-v="shops" onclick="go('shops')">🏪 Tiendas <span class="ct" id="nShops"></span></button>
     <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
     <button class="nav" data-v="mnt" onclick="go('mnt')">🛠️ Copias y restaurar</button>
+    <button class="nav" data-v="lic" onclick="go('lic')">🔑 Licencias</button>
     <div class="me"><span class="pill lime" style="margin-bottom:8px">👑 Máximo desarrollador</span><br>Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
   </nav>
   <main>
@@ -2533,9 +2534,49 @@ function counts(){
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento']}[view];
+  const T={shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic})[view]();
+}
+
+/* ---------- 🔑 Licencias de clientes (apps de marca blanca) ----------
+   Cada cliente tiene su propio proyecto de Firebase. Se entra con tu Google (pedrosaborrego@gmail.com):
+   sus reglas solo dejan escribir config/licencia al propietario. */
+const LIC_APPS={va:{name:'VillorvinAdventure',url:'https://obracontrol-tech.github.io/villorvinadventure/',
+  cfg:{apiKey:"AIzaSyBiPm00hsVVaLJ8VH7DG2JmdJydosDhCQM",authDomain:"villorvinadventure-38c74.firebaseapp.com",projectId:"villorvinadventure-38c74",storageBucket:"villorvinadventure-38c74.firebasestorage.app",messagingSenderId:"788088549275",appId:"1:788088549275:web:ba212f3dcb45e16512bb3e"}}};
+const LIC_DEF={aviso:'Hay una factura pendiente de pago. Para evitar la suspensión del servicio, contacta con JM Prestige AI Solutions.',suspendido:'El servicio está suspendido temporalmente por un pago pendiente. Contacta con JM Prestige AI Solutions para reactivarlo.'};
+const LIC={};   // por app: {fb, auth, db, lic, user, sub}
+function licApp(k){
+  if(LIC[k])return LIC[k];
+  const fb=firebase.initializeApp(LIC_APPS[k].cfg,'lic_'+k);const L=LIC[k]={fb,auth:fb.auth(),db:fb.firestore(),lic:null,user:null,sub:null,err:''};
+  L.auth.onAuthStateChanged(u=>{L.user=u&&!u.isAnonymous?u:null;if(L.sub){try{L.sub()}catch(e){}L.sub=null}
+    if(L.user)L.sub=L.db.collection('config').doc('licencia').onSnapshot(s=>{L.lic=s.exists?{estado:'activo',msg:'',...s.data()}:{estado:'activo',msg:''};L.err='';if(view==='lic')vLic()},e=>{L.err=e.code||e.message;if(view==='lic')vLic()});
+    if(view==='lic')vLic()});
+  return L;
+}
+function licIn(k){const L=licApp(k);const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account',login_hint:'pedrosaborrego@gmail.com'});
+  L.auth.signInWithPopup(p).catch(e=>{L.err=e.code||e.message;vLic();if(/unauthorized-domain/.test(L.err))toast('Falta autorizar app.ridesafeia.es en Firebase de '+LIC_APPS[k].name)})}
+function vLic(){
+  const card=k=>{const A=LIC_APPS[k],L=licApp(k);const st=L.lic&&L.lic.estado||'activo';
+    const head=`<h3>${esc(A.name)}</h3><div class="d"><a href="${A.url}" target="_blank" rel="noopener">${A.url.replace('https://','')}</a></div>`;
+    const errTxt=L.err?(/unauthorized-domain/.test(L.err)?'⚠️ Firebase de '+esc(A.name)+' todavía no permite entrar desde este panel: en su Firebase → Authentication → Settings → Authorized domains, añade <b>app.ridesafeia.es</b>.':/permission/.test(L.err)?'🔒 Esta cuenta no puede cambiar la licencia. Entra con pedrosaborrego@gmail.com.':'⚠️ '+esc(L.err)):'';
+    if(!L.user)return `<div class="box">${head}<div class="d" style="margin-top:10px">Para controlar esta app, entra una vez con tu cuenta de Google en su Firebase.</div>${errTxt?`<div class="d" style="margin-top:8px;color:var(--warn)">${errTxt}</div>`:''}<button class="btn lime" style="margin-top:12px" onclick="licIn('${k}')">🔐 Entrar con Google</button></div>`;
+    const b=(v,t,c)=>`<button class="btn ${st===v?'lime':''}" style="flex:1;min-width:140px" onclick="licSet('${k}','${v}')">${t}${st===v?' ✓':''}</button>`;
+    return `<div class="box">${head}<div class="d" style="margin-top:8px">Estado: <b>${st==='activo'?'🟢 Activo':st==='aviso'?'🟡 Aviso de pago':'🔴 Suspendido'}</b>${L.lic&&L.lic.t?' · cambiado '+fDate(L.lic.t):''} · sesión ${esc(L.user.email||'')}</div>
+      ${errTxt?`<div class="d" style="margin-top:8px;color:var(--warn)">${errTxt}</div>`:''}
+      <label class="d" for="licMsg_${k}" style="display:block;margin-top:12px">Mensaje para el cliente (vacío = el de serie)</label>
+      <textarea class="inp" id="licMsg_${k}" rows="3" maxlength="300" style="width:100%;resize:vertical" placeholder="${esc(st==='suspendido'?LIC_DEF.suspendido:LIC_DEF.aviso)}">${esc(L.lic&&L.lic.msg||'')}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">${b('activo','🟢 Activo')}${b('aviso','🟡 Aviso de pago')}${b('suspendido','🔴 Suspender')}</div>
+      <div class="d" style="margin-top:12px;line-height:1.55"><b>🟡 Aviso de pago:</b> mensaje arriba en la consola del cliente; los ciclistas no ven nada.<br><b>🔴 Suspendido:</b> se bloquea la consola del cliente y los ciclistas ven «Servicio en pausa» con Asistencia, 112 y enviar ubicación (nunca en plena salida).<br><b>🟢 Activo:</b> vuelve todo al momento, sin perder datos.</div>
+      <button class="btn sm" style="margin-top:10px" onclick="LIC['${k}'].auth.signOut()">Cerrar sesión de ${esc(A.name)}</button></div>`};
+  $('view').innerHTML=`<div class="grid2">${Object.keys(LIC_APPS).map(card).join('')}</div>`;
+}
+async function licSet(k,v){
+  const L=LIC[k];if(!L||!L.user)return;const A=LIC_APPS[k];
+  if(v==='suspendido'&&!await confirmDlg('🔴 Suspender '+esc(A.name),'Se bloquea la consola del cliente y los ciclistas verán «Servicio en pausa» (la seguridad sigue funcionando). ¿Seguir?','Suspender'))return;
+  const m=(($('licMsg_'+k)||{}).value||'').trim().slice(0,300);
+  try{await L.db.collection('config').doc('licencia').set({estado:v,msg:v==='activo'?'':m,t:Date.now()});toast(v==='activo'?'🟢 '+A.name+': activa':v==='aviso'?'🟡 '+A.name+': aviso de pago publicado':'🔴 '+A.name+': suspendida')}
+  catch(e){L.err=e.code||e.message;vLic()}
 }
 
 /* ---------- Gráfica de barras (una serie) con tooltip ---------- */
