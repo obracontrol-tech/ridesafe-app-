@@ -1,3 +1,13 @@
+## Versión 5.13.5 — Recalcular la ruta sola, como Google Maps
+- Nuevo ajuste en Perfil: «🧭 Si me salgo de la ruta».
+  · 🤖 Automático (de serie): en rutas por carretera hechas con el planificador, al salirte recalcula sola un camino nuevo hasta las paradas que faltan y el destino («Recalculando… Ruta recalculada»). En tracks de montaña, GPX o rutas del club sigue guiándote de vuelta por donde has venido (lo más seguro).
+  · 🔄 Recalcular siempre, como Google Maps.
+  · ↩️ Volver siempre por donde he venido (como hasta ahora).
+- Si al volver te sigues alejando, vuelve a recalcular (como mucho cada 30 s). Sin cobertura, te guía de vuelta por la línea naranja.
+- El botón «🔄 Recalcular desde aquí» sigue igual.
+- Arreglo: las encuestas del club no se podían crear (el campo de la pregunta se confundía con el buscador).
+- Subir a GitHub: index.html, simple.html y sw.js (no tocar CNAME). Las reglas de Firebase no cambian.
+
 ## Versión 5.13.4 — Música: botón para reanudar y voz que no para Spotify
 - En la salida, «⋯» → 🎵 abre Spotify directamente para volver a darle a ▶️.
 - Nueva opción en «🎵 Música en ruta»: «🗣️ Voz que no para la música». Usa la voz del móvil para el tiempo, avisos y giros; la voz de Google hacía que Android parase Spotify. Se activa sola al abrir Spotify desde RideSafe.
