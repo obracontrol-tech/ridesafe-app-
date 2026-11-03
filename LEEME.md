@@ -1,3 +1,7 @@
+## Versión 5.27.4 (Simple 1.5.4) — Planificar en GraphHopper
+- Nuevo botón «🧭 Planificar en GraphHopper» (menú ➕ y en «Mis rutas»): abre graphhopper.com/maps con el perfil MTB en tu zona.
+- El ciclista dibuja la ruta por senderos, pulsa «GPX» y la sube a la app con «Subir GPX o TCX».
+
 ## Versión 5.27.3 (Simple 1.5.3) — La voz ya no para Spotify con los avisos largos
 - Android deja sonar por encima de la música los audios de menos de 5 segundos; si un aviso dura más, Spotify se pausa y no vuelve solo. Por eso los avisos cortos iban bien y el resumen (tiempo, km, viento…) cortaba la música.
 - Ahora cada aviso se dice en trozos cortos: los números cuentan como palabras largas, la voz va un poco más ágil (1,1) y se mide cada trozo: si el audio de Google pasa de 4,3 s, se parte en dos y se vuelve a pedir.
