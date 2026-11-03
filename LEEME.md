@@ -1,4 +1,4 @@
-## Versión 5.13.5 — Recalcular la ruta sola, como Google Maps
+## Versión 5.27.2 (Simple 1.5.2) — Recalcular la ruta sola, como Google Maps
 - Nuevo ajuste en Perfil: «🧭 Si me salgo de la ruta».
   · 🤖 Automático (de serie): en rutas por carretera hechas con el planificador, al salirte recalcula sola un camino nuevo hasta las paradas que faltan y el destino («Recalculando… Ruta recalculada»). En tracks de montaña, GPX o rutas del club sigue guiándote de vuelta por donde has venido (lo más seguro).
   · 🔄 Recalcular siempre, como Google Maps.
