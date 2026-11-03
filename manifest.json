@@ -64,5 +64,20 @@
         ]
       }
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "QR RideSafe IA",
+      "short_name": "QR RideSafe",
+      "description": "Enseña el código QR para que escaneen la app",
+      "url": "./qr.html",
+      "icons": [
+        {
+          "src": "icons/qr-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
