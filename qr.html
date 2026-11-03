@@ -28,6 +28,8 @@ h1{font-size:17px;font-weight:700;color:#3B4A5E;text-align:center;margin:4px 0 1
 .b1{background:#C8DC3C;color:#0E1A2B}.b2{background:#0E1A2B;color:#fff}
 .tel{margin-top:16px;font-size:14.5px;color:#3B4A5E;text-align:center}
 .tel a{color:#0E1A2B;font-weight:800}
+.inst{width:100%;max-width:420px;margin-top:12px;min-height:54px;border-radius:27px;border:3px dashed #0E1A2B;background:#fff;color:#0E1A2B;font:800 16px inherit;font-family:inherit;display:none}
+.help{display:none;width:100%;max-width:420px;margin-top:12px;background:#EEF2F7;border-radius:16px;padding:12px 14px;font-size:14.5px;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0E1A2B;color:#fff;padding:10px 16px;border-radius:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 </style></head><body>
@@ -39,10 +41,12 @@ h1{font-size:17px;font-weight:700;color:#3B4A5E;text-align:center;margin:4px 0 1
 <div class="url" id="u">app.ridesafeia.es</div>
 <div class="sub" id="s">Abre la app al momento. Gratuita, sin publicidad.</div>
 <div class="btns"><button class="b1" onclick="share()">📤 Compartir enlace</button><button class="b2" onclick="copy()">📋 Copiar enlace</button></div>
+<button class="inst" id="inst" onclick="install()">📲 Instalar en la pantalla de inicio</button>
+<div class="help" id="help"></div>
 <div class="tel">¿Problemas para instalarla? <a href="tel:+34609321585">📞 609 321 585</a></div>
 <div class="toast" id="t"></div>
 <script>
-/* Página QR de RideSafe IA 1.0 — se instala aparte en la pantalla de inicio (manifest-qr.json) */
+/* Página QR de RideSafe IA 1.1 — se instala aparte en la pantalla de inicio (manifest-qr.json) */
 const L={app:{url:'https://app.ridesafeia.es/',u:'app.ridesafeia.es',s:'Abre la app al momento. Gratuita, sin publicidad.'},
          web:{url:'https://ridesafeia.es/',u:'ridesafeia.es',s:'Toda la información y cómo instalarla paso a paso.'}};
 let cur='app';
@@ -57,6 +61,21 @@ async function copy(){try{await navigator.clipboard.writeText(L[cur].url);toast(
 // Pantalla siempre encendida mientras enseñas el QR
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
 wake();document.addEventListener('visibilitychange',wake);
+// v1.1 — Botón para instalarla como una app más en la pantalla de inicio
+let dp=null;const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+if(!standalone){
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('inst').style.display='block'});
+  if(ios){$('inst').style.display='block'}
+  setTimeout(()=>{if(!dp&&!ios){$('inst').style.display='block'}},2500);
+}
+window.addEventListener('appinstalled',()=>{$('inst').style.display='none';$('help').style.display='none';toast('✅ Instalada: busca el icono «QR RideSafe»')});
+async function install(){
+  if(dp){dp.prompt();const r=await dp.userChoice.catch(()=>null);dp=null;if(r&&r.outcome==='accepted')$('inst').style.display='none';return}
+  const h=$('help');h.style.display='block';
+  h.innerHTML=ios?'En iPhone: abre esta página en <b>Safari</b>, toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba) y elige <b>«Añadir a pantalla de inicio»</b> → <b>Añadir</b>.'
+    :'En Android: toca los <b>tres puntos ⋮</b> de arriba a la derecha de Chrome y elige <b>«Añadir a pantalla de inicio»</b> o <b>«Instalar aplicación»</b> → <b>Instalar</b>.';
+}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body></html>
