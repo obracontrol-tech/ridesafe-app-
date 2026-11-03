@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1A2B">
+<meta name="robots" content="noindex">
+<title>QR RideSafe IA</title>
+<link rel="manifest" href="manifest-qr.json">
+<link rel="icon" href="icons/qr-icon-192.png">
+<link rel="apple-touch-icon" href="icons/qr-icon-192.png">
+<meta name="apple-mobile-web-app-title" content="QR RideSafe">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#fff;color:#0E1A2B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;align-items:center;padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));min-height:100%}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.top img{width:40px;height:40px;border-radius:10px}
+.top b{font-size:22px;font-weight:900}.top b span{color:#7A8F00}
+h1{font-size:17px;font-weight:700;color:#3B4A5E;text-align:center;margin:4px 0 14px}
+.tabs{display:flex;gap:6px;background:#EEF2F7;border-radius:14px;padding:4px;margin-bottom:14px;width:100%;max-width:420px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:11px;padding:10px 6px;font:700 15px inherit;color:#3B4A5E;font-family:inherit}
+.tabs button.on{background:#0E1A2B;color:#fff}
+.qr{width:100%;max-width:420px;border:3px solid #0E1A2B;border-radius:22px;padding:12px;background:#fff}
+.url{margin-top:12px;font-size:18px;font-weight:800;letter-spacing:.3px;text-align:center;word-break:break-all}
+.sub{font-size:14px;color:#556273;text-align:center;margin-top:4px;line-height:1.4}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px;margin-top:18px}
+.btns a,.btns button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:50px;border-radius:25px;border:0;font-weight:800;font-size:15px;text-decoration:none;font-family:inherit}
+.b1{background:#C8DC3C;color:#0E1A2B}.b2{background:#0E1A2B;color:#fff}
+.tel{margin-top:16px;font-size:14.5px;color:#3B4A5E;text-align:center}
+.tel a{color:#0E1A2B;font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0E1A2B;color:#fff;padding:10px 16px;border-radius:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style></head><body>
+<div class="top"><img src="icons/icon-192.png" alt=""><b>RideSafe <span>IA</span></b></div>
+<h1 id="h">Escanea con la cámara del móvil</h1>
+<div class="tabs" role="tablist"><button class="on" id="tApp" onclick="show('app')">📲 La app</button><button id="tWeb" onclick="show('web')">🌐 La web</button></div>
+<div class="qr" id="qApp"><svg role="img" aria-label="Código QR" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" width="370" height="370" class="segno"><g transform="scale(10)"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#0e1a2b" d="M2 2.5h7m3 0h1m1 0h5m2 0h1m3 0h2m1 0h7m-33 1h1m5 0h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m3 0h5m2 0h3m3 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h4m2 0h1m1 0h2m7 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m4 0h3m2 0h2m5 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m2 0h1m1 0h4m1 0h1m1 0h1m1 0h3m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m1 0h7m1 0h2m1 0h1m2 0h1m-21 1h4m3 0h1m2 0h1m2 0h8m1 0h2m3 0h1m-31 1h1m3 0h1m1 0h3m2 0h1m2 0h2m5 0h2m3 0h1m2 0h1m-31 1h2m1 0h2m1 0h4m1 0h1m3 0h1m1 0h1m1 0h5m1 0h4m2 0h1m-32 1h2m1 0h1m3 0h1m1 0h2m3 0h2m1 0h1m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m-31 1h3m1 0h2m2 0h4m2 0h1m2 0h3m2 0h2m1 0h2m3 0h2m-33 1h1m3 0h1m2 0h1m2 0h4m2 0h2m3 0h3m6 0h2m-31 1h2m1 0h3m2 0h11m3 0h2m1 0h1m1 0h2m1 0h1m-32 1h1m1 0h4m1 0h3m1 0h1m1 0h5m1 0h3m1 0h1m1 0h1m1 0h3m2 0h1m-30 1h4m1 0h1m2 0h2m3 0h3m1 0h2m1 0h1m2 0h1m1 0h1m1 0h2m-31 1h2m2 0h1m2 0h1m1 0h1m1 0h5m6 0h3m1 0h1m3 0h2m-32 1h1m1 0h2m1 0h2m4 0h1m3 0h1m2 0h1m1 0h1m1 0h4m1 0h2m-30 1h2m1 0h2m2 0h5m1 0h1m1 0h1m1 0h2m1 0h2m4 0h1m1 0h1m2 0h2m-33 1h1m2 0h1m1 0h2m2 0h1m1 0h2m2 0h3m1 0h4m5 0h2m-30 1h2m5 0h1m2 0h1m3 0h2m1 0h3m2 0h1m1 0h3m3 0h2m-29 1h1m1 0h8m3 0h4m2 0h3m2 0h3m1 0h1m-30 1h1m2 0h1m6 0h1m3 0h3m2 0h1m1 0h1m3 0h2m2 0h2m-33 1h2m1 0h5m2 0h1m1 0h4m2 0h2m1 0h1m2 0h6m1 0h2m-25 1h1m1 0h3m2 0h1m1 0h1m1 0h3m2 0h1m3 0h4m-32 1h7m1 0h1m1 0h1m4 0h1m2 0h1m5 0h1m1 0h1m1 0h4m-32 1h1m5 0h1m1 0h2m1 0h9m2 0h3m3 0h1m2 0h2m-33 1h1m1 0h3m1 0h1m1 0h5m2 0h3m2 0h1m1 0h1m1 0h5m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h6m1 0h2m1 0h4m2 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h3m-31 1h1m5 0h1m2 0h1m1 0h6m1 0h3m1 0h3m2 0h2m1 0h1m-31 1h7m3 0h3m1 0h2m4 0h1m1 0h4m1 0h1m2 0h1m1 0h1"/></g></svg></div>
+<div class="qr" id="qWeb" style="display:none"><svg role="img" aria-label="Código QR" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" width="330" height="330" class="segno"><g transform="scale(10)"><path fill="#fff" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#0e1a2b" d="M2 2.5h7m1 0h3m3 0h2m1 0h4m1 0h7m-29 1h1m5 0h1m4 0h2m2 0h2m5 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h3m1 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m4 0h2m1 0h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m3 0h1m4 0h4m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m6 0h1m2 0h2m2 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h2m1 0h1m2 0h2m-14 1h2m3 0h1m1 0h1m2 0h1m3 0h1m2 0h1m1 0h1m1 0h1m1 0h1m-29 1h2m2 0h2m3 0h1m6 0h3m1 0h1m3 0h1m1 0h2m-27 1h1m2 0h1m1 0h4m1 0h4m1 0h3m1 0h6m-26 1h2m1 0h1m1 0h1m1 0h1m7 0h2m2 0h2m1 0h1m1 0h2m-26 1h1m1 0h1m1 0h1m1 0h3m2 0h1m2 0h1m5 0h3m2 0h1m1 0h1m-28 1h2m2 0h2m1 0h1m2 0h3m1 0h4m1 0h2m1 0h1m1 0h2m2 0h1m-29 1h1m2 0h1m2 0h2m1 0h1m1 0h2m3 0h3m3 0h2m-24 1h3m1 0h2m3 0h2m2 0h1m1 0h3m1 0h2m3 0h4m-25 1h1m1 0h2m1 0h2m1 0h1m4 0h1m8 0h3m-28 1h1m2 0h1m3 0h1m3 0h2m1 0h1m1 0h1m2 0h1m2 0h4m2 0h1m-29 1h4m1 0h2m1 0h2m1 0h1m3 0h2m2 0h1m4 0h2m2 0h1m-29 1h1m1 0h1m2 0h1m1 0h1m4 0h1m6 0h1m1 0h2m2 0h1m2 0h1m-29 1h1m2 0h2m1 0h2m1 0h2m4 0h2m3 0h5m1 0h1m-19 1h1m1 0h3m1 0h1m4 0h2m3 0h4m-28 1h7m2 0h4m3 0h1m1 0h3m1 0h1m1 0h1m-25 1h1m5 0h1m1 0h2m4 0h2m1 0h4m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m4 0h1m1 0h2m4 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m7 0h1m1 0h5m2 0h1m1 0h1m1 0h1m-28 1h1m1 0h3m1 0h1m2 0h1m3 0h1m2 0h2m1 0h7m1 0h1m-28 1h1m5 0h1m4 0h2m1 0h1m2 0h1m1 0h1m1 0h2m1 0h3m1 0h1m-29 1h7m3 0h5m1 0h4m4 0h1m1 0h1"/></g></svg></div>
+<div class="url" id="u">app.ridesafeia.es</div>
+<div class="sub" id="s">Abre la app al momento. Gratuita, sin publicidad.</div>
+<div class="btns"><button class="b1" onclick="share()">📤 Compartir enlace</button><button class="b2" onclick="copy()">📋 Copiar enlace</button></div>
+<div class="tel">¿Problemas para instalarla? <a href="tel:+34609321585">📞 609 321 585</a></div>
+<div class="toast" id="t"></div>
+<script>
+/* Página QR de RideSafe IA 1.0 — se instala aparte en la pantalla de inicio (manifest-qr.json) */
+const L={app:{url:'https://app.ridesafeia.es/',u:'app.ridesafeia.es',s:'Abre la app al momento. Gratuita, sin publicidad.'},
+         web:{url:'https://ridesafeia.es/',u:'ridesafeia.es',s:'Toda la información y cómo instalarla paso a paso.'}};
+let cur='app';
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('t');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+function show(k){cur=k;$('qApp').style.display=k==='app'?'block':'none';$('qWeb').style.display=k==='web'?'block':'none';
+  $('tApp').classList.toggle('on',k==='app');$('tWeb').classList.toggle('on',k==='web');$('u').textContent=L[k].u;$('s').textContent=L[k].s}
+async function share(){const d={title:'RideSafe IA',text:'🚴 RideSafe IA: la app gratuita de seguridad para ciclistas.',url:L[cur].url};
+  try{if(navigator.share){await navigator.share(d);return}}catch(e){if(e&&e.name==='AbortError')return}
+  location.href='https://wa.me/?text='+encodeURIComponent(d.text+' '+d.url)}
+async function copy(){try{await navigator.clipboard.writeText(L[cur].url);toast('✅ Enlace copiado')}catch(e){toast(L[cur].url)}}
+// Pantalla siempre encendida mientras enseñas el QR
+let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
+wake();document.addEventListener('visibilitychange',wake);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body></html>
