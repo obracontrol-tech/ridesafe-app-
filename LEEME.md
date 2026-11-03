@@ -1,3 +1,9 @@
+## Versión 5.27.3 (Simple 1.5.3) — La voz ya no para Spotify con los avisos largos
+- Android deja sonar por encima de la música los audios de menos de 5 segundos; si un aviso dura más, Spotify se pausa y no vuelve solo. Por eso los avisos cortos iban bien y el resumen (tiempo, km, viento…) cortaba la música.
+- Ahora cada aviso se dice en trozos cortos: los números cuentan como palabras largas, la voz va un poco más ágil (1,1) y se mide cada trozo: si el audio de Google pasa de 4,3 s, se parte en dos y se vuelve a pedir.
+- Empieza a hablar con el primer trozo; si uno tarda, se reintenta. La voz del móvil (que sí para Spotify) solo se usa si Google no contesta nada.
+- Subir a GitHub: index.html, simple.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.27.2 (Simple 1.5.2) — Recalcular la ruta sola, como Google Maps
 - Nuevo ajuste en Perfil: «🧭 Si me salgo de la ruta».
   · 🤖 Automático (de serie): en rutas por carretera hechas con el planificador, al salirte recalcula sola un camino nuevo hasta las paradas que faltan y el destino («Recalculando… Ruta recalculada»). En tracks de montaña, GPX o rutas del club sigue guiándote de vuelta por donde has venido (lo más seguro).

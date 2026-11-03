@@ -1200,7 +1200,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.5.2 (base 5.27.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.5.3 (base 5.27.3)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6209,10 +6209,10 @@ document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new
 function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>{musVoiceStart();musHold()};u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 async function ttsGet(t){
   if(ttsCache.has(t))return ttsCache.get(t);
-  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),6000);
+  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),8000);
   try{
     const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+GOOGLE_TTS_KEY,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({input:{text:t},voice:{languageCode:'es-ES',name:TTS_VOICE},audioConfig:{audioEncoding:'MP3',speakingRate:1.0,effectsProfileId:['handset-class-device']}})});
+      body:JSON.stringify({input:{text:t},voice:{languageCode:'es-ES',name:TTS_VOICE},audioConfig:{audioEncoding:'MP3',speakingRate:1.1,effectsProfileId:['handset-class-device']}})});
     if(!r.ok){let m='';try{const j=await r.json();m=(j.error&&j.error.message)||''}catch(_){}window.ttsLastErr='Error '+r.status+(m?': '+m:'');throw new Error('tts '+r.status+' '+m)}
     const d=await r.json();if(!d.audioContent)throw new Error('tts vacío');
     const src='data:audio/mp3;base64,'+d.audioContent;
@@ -6253,35 +6253,66 @@ async function voiceSay(t){
   if(!t)return;
   musDuck(Math.max(3200,String(t).length*85)+6000);
   if(!ttsOk()){speakLocal(t);return}
-  const parts=ttsChunks(t);const my=++ttsSeq;
-  let srcs;
-  try{srcs=await Promise.all(parts.map(p=>ttsGet(p)))}
-  catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t);return}
+  const my=++ttsSeq;
+  /* v5.27.3 — Spotify no se para con los avisos largos.
+     En Android, Chrome deja sonar por encima de la música los audios de MENOS DE 5 s (la música baja un poco);
+     si uno dura más, Android lo trata como música: Spotify se PAUSA y no vuelve solo.
+     · Trozos cortos (los números cuentan como palabras largas: «32,4 km» se dice largo).
+     · Se mide cada trozo: si el audio de Google pasa de 4,3 s, se parte en dos y se vuelve a pedir.
+     · Empieza a hablar con el primer trozo; si uno falla se reintenta. La voz del móvil (que sí para
+       Spotify) solo se usa si Google no contesta nada. */
+  const parts=ttsChunks(t);
+  const jobs=parts.map(p=>ttsShort(p,0));               // se piden todos a la vez, se dicen en orden
+  jobs.forEach(j=>j.catch(()=>{}));
+  let first;
+  try{first=await jobs[0]}catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t);return}
   try{speechSynthesis.cancel()}catch(e){}
   if(!ttsAudio)ttsAudio=new Audio();
   if(!ttsAudio._rs){ttsAudio._rs=1;ttsAudio.addEventListener('play',()=>{musVoiceStart();musHold()});ttsAudio.addEventListener('ended',()=>{if(!ttsAudio._more)musAfterVoice()});ttsAudio.addEventListener('error',musAfterVoice);ttsAudio.addEventListener('pause',()=>{if(!ttsAudio.ended&&!ttsAudio._more)musAfterVoice()})}
-  for(let k=0;k<srcs.length;k++){
-    if(my!==ttsSeq)return;                         // ha llegado otro aviso: manda el nuevo
-    ttsAudio._more=k<srcs.length-1;
-    ttsAudio.pause();ttsAudio.src=srcs[k];
-    try{await ttsAudio.play()}catch(e){ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}
-    await new Promise(res=>{const done=()=>{ttsAudio.removeEventListener('ended',done);ttsAudio.removeEventListener('error',done);clearTimeout(tm);res()};const tm=setTimeout(done,9000);ttsAudio.addEventListener('ended',done);ttsAudio.addEventListener('error',done)});
+  for(let k=0;k<jobs.length;k++){
+    let srcs;
+    try{srcs=k?await jobs[k]:first}
+    catch(e){try{srcs=await ttsShort(parts[k],0)}catch(e2){if(my===ttsSeq){ttsAudio._more=false;speakLocal(parts.slice(k).join(' '))}return}}
+    for(let j=0;j<srcs.length;j++){
+      if(my!==ttsSeq)return;                         // ha llegado otro aviso: manda el nuevo
+      ttsAudio._more=k<jobs.length-1||j<srcs.length-1;
+      ttsAudio.pause();ttsAudio.src=srcs[j];
+      try{await ttsAudio.play()}catch(e){ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}
+      await new Promise(res=>{const done=()=>{ttsAudio.removeEventListener('ended',done);ttsAudio.removeEventListener('error',done);clearTimeout(tm);res()};const tm=setTimeout(done,7000);ttsAudio.addEventListener('ended',done);ttsAudio.addEventListener('error',done)});
+    }
   }
   ttsAudio._more=false;
 }
-/* v5.21 — Frases de menos de ~4 segundos: Android trata cada trozo como un aviso corto
-   y BAJA la música de Spotify / YouTube Music / radio en lugar de pararla. */
+/* Pide un trozo a Google y comprueba cuánto dura; si pasa de 4,3 s lo parte en dos (hasta 2 veces) */
+const TTS_MAX_S=4.3;
+function ttsDur(src){return new Promise(res=>{const a=new Audio();let ok=false;const fin=v=>{if(ok)return;ok=true;clearTimeout(tm);res(v)};
+  const tm=setTimeout(()=>fin(0),1500);a.preload='metadata';a.addEventListener('loadedmetadata',()=>fin(isFinite(a.duration)?a.duration:0));a.addEventListener('error',()=>fin(0));a.src=src})}
+async function ttsShort(p,depth){
+  const src=await ttsGet(p);
+  if(depth>=2)return [src];
+  const d=await ttsDur(src);
+  if(d<=TTS_MAX_S)return [src];
+  const w=p.split(' ');if(w.length<2)return [src];
+  const mid=p.length/2;let cut=0,best=1e9,acc=0;
+  for(let i=0;i<w.length-1;i++){acc+=w[i].length+1;const sc=Math.abs(acc-mid)-(/[,.;:!?]$/.test(w[i])?6:0);if(sc<best){best=sc;cut=i+1}}
+  const [x,y]=await Promise.all([ttsShort(w.slice(0,cut).join(' '),depth+1),ttsShort(w.slice(cut).join(' '),depth+1)]);
+  return x.concat(y);
+}
+/* Frases cortas: cortes en puntos y comas; los números cuentan como palabras largas */
 let ttsSeq=0;
+const ttsW=s=>s.length+((s.match(/\d/g)||[]).length*4)+((s.match(/\b(km|h|min|m)\b/g)||[]).length*6);
 function ttsChunks(t){
-  let rest=String(t).replace(/\s+/g,' ').trim();const out=[],MAX=58;
-  while(rest.length>MAX){
+  let rest=String(t).replace(/\s+/g,' ').trim();const out=[],MAX=46;
+  while(ttsW(rest)>MAX){
+    let lim=12;for(let n=1;n<=rest.length;n++){if(ttsW(rest.slice(0,n))>MAX)break;lim=Math.max(12,n)}
     let cut=-1;
-    for(const re of [/[.!?;:]\s/g,/,\s/g,/\s/g]){let m,best=-1;re.lastIndex=0;while((m=re.exec(rest))&&m.index<MAX){if(m.index>=18)best=m.index+1}if(best>0){cut=best;break}}
-    if(cut<0)cut=MAX;
+    for(const re of [/[.!?;:]\s/g,/,\s/g,/\s/g]){let m,best=-1;re.lastIndex=0;while((m=re.exec(rest))&&m.index<lim){if(m.index>=10)best=m.index+1}if(best>0){cut=best;break}}
+    if(cut<0)cut=lim;
     out.push(rest.slice(0,cut).trim());rest=rest.slice(cut).trim();
   }
   if(rest)out.push(rest);return out;
 }
+
 /* ===================================================================
    v5.18 — 🎧 MODO CASCO (casco con altavoces y micrófono, p. ej. Sena)
    La voz sale sola por el casco al emparejarlo por Bluetooth.
