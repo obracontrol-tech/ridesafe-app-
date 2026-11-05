@@ -908,6 +908,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .r3-lbl div{background:rgba(11,20,34,.9);color:#fff;border-radius:8px;padding:3px 8px;font-weight:900;font-size:17px;line-height:1.05;text-align:left}
 .r3-lbl div small{display:block;font-size:10px;color:#C9D3E0;font-weight:800;letter-spacing:.05em}
 .r3-lbl i{display:block;width:2px;height:30px;background:rgba(11,20,34,.9)}
+.ubadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:6px;border-radius:99px;background:#EF4444;color:#fff;font-size:12px;font-weight:800;line-height:1;vertical-align:2px}
+.tab.hasUnread{position:relative}.tab.hasUnread::after{content:"";position:absolute;top:6px;right:calc(50% - 18px);width:10px;height:10px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px var(--bg)}
 </style>
 <style>
 /* ===== RideSafe IA SIMPLE 1.0.0 — se esconde lo que es solo de la Pro ===== */
@@ -1081,7 +1083,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <button class="li rs-pro" style="margin-top:12px" onclick="openPro()"><span class="em">⭐</span><div><b>¿Ya la dominas? Pásate a RideSafe IA Pro</b><small><b style="color:var(--lime)">Sigue siendo totalmente gratis.</b> Clubs, salidas en grupo, pelotón en vivo, walkie, ranking, Modo Casco y música. Tu cuenta y tus actividades se mantienen.</small></div></button>
   <div id="catchHome"></div>
   <div class="block">
-    <div class="sec"><h3>Próximas salidas</h3><a onclick="openAllRides()">Ver todas <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
+    <div class="sec"><h3>Próximas salidas<span id="newRidesB"></span></h3><a onclick="openAllRides()">Ver todas <svg class="i" viewBox="0 0 24 24" style="width:18px"><path d="m9 6 6 6-6 6"/></svg></a></div>
     <div class="rides" id="nextRides"></div>
   </div>
 
@@ -1200,7 +1202,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.5.4 (base 5.27.3)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.6.0 (base 5.27.3)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1644,7 +1646,7 @@ function rideCard(r,full){
   const meet=r.meet&&r.meet!==r.start?`<div class="pt"><span class="ico">📍</span><span>Encuentro: <b>${esc(r.meet)}</b>${r.meetHour?' · '+esc(r.meetHour):''}</span></div>`:`<div class="pt"><span class="ico">📍</span><span>Encuentro en el mismo punto</span></div>`;
   return `<div class="ride${full?' full':''}" onclick="openRide(${jsq(r.id)})">
     <div class="when"><div><div class="date">${fmtDate(r.date)}</div><div class="hour num">${esc(r.hour)}</div></div>
-    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:''}${r.gp&&gpName(r.gp)?`<span class="tag">🏷️ ${esc(gpName(r.gp))}</span>`:''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">${rideNew(r)?'<span class="tag" style="background:#EF4444;color:#fff;border-color:#EF4444;font-weight:800">🆕 Nueva de tu grupeta</span>':''}${hasNewMsg(r)?'<span class="tag lime">💬 nuevo</span>':''}${rideLogo(r)?`<img class="clogo sm" src="${rideLogo(r)}" alt="Club">`:''}${r.gp&&gpName(r.gp)?`<span class="tag">🏷️ ${esc(gpName(r.gp))}</span>`:''}${r.type?`<span class="tag lime">${esc(r.type)}</span>`:''}${r.km?`<span class="tag num">${+r.km} km</span>`:''}${r.route?`<span class="tag num">+${r.route.up} m</span>`:''}</div></div>
     <div class="title">${esc(r.title||'Salida en grupo')}</div>
     <div class="pt"><span class="ico">🚩</span><span>Salida: <b>${esc(r.start)}</b></span></div>${meet}
     ${r.plan&&r.plan.text?`<div class="pt pl"><span class="ptag">Recorrido</span><span class="clip2">${esc(r.plan.text)}</span></div>`:''}
@@ -1660,6 +1662,7 @@ function renderRides(){
   else $('nextRides').innerHTML=up.length?up.slice(0,6).map(r=>rideCard(r)).join(''):`<div class="empty" style="flex:1 0 100%">${me?.group?'Aún no hay salidas próximas en tu club.<br>¡Crea la primera y avisa a tu grupeta!':'Únete a tu club para ver sus salidas.<br><button class="btn btn-line" style="max-width:240px;margin-top:8px" onclick="joinGroupAsk()">🔗 Unirme a mi club</button>'}</div>`;
   const mine=up.filter(joined);
   $('myRides').innerHTML=mine.length?mine.map(r=>rideCard(r,true)).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4"/></svg>Todavía no te has apuntado a ninguna salida<button class="btn btn-lime" style="max-width:240px" onclick="openCreate()">Crear salida</button></div>`;
+  try{const nb=$('newRidesB');if(nb)nb.innerHTML=ubadge(newRidesL().length);const t=document.querySelector('.tab[data-tab="comunidad"]');if(t)t.classList.toggle('hasUnread',unreadAll()>0)}catch(e){}
   renderStats();renderRank();renderCatchHome();
   if($('sh-all').classList.contains('show'))renderAll();
   fillWx();
@@ -1810,6 +1813,7 @@ async function openRide(id,keep){
   if(!r&&db){try{const s=await db.collection('rides').doc(id).get();if(s.exists){r={id:s.id,...s.data()};if(!rides.some(x=>x.id===r.id))rides.push(r)}}catch(e){}}
   if(r&&!isAdmin&&!canSeeRideUI(r))r=null;   // v4.0: nunca se muestra una salida de otro club
   if(!r){if(!keep)toast('Esta salida no existe o es privada de otro club');return}
+  if(rideNew(r))rideSeen(r.id);
   const _ci=$('chatIn'),draft=_ci?_ci.value:'',focused=document.activeElement===_ci,_sh=$('sh-ride').scrollTop;
   openRideId=id;const inR=joined(r);const meetPt=r.meet||r.start;const isToday=r.date===iso(new Date());const p=names(r);
   $('rideBody').innerHTML=`
@@ -2523,7 +2527,7 @@ function watchClubData(){
   if(key===clubSubKey)return;clubSubKey=key;
   clubSubs.forEach(f=>{try{f()}catch(e){}});clubSubs=[];
   ridesClub=[];ridesMine=[];feed=[];pois=[];rides=[];
-  const merge=()=>{const m=new Map();[...Object.values(ridesGuest),...ridesClub,...ridesMine].forEach(r=>m.set(r.id,r));rides=[...m.values()];ridesLoaded=true;renderRides();drawRideMarkers();
+  const merge=()=>{const m=new Map();[...Object.values(ridesGuest),...ridesClub,...ridesMine].forEach(r=>m.set(r.id,r));rides=[...m.values()];ridesLoaded=true;renderRides();drawRideMarkers();try{renderGroup()}catch(e){}
     if(openRideId&&$('sh-ride').classList.contains('show'))openRide(openRideId,true)};
   window.clubMerge=merge;watchMyReqs();
   const docs=s=>s.docs.map(d=>({id:d.id,...d.data()}));
@@ -2723,7 +2727,7 @@ function watchGroup(){
 }
 function renderGroup(){
   const g=myGroup;
-  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>`
+  $('groupBox').innerHTML=g?`<div class="li" onclick="openGroup()" style="border-color:var(--lime)">${clubLogo(g)?`<img class="clogo" src="${clubLogo(g)}" alt="">`:'<span class="em">👥</span>'}<div><b>${esc(g.name)}${g.club?' <span class="clubbadge" style="margin:0 0 0 4px;font-size:10px;padding:2px 8px;vertical-align:middle">CLUB</span>':''}</b><small>${gNames(g).length} ${gNames(g).length===1?'ciclista':'ciclistas'} · código <b style="display:inline;color:var(--lime);letter-spacing:.1em">${g.id}</b>${isBossOf(g.id)?' · ⭐ eres jefe':''}</small>${g.notice?.text?`<small style="display:block;margin-top:4px;color:var(--lime);font-weight:700">📣 ${esc(g.notice.text)}</small>`:''}</div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>${(()=>{const L=newRidesL();return L.length?`<button class="btn" style="margin-top:8px;background:#EF4444;color:#fff;border-color:#EF4444;font-weight:800" onclick="openRide(${jsq(L[0].id)})">🆕 ${L.length===1?'Salida nueva de tu grupeta':L.length+' salidas nuevas de tu grupeta'} · Ver</button>`:''})()}`
    :`<div class="empty"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Todavía no estás en ningún club.<br><small style="color:var(--txt2)">Cada club es un espacio privado: solo sus miembros ven sus salidas, rutas, ranking y ciclistas.</small>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="btn btn-lime" onclick="joinGroupAsk()">🔗 Unirme a mi club</button><button class="btn btn-line" onclick="createGroup()">➕ Crear club</button></div></div>`;
 }
@@ -4756,17 +4760,32 @@ function watchClubTalk(C,subs){
   if(!C){renderClubTalk();return}
   const g=db.collection('groups').doc(C);
   subs.push(g.collection('polls').orderBy('ts','desc').limit(20).onSnapshot(s=>{clubPolls=s.docs.map(d=>({id:d.id,...d.data()}));renderClubTalk();if($('pollList'))renderPolls()},e=>console.warn('encuestas',e)));
-  subs.push(g.collection('msgs').orderBy('ts','desc').limit(1).onSnapshot(s=>{clubLast=s.docs[0]?{id:s.docs[0].id,...s.docs[0].data()}:null;renderClubTalk()},e=>console.warn('chat club',e)));
+  // mensajes sin leer: últimos 40 del chat del club
+  subs.push(g.collection('msgs').orderBy('ts','desc').limit(40).onSnapshot(s=>{const L=s.docs.map(d=>({id:d.id,...d.data()}));window.clubRecent=L;clubLast=L[0]||null;unreadPaint()},e=>console.warn('chat club',e)));
+}
+/* Aviso en rojo: mensajes sin leer del chat del club y salidas nuevas de tu grupeta */
+function unreadClub(){const C=me?.group;if(!C)return 0;const seen=store.get('cmSeen_'+C,0);return (window.clubRecent||[]).filter(m=>m.uid!==uid&&(m.ts||0)>seen).length}
+const ubadge=n=>n?` <span class="ubadge" aria-label="${n} sin leer">${n>9?'9+':n}</span>`:'';
+function rideTs(r){const c=r&&r.createdAt;return c?(c.toMillis?c.toMillis():c.seconds?c.seconds*1000:+c||0):0}
+function rideNew(r){try{if(!r||!r.gp||r.byUid===uid||!myGps().includes(r.gp))return false;let b=store.get('gpRideBase',0);if(!b){b=Date.now();store.set('gpRideBase',b)}
+  return rideTs(r)>b&&!(store.get('rSeen',{})[r.id])}catch(e){return false}}
+function rideSeen(id){const m=store.get('rSeen',{});if(m[id])return;m[id]=Date.now();const k=Object.keys(m);if(k.length>200)k.sort((a,b)=>m[a]-m[b]).slice(0,k.length-200).forEach(x=>delete m[x]);store.set('rSeen',m);setTimeout(()=>{try{renderRides()}catch(e){}unreadPaint()},0)}
+function newRidesL(){try{return upcoming().filter(rideNew)}catch(e){return []}}
+function unreadAll(){return 0}   // la Simple no muestra clubes ni salidas: sin punto rojo
+function unreadPaint(){
+  try{renderClubTalk()}catch(e){}try{renderGroup()}catch(e){}
+  try{const nb=$('newRidesB');if(nb)nb.innerHTML=ubadge(newRidesL().length)}catch(e){}
+  try{const t=document.querySelector('.tab[data-tab="comunidad"]');if(t)t.classList.toggle('hasUnread',unreadAll()>0)}catch(e){}
 }
 function renderClubTalk(){
   const blk=$('clubTalk'),box=$('clubTalkBox');if(!blk||!box)return;
   const C=me?.group;if(!C||!myGroup){blk.style.display='none';return}
   blk.style.display='block';
-  const seen=store.get('cmSeen_'+C,0),unread=clubLast&&clubLast.uid!==uid&&clubLast.ts>seen;
+  const unread=unreadClub();
   const open=clubPolls.filter(pollOpen),pend=open.filter(p=>myVote(p)==null);
   const last=clubLast?`${clubLast.uid===uid?'Tú':esc(String(clubLast.name||'').split(' ')[0])}: ${esc(String(clubLast.text).slice(0,60))}`:'Habla con todo el club, sin depender de WhatsApp';
   const p0=pend[0]||open[0];
-  box.innerHTML=`<button class="li" style="margin-bottom:8px" onclick="openClubChat()"><span class="em">💬</span><div style="min-width:0"><b>Chat del club${unread?' <span class="tag lime" style="margin-left:6px">nuevo</span>':''}</b><small style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${last}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  box.innerHTML=`<button class="li" style="margin-bottom:8px" onclick="openClubChat()"><span class="em">💬</span><div style="min-width:0"><b>Chat del club${ubadge(unread)}</b><small style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${last}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
    <button class="li" onclick="openPolls()"><span class="em">📊</span><div><b>Encuestas${pend.length?' <span class="tag lime" style="margin-left:6px">'+pend.length+' por votar</span>':''}</b><small>${open.length?open.length+' abierta'+(open.length>1?'s':'')+' · toca para votar o crear una':'Decidid entre todos: hora, ruta, parada…'}</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
    ${p0?`<div class="poll" style="margin-top:10px">${pollHTML(p0,true)}</div>`:''}`;
 }
@@ -4840,7 +4859,7 @@ function openClubChat(){
   clubChat.unsub=db.collection('groups').doc(C).collection('msgs').orderBy('ts','desc').limit(120).onSnapshot(s=>{
     if(!$('clubChatList')){try{clubChat.unsub()}catch(e){}clubChat.unsub=null;return}
     clubChat.msgs=s.docs.map(d=>({id:d.id,...d.data()})).reverse();renderClubChat();
-    store.set('cmSeen_'+C,Date.now());renderClubTalk();
+    store.set('cmSeen_'+C,Date.now());unreadPaint();
   },e=>{console.warn('chat club',e);const l=$('clubChatList');if(l)l.innerHTML='<div class="empty" style="padding:12px">No se pudo cargar el chat. Si acabas de actualizar, el administrador tiene que publicar las reglas v4.5.</div>'});
 }
 function renderClubChat(){
