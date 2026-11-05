@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.27.3 — La voz ya no para Spotify con los avisos largos (trozos de menos de 4,3 s, medidos).
+/* v5.27.4 — Fotos nuevas: grupeta de fondo en «Sal a rodar acompañado» y ciclista de fondo en Perfil.
+   v5.27.3 — La voz ya no para Spotify con los avisos largos (trozos de menos de 4,3 s, medidos).
    v5.27.2 — Recalcular la ruta sola al salirse (como Google Maps) y arreglo de encuestas del club.
    v5.27.1 — Intro de bienvenida nueva, más realista (Tierra con luces + España con rutas).
    v5.27.0 — Intro de bienvenida (globo + logo, 7 s) al abrir la app: una vez al día, con «Saltar».
@@ -85,6 +86,10 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
   radial-gradient(circle at 85% 30%,#3b5a3a 0,#1a2d44 45%,#0E1A2B 80%);margin-bottom:22px}
 .hero .deco{position:absolute;right:-18px;top:4px;bottom:auto;width:240px;opacity:.28;z-index:0;pointer-events:none}
 .hero h2,.hero p{z-index:1}.hero .btn{z-index:2}
+/* v5.27.4: grupo de ciclistas de fondo, arriba, con transparencia */
+.hero .grp{position:absolute;left:0;right:0;top:0;height:230px;background:url(img/grupeta-hero.webp) center 20%/cover no-repeat;opacity:.65;z-index:0;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000 60%,transparent 100%);mask-image:linear-gradient(180deg,#000 60%,transparent 100%)}
+.hero .grp~.deco{display:none}
+.hero h2,.hero p{text-shadow:0 2px 10px rgba(0,0,0,.65)}
 .hero h2{font-size:28px;line-height:1.15;font-weight:800;max-width:230px;position:relative;color:#fff}
 .hero p{color:#C9D3E0;margin:10px 0 18px;max-width:240px;font-size:15px;position:relative}
 .btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:40px;font-weight:700;font-size:17px;padding:0 22px;width:100%}
@@ -469,6 +474,12 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .casco-note{color:var(--txt2);font-size:13px;margin:6px 0 12px}
 /* Perfil */
 .prof{text-align:center;padding:10px 0 20px}
+/* v5.27.4: foto de ciclista de fondo en Perfil, arriba, con transparencia */
+#s-perfil{isolation:isolate}
+#s-perfil .pfbg{position:absolute;left:0;right:0;top:0;height:620px;z-index:-1;pointer-events:none;background:linear-gradient(rgba(14,26,43,.35),rgba(14,26,43,.35)),url(img/perfil-ciclista.jpg) center top/cover no-repeat;opacity:.75;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
+#s-perfil .prof h2,#s-perfil .prof p,#s-perfil .f .l,#s-perfil .sec h3{text-shadow:0 2px 10px rgba(0,0,0,.6)}
+[data-theme="light"] #s-perfil .pfbg{opacity:.22}
+[data-theme="light"] #s-perfil .prof h2,[data-theme="light"] #s-perfil .prof p,[data-theme="light"] #s-perfil .f .l,[data-theme="light"] #s-perfil .sec h3{text-shadow:none}
 .prof .avatar{width:96px;height:96px;font-size:40px;margin:0 auto 12px}
 .prof h2{font-size:24px;font-weight:800}
 .prof p{color:var(--bronze);font-weight:700}
@@ -1072,6 +1083,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <div id="installBox"></div>
   <div class="hero">
+    <div class="grp" aria-hidden="true"></div>
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><circle cx="45" cy="100" r="32"/><circle cx="155" cy="100" r="32"/><path d="M45 100 80 45h55l20 55M80 45l30 55h45M110 100 135 45M70 32h24M128 32h18l-11 13"/></g></svg>
     <h2>Sal a rodar acompañado</h2>
     <p>Crea una salida, elige día, hora y punto de encuentro, y avisa a tu grupo.</p>
@@ -1169,6 +1181,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 
 <!-- ============ PERFIL ============ -->
 <section class="screen" id="s-perfil">
+  <div class="pfbg" aria-hidden="true"></div>
   <div class="prof">
     <div class="avatar" data-ini>V</div>
     <h2 id="pfName">Ciclista</h2>
