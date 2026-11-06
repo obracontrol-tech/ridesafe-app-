@@ -183,7 +183,7 @@ else{
   function trkPoll(){
     fetch(TRK+'/v/'+TID,{cache:'no-store'}).then(r=>r.status===404?null:r.json()).then(d=>{
       if(!d){if(!cur)fail('Esperando la primera posición','Abre Traccar Client en el móvil del ciclista y pulsa «Iniciar». En cuanto envíe la primera posición, aparecerá aquí.');return}
-      cur=Object.assign({},d,{name:TNAME||'Tu familiar',km:null});paint(cur);
+      cur=Object.assign({},d,{name:TNAME||'Tu familiar',km:null});paint(cur);$('sub').textContent='📡 Seguimiento estable'+(d.speed?' · '+Math.round(d.speed)+' km/h':'')+(d.batt!=null?' · 🔋 '+d.batt+' %':'');
     }).catch(()=>{if(!cur)fail('No se pudo conectar','Revisa tu conexión a internet. Se vuelve a intentar solo.')});
   }
   if(TID){trkPoll();setInterval(trkPoll,15000)}
