@@ -157,6 +157,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
     <button class="nav" data-v="news" onclick="go('news')">🚀 Novedades</button>
     <button class="nav" data-v="shops" onclick="go('shops')">🏪 Tiendas <span class="ct" id="nShops"></span></button>
     <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
+    <button class="nav" data-v="legal" onclick="go('legal')">📄 Condiciones <span class="ct" id="nLeg"></span></button>
     <button class="nav" data-v="mnt" onclick="go('mnt')">🛠️ Copias y restaurar</button>
     <button class="nav" data-v="lic" onclick="go('lic')">🔑 Licencias</button>
     <div class="me"><span class="pill lime" style="margin-bottom:8px">👑 Máximo desarrollador</span><br>Sesión de<b id="meMail"></b><button class="btn sm" style="margin-top:10px;width:100%" onclick="signOut()">Cerrar sesión</button></div>
@@ -2525,6 +2526,7 @@ async function loadAll(manual){
 const clubName=c=>{const g=D.groups.find(x=>x.id===c);return g?g.name:(c?c:'Sin club')};
 const userClub=uid=>{const g=D.groups.find(x=>(x.members||{})[uid]);return g||null};
 function counts(){
+  try{const np=D.users.filter(u=>u.name&&!(u.legal&&u.legal.v===LEGAL_V)).length;const e=$('nLeg');if(e){e.textContent=np||'';e.title=np+' pendientes de aceptar'}}catch(e){}
   $('nClubs').textContent=D.groups.length;$('nUsers').textContent=D.users.filter(u=>u.name).length;
   $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
   const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
@@ -2534,9 +2536,9 @@ function counts(){
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
+  const T={legal:['Condiciones de uso y privacidad','Copia del documento y registro de aceptaciones'],shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic,legal:vLegal})[view]();
 }
 
 /* ---------- 🔑 Licencias de clientes (apps de marca blanca) ----------
@@ -3086,6 +3088,29 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDlg()});
 function confirmDlg(t,txt,ok,danger){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn ${danger?'red':'lime'}" id="cOk">${esc(ok)}</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{closeDlg();res(true)}})}
 function typed(t,txt,word){return new Promise(res=>{dlg(`<h3>${t}</h3><p>${txt}</p><p>Escribe <b>${esc(word)}</b> para confirmar:</p><input class="inp" id="tyI" style="width:100%" autocomplete="off"><div class="row"><button class="btn" id="cNo">Cancelar</button><button class="btn red" id="cOk">Borrar</button></div>`);$('cNo').onclick=()=>{closeDlg();res(false)};$('cOk').onclick=()=>{if($('tyI').value.trim().toUpperCase()!==String(word).toUpperCase()){toast('No coincide');return}closeDlg();res(true)}})}
 function progress(t){dlg(`<h3>${t}</h3><div class="prog"><i id="pgI"></i></div>`);return p=>{const i=$('pgI');if(i)i.style.width=Math.min(100,Math.round(p*100))+'%'}}
+/* ---------- 📄 v5.30 — Condiciones de uso y privacidad: copia del documento y registro de aceptaciones ---------- */
+const LEGAL_V='2026-11';
+const fmtS=t=>t?new Date(t).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+let fLeg='all';
+function vLegal(){
+  const all=D.users.filter(u=>u.name).map(u=>({...u,lv:(u.legal&&u.legal.v)||'',lt:+((u.legal&&u.legal.t)||0),la:(u.legal&&u.legal.app)||''})).sort((a,b)=>(b.lt||0)-(a.lt||0)||String(a.name).localeCompare(String(b.name)));
+  const ok=all.filter(x=>x.lv===LEGAL_V),old=all.filter(x=>x.lv&&x.lv!==LEGAL_V),pend=all.filter(x=>!x.lv);
+  const l=fLeg==='ok'?ok:fLeg==='pend'?pend:fLeg==='old'?old:all;
+  $('view').innerHTML=`<div class="chips">${[['all','Todos ('+all.length+')'],['ok','✅ Aceptada '+LEGAL_V+' ('+ok.length+')'],['old','🟡 Versión anterior ('+old.length+')'],['pend','⏳ Pendientes ('+pend.length+')']].map(([k,t])=>`<button class="chip${fLeg===k?' on':''}" onclick="fLeg='${k}';vLegal()">${t}</button>`).join('')}</div>
+   <div class="box" style="margin:10px 0"><b>📄 Documento vigente · versión ${LEGAL_V}</b>
+    <p style="color:var(--txt2);font-size:13.5px;margin:6px 0 10px">Condiciones de uso, seguridad y responsabilidad, y política de privacidad que aceptan los ciclistas al registrarse (y los que ya usaban la app, al abrirla) marcando 3 casillas. La copia archivada de cada versión no cambia nunca.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" href="legal-${LEGAL_V}.html" target="_blank" rel="noopener">📖 Ver documento</a><a class="btn sm" href="legal-${LEGAL_V}.html?print=1" target="_blank" rel="noopener">🖨️ Guardar copia en PDF</a><button class="btn sm" onclick="legalDownload()">⬇️ Descargar copia</button><button class="btn sm" onclick="legalCsv()">⬇️ Registro Excel/CSV</button></div></div>
+   <div class="box tw"><table class="tbl"><thead><tr><th>Ciclista</th><th class="hide-m">Club</th><th>App</th><th>Versión</th><th>Fecha y hora de aceptación</th></tr></thead><tbody>
+   ${l.slice(0,1000).map(u=>{const cl=userClub(u.id);return `<tr><td>${esc(u.name)}</td><td class="hide-m" style="color:var(--txt2)">${cl?esc(cl.name):'—'}</td><td>${u.la==='simple'?'Simple':u.la==='pro'?'Pro':'—'}</td><td>${u.lv?(u.lv===LEGAL_V?'✅ '+esc(u.lv):'🟡 '+esc(u.lv)):'<span style="color:var(--red);font-weight:800">⏳ Pendiente</span>'}</td><td class="num">${u.lt?fmtS(u.lt):'—'}</td></tr>`}).join('')||'<tr><td colspan="5" style="color:var(--txt2)">No hay ciclistas en esta lista</td></tr>'}</tbody></table></div>
+   <p style="color:var(--txt3);font-size:12.5px;margin:8px 2px">Los «Pendientes» verán la ventana para aceptar la próxima vez que abran la app. Pulsa «Actualizar» arriba para ver los cambios.</p>`;
+}
+async function legalDownload(){try{const r=await fetch('legal-'+LEGAL_V+'.html',{cache:'no-store'});download('RideSafeIA_condiciones_'+LEGAL_V+'.html',await r.text(),'text/html')}catch(e){alert('No se pudo descargar. Revisa la conexión.')}}
+function legalCsv(){
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Ciclista','Club','App','Versión aceptada','Fecha y hora de aceptación','ID de usuario']];
+  D.users.filter(u=>u.name).forEach(u=>{const lg=u.legal||{};const cl=userClub(u.id);rows.push([u.name,cl?cl.name:'',lg.app==='simple'?'Simple':lg.app==='pro'?'Pro':'',lg.v||'PENDIENTE',lg.t?fmtS(+lg.t):'',u.id])});
+  download('RideSafeIA_aceptaciones_'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+}
 function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function err(e){console.error(e);toast(/permission/.test(e&&e.code||'')?'Firebase no lo permite: ¿reglas v4.0 publicadas?':'No se pudo: '+(e&&(e.code||e.message)||'error'))}
 </script>
