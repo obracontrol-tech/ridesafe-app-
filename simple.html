@@ -1202,7 +1202,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.6.0 (base 5.27.3)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.6.1 (base 5.29.4)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4676,7 +4676,10 @@ function pushForeground(){try{if(pushReady())firebase.messaging().onMessage(()=>
 /* ===== v3.5 — Strava: las salidas del reloj llegan solas ===== */
 const STRAVA_CLIENT_ID='286573';
 let strava=null;   // {athleteName,lastSync} si está conectado
-const stravaOn=()=>STRAVA_CLIENT_ID&&!STRAVA_CLIENT_ID.startsWith('PON_');
+/* Noviembre 2026: conexión con Strava DESACTIVADA (Strava limita las conexiones de apps no revisadas).
+   El código se conserva: para reactivarla, poner STRAVA_ENABLED = true. Las salidas ya importadas se quedan. */
+const STRAVA_ENABLED=false;
+const stravaOn=()=>STRAVA_ENABLED&&STRAVA_CLIENT_ID&&!STRAVA_CLIENT_ID.startsWith('PON_');
 const callFn=(n,d)=>firebase.app().functions('europe-southwest1').httpsCallable(n)(d||{}).then(r=>r.data);
 const STRAVA_SVG='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.4 17.9 13.3 13.8h-3.1L15.4 24l5.1-10.2h-3.1zM10.2 0 3.3 13.8h4.1L10.2 8.3l2.8 5.5h4z"/></svg>';
 async function loadStrava(){
