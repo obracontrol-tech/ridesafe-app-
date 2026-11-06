@@ -55,24 +55,32 @@ h1{font-size:25px;line-height:1.2}
 
 <div class="step">
   <h2><span class="n">2</span>Configúrala</h2>
-  <p>En Traccar Client entra en <b>Ajustes</b> y copia estos datos (toca <b>Copiar</b> y luego pégalo en Traccar):</p>
-  <div class="kv"><div><small>Identificador del dispositivo</small><b id="vId">…</b></div><button onclick="cp('id')">Copiar</button></div>
-  <div class="kv"><div><small>URL del servidor</small><b id="vUrl">…</b></div><button onclick="cp('url')">Copiar</button></div>
-  <div class="kv"><div><small>Precisión de la ubicación</small><b>Alta</b></div></div>
-  <div class="kv"><div><small>Distancia (metros)</small><b>20</b></div></div>
-  <div class="kv"><div><small>Intervalo de envío en reposo (segundos)</small><b>60</b></div></div>
-  <p style="margin-top:12px">¿Configurar otro móvil? En sus Ajustes de Traccar toca el <b>icono QR</b> (arriba a la derecha) y escanea este código. Si no lo reconoce, copia los datos a mano.</p>
+  <p><b>Opción A · Con el QR (lo más fácil).</b> Abre Traccar Client → <b>Ajustes</b> → toca el <b>icono QR</b> (arriba a la derecha) y escanea este código. Para escanearlo hace falta que el QR esté en <b>otra pantalla</b>: el móvil de un familiar, un amigo del club o el ordenador.</p>
   <div class="qr"><div id="qr"></div></div>
+  <button class="btn b2" onclick="shareQR()">📤 Enviar este QR a otro móvil</button>
+  <details style="margin-top:14px">
+    <summary style="font-weight:800;cursor:pointer;color:#C8DC3C">Opción B · Lo hago yo solo, sin QR</summary>
+    <p>En Traccar Client → <b>Ajustes</b>, toca cada línea y pega el dato (toca <b>Copiar</b> aquí y mantén pulsado en Traccar → Pegar):</p>
+    <div class="kv"><div><small>Identificador del dispositivo</small><b id="vId">…</b></div><button onclick="cp('id')">Copiar</button></div>
+    <div class="kv"><div><small>URL del servidor</small><b id="vUrl">…</b></div><button onclick="cp('url')">Copiar</button></div>
+    <div class="kv"><div><small>Precisión de la ubicación</small><b>Alta</b></div></div>
+    <div class="kv"><div><small>Distancia (metros)</small><b>20</b></div></div>
+    <div class="kv"><div><small>Intervalo de envío en reposo (segundos)</small><b>60</b></div></div>
+  </details>
 </div>
 
 <div class="step">
-  <h2><span class="n">3</span>Dale permisos</h2>
-  <p>Sin esto, el móvil la para al bloquearlo. En <b>Ajustes del móvil → Aplicaciones → Traccar Client</b>:</p>
+  <h2><span class="n">3</span>Dale permisos (muy importante)</h2>
+  <p>Android para las apps de ubicación cuando bloqueas el móvil. Estos permisos le dicen al móvil: <b>«a esta app no la pares»</b>. Solo se hace una vez.</p>
+  <p>Ve a <b>Ajustes del móvil → Aplicaciones → Traccar Client</b> y:</p>
   <ul>
-    <li><b>Permisos → Ubicación → Permitir todo el tiempo</b> (y «ubicación precisa»)</li>
-    <li><b>Permisos → Actividad física → Permitir</b></li>
-    <li><b>Batería → Sin restricciones</b></li>
+    <li><b>Permisos → Ubicación → «Permitir todo el tiempo»</b> y activa <b>«Usar ubicación precisa»</b>.<br><small style="color:#8FA0B5">Si solo ves «Mientras se usa la app», elígelo primero y vuelve a entrar: entonces aparece «Permitir todo el tiempo».</small></li>
+    <li><b>Permisos → Actividad física → Permitir</b>. Así sabe cuándo te mueves y ahorra batería parado.</li>
+    <li><b>Permisos → Notificaciones → Permitir</b>. Verás un aviso fijo mientras te sigue: es normal.</li>
+    <li><b>Batería → «Sin restricciones»</b>.</li>
   </ul>
+  <p><b>En Samsung</b>, además: Ajustes → <b>Batería</b> → <b>Límites de uso en segundo plano</b> → comprueba que Traccar Client <b>no</b> está en «Aplicaciones en suspensión» ni en «suspensión profunda».</p>
+  <p><b>En iPhone:</b> Ajustes → Traccar Client → <b>Ubicación → Siempre</b> y activa <b>Ubicación exacta</b> y <b>Actualización en segundo plano</b>.</p>
 </div>
 
 <div class="step">
@@ -110,6 +118,11 @@ function paintLink(){$('vLink').textContent=link()}
 $('vId').textContent=ID;$('vUrl').textContent=SRV;paintLink();
 $('nm').addEventListener('input',()=>{ls.set('rsTrkName',$('nm').value.trim());paintLink()});
 try{new QRCode($('qr'),{text:'id='+ID+'&url='+SRV+'&accuracy=high&distance=20&heartbeat=60',width:220,height:220,correctLevel:QRCode.CorrectLevel.M})}catch(e){$('qr').parentNode.style.display='none'}
+function shareQR(){
+  const c=$('qr').querySelector('canvas');const txt='Escanea este QR desde Traccar Client → Ajustes → icono QR';
+  if(c&&c.toBlob&&navigator.canShare){c.toBlob(b=>{const f=new File([b],'traccar-qr.png',{type:'image/png'});
+    if(navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt}).catch(()=>{});else toast('Haz una captura de pantalla del QR y envíala')});}
+  else toast('Haz una captura de pantalla del QR y envíala')}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200)}
 function cp(w){const v=w==='id'?ID:w==='url'?SRV:link();
   (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('✅ Copiado'),()=>{prompt('Copia este texto:',v)})}
