@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.28.2 — Foto nueva de MTB de fondo en Actividades.
+/* v5.28.3 — Modo prueba del mapa de la familia (?fambeta=1).
+   v5.28.2 — Foto nueva de MTB de fondo en Actividades.
    v5.28.1 — Fotos nuevas: grupeta de fondo en «Sal a rodar acompañado» y ciclista de fondo en Perfil.
    v5.27.3 — La voz ya no para Spotify con los avisos largos (trozos de menos de 4,3 s, medidos).
    v5.27.2 — Recalcular la ruta sola al salirse (como Google Maps) y arreglo de encuestas del club.
@@ -1226,7 +1227,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.28.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.28.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3258,7 +3259,9 @@ async function openNearby(){
 /* ---------- Compartir salida en vivo (familia) ---------- */
 /* ===== v3.4 — Ubicación para la familia (ellos NO necesitan instalar nada: abren un enlace de WhatsApp) ===== */
 let fam={on:false};
-const famUrl=id=>location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?v='+id;
+/* Beta del mapa de la familia: solo en el móvil que abre la app con ?fambeta=1 (se quita con ?fambeta=0) */
+try{const q=new URLSearchParams(location.search).get('fambeta');if(q==='1'){localStorage.setItem('rsFamBeta','1');setTimeout(()=>toast('🧪 Modo prueba: tus enlaces de ubicación abrirán el mapa nuevo (beta)',6000),1500)}else if(q==='0'){localStorage.removeItem('rsFamBeta');setTimeout(()=>toast('Modo prueba del mapa desactivado'),1500)}}catch(e){}
+const famUrl=id=>{let b=false;try{b=localStorage.getItem('rsFamBeta')==='1'}catch(e){}return location.origin+location.pathname.replace(/[^/]*$/,'')+(b?'familia-beta.html':'familia.html')+'?v='+id};
 async function shareLive(){famShare()}
 async function famShare(){
   if(!ready())return;
