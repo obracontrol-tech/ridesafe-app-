@@ -67,7 +67,9 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fail(t,p){$('msg').style.display='grid';$('mt').textContent=t;$('mp').textContent=p}
 const id=(new URLSearchParams(location.search).get('v')||'').toLowerCase();
-if(!/^[a-z0-9]{6,20}$/.test(id))fail('Enlace no válido','Pide a tu familiar que te lo vuelva a enviar.');
+if(!/^[a-z0-9]{6,20}$/.test(id)){fail('Pega aquí el enlace','Copia el enlace de ubicación que te ha llegado por WhatsApp y pégalo aquí.');
+  $('mp').insertAdjacentHTML('afterend','<textarea id="pasteIn" rows="3" placeholder="https://app.ridesafeia.es/familia.html?v=..." style="margin-top:16px;width:100%;max-width:340px;border-radius:14px;border:1px solid #33465F;background:#16243A;color:#fff;padding:12px;font:inherit;font-size:15px"></textarea><br><button id="pasteGo" style="margin-top:10px;min-height:48px;padding:0 26px;border-radius:24px;border:0;background:#C8DC3C;color:#0E1A2B;font-weight:900;font-size:16px;font-family:inherit">Abrir en la beta</button>');
+  $('pasteGo').onclick=()=>{const m=String($('pasteIn').value||'').match(/[?&]v=([a-zA-Z0-9]{6,20})/);if(m)location.href='familia-beta.html?v='+m[1].toLowerCase();else{$('mp').textContent='No encuentro el código en ese texto. Pega el enlace completo, el que lleva «?v=».'}};}
 else{
   firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
   /* ===== BETA: mapa estable =====
