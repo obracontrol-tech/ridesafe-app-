@@ -97,7 +97,7 @@ h1{font-size:25px;line-height:1.2}
 
 <script>
 const $=id=>document.getElementById(id);
-const SRV='https://ridesafe-traccar.pedrosaborrego.workers.dev';
+const SRV='https://ridesafeia.divine-feather-45bc.workers.dev';
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 function newId(){const a='abcdefghijkmnpqrstuvwxyz23456789';const r=new Uint32Array(9);crypto.getRandomValues(r);return 'rs'+Array.from(r,x=>a[x%a.length]).join('')}
 /* ?id=CODIGO: para quien ya tiene Traccar configurado con un código anterior */

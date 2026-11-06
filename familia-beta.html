@@ -68,7 +68,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function fail(t,p){$('msg').style.display='grid';$('mt').textContent=t;$('mp').textContent=p}
 const id=(new URLSearchParams(location.search).get('v')||'').toLowerCase();
 /* Seguimiento estable con Traccar Client: enlace ?t=CODIGO&n=NOMBRE (la posición llega por el Worker, no por Firebase) */
-const TRK='https://ridesafe-traccar.pedrosaborrego.workers.dev';
+const TRK='https://ridesafeia.divine-feather-45bc.workers.dev';
 const TID=(()=>{const t=(new URLSearchParams(location.search).get('t')||'').toLowerCase();return /^[a-z0-9]{8,24}$/.test(t)?t:''})();
 const TNAME=(new URLSearchParams(location.search).get('n')||'').slice(0,40);
 if(!TID&&!/^[a-z0-9]{6,20}$/.test(id)){fail('Pega aquí el enlace','Copia el enlace de ubicación que te ha llegado por WhatsApp y pégalo aquí.');
