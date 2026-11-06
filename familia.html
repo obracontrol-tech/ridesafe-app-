@@ -11,6 +11,8 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>/* beta: si unpkg falla, se carga el mapa desde otro servidor */
+if(!window.maplibregl){document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css"><script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"><\/script>')}</script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -68,9 +70,57 @@ const id=(new URLSearchParams(location.search).get('v')||'').toLowerCase();
 if(!/^[a-z0-9]{6,20}$/.test(id))fail('Enlace no válido','Pide a tu familiar que te lo vuelva a enviar.');
 else{
   firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
-  const map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-3.7,40.4],zoom:5,attributionControl:{compact:true}});
-  let mk=null,first=true,last=null;
-  window.center=()=>{if(last)map.easeTo({center:[last.lng,last.lat],zoom:Math.max(map.getZoom(),15)})};
+  /* ===== BETA: mapa estable =====
+     · Si el mapa principal (OpenFreeMap) no carga en 9 s o falla, se cambia solo al mapa de reserva (OpenStreetMap).
+     · Si el móvil "pierde" el mapa al volver de segundo plano o de bloquearse, se rehace solo.
+     · Si el mapa no se puede cargar de ninguna forma, la tarjeta sigue funcionando (posición, hora, Cómo llegar). */
+  const STYLE='https://tiles.openfreemap.org/styles/liberty';
+  const RASTER={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap'}},layers:[{id:'bg',type:'background',paint:{'background-color':'#E8E4DA'}},{id:'osm',type:'raster',source:'osm'}]};
+  let cur=null,map=null,mk=null,first=true,last=null,styleOk=false,raster=false,styleT=null,lostT=null,errs=[],trailC=[],lastAct=true;
+  function drawTrail(){
+    if(!map||!styleOk||!last)return;
+    try{const gj={type:'Feature',geometry:{type:'LineString',coordinates:trailC.length>1?trailC:[[last.lng,last.lat],[last.lng,last.lat]]}};
+      const src=map.getSource('tr');
+      if(src)src.setData(gj);else{map.addSource('tr',{type:'geojson',data:gj});map.addLayer({id:'tr2',type:'line',source:'tr',paint:{'line-color':'#0E1A2B','line-width':8,'line-opacity':.6},layout:{'line-cap':'round','line-join':'round'}});map.addLayer({id:'tr',type:'line',source:'tr',paint:{'line-color':'#C8DC3C','line-width':5},layout:{'line-cap':'round','line-join':'round'}})}
+    }catch(e){}
+  }
+  function putMarker(){
+    if(!map||!last)return;
+    const name=String((cur&&cur.name)||'Tu familiar');
+    if(!mk){const el=document.createElement('div');el.className='pin';el.innerHTML=`<b class="${lastAct?'pulse':''}">${esc(name.charAt(0).toUpperCase())}</b><span>${esc(name.split(' ')[0])}</span>`;mk=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([last.lng,last.lat]).addTo(map)}
+    else{mk.setLngLat([last.lng,last.lat]);mk.getElement().querySelector('b').className=lastAct?'pulse':''}
+  }
+  function makeMap(style){
+    if(!window.maplibregl){map=null;return}
+    let v=null;try{if(map)v={center:map.getCenter(),zoom:map.getZoom()}}catch(e){}
+    try{if(map)map.remove()}catch(e){}
+    map=null;mk=null;styleOk=false;errs=[];clearTimeout(styleT);
+    try{
+      map=new maplibregl.Map({container:'map',style,center:v?v.center:(last?[last.lng,last.lat]:[-3.7,40.4]),zoom:v?v.zoom:(last?15:5),attributionControl:{compact:true}});
+    }catch(e){map=null;return}
+    const m=map;
+    m.on('load',()=>{if(m!==map)return;styleOk=true;clearTimeout(styleT);drawTrail()});
+    m.on('error',e=>{if(m!==map||raster)return;
+      if(!styleOk){toRaster();return}
+      const now=Date.now();errs=errs.filter(t=>now-t<20000);errs.push(now);if(errs.length>=8)toRaster()});
+    styleT=setTimeout(()=>{if(m===map&&!styleOk&&!raster)toRaster()},9000);
+    const cv=m.getCanvas();
+    cv.addEventListener('webglcontextlost',e=>{e.preventDefault();clearTimeout(lostT);lostT=setTimeout(rebuild,3000)});
+    cv.addEventListener('webglcontextrestored',()=>{clearTimeout(lostT);lostT=null;try{m.triggerRepaint()}catch(e){}});
+    if(last){putMarker()}
+  }
+  function toRaster(){if(raster)return;raster=true;makeMap(RASTER)}
+  function rebuild(){clearTimeout(lostT);lostT=null;makeMap(raster?RASTER:STYLE)}
+  function glLost(){try{const gl=map&&map.painter&&map.painter.context&&map.painter.context.gl;return !!(gl&&gl.isContextLost&&gl.isContextLost())}catch(e){return false}}
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState!=='visible')return;
+    if(!map&&window.maplibregl){rebuild();return}
+    if(glLost()){rebuild();return}
+    try{map&&map.resize();map&&map.triggerRepaint()}catch(e){rebuild()}
+    if(window.firebase&&id)firebase.firestore().collection('share').doc(id).get().then(s=>{if(s.exists){cur=s.data();paint(cur);showAlert(cur)}}).catch(()=>{});
+  });
+  window.addEventListener('resize',()=>{try{map&&map.resize()}catch(e){}});
+  window.center=()=>{if(last&&map)map.easeTo({center:[last.lng,last.lat],zoom:Math.max(map.getZoom(),15)})};
   const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'ahora mismo':m<60?`hace ${m} min`:`hace ${Math.floor(m/60)} h ${m%60} min`};
   function paint(d){
     if(!d)return;
@@ -86,13 +136,10 @@ else{
     if(d.lat!=null&&d.lng!=null){
       last={lat:+d.lat,lng:+d.lng};
       $('gm').href='https://www.google.com/maps/dir/?api=1&destination='+last.lat+','+last.lng;
-      if(!mk){const el=document.createElement('div');el.className='pin';el.innerHTML=`<b class="${act?'pulse':''}">${esc(name.charAt(0).toUpperCase())}</b><span>${esc(name.split(' ')[0])}</span>`;mk=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([last.lng,last.lat]).addTo(map)}
-      else{mk.setLngLat([last.lng,last.lat]);mk.getElement().querySelector('b').className=act?'pulse':''}
+      lastAct=act;putMarker();
       const tr=(d.trail||[]).map(p=>[+p.o,+p.a]).filter(p=>isFinite(p[0])&&isFinite(p[1]));
-      const draw=()=>{const src=map.getSource('tr');const gj={type:'Feature',geometry:{type:'LineString',coordinates:tr.length>1?tr:[[last.lng,last.lat],[last.lng,last.lat]]}};
-        if(src)src.setData(gj);else{map.addSource('tr',{type:'geojson',data:gj});map.addLayer({id:'tr2',type:'line',source:'tr',paint:{'line-color':'#0E1A2B','line-width':8,'line-opacity':.6},layout:{'line-cap':'round','line-join':'round'}});map.addLayer({id:'tr',type:'line',source:'tr',paint:{'line-color':'#C8DC3C','line-width':5},layout:{'line-cap':'round','line-join':'round'}})}};
-      if(map.isStyleLoaded())draw();else map.once('load',draw);
-      if(first){map.jumpTo({center:[last.lng,last.lat],zoom:15});first=false}else if(act)map.easeTo({center:[last.lng,last.lat],duration:800});
+      trailC=tr;drawTrail();
+      if(map){try{if(first){map.jumpTo({center:[last.lng,last.lat],zoom:15});first=false}else if(act)map.easeTo({center:[last.lng,last.lat],duration:800})}catch(e){}}
     }else if(first&&act){$('sub').textContent='Esperando la primera posición del GPS…'}
     $('msg').style.display='none';$('card').style.display='block';
   }
@@ -114,7 +161,7 @@ else{
       box.className='alrt fall';
       box.innerHTML=`<h2>🚑 ${a.test?'PRUEBA · ':''}POSIBLE CAÍDA</h2><p><b>${name}</b> puede haberse caído y no ha respondido (${ago(a.t)}).</p><p>Llámale. Si no contesta, llama al 112 y di dónde está.</p>
         <div class="ab"><a class="a112" href="tel:112">📞 Llamar al 112</a>${ll?`<a class="a2" href="https://www.google.com/maps/dir/?api=1&destination=${ll}" target="_blank" rel="noopener">🧭 Ir hasta allí</a>`:''}${ring||seen!==key?'<button class="a2 sil" onclick="silence()">🔕 Silenciar alarma</button>':''}</div>`;
-      if(seen!==key){seen=key;if(ll){const [la,lo]=ll.split(',').map(Number);map.easeTo({center:[lo,la],zoom:16,duration:800})}
+      if(seen!==key){seen=key;if(ll&&map){const [la,lo]=ll.split(',').map(Number);map.easeTo({center:[lo,la],zoom:16,duration:800})}
         const go=()=>{beep(6);try{navigator.vibrate&&navigator.vibrate([700,300,700,300,700])}catch(e){}document.title=document.title===T0?'🚑 ¡POSIBLE CAÍDA!':T0};
         stopRing();go();ring=setInterval(go,a.test?4000:8000);if(a.test)setTimeout(stopRing,12000);
         try{if('Notification' in window&&Notification.permission==='granted')new Notification('🚑 Posible caída de '+String(d.name||'tu familiar'),{body:'No ha respondido. Abre el aviso para ver dónde está.',requireInteraction:true})}catch(e){}}
@@ -124,7 +171,8 @@ else{
     }
   }
   try{if(localStorage.getItem('rsSnd')==='1'){const u=()=>{window.sndOn();document.removeEventListener('pointerdown',u)};document.addEventListener('pointerdown',u)}}catch(e){}
-  let cur=null;setInterval(()=>{paint(cur);if(cur)showAlert(cur)},20000);
+  makeMap(STYLE);
+  setInterval(()=>{paint(cur);if(cur)showAlert(cur)},20000);
   Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
     firebase.firestore().collection('share').doc(id).onSnapshot(s=>{
       if(!s.exists){fail('Este enlace ya no está activo','Puede que tu familiar haya dejado de compartir su ubicación.');return}
