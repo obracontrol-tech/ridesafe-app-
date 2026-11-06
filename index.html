@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.28.4 — Mapa de la familia más estable (mapa de reserva y se rehace solo).
+/* v5.29.0 — Seguimiento estable para familias con Traccar Client (seguimiento.html + familia.html?t=).
+   v5.28.4 — Mapa de la familia más estable (mapa de reserva y se rehace solo).
    v5.28.3 — Modo prueba del mapa de la familia (?fambeta=1).
    v5.28.2 — Foto nueva de MTB de fondo en Actividades.
    v5.28.1 — Fotos nuevas: grupeta de fondo en «Sal a rodar acompañado» y ciclista de fondo en Perfil.
@@ -1105,6 +1106,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <a class="li" href="asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente RideSafe <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li famcard" style="margin-top:10px;border-color:#C8DC3C!important" onclick="location.href='seguimiento.html'"><span class="em">📡</span><div><b>Seguimiento estable <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small>Tu familia te ve aunque bloquees el móvil o uses otras apps. Se configura una sola vez con la app gratuita Traccar Client.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
   <div id="catchHome"></div>
   <div class="block">
@@ -1228,7 +1230,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.28.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.29.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->

@@ -67,7 +67,11 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fail(t,p){$('msg').style.display='grid';$('mt').textContent=t;$('mp').textContent=p}
 const id=(new URLSearchParams(location.search).get('v')||'').toLowerCase();
-if(!/^[a-z0-9]{6,20}$/.test(id))fail('Enlace no válido','Pide a tu familiar que te lo vuelva a enviar.');
+/* Seguimiento estable con Traccar Client: enlace ?t=CODIGO&n=NOMBRE (la posición llega por el Worker, no por Firebase) */
+const TRK='https://ridesafe-traccar.pedrosaborrego.workers.dev';
+const TID=(()=>{const t=(new URLSearchParams(location.search).get('t')||'').toLowerCase();return /^[a-z0-9]{8,24}$/.test(t)?t:''})();
+const TNAME=(new URLSearchParams(location.search).get('n')||'').slice(0,40);
+if(!TID&&!/^[a-z0-9]{6,20}$/.test(id))fail('Enlace no válido','Pide a tu familiar que te lo vuelva a enviar.');
 else{
   firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
   /* ===== BETA: mapa estable =====
@@ -117,6 +121,7 @@ else{
     if(!map&&window.maplibregl){rebuild();return}
     if(glLost()){rebuild();return}
     try{map&&map.resize();map&&map.triggerRepaint()}catch(e){rebuild()}
+    if(TID){trkPoll();return}
     if(window.firebase&&id)firebase.firestore().collection('share').doc(id).get().then(s=>{if(s.exists){cur=s.data();paint(cur);showAlert(cur)}}).catch(()=>{});
   });
   window.addEventListener('resize',()=>{try{map&&map.resize()}catch(e){}});
@@ -173,7 +178,14 @@ else{
   try{if(localStorage.getItem('rsSnd')==='1'){const u=()=>{window.sndOn();document.removeEventListener('pointerdown',u)};document.addEventListener('pointerdown',u)}}catch(e){}
   makeMap(STYLE);
   setInterval(()=>{paint(cur);if(cur)showAlert(cur)},20000);
-  Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
+  function trkPoll(){
+    fetch(TRK+'/v/'+TID,{cache:'no-store'}).then(r=>r.status===404?null:r.json()).then(d=>{
+      if(!d){if(!cur)fail('Esperando la primera posición','Abre Traccar Client en el móvil del ciclista y pulsa «Iniciar». En cuanto envíe la primera posición, aparecerá aquí.');return}
+      cur=Object.assign({},d,{name:TNAME||'Tu familiar',km:null});paint(cur);$('sub').textContent='📡 Seguimiento estable'+(d.speed?' · '+Math.round(d.speed)+' km/h':'')+(d.batt!=null?' · 🔋 '+d.batt+' %':'');
+    }).catch(()=>{if(!cur)fail('No se pudo conectar','Revisa tu conexión a internet. Se vuelve a intentar solo.')});
+  }
+  if(TID){trkPoll();setInterval(trkPoll,15000)}
+  else Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
     firebase.firestore().collection('share').doc(id).onSnapshot(s=>{
       if(!s.exists){fail('Este enlace ya no está activo','Puede que tu familiar haya dejado de compartir su ubicación.');return}
       cur=s.data();paint(cur);showAlert(cur);
