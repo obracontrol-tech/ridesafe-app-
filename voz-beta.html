@@ -1238,7 +1238,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7934,7 +7934,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.2</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
@@ -7966,7 +7966,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='Voz beta 1.1';
+const VOZ_VER='Voz beta 1.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+/.test(t))return 'loop';
@@ -8288,6 +8288,26 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
 })();
 </script>
 <!-- ===== FIN VOZ BETA ===== -->
+<!-- ===== v1.2 — Deslizar hacia abajo para actualizar la app ===== -->
+<div id="ptr" style="position:fixed;left:50%;top:-60px;z-index:9460;width:48px;height:48px;margin-left:-24px;border-radius:50%;background:#0E1A2B;border:2px solid #A3E635;color:#A3E635;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5);pointer-events:none;transition:none">↻</div>
+<script>
+/* Deslizar hacia abajo desde arriba = actualizar la app.
+   No funciona sobre el mapa, en ventanas abiertas, grabando una salida ni planificando una ruta (para no perder nada). */
+(function(){
+  const P=document.getElementById('ptr');const MAX=110,GO=85;let y0=null,dy=0,act=false;
+  const scrollParent=el=>{for(let e=el;e&&e!==document.body;e=e.parentElement){const s=getComputedStyle(e);if(/(auto|scroll)/.test(s.overflowY)&&e.scrollHeight>e.clientHeight)return e}return null};
+  const blocked=el=>{try{if(typeof live!=='undefined'&&live.on)return true;if(typeof plan!=='undefined'&&plan.active)return true}catch(e){}
+    return !!(el.closest&&el.closest('#map,.maplibregl-map,canvas,.sheet,#vozPanel,#alarmBox,#saver,input,textarea,select,[contenteditable]'))};
+  const show=d=>{const k=Math.min(d,MAX);P.style.top=(k-60)+'px';P.style.transform='rotate('+(k*3)+'deg)';P.style.opacity=Math.min(1,k/50);P.style.background=d>=GO?'#A3E635':'#0E1A2B';P.style.color=d>=GO?'#0E1A2B':'#A3E635'};
+  const hide=()=>{P.style.transition='top .25s';P.style.top='-60px';setTimeout(()=>P.style.transition='none',260)};
+  document.addEventListener('touchstart',e=>{act=false;y0=null;if(e.touches.length!==1)return;const t=e.target;if(blocked(t))return;const sp=scrollParent(t);if(sp&&sp.scrollTop>2)return;y0=e.touches[0].clientY;dy=0},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=(e.touches[0].clientY-y0)*0.55;if(dy<=4){if(act){act=false;hide()}return}act=true;show(dy)},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0==null)return;y0=null;if(!act)return;act=false;
+    if(dy>=GO){P.style.top='24px';P.style.transition='transform 1s linear';P.style.transform='rotate(720deg)';try{vib(20)}catch(e){}setTimeout(()=>location.reload(),350)}else hide()},{passive:true});
+})();
+</script>
+<!-- ===== FIN deslizar para actualizar ===== -->
+
 
 </body>
 </html>
