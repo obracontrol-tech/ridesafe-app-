@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.30.0 — Condiciones de uso y privacidad (legal.html) con aceptación obligatoria y registro en el panel master.
+/* v5.31.0 — Pantalla siempre encendida con la app abierta (Wake Lock + respaldo con vídeo mudo), interruptor en Perfil.
+   v5.30.0 — Condiciones de uso y privacidad (legal.html) con aceptación obligatoria y registro en el panel master.
    v5.29.4 — Se quita la conexión con Strava (Importar GPX sigue disponible).
    v5.29.3 — Seguimiento estable: servidor nuevo sin datos personales en la dirección.
    v5.29.2 — Seguimiento estable: se quita el QR (Traccar no lo reconocía); configuración con Copiar.
@@ -1216,6 +1217,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🧭 Si me salgo de la ruta<select class="inp" id="selNav" style="width:100%;margin-top:8px" onchange="store.set('navMode',this.value);toast({smart:'🤖 Automático: recalcula en carretera y te lleva de vuelta en montaña',auto:'🔄 Recalculará la ruta sola, como Google Maps',volver:'↩️ Te llevará de vuelta por donde has venido'}[this.value],4000)"><option value="smart">🤖 Automático (recomendado)</option><option value="auto">🔄 Recalcular siempre, como Google Maps</option><option value="volver">↩️ Volver por donde he venido</option></select><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px"><b>Automático:</b> en rutas por carretera hechas con el planificador, recalcula sola un camino nuevo al destino. En tracks de montaña, GPX o rutas del club te lleva de vuelta por donde has venido (lo más seguro). Siempre puedes pulsar «🔄 Recalcular desde aquí».</small></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
@@ -1235,7 +1237,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.30.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.31.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7681,6 +7683,19 @@ function startFirebase(){
 /* ===== Arranque ===== */
 $('app').addEventListener('scroll',e=>{if(e.target.id==='app')e.target.scrollTop=0});
 setTheme(store.get('light',false));
+/* v5.31: pantalla siempre encendida mientras la app está abierta (hasta que el ciclista bloquee el móvil) */
+const AW={wl:null,vid:null};
+function awOn(){return store.get('awake',true)!==false}
+function awVideo(){try{if(!AW.vid){const v=document.createElement('video');v.setAttribute('playsinline','');v.setAttribute('muted','');v.muted=true;v.loop=true;v.src='rs-awake.mp4';v.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1';document.body.appendChild(v);AW.vid=v}AW.vid.play().catch(()=>{})}catch(e){}}
+async function awakeOn(){if(!awOn()||document.visibilityState!=='visible')return;
+  if('wakeLock' in navigator){try{if(!(AW.wl&&!AW.wl.released)){AW.wl=await navigator.wakeLock.request('screen');AW.wl.addEventListener('release',()=>{AW.wl=null;setTimeout(awakeOn,800)})}return}catch(e){}}
+  awVideo()}
+function awakeOff(){try{AW.wl&&AW.wl.release()}catch(e){}AW.wl=null;try{AW.vid&&AW.vid.pause()}catch(e){}}
+function awSet(on){store.set('awake',!!on);if(on){awakeOn();toast('🔆 La pantalla no se apagará sola con la app abierta')}else{awakeOff();toast('La pantalla se apagará según los ajustes del móvil')}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')awakeOn()});
+['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(awOn()&&!(AW.wl&&!AW.wl.released)&&!(AW.vid&&!AW.vid.paused))awakeOn()},{passive:true,capture:true}));
+setTimeout(()=>{try{const s=$('swAwake');if(s)s.checked=awOn()}catch(e){}awakeOn()},1200);
+
 $('swPub').checked=store.get('pubActs',true);$('swNear').checked=store.get('nearOn',true);renderBikeSummary();renderInstall();renderOffmaps();netState();renderGroup();renderFeed();renderBadgeCount();
 paintName();renderRides();renderActs();
 go(store.get('tab','comunidad'));
