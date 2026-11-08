@@ -1238,7 +1238,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7934,7 +7934,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.2</div>
+ <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.3</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
@@ -7966,18 +7966,32 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='Voz beta 1.2';
+const VOZ_VER='Voz beta 1.3';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
-  if(/\bruta circular\b|\bcircular de \d+/.test(t))return 'loop';
-  if(/\bruta\b/.test(t)&&/(prepar|planific|hazme|haz una|calcul|quiero|nueva|busca|dame|ruta (de|desde|a|hasta|hacia|para|entre) )/.test(t))return 'ab';
-  if(/^(llevame|quiero ir|vamos|ir) (a|hasta|hacia) /.test(t))return 'ab';
+  if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
+  /* frases que son otras órdenes aunque digan «ruta» */
+  if(/(empez|inici|arranc|comenz|segui|sigue|continu|pausa|termin|acab|finaliz|guard|falta|queda|centr|repit|vuelve|volver|salido|salirme|fuera de|recalcul)/.test(t))return '';
+  if(/\bruta\b/.test(t)){const rest=t.replace(/^.*?\bruta\b/,'').replace(/\b(de|desde|a|al|hasta|hacia|para|entre|y|en|bici|por|favor|una|la|el|ir)\b/g,'').trim();return rest?'ab':''}
+  if(/(parar|parada|pinch|esperar|llover|beber|agua|fuente)/.test(t))return '';
+  if(/^(?:(?:ir|vamos|voy|llevame|quiero ir|como llego|como se va|como voy)\s+)?(?:de|desde)\s+\S.*\s+(?:a|al|hasta|hacia)\s+\S/.test(t))return 'ab';
+  if(/^(?:llevame|quiero ir|vamos|voy|ir|como llego|como se va|como voy|navega|navegar)\s+(?:a|al|hasta|hacia)\s+\S/.test(t))return 'ab';
   return '';
 }
-async function vozGeo(q){q=String(q||'').trim();if(!q)return null;let r=await geoPlace(q);
-  if(!r){const v=q.replace(/([aeiou])s([aeiou])/g,'$1ss$2');if(v!==q)r=await geoPlace(v)}   /* «Mollerusa» → «Mollerussa» */
-  if(!r){const v=q.replace(/([aeiou])l([aeiou])/g,'$1ll$2');if(v!==q)r=await geoPlace(v)}
-  return r?{...r,label:q.replace(/\b\w/g,c=>c.toUpperCase())}:null}
+async function vozNomi(q,town){
+  try{const me=myLL();let u='https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q);
+    if(town)u+='&featuretype=settlement';
+    if(me)u+=`&viewbox=${(me.lng-1.6).toFixed(3)},${(me.lat+1.2).toFixed(3)},${(me.lng+1.6).toFixed(3)},${(me.lat-1.2).toFixed(3)}&bounded=0`;   /* da preferencia a los sitios cercanos */
+    const j=await (await fetch(u)).json();if(j&&j[0])return{lat:+j[0].lat,lng:+j[0].lon,name:(j[0].display_name||'').split(',')[0]}}catch(e){}
+  return null}
+async function vozGeo(q){q=String(q||'').replace(/\s+/g,' ').trim();if(!q)return null;
+  const vars=[q];const v1=q.replace(/([aeiou])s([aeiou])/g,'$1ss$2'),v2=q.replace(/([aeiou])l([aeiou])/g,'$1ll$2');   /* «Mollerusa» → «Mollerussa» */
+  if(v1!==q)vars.push(v1);if(v2!==q)vars.push(v2);
+  let r=null;
+  for(const v of vars){r=await vozNomi(v,true);if(r)break}          // 1º: pueblos y ciudades
+  if(!r)for(const v of vars){r=await vozNomi(v,false);if(r)break}    // 2º: cualquier sitio (barrio, ermita, pantano…)
+  if(!r&&typeof geoPlace==='function')r=await geoPlace(q);
+  return r?{lat:r.lat,lng:r.lng,label:r.name||q.replace(/\b\w/g,c=>c.toUpperCase())}:null}
 async function vozHereLL(){const m=myLL();if(m)return m;try{const p=await gpsOnce();return{lat:p[0],lng:p[1],label:HERE}}catch(e){return null}}
 async function vozRoute(t,kind){
   if(typeof live!=='undefined'&&live.on){vozSay('Termina primero la salida que estás grabando.');return}
@@ -7988,10 +8002,11 @@ async function vozRoute(t,kind){
     vozPill('🔁 Ruta circular de '+km+' km','Buscando tu posición…',0);
     start=await vozHereLL();if(!start){vozSay('No tengo tu posición. Activa la ubicación.');return}
   }else{
-    let r=t.replace(/^.*?\bruta\b/,'').replace(/^.*?\b(llevame|quiero ir|vamos|ir)\b/,'').replace(/\b(en bici|por favor|para manana|para hoy)\b/g,'').trim();
+    let r=/\bruta\b/.test(t)?t.replace(/^.*?\bruta\b/,''):t.replace(/^(?:ir|vamos|voy|llevame|quiero ir|como llego|como se va|como voy|navega|navegar)\b/,'');
+    r=r.replace(/\b(en bici|por favor|para manana|para hoy|ahora)\b/g,'').replace(/\s+/g,' ').trim();
     r=r.replace(/^(de ida |en |para ir |para )/,'').trim();
     let a='',b='';
-    const m=r.match(/^(?:(?:de|desde|entre)\s+(.+?)\s+(?:a|hasta|hacia|y)\s+(.+)|(?:a|hasta|hacia)\s+(.+))$/);
+    const m=r.match(/^(?:(?:de|desde|entre)\s+(.+?)\s+(?:a|hasta|hacia|y)\s+(.+)|(?:a|al|hasta|hacia)\s+(.+))$/);
     if(m){a=m[1]||'';b=m[2]||m[3]||''}
     else{r=r.replace(/^(de|desde)\s+/,'');const w=r.split(' ').filter(Boolean);
       if(w.length>=2){for(const i of [1,w.length-1,2].filter((x,k,arr)=>x>0&&x<w.length&&arr.indexOf(x)===k)){
@@ -8002,7 +8017,7 @@ async function vozRoute(t,kind){
       if(!b){vozSay('Dime el destino. Por ejemplo: ruta de Mollerussa a Cervera.');return}
       vozPill('🗺️ Buscando '+(a?a+' → ':'')+b+'…','',0);
       dest=await vozGeo(b);if(!dest){vozSay('No encuentro '+b+'.');return}
-      start=a?await vozGeo(a):await vozHereLL();
+      start=a&&!/^(aqui|donde estoy|mi posicion|mi ubicacion)$/.test(a)?await vozGeo(a):await vozHereLL();
       if(!start){vozSay(a?'No encuentro '+a+'.':'No tengo tu posición. Di también desde dónde sales.');return}
     }
   }
