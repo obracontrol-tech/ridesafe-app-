@@ -1238,7 +1238,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0 · Voz beta 1.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7934,7 +7934,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.3</div>
+ <div style="color:#cbd5e1;font-size:14px">Beta de prueba · Voz beta 1.4</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
@@ -7957,6 +7957,10 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
   <tr><td>«Centrar»</td><td>El mapa vuelve a tu posición</td></tr>
   <tr><td>«Pantalla negra»</td><td>Modo ahorro de batería</td></tr>
   <tr><td>«Silencio» / «Habla»</td><td>Apaga o enciende la voz de la navegación</td></tr>
+  <tr><td>«Comunidad» / «Actividades»<br>«Perfil» / «Rutas»</td><td>Cambia de pestaña (también «ve a comunidad», «abre perfil»)</td></tr>
+  <tr><td>«Baja» / «Sube»</td><td>Mueve la pantalla hacia abajo o hacia arriba</td></tr>
+  <tr><td>«Cierra»</td><td>Cierra la ventana abierta</td></tr>
+  <tr><td>«Crear»</td><td>Abre el menú de crear (salida, ruta…)</td></tr>
   <tr><td>«Qué hora es»</td><td>Te dice la hora</td></tr>
  </table>
  <div class="vnote">• Funciona en <b>Chrome de Android</b> y necesita datos móviles para entender la voz.<br>• Con viento fuerte se entiende peor: habla cerca del móvil o usa el micro del casco.<br>• Con la pantalla apagada no escucha (la app ya la mantiene encendida en ruta).<br>• Mantén pulsado el botón 🎤 para abrir esta ventana.<br>• Por seguridad nunca llama sola al 112: el botón rojo lo pulsas tú.</div>
@@ -7966,7 +7970,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='Voz beta 1.3';
+const VOZ_VER='Voz beta 1.4';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8214,6 +8218,19 @@ function vozRun(t){
   }
   if(vozHas(t,/(habla|activa la voz|pon la voz|enciende la voz|con voz)/)){
     if(L){if(!live.voice)toggleVoice();else vozSay('La voz ya está activada.')}else vozSay('No estás en ruta.');return true;
+  }
+  // --- v1.4: moverse por la app (pestañas, cerrar, subir y bajar) ---
+  {const TB=[[/\b(comunidad|club|mi club)\b/,'comunidad','Comunidad'],[/\b(actividades|actividad|mis salidas|historial)\b/,'actividades','Actividades'],[/\b(perfil|ajustes|configuracion|mi perfil)\b/,'perfil','Perfil'],[/\b(rutas|mapa|inicio|pantalla principal)\b/,'rutas','Rutas']];
+   const verb=/\b(ir|ve|vete|abre|abrir|pasa|pasar|muestra|muestrame|ensename|pon|cambia|cambiar|entra|entrar|llevame|quiero ver|ver)\b/;
+   const short=t.split(' ').length<=3;
+   for(const [re,tab,name] of TB){if(re.test(t)&&(short||verb.test(t))){
+     if(L){vozSay('Durante la salida la app se queda en el mapa.');return true}
+     try{closeSheets()}catch(e){}vozPanelClose();go(tab);vozPill('📂 '+name,'',2500);vozSay(name+'.');return true}}
+   if(/\b(crear|nueva salida|crear salida|nueva quedada)\b/.test(t)&&!L){try{closeSheets()}catch(e){}togglePlus();vozSay('Crear.');return true}
+   if(/\b(cierra|cerrar|cierralo|cierra la ventana|atras|vuelve atras)\b/.test(t)){try{closeSheets()}catch(e){}vozPanelClose();try{alarmClose()}catch(e){}vozPill('✕ Cerrado','',1500);return true}
+   const down=/^(baja|bajar|abajo|mas abajo|sigue bajando|baja mas)$/.test(t),up=/^(sube|subir|arriba|mas arriba|sube mas)$/.test(t);
+   if(down||up){const el=document.querySelector('.sheet.show')||document.querySelector('.screen.active');
+     if(el){el.scrollBy({top:(down?1:-1)*Math.round(el.clientHeight*0.7),behavior:'smooth'});vozPill(down?'⬇️ Bajando':'⬆️ Subiendo','',1200)}return true}
   }
   // --- Hora ---
   if(vozHas(t,/(que hora|hora es|dime la hora)/)){const d=new Date();vozSay(`Son las ${d.getHours()} y ${String(d.getMinutes()).padStart(2,'0')}.`);return true}
