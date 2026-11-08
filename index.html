@@ -1033,7 +1033,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="lvshow" id="lvShow"><button type="button" class="lvup" onclick="lvMin(false)" aria-label="Subir los datos">⌃ <b id="lvMinSp">0</b> km/h · Ver datos</button><button type="button" class="lvsosm" onclick="sos()">SOS</button></div>
   <div class="lv lvpanel">
     <div class="lvhandle" onclick="lvMin(true)" role="button" aria-label="Bajar los datos para ver solo el mapa"><i></i></div>
-    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
+    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="liveChangeRoute()" id="lvRouteBtn" aria-label="Cambiar de ruta sin perder km ni tiempo">🔀</button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
     <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid" onclick="sumSay()" title="Toca para oír el resumen" style="cursor:pointer"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.35.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.36.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6566,7 +6566,7 @@ function prepNav(coords,steps){
 /* Empezar: libre, con ruta (navegación) o con una salida del grupo (pelotón) */
 async function startLive(opt){
   opt=opt||{};
-  if(live.on){toast('Ya estás grabando');return}
+  if(live.on){if(opt.route&&!opt.rideId){closeSheets();if(plan.active){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}go('rutas');navRoute(opt.route,opt.wps);live.follow=true;renderLive();speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Ruta cambiada. Tus km y tu tiempo siguen contando',5000)}else toast('Ya estás grabando');return}   /* v5.36: cambiar de ruta en marcha */
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
   closeSheets();
   const wasPlan=plan.active;if(wasPlan){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}
@@ -7346,6 +7346,23 @@ async function liveResume(bk,finish){
 window.addEventListener('load',()=>setTimeout(liveRecoverCheck,2500));
 window.addEventListener('load',()=>setTimeout(famResume,4000));
 
+
+/* v5.36 — Cambiar de ruta en plena salida sin perder los km ni el tiempo que llevas */
+async function liveChangeRoute(){
+  if(!live.on)return;
+  try{document.querySelectorAll('.lvside.open,.lvpop.open').forEach(e=>e.classList.remove('open'))}catch(e){}
+  const list=store.get('routes',[]).slice(0,8);
+  const opts=list.map(r=>['🗺️ '+r.name+' · '+r.km+' km']);
+  const iGo=opts.length;opts.push(['📍 Ir a un sitio (escribe el nombre)']);
+  const iOff=live.nav?opts.length:-9;if(live.nav)opts.push(['🚫 Quitar la ruta y seguir grabando libre','red']);
+  const i=await askChoice('🔀 Cambiar de ruta · Tus km y tu tiempo siguen contando',opts);
+  if(i<0||!live.on)return;
+  if(i<list.length){const r=list[i];let u;try{u=unpackRoute(r)}catch(e){toast('No se pudo abrir esa ruta');return}
+    navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
+    speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Nueva ruta: '+r.name+'. Tus km y tu tiempo siguen contando',5000);return}
+  if(i===iGo){const q=prompt('¿A dónde quieres ir? (pueblo, calle o sitio)');if(q&&q.trim()){toast('Buscando el camino…');await liveGuide(q.trim());renderLive()}return}
+  if(i===iOff){live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')}
+}
 /* Botones que arrancan el modo en vivo */
 function toggleRec(){startLive({})}
 function goNav(){
