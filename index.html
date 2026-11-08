@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.35.0 — «Buscar actualización» en Perfil y aviso automático cuando hay versión nueva.
+/* v5.35.1 — Con la beta activada se esconde la tarjeta vieja «Seguimiento estable» y seguimiento.html lleva a la tarjeta nueva de 3 pasos.
+   v5.35.0 — «Buscar actualización» en Perfil y aviso automático cuando hay versión nueva.
    v5.34.0 — Beta: la parabólica 📡 de la salida ofrece «Empezar seguimiento estable y avisar a la familia» (Traccar).
    v5.33.0 — Beta privada: «Seguimiento con móvil bloqueado» (Traccar configurado con un toque), solo con ?trkbeta=1.
    v5.32.0 — Aviso importante (pantalla siempre encendida) a pantalla completa al abrir la app, con «Leído».
@@ -1118,7 +1119,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <!-- v5.33: Seguimiento con el móvil bloqueado (beta privada; se activa con ?trkbeta=1) -->
   <button class="li famcard" id="trkBetaCard" style="display:none;margin-top:10px;border-color:#C8DC3C!important;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04))" onclick="trkBetaOpen()"><span class="em">🛰️</span><div><b>Seguimiento con móvil bloqueado <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">BETA</span></b><small>Se configura con un toque: instala Traccar Client, toca «Configurar» y tu familia te ve aunque lleves el móvil bloqueado en el bolsillo.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-  <button class="li famcard" style="margin-top:10px;border-color:#C8DC3C!important" onclick="location.href='seguimiento.html'"><span class="em">📡</span><div><b>Seguimiento estable <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small>Tu familia te ve aunque bloquees el móvil o uses otras apps. Se configura una sola vez con la app gratuita Traccar Client.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li famcard" id="trkOldCard" style="margin-top:10px;border-color:#C8DC3C!important" onclick="location.href='seguimiento.html'"><span class="em">📡</span><div><b>Seguimiento estable <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small>Tu familia te ve aunque bloquees el móvil o uses otras apps. Se configura una sola vez con la app gratuita Traccar Client.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
   <div id="catchHome"></div>
   <div class="block">
@@ -1245,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.35.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.35.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7750,7 +7751,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 /* v5.33: beta privada del seguimiento con móvil bloqueado. Se activa en este móvil con ?trkbeta=1 y se quita con ?trkbeta=0 */
 const TRK_SRV='https://ridesafeia.divine-feather-45bc.workers.dev';
 function trkBetaOn(){try{return localStorage.getItem('rsTrkBeta')==='1'}catch(e){return false}}
-function trkBetaShow(){try{const c=document.getElementById('trkBetaCard');if(c)c.style.display=trkBetaOn()?'':'none'}catch(e){}}
+function trkBetaShow(){try{const c=document.getElementById('trkBetaCard');if(c)c.style.display=trkBetaOn()?'':'none';const o=document.getElementById('trkOldCard');if(o)o.style.display=trkBetaOn()?'none':''}catch(e){}}   /* v5.35.1: con la beta, se esconde la tarjeta vieja */
 function trkBetaOpen(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}
   if(!/^[a-z0-9]{8,24}$/.test(id)){const a='abcdefghijkmnpqrstuvwxyz23456789';const r=new Uint32Array(9);crypto.getRandomValues(r);id='rs'+Array.from(r,x=>a[x%a.length]).join('');try{localStorage.setItem('rsTrkId',id)}catch(e){}}
   const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';
