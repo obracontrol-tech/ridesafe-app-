@@ -105,7 +105,7 @@ const QID=(new URLSearchParams(location.search).get('id')||'').toLowerCase();if(
 let ID=ls.get('rsTrkId');if(!/^[a-z0-9]{8,24}$/.test(ID||'')){ID=newId();ls.set('rsTrkId',ID)}
 let NAME=ls.get('rsTrkName')||'';
 /* v5.35.1: con la beta activada, esta página lleva a la tarjeta nueva de 3 pasos */
-if(ls.get('rsTrkBeta')==='1'&&!/[?&]vieja=1/.test(location.search)){let n=NAME;try{const m=JSON.parse(ls.get('velogo_me')||'{}');if(m&&m.name)n=m.name}catch(e){}location.replace(SRV+'/c/'+ID+(n?'?n='+encodeURIComponent(String(n).slice(0,40)):''))}
+if(ls.get('rsTrkBeta')!=='0'&&!/[?&]vieja=1/.test(location.search)){let n=NAME;try{const m=JSON.parse(ls.get('velogo_me')||'{}');if(m&&m.name)n=m.name}catch(e){}location.replace(SRV+'/c/'+ID+(n?'?n='+encodeURIComponent(String(n).slice(0,40)):''))}
 if(!NAME){try{const me=JSON.parse(localStorage.getItem('velogo_me')||'null');if(me&&me.name&&me.name!=='Ciclista')NAME=me.name}catch(e){}}
 $('nm').value=NAME;
 const link=()=>{const n=($('nm').value||'').trim();return location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?t='+ID+(n?'&n='+encodeURIComponent(n):'')};

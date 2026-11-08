@@ -1207,7 +1207,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.12.1 (base 5.35.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.12.2 (base 5.35.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7720,13 +7720,13 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* v5.33: beta privada del seguimiento con móvil bloqueado. Se activa en este móvil con ?trkbeta=1 y se quita con ?trkbeta=0 */
 const TRK_SRV='https://ridesafeia.divine-feather-45bc.workers.dev';
-function trkBetaOn(){try{return localStorage.getItem('rsTrkBeta')==='1'}catch(e){return false}}
+function trkBetaOn(){try{return localStorage.getItem('rsTrkBeta')!=='0'}catch(e){return true}}   /* v5.35.2: la tarjeta nueva para todos */
 function trkBetaShow(){try{const c=document.getElementById('trkBetaCard');if(c)c.style.display=trkBetaOn()?'':'none'}catch(e){}}
 function trkBetaOpen(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}
   if(!/^[a-z0-9]{8,24}$/.test(id)){const a='abcdefghijkmnpqrstuvwxyz23456789';const r=new Uint32Array(9);crypto.getRandomValues(r);id='rs'+Array.from(r,x=>a[x%a.length]).join('');try{localStorage.setItem('rsTrkId',id)}catch(e){}}
   const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';
   location.href=TRK_SRV+'/c/'+id+(n?'?n='+encodeURIComponent(n):'')}
-try{const q=new URLSearchParams(location.search).get('trkbeta');if(q==='1'){localStorage.setItem('rsTrkBeta','1');setTimeout(()=>toast('🛰️ Beta activada: en Familia tienes «Seguimiento con móvil bloqueado»',6000),1500)}else if(q==='0'){localStorage.removeItem('rsTrkBeta');setTimeout(()=>toast('Beta del seguimiento desactivada'),1500)}}catch(e){}
+try{const q=new URLSearchParams(location.search).get('trkbeta');if(q==='1'){localStorage.setItem('rsTrkBeta','1');setTimeout(()=>toast('🛰️ Beta activada: en Familia tienes «Seguimiento con móvil bloqueado»',6000),1500)}else if(q==='0'){localStorage.setItem('rsTrkBeta','0');setTimeout(()=>toast('Beta del seguimiento desactivada'),1500)}}catch(e){}
 setTimeout(trkBetaShow,300);
 
 /* v5.32: aviso importante a pantalla completa al abrir la app; se lee una vez y con «Leído» se entra */
