@@ -5536,7 +5536,7 @@ function locateForPlan(){
     redrawPlanMarkers();renderPlan();computeRoute();
   },()=>{},{enableHighAccuracy:true,timeout:10000});
 }
-function exitPlanner(){planTiny(false);togglePlanMini(false);$('planPanel').classList.remove('draw');
+function exitPlanner(){if(document.body.classList.contains('lvdesign'))setTimeout(liveDesignEnd,0);planTiny(false);togglePlanMini(false);$('planPanel').classList.remove('draw');
   viewingComm=null;plan.active=false;plan.view=false;clearPlan(true);setPlanning(false);
   if(plan.fromCreate){plan.fromCreate=false;reopenCreate()}
 }
@@ -5938,7 +5938,7 @@ function renderPlan(){
   $('pStages').innerHTML=stageRows(r);
   $('pActions').style.display=r?'grid':'none';
   $('bSave').style.display=v&&!viewingComm?'none':'flex';$('bPub').style.display=r&&!v?'flex':'none';$('bDelComm').style.display=v&&viewingComm&&(viewingComm.uid===uid||isClubAdm())?'block':'none';$('bRepComm').style.display=v&&viewingComm&&viewingComm.uid!==uid?'block':'none';$('bEdit').style.display=v&&r?'block':'none';
-  ['bGo','bSave','bUse'].forEach(i=>$(i).disabled=!r||plan.busy);$('bGo').innerHTML=plan.view&&r&&r.mode==='track'?'▲ Repetir':'▲ Iniciar';
+  ['bGo','bSave','bUse'].forEach(i=>$(i).disabled=!r||plan.busy);$('bGo').innerHTML=(typeof live!=='undefined'&&live.on)?'▶ Seguir ruta':plan.view&&r&&r.mode==='track'?'▲ Repetir':'▲ Iniciar';
   $('bUse').innerHTML=plan.fromCreate?'✓ Añadir a la salida':'📅 Crear salida con esta ruta';
 }
 /* ===== v3.13 — Paradas en la ruta (OpenStreetMap + Puntos ciclistas) ===== */
@@ -6536,7 +6536,7 @@ function prepNav(coords,steps){
 /* Empezar: libre, con ruta (navegación) o con una salida del grupo (pelotón) */
 async function startLive(opt){
   opt=opt||{};
-  if(live.on){if(opt.route&&!opt.rideId){closeSheets();if(plan.active){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}go('rutas');navRoute(opt.route,opt.wps);live.follow=true;renderLive();speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Ruta cambiada. Tus km y tu tiempo siguen contando',5000)}else toast('Ya estás grabando');return}   /* v5.36: cambiar de ruta en marcha */
+  if(live.on){if(opt.route&&!opt.rideId){closeSheets();if(plan.active){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}go('rutas');liveDesignEnd();navRoute(opt.route,opt.wps);live.follow=true;renderLive();speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Ruta cambiada. Tus km y tu tiempo siguen contando',5000)}else toast('Ya estás grabando');return}   /* v5.36: cambiar de ruta en marcha */
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
   closeSheets();
   const wasPlan=plan.active;if(wasPlan){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}
@@ -7323,15 +7323,39 @@ async function liveChangeRoute(){
   try{document.querySelectorAll('.lvside.open,.lvpop.open').forEach(e=>e.classList.remove('open'))}catch(e){}
   const list=store.get('routes',[]).slice(0,8);
   const opts=list.map(r=>['🗺️ '+r.name+' · '+r.km+' km']);
+  opts.unshift(['✏️ Diseñar ruta nueva en el mapa']);
   const iGo=opts.length;opts.push(['📍 Ir a un sitio (escribe el nombre)']);
   const iOff=live.nav?opts.length:-9;if(live.nav)opts.push(['🚫 Quitar la ruta y seguir grabando libre','red']);
   const i=await askChoice('🔀 Cambiar de ruta · Tus km y tu tiempo siguen contando',opts);
   if(i<0||!live.on)return;
-  if(i<list.length){const r=list[i];let u;try{u=unpackRoute(r)}catch(e){toast('No se pudo abrir esa ruta');return}
+  if(i===0){liveDesign();return}
+  if(i>0&&i<=list.length){const r=list[i-1];let u;try{u=unpackRoute(r)}catch(e){toast('No se pudo abrir esa ruta');return}
     navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
     speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Nueva ruta: '+r.name+'. Tus km y tu tiempo siguen contando',5000);return}
   if(i===iGo){const q=prompt('¿A dónde quieres ir? (pueblo, calle o sitio)');if(q&&q.trim()){toast('Buscando el camino…');await liveGuide(q.trim());renderLive()}return}
   if(i===iOff){live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')}
+}
+/* v5.36 — Diseñar una ruta nueva en el mapa sin parar la grabación; al terminar, «▶ Seguir ruta» */
+function liveDesign(){
+  if(!live.on)return;
+  $('app').classList.remove('live');$('s-rutas').classList.remove('live');document.body.classList.add('lvdesign');
+  let pill=$('lvDesignPill');
+  if(!pill){pill=document.createElement('button');pill.id='lvDesignPill';pill.type='button';pill.onclick=()=>{exitPlanner();liveDesignEnd()};
+    pill.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));z-index:9999;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;border:2px solid #fff;background:#EF4444;color:#fff;font:800 14.5px "Plus Jakarta Sans",system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap';
+    document.body.appendChild(pill)}
+  const upd=()=>{if(!document.body.classList.contains('lvdesign')){clearInterval(pill.__t);return}const s=Math.max(0,Math.floor((Date.now()-live.startT-(live.pausedMs||0))/1000));
+    pill.innerHTML='● Grabando · '+fmtNum(live.km||0,1)+' km · '+Math.floor(s/3600)+':'+String(Math.floor(s/60)%60).padStart(2,'0')+' &nbsp;<u>Volver</u>'};
+  clearInterval(pill.__t);upd();pill.__t=setInterval(upd,1000);pill.style.display='flex';
+  startPlanner('draw');
+  const h=live.pts.at(-1)||(typeof hereLL==='function'?hereLL():null);
+  if(h){plan.start={lat:h[0],lng:h[1],label:'Estoy aquí'};redrawPlanMarkers();renderPlan()}
+  speak('Toca en el mapa los pueblos por donde quieres pasar. Cuando acabes, pulsa seguir ruta.');
+  toast('✏️ Toca los pueblos por donde quieres pasar. Al acabar: ▶ Seguir ruta',4000);
+}
+function liveDesignEnd(){
+  if(!document.body.classList.contains('lvdesign'))return;
+  document.body.classList.remove('lvdesign');const pill=$('lvDesignPill');if(pill){clearInterval(pill.__t);pill.style.display='none'}
+  if(live.on){$('app').classList.add('live');$('s-rutas').classList.add('live');setLine(map,live.pts,'track','#60A5FA');renderLive()}
 }
 /* Botones que arrancan el modo en vivo */
 function toggleRec(){startLive({})}
