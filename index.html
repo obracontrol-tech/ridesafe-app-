@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.32.0 — Aviso importante (pantalla siempre encendida) a pantalla completa al abrir la app, con «Leído».
+/* v5.33.0 — Beta privada: «Seguimiento con móvil bloqueado» (Traccar configurado con un toque), solo con ?trkbeta=1.
+   v5.32.0 — Aviso importante (pantalla siempre encendida) a pantalla completa al abrir la app, con «Leído».
    v5.31.0 — Pantalla siempre encendida con la app abierta (Wake Lock + respaldo con vídeo mudo), interruptor en Perfil.
    v5.30.0 — Condiciones de uso y privacidad (legal.html) con aceptación obligatoria y registro en el panel master.
    v5.29.4 — Se quita la conexión con Strava (Importar GPX sigue disponible).
@@ -1113,6 +1114,8 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <a class="li" href="asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente RideSafe <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <!-- v5.33: Seguimiento con el móvil bloqueado (beta privada; se activa con ?trkbeta=1) -->
+  <button class="li famcard" id="trkBetaCard" style="display:none;margin-top:10px;border-color:#C8DC3C!important;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04))" onclick="trkBetaOpen()"><span class="em">🛰️</span><div><b>Seguimiento con móvil bloqueado <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">BETA</span></b><small>Se configura con un toque: instala Traccar Client, toca «Configurar» y tu familia te ve aunque lleves el móvil bloqueado en el bolsillo.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:10px;border-color:#C8DC3C!important" onclick="location.href='seguimiento.html'"><span class="em">📡</span><div><b>Seguimiento estable <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small>Tu familia te ve aunque bloquees el móvil o uses otras apps. Se configura una sola vez con la app gratuita Traccar Client.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
 
   <div id="catchHome"></div>
@@ -1238,7 +1241,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.32.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.33.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7684,6 +7687,17 @@ function startFirebase(){
 /* ===== Arranque ===== */
 $('app').addEventListener('scroll',e=>{if(e.target.id==='app')e.target.scrollTop=0});
 setTheme(store.get('light',false));
+/* v5.33: beta privada del seguimiento con móvil bloqueado. Se activa en este móvil con ?trkbeta=1 y se quita con ?trkbeta=0 */
+const TRK_SRV='https://ridesafeia.divine-feather-45bc.workers.dev';
+function trkBetaOn(){try{return localStorage.getItem('rsTrkBeta')==='1'}catch(e){return false}}
+function trkBetaShow(){try{const c=document.getElementById('trkBetaCard');if(c)c.style.display=trkBetaOn()?'':'none'}catch(e){}}
+function trkBetaOpen(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}
+  if(!/^[a-z0-9]{8,24}$/.test(id)){const a='abcdefghijkmnpqrstuvwxyz23456789';const r=new Uint32Array(9);crypto.getRandomValues(r);id='rs'+Array.from(r,x=>a[x%a.length]).join('');try{localStorage.setItem('rsTrkId',id)}catch(e){}}
+  const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';
+  location.href=TRK_SRV+'/c/'+id+(n?'?n='+encodeURIComponent(n):'')}
+try{const q=new URLSearchParams(location.search).get('trkbeta');if(q==='1'){localStorage.setItem('rsTrkBeta','1');setTimeout(()=>toast('🛰️ Beta activada: en Familia tienes «Seguimiento con móvil bloqueado»',6000),1500)}else if(q==='0'){localStorage.removeItem('rsTrkBeta');setTimeout(()=>toast('Beta del seguimiento desactivada'),1500)}}catch(e){}
+setTimeout(trkBetaShow,300);
+
 /* v5.32: aviso importante a pantalla completa al abrir la app; se lee una vez y con «Leído» se entra */
 const RS_NOTICE={id:'pantalla-2026-11',date:'7/11/2026',title:'INFORMACIÓN MUY IMPORTANTE',text:`Hola,
 Para que tu ruta se registre bien y tu familia y tu grupo puedan seguir tu ubicación sin cortes, recuerda no bloquear el móvil con el botón durante la salida. Si bloqueas la pantalla, el teléfono puede detener la app para ahorrar batería.
