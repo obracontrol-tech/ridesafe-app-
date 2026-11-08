@@ -6435,8 +6435,8 @@ function cascoHandlers(){
   if(!('mediaSession' in navigator))return;const ms=navigator.mediaSession;
   const set=(a,f)=>{try{ms.setActionHandler(a,()=>{f();cascoKeep()})}catch(e){}};
   const musPauseLike=()=>{if(musSysPause()){if(mus.a)mus.a.pause();musAutoResume()}else musPause()};
-  set('play',()=>{if(cascoMusic())musPlay();else cascoRepeat()});
-  set('pause',()=>{if(cascoMusic())musPauseLike();else cascoRepeat()});
+  set('play',()=>{if(vcPtt())vcListenOnce();else if(cascoMusic())musPlay();else cascoRepeat()});
+  set('pause',()=>{if(vcPtt())vcListenOnce();else if(cascoMusic())musPauseLike();else cascoRepeat()});
   set('nexttrack',()=>{if(cascoMusic())musNext();else if(live.on)cascoSay(sumText());else cascoRepeat()});
   set('previoustrack',()=>{if(cascoMusic())musPrev();else if(live.on&&live.wx)cascoSay(lwText());else cascoSay('Todavía no tengo el viento.')});
 }
@@ -7108,7 +7108,7 @@ async function stopLive(){
   finishLive(true);
 }
 async function finishLive(save){
-  try{vcStop()}catch(e){}saverOff();fallStop();cascoStop();const L=live;live={on:false};try{setLine(map,null,'back');if(L.backMk)L.backMk.remove()}catch(e){}alarmStop();$('alarmBox').classList.remove('show');
+  try{vcStop();vcPttDisarm()}catch(e){}saverOff();fallStop();cascoStop();const L=live;live={on:false};try{setLine(map,null,'back');if(L.backMk)L.backMk.remove()}catch(e){}alarmStop();$('alarmBox').classList.remove('show');
   navigator.geolocation.clearWatch(L.watch);clearInterval(L.timer);clearInterval(L.bkTimer);clearInterval(L.wxT);liveBackupClear();
   if(CAM.open){CAM.closeAfter=false;if(CAM.rec&&CAM.rec.state==='recording'){CAM.closeAfter=true;CAM.rec.stop()}else camClose()}
   (L.camMk||[]).forEach(m=>m.remove());
@@ -7402,9 +7402,9 @@ const vcOk=()=>!!(window.SpeechRecognition||window.webkitSpeechRecognition);
 const vcOn=()=>!!store.get('vcOn',false);
 function vcNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim()}
 function vcSay(t){VC.quiet=Date.now()+Math.max(2500,String(t).length*85+1500);cascoSay(t)}
-function vcChip(){const c=$('vcChip');if(c)c.style.display=(live.on&&vcOn()&&VC.rec)?'inline-flex':'none';const b=$('lvVozBtn');if(b){const on=vcOn();b.style.setProperty('background',on?'#16A34A':'','important');b.style.setProperty('border-color',on?'#fff':'','important');b.style.opacity=on?'1':'.75'}}
+function vcChip(){const c=$('vcChip');if(c){const p=vcPtt();c.style.display=(live.on&&vcOn()&&(VC.rec||p))?'inline-flex':'none';c.innerHTML=VC.rec?'🎙️ Te escucho':'🎧 Pulsa ▶️ del casco';c.style.background=VC.rec?'#16A34A':'#0E1A2B';c.onclick=p?(()=>vcListenOnce()):(()=>vozSet(false))}const b=$('lvVozBtn');if(b){const on=vcOn();b.style.setProperty('background',on?'#16A34A':'','important');b.style.setProperty('border-color',on?'#fff':'','important');b.style.opacity=on?'1':'.75'}}
 function vcStart(){
-  if(!vcOk()||VC.rec||!live.on||!vcOn())return;
+  if(!vcOk()||VC.rec||!live.on||!vcOn()||vcPtt())return;
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new R();
   r.lang='es-ES';r.continuous=true;r.interimResults=false;r.maxAlternatives=3;
   r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;
@@ -7417,7 +7417,31 @@ function vcStart(){
   vcChip();
 }
 function vcStop(){const r=VC.rec;VC.rec=null;if(r){try{r.abort()}catch(e){}}vcChip()}
-function vcAuto(){vcChip();if(vcOn())setTimeout(vcStart,1200)}
+function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
+/* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
+const vcPtt=()=>vcOn()&&!!store.get('vcPtt',false);
+function vcPttArm(){
+  if(!vcPtt()||!live.on||!('mediaSession' in navigator))return;
+  try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
+    CASCO.a.play().then(()=>{cascoHandlers();try{navigator.mediaSession.playbackState='playing';if(!mus.a)navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Pulsa para hablar',artist:live.rideTitle||'En ruta'})}catch(e){}}).catch(e=>console.warn('ptt casco',e))}catch(e){}
+  vcChip();
+}
+function vcPttDisarm(){try{if(!CASCO.on&&CASCO.a)CASCO.a.pause()}catch(e){}}
+function vcListenOnce(){
+  if(!live.on||!vcOk())return;
+  if(VC.rec){beepPtt(990);vib(40);return}   // ya está escuchando
+  try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new R();
+  r.lang='es-ES';r.continuous=false;r.interimResults=false;r.maxAlternatives=3;let got=false;
+  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
+    got=true;let ok=false;for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n)){ok=true;break}}if(!ok)vcSay('No te he entendido. Pulsa otra vez.')}};
+  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed')toast('🎙️ Permite el micrófono para las órdenes por voz',5000);else if(e.error==='network')vcSay('Sin cobertura, no puedo escucharte.')};
+  r.onend=()=>{if(VC.rec===r)VC.rec=null;vcChip();if(!got&&live.on)beepPtt(440);try{cascoKeep()}catch(e){}
+    if(got&&live.on&&VC.ask&&Date.now()-VC.askT<4000)setTimeout(()=>{if(VC.ask&&live.on)vcListenOnce()},Math.max(600,VC.quiet-Date.now()+300))};   // pregunta «sí / no»: vuelve a escuchar sola
+  VC.quiet=0;beepPtt(990);vib(40);
+  setTimeout(()=>{try{r.start();VC.rec=r;vcChip()}catch(e){VC.rec=null}},250);
+}
+function vcPttSet(on){store.set('vcPtt',!!on);if(live.on){if(on){vcStop();vcPttArm()}else{vcPttDisarm();vcStart()}}renderVoz();vcChip();toast(on?'🎧 Pulsa ▶️/⏸ del casco y di la orden':'🎙️ La app escucha todo el rato durante la salida',4000)}
 function vcHandle(alts){
   for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
 }
@@ -7439,6 +7463,7 @@ function vcDo(n){
   if(has(/\b(pausa|pausar|para la grabacion|parar grabacion)\b/)){vcOk2();if(!live.paused)togglePause();else vcSay('Ya está en pausa');return true}
   if(has(/\b(sigue|seguir|seguimos|continua|continuar|reanudar|reanuda|arranca)\b/)){vcOk2();if(live.paused)togglePause();else vcSay('Seguimos grabando');return true}
   if(has(/\b(como voy|resumen|cuanto llevo|kilometros|distancia|cuantos kilometros)\b/)){vcOk2();vcSay(sumText());return true}
+  if(has(/\b(repite|repitelo|repetir|otra vez)\b/)){vcOk2();vcSay(CASCO.last||'Todavía no hay indicaciones.');return true}
   if(has(/\b(que hora|hora es|la hora)\b/)){vcOk2();const d=new Date();vcSay('Son las '+d.getHours()+' y '+String(d.getMinutes()));return true}
   if(has(/\b(viento|que tiempo hace|el tiempo|lluvia)\b/)){vcOk2();if(live.wx)vcSay(lwText());else vcSay('Todavía no tengo el viento');return true}
   if(has(/\b(quita la ruta|quitar ruta|quitar la ruta|sin ruta)\b/)){vcOk2();live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();vcSay('Ruta quitada. Sigo grabando.');return true}
@@ -7457,6 +7482,7 @@ function vozSet(on){
   if(on){try{navigator.mediaDevices&&navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());toast('🎙️ Órdenes por voz activadas. Funcionan durante la salida',5000)}).catch(()=>{toast('🎙️ Permite el micrófono para usar la voz',5000);store.set('vcOn',false);renderVoz()})}catch(e){}
     if(live.on)vcStart()}
   else{vcStop();toast('Órdenes por voz desactivadas')}
+  if(!on)vcPttDisarm();else if(live.on&&vcPtt())vcPttArm();
   renderVoz();vcChip();
 }
 function openVoz(){
@@ -7469,10 +7495,11 @@ function renderVoz(){
   b.innerHTML=`<p style="color:var(--txt2);margin-bottom:12px">Con guantes de invierno no hace falta tocar la pantalla: <b>habla</b> y la app lo hace. Funciona mientras grabas una salida.</p>
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
+   <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
    <b style="display:block;margin:14px 0 4px">Qué puedes decir</b>
    ${row('Pausa','Pausa la grabación')}${row('Seguir','Sigue grabando')}${row('Cómo voy','Km, tiempo y lo que queda')}${row('Qué hora es','Te dice la hora')}${row('Viento','Viento y lluvia')}
    ${row('Ir a Tàrrega','Te guía hasta ese pueblo')}${row('Quitar ruta','Sigue grabando sin ruta')}${row('Pinchazo · Esperad','Avisa a tu grupo')}${row('Silencio · Habla','Apaga o enciende la voz')}${row('Modo ahorro','Pantalla negra para ahorrar batería')}${row('Enciende la pantalla','Quita el modo ahorro')}
-   ${row('Emergencia','Luego di «llamar» (112) o «ubicación»')}${row('Terminar','Te pregunta y dices «sí»')}${row('Órdenes','Te dice esta lista')}
+   ${row('Emergencia','Luego di «llamar» (112) o «ubicación»')}${row('Terminar','Te pregunta y dices «sí»')}${row('Repite','Repite la última indicación')}${row('Órdenes','Te dice esta lista')}
    <p class="casco-note" style="margin-top:12px">🔈 Habla claro y con frases cortas; si hablas con los compañeros, la app no hace caso.<br>📶 Necesita cobertura en la mayoría de móviles.<br>🎙️ Mientras escucha verás «🎙️ Te escucho» en verde, encima de «GRABANDO». Tócalo para apagarlo.<br>🗺️ Durante la salida también lo enciendes o apagas con <b>⋯ → 🎙️</b> (verde = escuchando).</p>`;
 }
 /* Botones que arrancan el modo en vivo */
