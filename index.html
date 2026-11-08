@@ -1247,7 +1247,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.37.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.38.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3629,8 +3629,8 @@ function downloadGPX(coords,name,prof,quiet){
   const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
-  const fn=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
-  a.download=fn;document.body.appendChild(a);a.click();a.remove();
+  const fn=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑàèìòùÀÈÌÒÙçÇïüÏÜ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
+  a.download=fn;document.body.appendChild(a);a.click();a.remove();try{window.__lastGpx={fn,gpx}}catch(e){}
   if(!quiet)toast('GPX descargado. Ábrelo con tu Garmin, Wahoo o Komoot');
   return fn;
 }
@@ -3639,7 +3639,7 @@ let devSend=null;
 function sendToDevice(coords,name,prof){
   if(!coords||coords.length<2){toast('No hay ruta para enviar');return}
   const fn=downloadGPX(coords,name,prof,true);if(!fn)return;
-  devSend={fn,name:String(name||'Ruta')};devSendSheet();
+  devSend={fn,name:String(name||'Ruta'),gpx:(window.__lastGpx||{}).gpx||''};devSendSheet();
 }
 function devSendSheet(br){
   if(br)store.set('devBrand',br);const B=store.get('devBrand','garmin');if(!devSend)return;
@@ -3660,11 +3660,22 @@ function devSendSheet(br){
    <li>Entra en <b>Descargas</b> y elige ${file}.</li>
    <li>Sincroniza el aparato y busca la ruta en su menú de <b>Rutas</b> o <b>Navegación</b>.</li>`;
   $('rideBody').innerHTML=sheetHead('📲 Pasar la ruta al ciclocomputador')+
-   `<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
+   devShareBtn(B)+`<div class="plc" style="margin-bottom:12px"><b>✅ Ruta guardada en el móvil</b><small style="display:block;color:var(--txt2);margin-top:4px">Está en <b>Descargas</b> con el nombre ${file}. Lleva la altitud para ver el perfil en el aparato.</small></div>`+
    tabs+`<ol class="steps" style="margin:4px 0 12px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">${steps}</ol>`+
    `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">💡 RideSafe sigue en el móvil con el pelotón, el viento en voz y el SOS. Los avisos del grupo (pinchazo, esperad, caída) solo salen en el aparato o el reloj si muestra notificaciones de otras apps (algunos solo enseñan llamadas y SMS): pruébalo en <b>Perfil → ⌚</b>.</small></div>`+
    `<button class="btn btn-lime" onclick="closeSheets()">Entendido</button>`;
   openRideId=null;openSheet('sh-ride');
+}
+/* v5.38 — 📤 Enviar la ruta en un toque: abre la lista de «Compartir» del móvil con el GPX; se elige Garmin Connect (o iGPSPORT, Wahoo…) y la ruta entra sola */
+function devCanShare(){try{return !!(devSend&&devSend.gpx&&navigator.canShare&&navigator.canShare({files:[new File(['x'],'r.gpx',{type:'application/gpx+xml'})]}))}catch(e){return false}}
+function devShareBtn(B){if(!devCanShare())return '';const app=B==='igps'?'iGPSPORT':B==='garmin'?'Garmin Connect':'la app de tu aparato';
+  return `<button class="btn btn-lime" style="width:100%;min-height:60px;font-size:18px;margin-bottom:6px" onclick="devShare()">📤 Abrir en ${app}</button><p style="color:var(--txt2);font-size:13px;margin:0 0 12px;text-align:center">En la lista que sale, toca <b>${app}</b>. Si no aparece, sigue los pasos de abajo.</p>`}
+async function devShare(){
+  if(!devSend||!devSend.gpx){toast('Vuelve a pulsar «Enviar al ciclocomputador»');return}
+  const f=new File([devSend.gpx],devSend.fn,{type:'application/gpx+xml'});
+  try{await navigator.share({files:[f],title:devSend.name});toast('📤 Ruta enviada. En la app del aparato pulsa «Enviar al dispositivo»',5000)}
+  catch(e){if(e&&e.name==='AbortError')return;
+    try{await navigator.share({files:[new File([devSend.gpx],devSend.fn,{type:'application/octet-stream'})],title:devSend.name})}catch(e2){if(!(e2&&e2.name==='AbortError'))toast('Tu móvil no deja compartir el archivo: usa los pasos de abajo',5000)}}
 }
 function gpxPlan(){if(plan.route)downloadGPX(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
 function devPlan(){if(plan.route)sendToDevice(plan.route.coords,$('planTitle').textContent||'Ruta RideSafe IA',plan.route.prof)}
