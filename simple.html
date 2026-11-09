@@ -1208,7 +1208,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.15.0 (base 5.38.0)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.0 (base 5.39.0)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2909,7 +2909,36 @@ function ghPlan(){
   let ll=null;try{ll=hereLL()}catch(e){}
   const p=ll&&isFinite(+ll[0])&&isFinite(+ll[1])&&(+ll[0]||+ll[1])?'point='+(+ll[0]).toFixed(5)+'%2C'+(+ll[1]).toFixed(5)+'&':'';
   window.open('https://graphhopper.com/maps/?'+p+'profile=mtb&layer=OpenStreetMap&locale=es','_blank','noopener');
+  if(rsIOS()){setTimeout(ghIosSheet,600);return}
   setTimeout(()=>toast('Dibuja la ruta, pulsa «GPX» y vuelve aquí: ➕ → «Subir GPX o TCX»',7000),500);
+}
+function ghIosSheet(){
+  $('rideBody').innerHTML=sheetHead('📁 Traer la ruta al iPhone')+
+   `<div class="plc" style="margin-bottom:12px"><small style="color:var(--txt2)">En iPhone el GPX no se descarga solo: se guarda en la app <b>Archivos</b>. La primera vez crea la carpeta <b>«Rutas»</b> y ya quedará para siempre.</small></div>`+
+   `<ol class="steps" style="margin:4px 0 14px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:8px">
+    <li>En GraphHopper dibuja la ruta y pulsa <b>GPX</b>. Sale una ventana con <b>«track»</b>.</li>
+    <li>Pulsa <b>Compartir</b> (cuadrado con flecha ⬆️) y baja hasta <b>«Guardar en Archivos»</b>.</li>
+    <li>Elige <b>En mi iPhone</b>. La primera vez pulsa la carpeta con <b>＋</b> y llámala <b>Rutas</b>. Pulsa <b>Guardar</b>.</li>
+    <li>Vuelve a RideSafe y pulsa el botón de abajo. Entra en <b>Explorar → En mi iPhone → Rutas</b> y toca el archivo.</li>
+    <li>Elige <b>«Una ruta para hacer»</b>: quedará guardada en <b>📂 Mis rutas</b>.</li></ol>`+
+   `<button class="btn btn-lime" style="width:100%;min-height:58px;font-size:17px" onclick="closeSheets();pickFile()">📂 Ya la tengo: subir el GPX</button>`+
+   `<button class="btn btn-line" style="width:100%;margin-top:8px" onclick="closeSheets();openRoutes()">Ver Mis rutas</button>`;
+  openRideId=null;openSheet('sh-ride');
+}
+/* Guardar una ruta de «Mis rutas» como GPX (iPhone: «Guardar en Archivos» → Rutas; Android: Descargas) */
+async function saveSavedGpx(id){
+  const r=store.get('routes',[]).find(x=>x.id===id);if(!r)return;const u=unpackRoute(r);
+  if(rsIOS()&&navigator.share){
+    const fn=(String(r.name).replace(/[^\wáéíóúñÁÉÍÓÚÑàèìòùÀÈÌÒÙçÇïüÏÜ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
+    const gpx=rsGpxText(u.coords,r.name,u.prof);
+    try{await navigator.share({files:[new File([gpx],fn,{type:'application/gpx+xml'})],title:r.name});toast('Elige «Guardar en Archivos» → En mi iPhone → Rutas',5000);return}
+    catch(e){if(e&&e.name==='AbortError')return}
+  }
+  downloadGPX(u.coords,r.name,u.prof);
+}
+function rsGpxText(coords,name,prof){
+  const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));const E=gpxEles(coords,prof);
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')+`\n</trkseg></trk>\n</gpx>`;
 }
 function hereLL(){if(meMarker){const l=meMarker.getLngLat();return[l.lat,l.lng]}if(live.on&&live.pts.length){const p=live.pts.at(-1);return[p[0],p[1]]}if(map){const c=map.getCenter();return[c.lat,c.lng]}return null}
 function gpsOnce(){return new Promise((ok,ko)=>{if(!navigator.geolocation)return ko();navigator.geolocation.getCurrentPosition(p=>ok([p.coords.latitude,p.coords.longitude]),ko,{enableHighAccuracy:true,timeout:10000,maximumAge:60000})})}
@@ -6138,7 +6167,7 @@ async function useRoute(){
 function openRoutes(pick){
   const list=store.get('routes',[]);
   $('routesList').innerHTML=(pick?'':'<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="closeSheets();pickFile()">📂 Subir una ruta GPX</button><button class="btn btn-line" style="width:100%;margin:-4px 0 12px" onclick="closeSheets();ghPlan()">🧭 Planificar en GraphHopper (MTB)</button>')+(list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
-    <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button>`}<button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
+    <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button><button class="mini" onclick="saveSavedGpx(${jsq(r.id)})">💾 GPX</button>`}<button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
     :`<div class="empty">Aún no tienes rutas guardadas.<br>Planifica una y pulsa "Guardar".</div>`);
   openSheet('sh-routes');
 }
@@ -7632,7 +7661,9 @@ function phDownload(){
 
 
 /* ===== Actividades: GPX / TCX (se guardan en el móvil) ===== */
-function pickFile(){go('actividades');$('fileIn').click()}
+function pickFile(){go('actividades');const fi=$('fileIn');try{if(rsIOS())fi.removeAttribute('accept')}catch(e){}fi.click()}
+/* v5.39 — 📁 iPhone: el GPX de GraphHopper se guarda en Archivos → carpeta «Rutas» y se sube a «Mis rutas» */
+function rsIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
 /* v4.8.1 — Subir un GPX como RUTA (para guardarla, crear una salida o compartirla con el club) */
 function importRouteGpx(pts,km,up,name){
   const coords=pts.map(p=>[p[0],p[1],isNaN(p[2])?0:p[2]]);const hasE=pts.some(p=>!isNaN(p[2]));
