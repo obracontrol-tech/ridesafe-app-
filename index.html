@@ -452,12 +452,12 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .seg button.on{background:var(--lime);color:var(--on-lime)}
 .mside{position:absolute;right:16px;top:calc(160px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:12px;z-index:5}
 .mside button{width:56px;height:56px;border-radius:50%;background:var(--bg);color:var(--txt);display:grid;place-items:center;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.25)}
-.rec{position:absolute;left:16px;bottom:calc(var(--nav-h) + 150px);z-index:5;background:rgba(11,22,38,.94);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line)}
+.rec{position:absolute;left:16px;bottom:calc(var(--nav-h) + 150px + env(safe-area-inset-bottom));z-index:5;background:rgba(11,22,38,.94);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line)}
 .rec span{color:#fff;font-weight:700;display:flex;align-items:center;gap:6px;font-size:15px}
 .rec span i{width:12px;height:12px;border-radius:50%;background:var(--red);display:inline-block}
 .rec button{background:var(--green);color:#fff;font-weight:800;font-size:20px;border-radius:12px;padding:10px 18px;letter-spacing:.02em}
 .rec.on button{background:var(--red)}
-.mbottom{position:absolute;left:16px;right:16px;bottom:calc(var(--nav-h) + 40px);z-index:5;display:grid;grid-template-columns:1fr 1.3fr;gap:10px}
+.mbottom{position:absolute;left:16px;right:16px;bottom:calc(var(--nav-h) + 40px + env(safe-area-inset-bottom));z-index:5;display:grid;grid-template-columns:1fr 1.3fr;gap:10px}
 .mbottom button{height:58px;border-radius:30px;font-weight:700;font-size:16px;white-space:nowrap;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:8px}
 .mb1{background:var(--bg);color:var(--txt);border:1px solid var(--line)}
 .mb2{background:var(--lime);color:var(--on-lime)}
@@ -673,11 +673,11 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 #s-rutas .mside button{width:38px;height:38px;border-radius:0;border:0;box-shadow:none;background:transparent;font-size:16px!important}
 #s-rutas .mside button+button{border-top:1px solid var(--line)}
 #s-rutas .mside .i{width:18px;height:18px}
-#s-rutas .rec{left:10px;bottom:calc(var(--nav-h) + 86px);padding:6px;gap:3px;border-radius:12px}
+#s-rutas .rec{left:10px;bottom:calc(var(--nav-h) + 86px + env(safe-area-inset-bottom));padding:6px;gap:3px;border-radius:12px}
 #s-rutas .rec span{font-size:11px;gap:4px}
 #s-rutas .rec span i{width:8px;height:8px}
 #s-rutas .rec button{font-size:13px;padding:6px 12px;border-radius:9px}
-#s-rutas .mbottom{left:12px;right:12px;bottom:calc(var(--nav-h) + 30px);gap:8px;grid-template-columns:1fr 1fr}
+#s-rutas .mbottom{left:12px;right:12px;bottom:calc(var(--nav-h) + 30px + env(safe-area-inset-bottom));gap:8px;grid-template-columns:1fr 1fr}
 #s-rutas .mbottom button{height:40px;border-radius:20px;font-size:14px;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 #s-rutas .mbottom .i{width:18px;height:18px}
 .join{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
@@ -1247,7 +1247,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.39.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.39.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
