@@ -1216,7 +1216,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.4 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.5 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3130,6 +3130,10 @@ const SPOT_URL='https://open.spotify.com/';
    Antes se quedaba activada y la navegación hablaba siempre con la voz del móvil. */
 if(store.get('musVozMig',0)!==2){store.set('musVoz',false);store.set('musVozMig',2)}   // v5.21: vuelve la voz de Google para todos   // se había quedado activada para siempre
 const musVozOn=()=>false;   // v5.21: siempre voz de Google (en frases cortas)
+/* Wimbi: Music & Playlists (gratis). Abre la tienda del móvil: Google Play o App Store */
+function musWimbi(){const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  window.open(ios?'https://apps.apple.com/es/app/id6792338535':'https://play.google.com/store/apps/details?id=com.wimbi.music','_blank');
+  try{toast('🎶 Pon tu música en Wimbi y vuelve a RideSafe')}catch(e){}}
 function musResume(){window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
 function musVozSet(on){store.set('musVoz',!!on);toast(on?'🗣️ Voz del móvil: no parará la música':'🗣️ Voz de Google (más natural)')}
 /* ===== v5.17 — 📻 Radio en directo (gratis, sin registro) =====
@@ -3191,6 +3195,8 @@ function renderMusic(){
    <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
    <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>
+   <button class="btn btn-line" style="width:100%;justify-content:center;min-height:56px;font-size:17px;margin-top:10px;border-color:var(--lime)" onclick="musWimbi()">🎶 Wimbi: música gratis</button>
+   <small style="display:block;color:var(--txt2);margin:6px 2px 0;line-height:1.4">Wimbi es gratis y sin registro. Si no la tienes, te lleva a la tienda para instalarla.</small>
    <p style="margin-top:12px;font-size:13.5px;line-height:1.45;color:var(--txt2)">🗣️ Todos los avisos (navegación, tiempo, viento…) usan la <b style="color:var(--txt)">voz de Google</b>. Hablan en frases cortas para que Spotify, YouTube Music o la radio <b style="color:var(--txt)">bajen el volumen</b> mientras suena el aviso y luego vuelvan solas. Sin internet se usa la voz del móvil.</p>
    <div class="list" style="margin-top:12px">
     <div class="li" style="cursor:default"><span class="em">1️⃣</span><div><b>Pon tu música en Spotify</b><small>Dale a ▶️ y vuelve a RideSafe. Sigue sonando detrás.</small></div></div>
