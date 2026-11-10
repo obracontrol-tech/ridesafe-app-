@@ -1247,7 +1247,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7499,7 +7499,7 @@ function vcDo(n){
   }
   const go=n.match(/^(?:oye bici |bici )?(?:ir a|ve a|vamos a|llevame a|lleva me a|guiame a|guia me a) (.{2,40})$/);
   if(go&&w<=9){vcOk2();vcSay('Busco el camino a '+go[1]);liveGuide(go[1]).then(()=>renderLive());return true}
-  if(/(llover|lluvia|llueve|tormenta|pronostic)/.test(n)&&w<=10){vcOk2();try{vozRain(n)}catch(e){}return true}   // v5.40.1
+  if(vozIsRain(n)&&w<=12){vcOk2();try{vozRain(n)}catch(e){}return true}   // v5.40.3
   if(w>6)return false;   // frases largas = conversación, no órdenes
   const has=re=>re.test(n);
   if(has(/\b(enciende la pantalla|encender la pantalla|enciende pantalla|encender pantalla|despierta|quita el modo ahorro|quitar el modo ahorro|quitar modo ahorro|sal del modo ahorro|salir del modo ahorro|pantalla encendida)\b/)){vcOk2();try{saverOff()}catch(e){}vcSay('Pantalla encendida');return true}
@@ -8198,6 +8198,8 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 #vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 #vozPill small{display:block;font-size:14px;font-weight:600;color:#cbd5e1;margin-top:3px}
+#vozPill{max-height:46vh;overflow-y:auto;cursor:pointer}   /* v5.40.3: respuestas largas se leen y se cierran con un toque */
+#vozPill small{line-height:1.35;text-align:left}
 #vozPanel{position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
 #vozPanel .vp{background:#0E1A2B;color:#fff;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-top:2px solid #A3E635}
 #vozPanel h3{font-size:21px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
@@ -8215,7 +8217,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.2</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.3</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8253,7 +8255,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.40.2';
+const VOZ_VER='5.40.3';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8332,7 +8334,7 @@ const VZ_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='
 const VZ={rec:null,on:false,cont:false,want:false,armedT:0,pending:null,quietT:0,errN:0,restartTO:null,oneShot:false};
 function vozNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[¿?¡!.,;:«»"]/g,' ').replace(/\s+/g,' ').trim()}
 const VOZ_WAKE=/\b(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|\b(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|\bridesafe\b/;
-function vozPill(a,b,ms){const p=document.getElementById('vozPill');p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
+function vozPill(a,b,ms){const p=document.getElementById('vozPill');if(!p._x){p._x=1;p.addEventListener('click',()=>{p.style.display='none'})}p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
 function vozBeep(f,d){try{const C=window.__vozAC||(window.__vozAC=new (window.AudioContext||window.webkitAudioContext)());if(C.state==='suspended')C.resume();const o=C.createOscillator(),g=C.createGain();o.frequency.value=f||880;g.gain.setValueAtTime(.0001,C.currentTime);g.gain.exponentialRampToValueAtTime(.35,C.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,C.currentTime+(d||.15));o.connect(g).connect(C.destination);o.start();o.stop(C.currentTime+(d||.15)+.02)}catch(e){}}
 function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
 /* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
@@ -8417,6 +8419,7 @@ function vozHeard(alts,raw){
   }
 }
 const vozHas=(t,re)=>re.test(t);
+const vozIsRain=t=>/(llover|llovera|lloviera|llueva|lluvia|lluvias|llueve|lloviendo|chubasco|chubasquero|tormenta|granizo|agua del cielo|caer agua|mojar|mojarme|radar|pronostic|prevision|yover|yovera|yueve|yuvia|lo ver hoy|va a hacer|tiempo para|tiempo manana|tiempo esta tarde|nubes)/.test(t)&&!/\b(sos|socorro|emergencia|auxilio)\b/.test(t);   // v5.40.3
 function vozKm(km){return km<10?km.toFixed(1).replace('.',',').replace(',0',''):String(Math.round(km))}
 function vozDir(a,b){const y=Math.sin((b[1]-a[1])*Math.PI/180)*Math.cos(b[0]*Math.PI/180);const x=Math.cos(a[0]*Math.PI/180)*Math.sin(b[0]*Math.PI/180)-Math.sin(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.cos((b[1]-a[1])*Math.PI/180);const h=(Math.atan2(y,x)*180/Math.PI+360)%360;return['el norte','el noreste','el este','el sureste','el sur','el suroeste','el oeste','el noroeste'][Math.round(h/45)%8]}
 function vozHere(){try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[0],p[1]]}catch(e){}try{if(meMarker){const l=meMarker.getLngLat();return[l.lat,l.lng]}}catch(e){}return null}
@@ -8424,6 +8427,8 @@ function vozHere(){try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[
 function vozRun(t){
   if(!t)return false;
   const L=typeof live!=='undefined'&&live&&live.on;
+  // --- v5.40.3: Lluvia primero (antes la tapaban otras órdenes) ---
+  if(vozIsRain(t)){vozRain(t);return true}
   // --- Ayuda / emergencia (siempre pregunta antes) ---
   if(vozHas(t,/\b(sos|socorro|emergencia|auxilio|ayuda|ayudame)\b/)&&!vozHas(t,/(que puedo decir|ordenes|comandos)/)){
     VZ.pending={until:Date.now()+15000,yes:()=>{
@@ -8480,8 +8485,7 @@ function vozRun(t){
     if(!L){vozSay('No estás grabando ninguna salida.');return true}
     vozSay(live.paused?'Estás en pausa.':`Vas a ${Math.round(live.speed||0)} kilómetros por hora.`);return true;
   }
-  // --- Lluvia ---
-  if(vozHas(t,/(llover|lluvia|llueve|lloviendo|chubasco|chubasquero|tormenta|granizo|agua del cielo|nubes|mojar|mojarme|radar)/)){vozRain(t);return true}
+  // --- Lluvia (v5.40.3: ahora se mira al principio, ver vozIsRain) ---
   // --- Agua / fuente ---
   if(vozHas(t,/\b(agua|fuente|fuentes|beber)\b/)){vozWater();return true}
   // --- Tiempo / viento / temperatura ---
@@ -8616,9 +8620,9 @@ async function vozRain(t){
     if(alert===2)parts.push('Busca refugio y evita zonas altas y árboles solos.');
     else if(alert===1)parts.push('Lleva chubasquero, enciende las luces y frena antes: el asfalto, las pinturas y las tapas resbalan.');
     const strip=seg.slice(0,6).map(i=>vrH(T[i])+'h '+(PP[i]||0)+'%').join(' · ');
-    vozPill((alert===2?'⛈️':alert?'🌧️':'🌤️')+' Lluvia: '+mx+'%'+(rc&&rc.of>=2?' · '+rc.n+'/'+rc.of+' modelos':''),strip,9000);
+    vozPill((alert===2?'⛈️':alert?'🌧️':'🌤️')+' Lluvia: '+mx+'%'+(rc&&rc.of>=2?' · '+rc.n+'/'+rc.of+' modelos':''),parts.join(' ')+'<br>'+strip,20000);
     vozSay(parts.join(' '));
-  }catch(e){console.warn('vozRain',e);vozPill('🌧️ Sin datos','',3000);vozSay('No he podido consultar la lluvia. Revisa la conexión.')}
+  }catch(e){console.warn('vozRain',e);const why=e&&e.name==='AbortError'?'Tarda demasiado (mala cobertura)':String(e&&e.message||e||'');vozPill('🌧️ No he podido mirar la lluvia',(navigator.onLine?'':'Sin conexión · ')+why,8000);vozSay('No he podido consultar la lluvia. Revisa la conexión.')}
 }
 function vrDay(d,M,n){
   const D=d.daily||{},dt=(D.time||[])[n];if(!dt){vozSay('No tengo previsión para ese día.');return}
@@ -8637,7 +8641,7 @@ function vrDay(d,M,n){
       const tot=mo.n+ta.n;parts.push(tot===0&&pp>=30?'Los modelos no la ven clara, es poco fiable.':`Cruzado con ${mo.of} modelos.`)}
   }
   if(pp>=40)parts.push('Si sales, lleva chubasquero y luces.');
-  vozPill((code>=95?'⛈️':pp>=40?'🌧️':'🌤️')+' '+quien+': '+pp+'%',(mm>=0.5?mm.toFixed(1)+' mm · ':'')+'3 modelos',9000);
+  vozPill((code>=95?'⛈️':pp>=40?'🌧️':'🌤️')+' '+quien+': '+pp+'%',parts.join(' '),20000);
   vozSay(parts.join(' '));
 }
 async function vozWeather(){
