@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7485,8 +7485,8 @@ function vcStart(){
   try{r.start();VC.rec=r;VC.fails=Math.max(0,VC.fails-1)}catch(e){VC.rec=null}
   vcChip();
 }
-/* v5.41.7 — Reabre el micrófono de ruta cuando la app ha terminado de hablar (+0,9 s) */
-function vcLater(){clearTimeout(VC.waitT);VC.waitT=setTimeout(()=>{if(!live.on||!vcOn()||VC.rec)return;if(Date.now()<VC.quiet||musSpeaking()){vcLater();return}VC.waitT=setTimeout(vcStart,900)},Math.max(600,VC.quiet-Date.now()))}
+/* v5.41.7 — Reabre el micrófono de ruta cuando la app ha terminado de hablar (v5.41.8: +2,5 s) */
+function vcLater(){clearTimeout(VC.waitT);VC.waitT=setTimeout(()=>{if(!live.on||!vcOn()||VC.rec)return;if(Date.now()<VC.quiet||musSpeaking()){vcLater();return}VC.waitT=setTimeout(vcStart,2500)},Math.max(600,VC.quiet-Date.now()))}
 function vcStop(){const r=VC.rec;VC.rec=null;if(r){try{r.abort()}catch(e){}}vcChip()}
 function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
 /* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
@@ -8249,7 +8249,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.7</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.8</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8287,7 +8287,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.41.7';
+const VOZ_VER='5.41.8';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8372,7 +8372,7 @@ function vozBeep(f,d){if(VZ_IOS)return;   /* v5.40.4: en iPhone el pitido corta 
 function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
 /* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
 function vozSay(t,thenListen){
-  const ms=Math.max(1600,String(t).length*80)+600;VZ.quietT=Date.now()+ms;
+  const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;   // v5.41.8: +2,5 s tras contestar
   vozStop(true);
   try{cascoSay(t)}catch(e){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(x){}}
   clearTimeout(VZ.restartTO);
