@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2196,7 +2196,7 @@ async function liveGuide(name,ll){
   const dest=await geoTo(name,ll);const h=live.pts.at(-1)||hereLL();
   if(!dest||!h){toast('No se pudo calcular el camino');return}
   const me={lat:h[0],lng:h[1]};
-  try{const n=await navSteps([me,dest]);prepNav(n.coords,n.steps);live.wps=[me,dest];live.follow=true;speak('Te guío hasta '+String(name||'el punto').split(',')[0]+'.');toast('🧭 Guía activada: sigue la línea verde')}
+  try{const n=await navSteps([me,dest]);legMark('Hacia '+String(name||'destino').split(',')[0]);prepNav(n.coords,n.steps);live.wps=[me,dest];live.follow=true;speak('Te guío hasta '+String(name||'el punto').split(',')[0]+'.');toast('🧭 Guía activada: sigue la línea verde')}
   catch(e){toast('No se pudo calcular el camino')}
 }
 async function geoPlace(q){if(!q)return null;try{const j=await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q))).json();if(j&&j[0])return{lat:+j[0].lat,lng:+j[0].lon}}catch(e){}return null}
@@ -3983,6 +3983,7 @@ function openActDetail(id){
    ${a.poly?'<div class="rmap" id="actMap"></div>':''}
    <div class="pstats" style="margin-top:0"><div><b class="num">${fmtNum(a.km,1)}</b><span>km</span></div><div><b class="num">${hm(a.mins||0)}</b><span>tiempo</span></div><div><b class="num">+${a.up||0}</b><span>m subida</span></div><div><b class="num">${vm?fmtNum(vm,1):'—'}</b><span>km/h media</span></div></div>
    ${prof.length>1?profileSVG(prof):''}
+   ${(a.tramos||[]).length>1?`<div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:12px"><b>🔀 Tramos de la salida</b>${a.tramos.map((t,i)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:${i?'1px solid var(--line)':'0'}"><span>${i+1}. ${esc(t.n)}</span><b class="num">${fmtNum(t.km,1)} km</b></div>`).join('')}<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:2px solid var(--lime);color:var(--lime)"><b>Total</b><b class="num">${fmtNum(a.km,1)} km</b></div></div>`:''}
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
     <button class="btn btn-lime" style="grid-column:1/-1" onclick="openPhoto(${a.id})">📸 Foto con tus datos</button>
     <button class="btn btn-line" id="actMedia" style="grid-column:1/-1;display:none" onclick="actMediaOpen(${a.id})"></button>
@@ -6611,9 +6612,19 @@ function prepNav(coords,steps){
 }
 
 /* Empezar: libre, con ruta (navegación) o con una salida del grupo (pelotón) */
+/* v5.41 — TRAMOS: una sola grabación para toda la salida. Cada cambio de ruta abre un tramo nuevo;
+   al terminar se guardan los km totales y los de cada tramo. */
+function legMark(name){
+  if(!live.on)return;live.legs=live.legs||[];const L=live.legs.at(-1);
+  if(L&&(live.km-L.km0)<0.1){L.n=name;return}          // el tramo anterior casi no tenía km: se renombra
+  live.legs.push({n:String(name||'Tramo').slice(0,60),km0:+(live.km||0),t0:Date.now()});
+}
+function legsOut(L){
+  const g=L.legs||[];return g.map((x,i)=>({n:x.n,km:+(Math.max(0,((g[i+1]?g[i+1].km0:L.km)-x.km0))).toFixed(1)})).filter(x=>x.km>=0.1);
+}
 async function startLive(opt){
   opt=opt||{};
-  if(live.on){if(opt.route&&!opt.rideId){closeSheets();if(plan.active){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}go('rutas');liveDesignEnd();navRoute(opt.route,opt.wps);live.follow=true;renderLive();speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Ruta cambiada. Tus km y tu tiempo siguen contando',5000)}else toast('Ya estás grabando');return}   /* v5.36: cambiar de ruta en marcha */
+  if(live.on){if(opt.route&&!opt.rideId){closeSheets();if(plan.active){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}go('rutas');liveDesignEnd();legMark(opt.title||'Ruta nueva');navRoute(opt.route,opt.wps);live.follow=true;renderLive();speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Ruta cambiada. Tus km y tu tiempo siguen contando',5000)}else toast('Ya estás grabando');return}   /* v5.36: cambiar de ruta en marcha */
   if(!navigator.geolocation){toast('Este móvil no permite GPS');return}
   closeSheets();
   const wasPlan=plan.active;if(wasPlan){plan.active=false;plan.view=false;clearPlan(true);setPlanning(false)}
@@ -6621,6 +6632,7 @@ async function startLive(opt){
   live={on:true,paused:false,voice:store.get('voice',true),follow:true,pts:[],km:0,up:0,lastAlt:null,startT:Date.now(),pausedMs:0,pauseStart:0,speed:0,alt:null,
     rideId:opt.rideId||null,rideTitle:opt.title||'',hike:opt.hike!=null?!!opt.hike:isHike(),members:{},mMarkers:{},lastPush:0,lastPushLL:null,warned:{},off:0,lastReroute:0,nav:null,wps:opt.wps||null};
   live.mk='L'+live.startT;
+  live.legs=[];legMark(opt.title||(opt.route?'Ruta':'Libre'));
   $('app').classList.add('live');$('s-rutas').classList.add('live');setTimeout(()=>{document.querySelectorAll('#map .maplibregl-compact-show').forEach(e=>e.classList.remove('maplibregl-compact-show'))},400);
   rideMarkers.forEach(m=>m.remove());
   $('lvVoice').textContent=live.voice?'🔊':'🔇';
@@ -7174,13 +7186,14 @@ async function finishLive(save){
   try{await addElevation(r)}catch(e){r.up=L.up}
   const pk=packRoute(r);
   const title=L.rideId?(L.rideTitle||'Salida en grupo'):(L.hike?'Ruta a pie':'Salida en bici');
-  const a={id:Date.now(),name:title,date:iso(new Date(L.startT)),km:+L.km.toFixed(1),up:Math.round(r.up||L.up),mins,group:!!L.rideId,gp:(rides.find(x=>x.id===L.rideId)||{}).gp||'',mk:L.mk||null,...(L.hike?{sport:'hike'}:{}),...pk};
+  const tr=legsOut(L);
+  const a={id:Date.now(),name:title,...(tr.length>1?{tramos:tr}:{}),date:iso(new Date(L.startT)),km:+L.km.toFixed(1),up:Math.round(r.up||L.up),mins,group:!!L.rideId,gp:(rides.find(x=>x.id===L.rideId)||{}).gp||'',mk:L.mk||null,...(L.hike?{sport:'hike'}:{}),...pk};
   acts.unshift(a);store.set('acts',acts.slice(0,300));saveActRemote(a);if(!a.up&&a.poly)fixUp(a);addRank(a);
   const gain=Math.min(300,Math.round(L.km))+10+(L.rideId?30:0);
   addPoints(gain,L.rideId?{done:FV.increment(1)}:null);if(L.rideId&&me)me.done=(me.done||0)+1;
   publishAct(a);checkBadges();if(!L.hike)addKmToBike(L.km);
   renderActs();go('actividades');
-  toast(`✅ Guardada: ${a.km} km · +${gain} puntos`);
+  toast(tr.length>1?`✅ Guardada: ${a.km} km en ${tr.length} tramos · +${gain} puntos`:`✅ Guardada: ${a.km} km · +${gain} puntos`,tr.length>1?6000:undefined);
   setTimeout(()=>openPhoto(a.id,true),700);
 }
 
@@ -7362,7 +7375,7 @@ function phFromRide(){
 const LBK='velogo_liveBk';
 function liveBackup(){
   if(!live.on)return;
-  try{localStorage.setItem(LBK,JSON.stringify({v:1,t:Date.now(),mk:live.mk||('L'+live.startT),startT:live.startT,pausedMs:live.pausedMs||0,paused:!!live.paused,hike:!!live.hike,pauseStart:live.pauseStart||0,km:live.km,up:live.up,rideId:live.rideId||null,rideTitle:live.rideTitle||'',
+  try{localStorage.setItem(LBK,JSON.stringify({v:1,t:Date.now(),mk:live.mk||('L'+live.startT),startT:live.startT,pausedMs:live.pausedMs||0,paused:!!live.paused,hike:!!live.hike,pauseStart:live.pauseStart||0,km:live.km,up:live.up,rideId:live.rideId||null,rideTitle:live.rideTitle||'',legs:live.legs||[],
     pts:live.pts.map(p=>[+(+p[0]).toFixed(6),+(+p[1]).toFixed(6),p[2]==null?null:Math.round(p[2]),p[3]])}))}catch(e){console.warn('copia de la salida',e)}
 }
 function liveBackupClear(){try{localStorage.removeItem(LBK)}catch(e){}}
@@ -7383,7 +7396,7 @@ async function liveResume(bk,finish){
   const r=bk.rideId?rides.find(x=>x.id===bk.rideId):null;
   if(r&&joined(r))startRide(bk.rideId);else startLive({hike:!!bk.hike});
   if(!live.on)return;
-  live.pts=bk.pts;live.km=+bk.km||0;live.up=+bk.up||0;live.startT=bk.startT;live.mk=bk.mk||('L'+bk.startT);
+  live.pts=bk.pts;live.km=+bk.km||0;if(Array.isArray(bk.legs)&&bk.legs.length)live.legs=bk.legs;live.up=+bk.up||0;live.startT=bk.startT;live.mk=bk.mk||('L'+bk.startT);
   live.pausedMs=(+bk.pausedMs||0)+(bk.paused&&bk.pauseStart?Math.max(0,bk.t-bk.pauseStart):0);
   if(!r&&bk.rideTitle)live.rideTitle=bk.rideTitle;
   setLine(map,live.pts,'track','#60A5FA');renderLive();liveBackup();
@@ -7407,10 +7420,10 @@ async function liveChangeRoute(){
   if(i<0||!live.on)return;
   if(i===0){liveDesign();return}
   if(i>0&&i<=list.length){const r=list[i-1];let u;try{u=unpackRoute(r)}catch(e){toast('No se pudo abrir esa ruta');return}
-    navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
+    legMark(r.name);navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
     speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Nueva ruta: '+r.name+'. Tus km y tu tiempo siguen contando',5000);return}
   if(i===iGo){const q=prompt('¿A dónde quieres ir? (pueblo, calle o sitio)');if(q&&q.trim()){toast('Buscando el camino…');await liveGuide(q.trim());renderLive()}return}
-  if(i===iOff){live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')}
+  if(i===iOff){legMark('Libre');live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')}
 }
 /* v5.36 — Diseñar una ruta nueva en el mapa sin parar la grabación; al terminar, «▶ Seguir ruta» */
 function liveDesign(){
@@ -7748,7 +7761,11 @@ $('fileIn').onchange=async e=>{
 };
 function renderActs(){
   const m=iso(new Date()).slice(0,7);const mm=acts.filter(a=>a.date.startsWith(m));
-  $('aKm').textContent=Math.round(mm.reduce((s,a)=>s+a.km,0));$('aN').textContent=mm.length;$('aUp').textContent=mm.reduce((s,a)=>s+a.up,0);
+  $('aKm').textContent=Math.round(mm.reduce((s,a)=>s+a.km,0));
+  {const td=acts.filter(a=>a.date===iso(new Date()));let el=$('aToday');   /* v5.41: km de hoy, sumando todas las salidas */
+   if(!el){el=document.createElement('div');el.id='aToday';el.style.cssText='background:var(--card);border:1px solid var(--lime);border-radius:16px;padding:12px 14px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px';$('actList').before(el)}
+   el.style.display=td.length?'flex':'none';
+   if(td.length)el.innerHTML=`<span>📅 <b>Hoy</b> · ${td.length} ${td.length>1?'salidas':'salida'}${td.some(a=>(a.tramos||[]).length>1)?' · '+td.reduce((s,a)=>s+((a.tramos||[]).length||1),0)+' tramos':''}</span><b class="num" style="color:var(--lime);font-size:20px">${fmtNum(td.reduce((s,a)=>s+a.km,0),1)} km</b>`}$('aN').textContent=mm.length;$('aUp').textContent=mm.reduce((s,a)=>s+a.up,0);
   $('actList').innerHTML=acts.length?acts.map(a=>`<div class="act" onclick="openActDetail(${a.id})" style="cursor:pointer"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-8"/></svg></div><div><b>${a.sport==='hike'?'🥾 ':''}${a.group?'🛰️ ':''}${esc(a.name)}</b><small>${fmtDate(a.date)} · ${a.km} km · ${a.up} m${a.mins?` · ${Math.floor(a.mins/60)}h ${a.mins%60}min`:''}</small></div><button class="round" style="width:46px;height:46px;flex-shrink:0" aria-label="Foto con tus datos" onclick="event.stopPropagation();openPhoto(${a.id})">📸</button></div>`).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Aún no has subido ninguna actividad</div>`;
   renderGoal();
 }
@@ -8220,7 +8237,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.5</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.0</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8258,7 +8275,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.40.5';
+const VOZ_VER='5.41.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
