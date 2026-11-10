@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8240,7 +8240,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.2</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8278,7 +8278,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.41.1';
+const VOZ_VER='5.41.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8406,8 +8406,33 @@ function vozStartCont(){
   VZ.want=true;VZ.oneShot=false;
   try{VZ.rec=vozMake(true);VZ.rec.start()}catch(e){VZ.rec=null}
 }
+/* v5.41.2 — iPhone: el reconocimiento de voz de Safari falla mucho en la app instalada (1 de cada 5).
+   En iPhone se usa el DICTADO DEL TECLADO, que es el de Apple y funciona siempre:
+   toca 🎤 → se abre el teclado → toca 🎙️ del teclado y habla → la orden se envía sola al callar. */
+function vozDictOpen(){
+  let d=document.getElementById('vozDict');
+  if(!d){d=document.createElement('div');d.id='vozDict';
+    d.style.cssText='position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:10000;background:#0E1A2B;border:2px solid #A3E635;border-radius:20px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#fff;display:none';
+    d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:16px" id="vozDictT">🎤 Toca 🎙️ en el teclado y habla</b><button type="button" id="vozDictX" style="background:none;border:0;color:#fff;font-size:22px;padding:4px 8px">✕</button></div>'
+      +'<div style="display:flex;gap:8px"><input id="vozDictIn" type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="o escribe: ¿va a llover?" style="flex:1;min-width:0;font-size:17px;padding:12px 14px;border-radius:14px;border:1px solid #334155;background:#16233A;color:#fff;outline:none"><button type="button" id="vozDictGo" style="border:0;border-radius:14px;background:#A3E635;color:#0E1A2B;font-weight:800;font-size:16px;padding:0 16px">Enviar</button></div>'
+      +'<small style="display:block;margin-top:8px;color:#94a3b8;font-size:12.5px;line-height:1.4">Se envía solo cuando dejas de hablar. Ej.: «qué hora es», «va a llover», «cómo voy», «pausa», «ruta a Balaguer».</small>';
+    document.body.appendChild(d);
+    const inp=d.querySelector('#vozDictIn');
+    const send=()=>{const t=inp.value.trim();clearTimeout(d._t);if(!t)return;inp.value='';vozDictClose();setTimeout(()=>{try{vozPill('🎤 «'+t+'»','',3000);vozHeard([vozNorm(t)],t)}catch(e){console.warn('voz',e)}},250)};
+    inp.addEventListener('input',()=>{clearTimeout(d._t);if(inp.value.trim())d._t=setTimeout(send,1500)});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+    d.querySelector('#vozDictGo').onclick=send;
+    d.querySelector('#vozDictX').onclick=()=>{clearTimeout(d._t);inp.value='';vozDictClose();if(VZ.pending){VZ.pending=null;vozPill('❌ Cancelado','',1500)}};
+  }
+  document.getElementById('vozDictT').textContent=VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Toca 🎙️ en el teclado y habla';
+  d.style.display='block';const inp=document.getElementById('vozDictIn');inp.value='';
+  try{inp.focus({preventScroll:true})}catch(e){inp.focus()}
+  try{const p=document.getElementById('vozPill');if(p)p.style.display='none'}catch(e){}
+}
+function vozDictClose(){const d=document.getElementById('vozDict');if(!d)return;d.style.display='none';try{document.getElementById('vozDictIn').blur()}catch(e){}}
 /* Escuchar una vez (toque en el botón, botón del casco o respuesta a una pregunta) */
 function vozListen(silent){
+  if(VZ_IOS){vozDictOpen();return}   // v5.41.2
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz',VZ_IOS?'Actualiza el iPhone y usa Safari':'Usa Chrome en Android',6000);return}
   if(VZ_IOS&&!VZ.unl){VZ.unl=1;try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '))}catch(e){}}   // desbloquea la voz del iPhone
   try{if(typeof VC!=='undefined'&&VC.rec){vcStop();VZ.vcBack=true;clearTimeout(VZ.vcT);VZ.vcT=setTimeout(vozVcBack,20000)}}catch(e){}
