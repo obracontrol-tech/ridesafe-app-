@@ -2,6 +2,11 @@
 <html lang="es" class="rs-simple">
 <head>
 <meta charset="UTF-8">
+<script>
+/* v1.16.4 — Quien ya se pasó a Pro va siempre a Pro. El icono instalado desde la Simple abre simple.html
+   (y al actualizar también recargaba la Simple): si el móvil ya eligió Pro, se va directo a la Pro. */
+(function(){try{if(localStorage.getItem('rs_modo')==='pro')location.replace('index.html'+location.search+location.hash)}catch(e){}})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>RideSafe IA Simple</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
@@ -1211,7 +1216,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.3 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.4 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
