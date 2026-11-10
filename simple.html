@@ -2,7 +2,7 @@
 <html lang="es" class="rs-simple">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>RideSafe IA Simple</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
@@ -587,6 +587,9 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 #s-rutas .mtop{left:12px;right:12px;top:calc(8px + env(safe-area-inset-top))}
 #s-rutas .search{height:40px;padding:0 12px;gap:8px;border-radius:20px;box-shadow:0 3px 10px rgba(0,0,0,.22)}
 #s-rutas .search input{font-size:14px}
+/* v5.40.5: en iPhone, un campo de texto con letra menor de 16px hace zoom y la pantalla se queda ampliada */
+@supports (-webkit-touch-callout:none){input,select,textarea{font-size:16px!important}}
+
 #s-rutas .search .i{width:18px;height:18px}
 #s-rutas .search .flt{padding-left:8px}
 #s-rutas .mrow{margin-top:6px;gap:6px}
@@ -1208,7 +1211,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.2 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.3 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
