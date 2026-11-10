@@ -1247,7 +1247,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.39.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8182,5 +8182,526 @@ setInterval(function(){
 function novClose(){try{localStorage.setItem('velogo_nov_rutas_526','1')}catch(e){}var b=document.getElementById('novBox');if(b)b.style.display='none'}
 function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try{if(!trailsOn())trailsToggle(true);else toast('Toca una línea de color para ver la ruta')}catch(e){}},600)}
 </script>
+<!-- ===== v5.40.0 (antes Voz beta 1.5) — Órdenes por voz (manos libres con guantes) ===== -->
+<style>
+#vozBtn{position:fixed;right:12px;top:46%;z-index:65;width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,.25);background:#A3E635;color:#0E1A2B;font-size:38px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.45);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#vozBtn.on{background:#DC2626;color:#fff;animation:vozPulse 1s infinite}
+#vozBtn.cont{border-color:#A3E635;box-shadow:0 0 0 5px rgba(163,230,53,.35),0 6px 22px rgba(0,0,0,.45)}
+#vozBtn.cont:not(.on){background:#14532D;color:#A3E635}
+#vozBtn small{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
+@keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+#vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+#vozPill small{display:block;font-size:14px;font-weight:600;color:#cbd5e1;margin-top:3px}
+#vozPanel{position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+#vozPanel .vp{background:#0E1A2B;color:#fff;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-top:2px solid #A3E635}
+#vozPanel h3{font-size:21px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+#vozPanel h3 button{background:none;border:0;color:#fff;font-size:28px;padding:4px 8px}
+#vozPanel .vbtn{width:100%;min-height:60px;border-radius:16px;border:0;font-size:18px;font-weight:800;margin-top:10px}
+#vozPanel .vopt{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;margin-top:10px;font-size:16px}
+#vozPanel .vopt input{width:26px;height:26px;flex:none}
+#vozPanel .vopt small{display:block;color:#cbd5e1;font-size:13px;font-weight:500;margin-top:2px}
+#vozPanel table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+#vozPanel td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+#vozPanel td:first-child{color:#A3E635;font-weight:800;white-space:nowrap;padding-right:10px}
+#vozPanel .vnote{font-size:13px;color:#cbd5e1;margin-top:12px;line-height:1.45}
+</style>
+<button id="vozBtn" aria-label="Órdenes por voz">🎤<small>VOZ</small></button>
+<div id="vozPill"></div>
+<div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
+ <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.0</div>
+ <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
+ <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
+ <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
+ <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
+ <table>
+  <tr><td>«Ruta de Mollerussa<br>a Cervera»</td><td>Calcula la ruta. También «ruta a Cervera» (desde donde estás) o «ruta circular de 40 kilómetros»</td></tr>
+  <tr><td>«Empezar»</td><td>Empieza a grabar (o a navegar si tienes una ruta preparada)</td></tr>
+  <tr><td>«Pausa» / «Seguir»</td><td>Pausa o sigue la grabación</td></tr>
+  <tr><td>«Terminar»</td><td>Te pregunta antes de guardar. Contesta «sí» o «no»</td></tr>
+  <tr><td>«Cuánto falta»</td><td>Kilómetros hasta el final y hora de llegada</td></tr>
+  <tr><td>«Cómo voy»</td><td>Kilómetros, tiempo y media</td></tr>
+  <tr><td>«Velocidad»</td><td>Tu velocidad ahora</td></tr>
+  <tr><td>«Dónde estoy»</td><td>Calle o lugar donde estás</td></tr>
+  <tr><td>«Repite»</td><td>Repite la última indicación</td></tr>
+  <tr><td>«Va a llover»</td><td>Si llueve ahora, a qué hora empieza o para, hora de más riesgo, litros, tormenta y lo fiable que es (3 modelos)</td></tr>
+  <tr><td>«Lloverá esta tarde / esta noche»<br>«Lloverá mañana»</td><td>Lluvia de ese tramo o de mañana (mañana y tarde por separado)</td></tr>
+  <tr><td>«Tiempo» / «Viento»</td><td>Temperatura y viento ahora</td></tr>
+  <tr><td>«Agua»</td><td>La fuente más cercana</td></tr>
+  <tr><td>«Pinchazo» / «Esperad»</td><td>Avisa a tu grupo (en salida en grupo)</td></tr>
+  <tr><td>«Ayuda» / «SOS»</td><td>Te pregunta antes. Con «sí» abre las alertas de seguridad y avisa al grupo</td></tr>
+  <tr><td>«Centrar»</td><td>El mapa vuelve a tu posición</td></tr>
+  <tr><td>«Pantalla negra»</td><td>Modo ahorro de batería</td></tr>
+  <tr><td>«Silencio» / «Habla»</td><td>Apaga o enciende la voz de la navegación</td></tr>
+  <tr><td>«Comunidad» / «Actividades»<br>«Perfil» / «Rutas»</td><td>Cambia de pestaña (también «ve a comunidad», «abre perfil»)</td></tr>
+  <tr><td>«Baja» / «Sube»</td><td>Mueve la pantalla hacia abajo o hacia arriba</td></tr>
+  <tr><td>«Cierra»</td><td>Cierra la ventana abierta</td></tr>
+  <tr><td>«Crear»</td><td>Abre el menú de crear (salida, ruta…)</td></tr>
+  <tr><td>«Qué hora es»</td><td>Te dice la hora</td></tr>
+ </table>
+ <div class="vnote">• Funciona en <b>Chrome de Android</b> y necesita datos móviles para entender la voz.<br>• Con viento fuerte se entiende peor: habla cerca del móvil o usa el micro del casco.<br>• Con la pantalla apagada no escucha (la app ya la mantiene encendida en ruta).<br>• Mantén pulsado el botón 🎤 para abrir esta ventana.<br>• Por seguridad nunca llama sola al 112: el botón rojo lo pulsas tú.</div>
+</div></div>
+<script>
+/* ===== VOZ BETA 1.0 — Órdenes por voz =====
+   · Toque: tocar el botón 🎤 y decir la orden.
+   · Escucha continua: «Oye bici» + orden.
+   · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
+const VOZ_VER='5.40.0';
+/* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
+function vozIsRoute(t){
+  if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
+  /* frases que son otras órdenes aunque digan «ruta» */
+  if(/(empez|inici|arranc|comenz|segui|sigue|continu|pausa|termin|acab|finaliz|guard|falta|queda|centr|repit|vuelve|volver|salido|salirme|fuera de|recalcul)/.test(t))return '';
+  if(/\bruta\b/.test(t)){const rest=t.replace(/^.*?\bruta\b/,'').replace(/\b(de|desde|a|al|hasta|hacia|para|entre|y|en|bici|por|favor|una|la|el|ir)\b/g,'').trim();return rest?'ab':''}
+  if(/(parar|parada|pinch|esperar|llover|beber|agua|fuente)/.test(t))return '';
+  if(/^(?:(?:ir|vamos|voy|llevame|quiero ir|como llego|como se va|como voy)\s+)?(?:de|desde)\s+\S.*\s+(?:a|al|hasta|hacia)\s+\S/.test(t))return 'ab';
+  if(/^(?:llevame|quiero ir|vamos|voy|ir|como llego|como se va|como voy|navega|navegar)\s+(?:a|al|hasta|hacia)\s+\S/.test(t))return 'ab';
+  return '';
+}
+async function vozNomi(q,town){
+  try{const me=myLL();let u='https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q);
+    if(town)u+='&featuretype=settlement';
+    if(me)u+=`&viewbox=${(me.lng-1.6).toFixed(3)},${(me.lat+1.2).toFixed(3)},${(me.lng+1.6).toFixed(3)},${(me.lat-1.2).toFixed(3)}&bounded=0`;   /* da preferencia a los sitios cercanos */
+    const j=await (await fetch(u)).json();if(j&&j[0])return{lat:+j[0].lat,lng:+j[0].lon,name:(j[0].display_name||'').split(',')[0]}}catch(e){}
+  return null}
+async function vozGeo(q){q=String(q||'').replace(/\s+/g,' ').trim();if(!q)return null;
+  const vars=[q];const v1=q.replace(/([aeiou])s([aeiou])/g,'$1ss$2'),v2=q.replace(/([aeiou])l([aeiou])/g,'$1ll$2');   /* «Mollerusa» → «Mollerussa» */
+  if(v1!==q)vars.push(v1);if(v2!==q)vars.push(v2);
+  let r=null;
+  for(const v of vars){r=await vozNomi(v,true);if(r)break}          // 1º: pueblos y ciudades
+  if(!r)for(const v of vars){r=await vozNomi(v,false);if(r)break}    // 2º: cualquier sitio (barrio, ermita, pantano…)
+  if(!r&&typeof geoPlace==='function')r=await geoPlace(q);
+  return r?{lat:r.lat,lng:r.lng,label:r.name||q.replace(/\b\w/g,c=>c.toUpperCase())}:null}
+async function vozHereLL(){const m=myLL();if(m)return m;try{const p=await gpsOnce();return{lat:p[0],lng:p[1],label:HERE}}catch(e){return null}}
+async function vozRoute(t,kind){
+  if(typeof live!=='undefined'&&live.on){vozSay('Termina primero la salida que estás grabando.');return}
+  if(!map){vozSay('El mapa necesita conexión a internet.');return}
+  let start=null,dest=null,km=null;
+  if(kind==='loop'){
+    const m=t.match(/(\d+)\s*(km|kilometro|kilometros)?/);km=m?Math.max(5,Math.min(200,+m[1])):40;
+    vozPill('🔁 Ruta circular de '+km+' km','Buscando tu posición…',0);
+    start=await vozHereLL();if(!start){vozSay('No tengo tu posición. Activa la ubicación.');return}
+  }else{
+    let r=/\bruta\b/.test(t)?t.replace(/^.*?\bruta\b/,''):t.replace(/^(?:ir|vamos|voy|llevame|quiero ir|como llego|como se va|como voy|navega|navegar)\b/,'');
+    r=r.replace(/\b(en bici|por favor|para manana|para hoy|ahora)\b/g,'').replace(/\s+/g,' ').trim();
+    r=r.replace(/^(de ida |en |para ir |para )/,'').trim();
+    let a='',b='';
+    const m=r.match(/^(?:(?:de|desde|entre)\s+(.+?)\s+(?:a|hasta|hacia|y)\s+(.+)|(?:a|al|hasta|hacia)\s+(.+))$/);
+    if(m){a=m[1]||'';b=m[2]||m[3]||''}
+    else{r=r.replace(/^(de|desde)\s+/,'');const w=r.split(' ').filter(Boolean);
+      if(w.length>=2){for(const i of [1,w.length-1,2].filter((x,k,arr)=>x>0&&x<w.length&&arr.indexOf(x)===k)){
+        vozPill('🗺️ Buscando «'+w.slice(0,i).join(' ')+'» y «'+w.slice(i).join(' ')+'»…','',0);
+        const s=await vozGeo(w.slice(0,i).join(' '));if(!s)continue;const d=await vozGeo(w.slice(i).join(' '));if(d){start=s;dest=d;break}}}
+      else if(w.length===1)b=w[0];}
+    if(!dest){
+      if(!b){vozSay('Dime el destino. Por ejemplo: ruta de Mollerussa a Cervera.');return}
+      vozPill('🗺️ Buscando '+(a?a+' → ':'')+b+'…','',0);
+      dest=await vozGeo(b);if(!dest){vozSay('No encuentro '+b+'.');return}
+      start=a&&!/^(aqui|donde estoy|mi posicion|mi ubicacion)$/.test(a)?await vozGeo(a):await vozHereLL();
+      if(!start){vozSay(a?'No encuentro '+a+'.':'No tengo tu posición. Di también desde dónde sales.');return}
+    }
+  }
+  vozPill('🗺️ Calculando la ruta…',kind==='loop'?'Circular de '+km+' km':(start.label||'')+' → '+(dest.label||''),0);
+  vozSay('Calculando la ruta.');
+  try{
+    viewingComm=null;closeSheets();go('rutas');
+    plan.active=true;plan.view=false;plan.mode=kind==='loop'?'loop':'ab';plan.seed=1;clearPlan(true);
+    $('planPanel').classList.remove('draw');
+    plan.start=start;if(kind==='loop')plan.loopKm=km;else plan.dest=dest;
+    setPlanning(true);$('planTitle').textContent=PLAN_T[plan.mode];redrawPlanMarkers();renderPlan();
+    await computeRoute();
+  }catch(e){console.warn(e)}
+  const r=plan.route;
+  if(!r){vozPill('❌ No se pudo calcular la ruta','',5000);vozSay('No he podido calcular la ruta. Revisa la conexión o prueba con otros sitios.');return}
+  const mins=r.mins||estMins(r.km,r.up||0);const h=Math.floor(mins/60),mm=mins%60;
+  const tt=h?`${h>1?h+' horas':'una hora'}${mm?' y '+mm+' minutos':''}`:mm+' minutos';
+  vozPill('✅ Ruta: '+vozKm(r.km)+' km'+(r.up?' · +'+Math.round(r.up)+' m':''),'Di «empezar» para salir',8000);
+  vozSay(`Ruta preparada: ${vozKm(r.km)} kilómetros${r.up?', '+Math.round(r.up)+' metros de subida':''}, más o menos ${tt}. Di empezar para salir.`);
+}
+
+const VSR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const VZ={rec:null,on:false,cont:false,want:false,armedT:0,pending:null,quietT:0,errN:0,restartTO:null,oneShot:false};
+function vozNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[¿?¡!.,;:«»"]/g,' ').replace(/\s+/g,' ').trim()}
+const VOZ_WAKE=/\b(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|\b(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|\bridesafe\b/;
+function vozPill(a,b,ms){const p=document.getElementById('vozPill');p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
+function vozBeep(f,d){try{const C=window.__vozAC||(window.__vozAC=new (window.AudioContext||window.webkitAudioContext)());if(C.state==='suspended')C.resume();const o=C.createOscillator(),g=C.createGain();o.frequency.value=f||880;g.gain.setValueAtTime(.0001,C.currentTime);g.gain.exponentialRampToValueAtTime(.35,C.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,C.currentTime+(d||.15));o.connect(g).connect(C.destination);o.start();o.stop(C.currentTime+(d||.15)+.02)}catch(e){}}
+function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
+/* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
+function vozSay(t,thenListen){
+  const ms=Math.max(1600,String(t).length*80)+600;VZ.quietT=Date.now()+ms;
+  vozStop(true);
+  try{cascoSay(t)}catch(e){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(x){}}
+  clearTimeout(VZ.restartTO);
+  VZ.restartTO=setTimeout(()=>{if(thenListen)vozListen(true);else if(VZ.cont)vozStartCont()},ms);
+}
+function vozMake(continuous){
+  const r=new VSR();r.lang='es-ES';r.continuous=continuous;r.interimResults=true;r.maxAlternatives=3;
+  r.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const res=e.results[i];const txt=res[0].transcript;
+      if(!res.isFinal){if(VZ.oneShot||VZ.pending||Date.now()<VZ.armedT)vozPill('🎤 '+txt,'',0);continue}
+      const alts=[...res].map(a=>vozNorm(a.transcript));
+      vozHeard(alts,txt);
+    }
+  };
+  r.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.cont=false;VZ.want=false;store.set('vozCont',false);vozPill('🎤 Micrófono bloqueado','Permite el micrófono a la app en Chrome',6000);vozUI();return}
+    if(e.error==='network'){vozPill('📶 Sin conexión','El reconocimiento de voz necesita datos móviles',5000);VZ.errN++;return}
+    if(e.error==='no-speech'&&VZ.oneShot){vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}
+    if(e.error!=='no-speech'&&e.error!=='aborted')VZ.errN++;
+  };
+  r.onend=()=>{VZ.on=false;VZ.rec=null;
+    if(VZ.oneShot){VZ.oneShot=false;if(VZ.pending&&Date.now()>VZ.pending.until)VZ.pending=null}
+    vozUI();
+    if(VZ.cont&&VZ.want&&document.visibilityState==='visible'&&Date.now()>VZ.quietT){
+      const wait=Math.min(8000,300+VZ.errN*1500);clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(vozStartCont,wait)}
+  };
+  r.onstart=()=>{VZ.on=true;vozUI()};
+  return r;
+}
+function vozStop(keepCont){clearTimeout(VZ.restartTO);if(!keepCont)VZ.want=false;try{VZ.rec&&VZ.rec.abort()}catch(e){}VZ.rec=null;VZ.on=false;vozUI()}
+function vozStartCont(){
+  if(!VSR||!VZ.cont||VZ.rec||document.visibilityState!=='visible'||Date.now()<VZ.quietT)return;
+  VZ.want=true;VZ.oneShot=false;
+  try{VZ.rec=vozMake(true);VZ.rec.start()}catch(e){VZ.rec=null}
+}
+/* Escuchar una vez (toque en el botón, botón del casco o respuesta a una pregunta) */
+function vozListen(silent){
+  if(!VSR){vozPill('🎤 Este navegador no entiende la voz','Usa Chrome en Android',5000);return}
+  vozStop(true);VZ.oneShot=true;
+  if(!silent)vozBeep(880,.12);
+  vozPill(VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Te escucho…','Di la orden',0);
+  setTimeout(()=>{try{VZ.rec=vozMake(false);VZ.rec.start()}catch(e){VZ.rec=null;VZ.oneShot=false;vozUI()}},silent?0:180);
+}
+function vozHeard(alts,raw){
+  VZ.errN=0;
+  let t=alts[0];
+  /* respuesta a una pregunta pendiente (terminar / emergencia) */
+  if(VZ.pending&&Date.now()<VZ.pending.until){
+    const yes=alts.some(a=>/\b(si|sip|vale|confirmo|confirmar|claro|adelante|correcto|afirmativo)\b/.test(a));
+    const no=alts.some(a=>/\b(no|cancela|cancelar|dejalo|nada)\b/.test(a));
+    const p=VZ.pending;
+    if(yes&&!no){VZ.pending=null;vozPill('✅ «'+raw+'»');p.yes();return}
+    if(no){VZ.pending=null;vozPill('❌ Cancelado');vozSay('Vale, cancelado.');return}
+    vozPill('🤔 «'+raw+'»','Contesta «sí» o «no»',3000);vozSay('No te he entendido. Di sí o no.',true);return;
+  }
+  VZ.pending=null;
+  if(VZ.cont&&!VZ.oneShot){
+    const a=alts.find(x=>VOZ_WAKE.test(x));
+    if(a){t=a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();
+      if(!t){vozBeep(988,.12);VZ.armedT=Date.now()+7000;vozPill('🎤 Te escucho…','Di la orden',7000);vozUI();return}}
+    else if(Date.now()<VZ.armedT){/* ya dijo «oye bici» antes: esta frase es la orden */}
+    else return;   // sin palabra clave: no hace nada
+  }
+  VZ.armedT=0;vozUI();
+  vozPill('🎤 «'+raw+'»','',4000);
+  if(!vozRun(t)){
+    const ok=alts.slice(1).some(a=>vozRun(a));   // probar las otras formas en que lo entendió
+    if(!ok){vozBeep(330,.25);vozPill('🤔 «'+raw+'»','No te he entendido',4500);vozSay('No te he entendido. Mantén pulsado el micro para ver qué puedes decir.')}
+  }
+}
+const vozHas=(t,re)=>re.test(t);
+function vozKm(km){return km<10?km.toFixed(1).replace('.',',').replace(',0',''):String(Math.round(km))}
+function vozDir(a,b){const y=Math.sin((b[1]-a[1])*Math.PI/180)*Math.cos(b[0]*Math.PI/180);const x=Math.cos(a[0]*Math.PI/180)*Math.sin(b[0]*Math.PI/180)-Math.sin(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.cos((b[1]-a[1])*Math.PI/180);const h=(Math.atan2(y,x)*180/Math.PI+360)%360;return['el norte','el noreste','el este','el sureste','el sur','el suroeste','el oeste','el noroeste'][Math.round(h/45)%8]}
+function vozHere(){try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[0],p[1]]}catch(e){}try{if(meMarker){const l=meMarker.getLngLat();return[l.lat,l.lng]}}catch(e){}return null}
+/* Devuelve true si ha reconocido la orden */
+function vozRun(t){
+  if(!t)return false;
+  const L=typeof live!=='undefined'&&live&&live.on;
+  // --- Ayuda / emergencia (siempre pregunta antes) ---
+  if(vozHas(t,/\b(sos|socorro|emergencia|auxilio|ayuda|ayudame)\b/)&&!vozHas(t,/(que puedo decir|ordenes|comandos)/)){
+    VZ.pending={until:Date.now()+15000,yes:()=>{
+      if(L&&live.rideId){try{sendAlert('help')}catch(e){}}
+      try{sos()}catch(e){}
+      vozSay(L&&live.rideId?'Aviso de ayuda enviado al grupo. Te abro las alertas de seguridad. El botón rojo llama al uno uno dos.':'Te abro las alertas de seguridad. El botón rojo llama al uno uno dos.');
+    }};
+    vozBeep(660,.3);vozSay('¿Confirmas emergencia? Di sí o no.',true);return true;
+  }
+  // --- Terminar (pregunta antes) ---
+  if(vozHas(t,/\b(terminar|termina|terminamos|finalizar|finaliza|acabar|acaba|hemos acabado|fin de la (ruta|salida)|guardar)\b/)){
+    if(!L){vozSay('No estás grabando ninguna salida.');return true}
+    VZ.pending={until:Date.now()+15000,yes:()=>{try{finishLive(true)}catch(e){vozSay('No he podido terminar. Pulsa el botón terminar.')}}};
+    vozSay('¿Terminar la salida y guardarla? Di sí o no.',true);return true;
+  }
+  // --- Preparar ruta (v1.1) ---
+  {const k=vozIsRoute(t);if(k){vozRoute(t,k);return true}}
+  // --- Seguir / Pausa ---
+  if(vozHas(t,/\b(seguir|sigue|seguimos|continuar|continua|continuamos|reanudar|reanuda|quitar pausa)\b/)){
+    if(!L){vozSay('No estás grabando ninguna salida.');return true}
+    if(live.paused)togglePause();else vozSay('Ya estás grabando.');return true;
+  }
+  if(vozHas(t,/\b(pausa|pausar|pausamos|para un momento|parada)\b/)){
+    if(!L){vozSay('No estás grabando ninguna salida.');return true}
+    if(!live.paused)togglePause();else vozSay('Ya está en pausa. Di seguir para continuar.');return true;
+  }
+  // --- Empezar ---
+  if(vozHas(t,/\b(empezar|empieza|empezamos|iniciar|inicia|arranca|arrancar|comenzar|comienza|grabar|graba|salimos|vamos alla)\b/)){
+    if(L){vozSay(live.paused?'La salida está en pausa. Di seguir.':'Ya estás grabando.');return true}
+    try{if(plan&&plan.route){goNav()}else{toggleRec()}}catch(e){vozSay('No he podido empezar. Pulsa el botón de empezar.')}
+    return true;
+  }
+  // --- Repetir ---
+  if(vozHas(t,/\b(repite|repetir|repitelo|otra vez|que has dicho|como dices)\b/)){
+    vozSay((typeof CASCO!=='undefined'&&CASCO.last)||'Todavía no hay indicaciones.');return true;
+  }
+  // --- Cuánto falta ---
+  if(vozHas(t,/(cuanto falta|cuantos kilometros faltan|cuanto queda|cuantos quedan|cuanto me queda|distancia|llegada|a que hora llego|kilometros quedan|falta mucho)/)){
+    if(L&&live.nav&&live.nav.left!=null){
+      const n=live.nav;if(n.arrived){vozSay('Ya has llegado a tu destino.');return true}
+      const v=Math.max(10,live.speed>5?live.speed:18);const eta=new Date(Date.now()+n.left/v*3600000);
+      vozSay(`Faltan ${vozKm(n.left)} kilómetros. Llegada sobre las ${eta.getHours()} y ${String(eta.getMinutes()).padStart(2,'0')}.`);
+    }else if(L)vozSay(`No llevas ninguna ruta cargada. Llevas ${vozKm(live.km||0)} kilómetros.`);
+    else vozSay('No estás en ruta.');
+    return true;
+  }
+  // --- Resumen ---
+  if(vozHas(t,/(como voy|cuanto llevo|resumen|kilometros llevo|que llevo|media)/)){
+    if(!L){vozSay('No estás grabando ninguna salida.');return true}
+    try{vozSay(sumText())}catch(e){vozSay(`Llevas ${vozKm(live.km||0)} kilómetros.`)}return true;
+  }
+  // --- Velocidad ---
+  if(vozHas(t,/(velocidad|que velocidad|a cuanto voy|como de rapido)/)){
+    if(!L){vozSay('No estás grabando ninguna salida.');return true}
+    vozSay(live.paused?'Estás en pausa.':`Vas a ${Math.round(live.speed||0)} kilómetros por hora.`);return true;
+  }
+  // --- Lluvia ---
+  if(vozHas(t,/(llover|lluvia|llueve|lloviendo|chubasco|chubasquero|tormenta|granizo|agua del cielo|nubes|mojar|mojarme|radar)/)){vozRain(t);return true}
+  // --- Agua / fuente ---
+  if(vozHas(t,/\b(agua|fuente|fuentes|beber)\b/)){vozWater();return true}
+  // --- Tiempo / viento / temperatura ---
+  if(vozHas(t,/\b(tiempo|viento|temperatura|frio|calor|grados|clima)\b/)){vozWeather();return true}
+  // --- Dónde estoy ---
+  if(vozHas(t,/(donde estoy|donde estamos|mi posicion|mi ubicacion|en que calle|en que pueblo)/)){vozWhere();return true}
+  // --- Avisos al grupo ---
+  if(vozHas(t,/\b(pinchazo|pinchado|he pinchado|averia|rueda pinchada)\b/)){
+    if(L&&live.rideId){sendAlert('flat');vozSay('Aviso de pinchazo enviado al grupo.')}
+    else vozSay('El aviso de pinchazo funciona en una salida en grupo.');return true;
+  }
+  if(vozHas(t,/\b(esperad|esperadme|esperame|espera|esperen|esperenme)\b/)){
+    if(L&&live.rideId){sendAlert('wait');vozSay('Aviso enviado: que te esperen.')}
+    else vozSay('Ese aviso funciona en una salida en grupo.');return true;
+  }
+  // --- Mapa ---
+  if(vozHas(t,/\b(centrar|centra|centrame|sigueme|mi posicion en el mapa|volver al mapa)\b/)){
+    if(L){toggleFollow();vozSay('Mapa centrado.')}else vozSay('No estás en ruta.');return true;
+  }
+  if(vozHas(t,/(pantalla negra|modo ahorro|ahorro|ahorrar bateria|apaga la pantalla)/)){
+    if(L){saverOn();vozSay('Modo ahorro. Toca tres veces la pantalla para volver.')}else vozSay('El modo ahorro funciona mientras grabas.');return true;
+  }
+  // --- Voz de la navegación ---
+  if(vozHas(t,/\b(silencio|callate|calla|sin voz|quita la voz|apaga la voz)\b/)){
+    if(L){if(live.voice)toggleVoice();vozSay('Voz de la navegación apagada. Las órdenes por voz siguen funcionando.')}else vozSay('No estás en ruta.');return true;
+  }
+  if(vozHas(t,/(habla|activa la voz|pon la voz|enciende la voz|con voz)/)){
+    if(L){if(!live.voice)toggleVoice();else vozSay('La voz ya está activada.')}else vozSay('No estás en ruta.');return true;
+  }
+  // --- v1.4: moverse por la app (pestañas, cerrar, subir y bajar) ---
+  {const TB=[[/\b(comunidad|club|mi club)\b/,'comunidad','Comunidad'],[/\b(actividades|actividad|mis salidas|historial)\b/,'actividades','Actividades'],[/\b(perfil|ajustes|configuracion|mi perfil)\b/,'perfil','Perfil'],[/\b(rutas|mapa|inicio|pantalla principal)\b/,'rutas','Rutas']];
+   const verb=/\b(ir|ve|vete|abre|abrir|pasa|pasar|muestra|muestrame|ensename|pon|cambia|cambiar|entra|entrar|llevame|quiero ver|ver)\b/;
+   const short=t.split(' ').length<=3;
+   for(const [re,tab,name] of TB){if(re.test(t)&&(short||verb.test(t))){
+     if(L){vozSay('Durante la salida la app se queda en el mapa.');return true}
+     try{closeSheets()}catch(e){}vozPanelClose();go(tab);vozPill('📂 '+name,'',2500);vozSay(name+'.');return true}}
+   if(/\b(crear|nueva salida|crear salida|nueva quedada)\b/.test(t)&&!L){try{closeSheets()}catch(e){}togglePlus();vozSay('Crear.');return true}
+   if(/\b(cierra|cerrar|cierralo|cierra la ventana|atras|vuelve atras)\b/.test(t)){try{closeSheets()}catch(e){}vozPanelClose();try{alarmClose()}catch(e){}vozPill('✕ Cerrado','',1500);return true}
+   const down=/^(baja|bajar|abajo|mas abajo|sigue bajando|baja mas)$/.test(t),up=/^(sube|subir|arriba|mas arriba|sube mas)$/.test(t);
+   if(down||up){const el=document.querySelector('.sheet.show')||document.querySelector('.screen.active');
+     if(el){el.scrollBy({top:(down?1:-1)*Math.round(el.clientHeight*0.7),behavior:'smooth'});vozPill(down?'⬇️ Bajando':'⬆️ Subiendo','',1200)}return true}
+  }
+  // --- Hora ---
+  if(vozHas(t,/(que hora|hora es|dime la hora)/)){const d=new Date();vozSay(`Son las ${d.getHours()} y ${String(d.getMinutes()).padStart(2,'0')}.`);return true}
+  // --- Ayuda de órdenes ---
+  if(vozHas(t,/(que puedo decir|ordenes|comandos|que sabes hacer|instrucciones)/)){
+    vozPanelOpen();vozSay('Puedes decir: prepárame una ruta de un pueblo a otro, empezar, pausa, seguir, terminar, cuánto falta, cómo voy, va a llover, agua, pinchazo o ayuda.');return true;
+  }
+  return false;
+}
+/* ===== Voz beta 1.5 — Previsión de lluvia completa y fiable =====
+   · Ahora: si llueve y con qué fuerza (débil, moderada, fuerte, muy fuerte).
+   · Próximas 3 h cada 15 minutos: a qué hora empieza y a qué hora para.
+   · Próximas 12 h: hora de más riesgo, probabilidad, litros, tormenta y granizo.
+   · Fiabilidad: cruza 3 modelos (ECMWF, ICON, Météo‑France) → «segura», «probable» o «poco fiable».
+   · Entiende «mañana», «pasado mañana», «esta tarde», «esta noche».
+   · Consejo de seguridad (asfalto que resbala, tormenta, refugio). */
+const VR_INT=mmh=>mmh>=30?'muy fuerte':mmh>=15?'fuerte':mmh>=2?'moderada':'débil';
+const vrHM=s=>{const x=String(s).slice(11,16).split(':');return +x[1]?`las ${+x[0]} y ${x[1]}`:`las ${+x[0]}`};
+const vrH=s=>+String(s).slice(11,13);
+const vrL=x=>x>=10?String(Math.round(x)):x.toFixed(1).replace(/\.0$/,'').replace('.',',');
+async function vozRain(t){
+  t=t||'';
+  const h=vozHere()||(typeof hereLL==='function'?hereLL():null);if(!h){vozSay('Todavía no tengo tu posición.');return}
+  vozPill('🌧️ Mirando la lluvia…','3 modelos meteorológicos',0);
+  const la=(+h[0]).toFixed(3),lo=(+h[1]).toFixed(3);
+  const day=/pasado manana/.test(t)?2:(/\bmanana\b/.test(t)&&!/esta manana/.test(t))?1:0;
+  try{
+    const base=`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&timezone=auto`;
+    const [A,B]=await Promise.allSettled([
+      omJSON(base+'&current=precipitation,weather_code&minutely_15=precipitation&forecast_minutely_15=12&hourly=precipitation_probability,precipitation,weather_code,wind_gusts_10m&forecast_hours=12&daily=precipitation_sum,precipitation_probability_max,precipitation_hours,weather_code&forecast_days=3&wind_speed_unit=kmh'),
+      getJSON(omUrl(h[0],h[1],'hourly=precipitation,weather_code&forecast_days=3'),9000)]);
+    if(A.status!=='fulfilled')throw A.reason;
+    const d=A.value,M=B.status==='fulfilled'?B.value.hourly:null;
+    if(day)return vrDay(d,M,day);
+    const H=d.hourly||{},c=d.current||{},nowS=String(c.time||'').slice(0,13);
+    const T=H.time||[],PP=H.precipitation_probability||[],MM=H.precipitation||[],WC=H.weather_code||[];
+    let k=T.findIndex(x=>x.slice(0,13)>=nowS);if(k<0)k=0;
+    // ¿Esta tarde / esta noche? → mira solo esas horas
+    let a=k,b=Math.min(T.length,k+12),tramo='en las próximas horas';
+    if(/esta tarde/.test(t)){a=Math.max(k,T.findIndex(x=>vrH(x)>=14));b=T.findIndex(x=>x.slice(0,10)===T[k].slice(0,10)&&vrH(x)>=21);if(b<0)b=T.length;tramo='esta tarde'}
+    else if(/esta noche/.test(t)){a=Math.max(k,T.findIndex(x=>vrH(x)>=20));b=T.length;tramo='esta noche'}
+    if(a<0)a=k;
+    const parts=[];let alert=0;
+    // 1) Ahora
+    const nowMM=+c.precipitation||0,nowCode=+c.weather_code||0;
+    if(nowCode>=95)parts.push('Ahora hay tormenta en tu zona.'),alert=2;
+    else if(nowMM>=0.1)parts.push(`Ahora está lloviendo, lluvia ${VR_INT(nowMM)}.`),alert=Math.max(alert,1);
+    // 2) Próximas 3 h, cada 15 min
+    const Q=d.minutely_15||{},QT=Q.time||[],QP=Q.precipitation||[];
+    if(!tramo.startsWith('esta')&&QT.length){
+      const raining=nowMM>=0.1;let ev=null;
+      for(let i=0;i<QT.length;i++){const r=(QP[i]||0)>=0.1;if(r!==raining){ev={i,start:r};break}}
+      const q=QP.map(x=>(x||0)*4);const pk=Math.max(0,...q);
+      if(ev&&ev.start){parts.push(`Empezará a llover sobre ${vrHM(QT[ev.i])}${pk>=2?', lluvia '+VR_INT(pk):''}.`);alert=Math.max(alert,1)}
+      else if(ev&&!ev.start&&raining)parts.push(`Parará sobre ${vrHM(QT[ev.i])}.`);
+      else if(raining)parts.push('Seguirá lloviendo al menos tres horas.');
+    }
+    // 3) Tramo de horas: probabilidad, hora punta, litros, tormenta
+    const seg=[];for(let i=a;i<b;i++)seg.push(i);
+    const mx=Math.max(0,...seg.map(i=>PP[i]||0)),tot=seg.reduce((s,i)=>s+(MM[i]||0),0);
+    const iMax=seg.reduce((m,i)=>(PP[i]||0)>(PP[m]||0)?i:m,seg[0]??k);
+    const storm=seg.some(i=>(WC[i]||0)>=95),hail=seg.some(i=>(WC[i]||0)>=96);
+    const gust=Math.max(0,...seg.map(i=>(H.wind_gusts_10m||[])[i]||0));
+    // Consenso de modelos en el mismo tramo
+    let rc=null;if(M&&M.time){const off=M.time.findIndex(x=>x.slice(0,13)===String(T[a]).slice(0,13));if(off>=0)rc=omRainCount(M,off,off+(b-a))}
+    if(mx<20&&tot<0.2&&!storm&&(!rc||rc.n===0)){
+      parts.push(`No se espera lluvia ${tramo}.`);
+    }else{
+      const pico=T[iMax]?` La hora de más riesgo, sobre ${vrHM(T[iMax])}, con un ${PP[iMax]||mx} por ciento.`:'';
+      parts.push(`${mx>=60?'Lluvia muy probable':mx>=30?'Puede llover':'Poca probabilidad de lluvia'} ${tramo}: hasta un ${mx} por ciento.${pico}${tot>=0.5?` Se esperan unos ${vrL(tot)} litros por metro cuadrado.`:''}`);
+      if(mx>=40)alert=Math.max(alert,1);
+    }
+    if(storm){parts.push(hail?'Atención: posible tormenta con granizo.':'Atención: posible tormenta.');alert=2}
+    if(gust>=50)parts.push(`Rachas de viento de hasta ${Math.round(gust)} kilómetros por hora.`);
+    // 4) Fiabilidad
+    if(rc&&rc.of>=2){
+      if(rc.n>=rc.of)parts.push(`Previsión segura: los ${rc.of} modelos ven lluvia.`);
+      else if(rc.n>=2)parts.push(`Previsión probable: ${rc.n} de ${rc.of} modelos ven lluvia.`);
+      else if(rc.n===1)parts.push(`Poco fiable: solo 1 de ${rc.of} modelos ve lluvia.`);
+      else if(mx>=30)parts.push(`Ninguno de los ${rc.of} modelos ve lluvia fuerte, así que es poco probable.`);
+      else parts.push(`Los ${rc.of} modelos coinciden.`);
+    }
+    // 5) Consejo de seguridad
+    if(alert===2)parts.push('Busca refugio y evita zonas altas y árboles solos.');
+    else if(alert===1)parts.push('Lleva chubasquero, enciende las luces y frena antes: el asfalto, las pinturas y las tapas resbalan.');
+    const strip=seg.slice(0,6).map(i=>vrH(T[i])+'h '+(PP[i]||0)+'%').join(' · ');
+    vozPill((alert===2?'⛈️':alert?'🌧️':'🌤️')+' Lluvia: '+mx+'%'+(rc&&rc.of>=2?' · '+rc.n+'/'+rc.of+' modelos':''),strip,9000);
+    vozSay(parts.join(' '));
+  }catch(e){console.warn('vozRain',e);vozPill('🌧️ Sin datos','',3000);vozSay('No he podido consultar la lluvia. Revisa la conexión.')}
+}
+function vrDay(d,M,n){
+  const D=d.daily||{},dt=(D.time||[])[n];if(!dt){vozSay('No tengo previsión para ese día.');return}
+  const quien=n===1?'Mañana':'Pasado mañana';
+  const pp=(D.precipitation_probability_max||[])[n]||0,mm=(D.precipitation_sum||[])[n]||0,hrs=(D.precipitation_hours||[])[n]||0,code=(D.weather_code||[])[n]||0;
+  const parts=[];
+  if(pp<20&&mm<0.3)parts.push(`${quien} no se espera lluvia.`);
+  else{parts.push(`${quien}: probabilidad de lluvia de hasta un ${pp} por ciento${mm>=0.5?`, unos ${vrL(mm)} litros`:''}${hrs>=1?`, durante unas ${Math.round(hrs)} horas`:''}.`)}
+  if(code>=95)parts.push(code>=96?'Posible tormenta con granizo.':'Posible tormenta.');
+  // Mañana / tarde y fiabilidad con 3 modelos
+  if(M&&M.time){
+    const idx=s=>M.time.findIndex(x=>x===dt+'T'+s);
+    const mo=omRainCount(M,idx('07:00'),idx('14:00')),ta=omRainCount(M,idx('14:00'),idx('21:00'));
+    if(mo.of>=2){const f=r=>r.n>=r.of?'segura':r.n>=2?'probable':r.n===1?'posible':'seca';
+      parts.push(`Por la mañana, ${f(mo)==='seca'?'sin lluvia':'lluvia '+f(mo)}; por la tarde, ${f(ta)==='seca'?'sin lluvia':'lluvia '+f(ta)}.`);
+      const tot=mo.n+ta.n;parts.push(tot===0&&pp>=30?'Los modelos no la ven clara, es poco fiable.':`Cruzado con ${mo.of} modelos.`)}
+  }
+  if(pp>=40)parts.push('Si sales, lleva chubasquero y luces.');
+  vozPill((code>=95?'⛈️':pp>=40?'🌧️':'🌤️')+' '+quien+': '+pp+'%',(mm>=0.5?mm.toFixed(1)+' mm · ':'')+'3 modelos',9000);
+  vozSay(parts.join(' '));
+}
+async function vozWeather(){
+  if(typeof live!=='undefined'&&live.on&&live.wx){try{vozSay(lwText());return}catch(e){}}
+  const h=vozHere()||(typeof hereLL==='function'?hereLL():null);if(!h){vozSay('Todavía no tengo tu posición.');return}
+  try{
+    const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${h[0].toFixed(3)}&longitude=${h[1].toFixed(3)}&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=auto`)).json();
+    const c=j.current;vozSay(`Hace ${Math.round(c.temperature_2m)} grados, sensación de ${Math.round(c.apparent_temperature)}. Viento de ${Math.round(c.wind_speed_10m)} kilómetros por hora, rachas de ${Math.round(c.wind_gusts_10m)}.`);
+  }catch(e){vozSay('No he podido consultar el tiempo. Revisa la conexión.')}
+}
+async function vozWhere(){
+  const h=vozHere();if(!h){vozSay('Todavía no tengo tu posición. Espera un momento.');return}
+  vozPill('📍 Buscando dónde estás…','',0);
+  try{
+    const j=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&accept-language=es&lat=${h[0]}&lon=${h[1]}`)).json();
+    const a=j.address||{};const calle=a.road||a.path||a.cycleway||a.track||'';const pueblo=a.village||a.town||a.city||a.hamlet||a.municipality||'';
+    const s=calle&&pueblo?`Estás en ${calle}, en ${pueblo}.`:pueblo?`Estás cerca de ${pueblo}.`:calle?`Estás en ${calle}.`:'No sé el nombre de este sitio.';
+    vozPill('📍 '+(calle?calle+', ':'')+pueblo,'',6000);vozSay(s);
+  }catch(e){vozSay('No he podido saber el lugar. Revisa la conexión.')}
+}
+async function vozWater(){
+  const h=vozHere();if(!h){vozSay('Todavía no tengo tu posición. Espera un momento.');return}
+  vozPill('💧 Buscando fuentes…','',0);vozSay('Buscando la fuente más cercana.');
+  try{
+    const d=await overpassQ(`[out:json][timeout:15];(node(around:4000,${h[0]},${h[1]})[amenity=drinking_water];node(around:4000,${h[0]},${h[1]})[natural=spring][drinking_water!=no];);out 40;`);
+    const l=(d.elements||[]).map(e=>({e,km:hav(h,[e.lat,e.lon])})).sort((a,b)=>a.km-b.km);
+    if(!l.length){vozSay('No encuentro fuentes a menos de cuatro kilómetros.');return}
+    const f=l[0];const m=f.km<1?`${Math.round(f.km*1000/10)*10} metros`:`${vozKm(f.km)} kilómetros`;
+    vozPill('💧 Fuente a '+m,'',7000);
+    vozSay(`La fuente más cercana está a ${m}, hacia ${vozDir(h,[f.e.lat,f.e.lon])}.`);
+    try{if(map&&window.maplibregl){const el=document.createElement('div');el.textContent='💧';el.style.cssText='font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))';const mk=new maplibregl.Marker({element:el}).setLngLat([f.e.lon,f.e.lat]).addTo(map);setTimeout(()=>mk.remove(),600000)}}catch(e){}
+  }catch(e){vozSay('No he podido buscar fuentes. Revisa la conexión.')}
+}
+/* Opciones */
+function vozSetCont(on){
+  VZ.cont=!!on;store.set('vozCont',VZ.cont);vozUI();
+  if(on){vozStop(true);vozStartCont();vozPill('🎤 Escucha continua activada','Di «Oye bici» y la orden',4500)}
+  else{vozStop();vozPill('🎤 Escucha continua apagada','Toca el botón para hablar',3500)}
+}
+function vozSetCasco(on){store.set('vozCasco',!!on);try{cascoHandlers()}catch(e){}vozPill(on?'⛑️ Botón del casco = hablar':'⛑️ Botón del casco como antes','',3500)}
+function vozPanelOpen(){document.getElementById('vozCont').checked=VZ.cont;document.getElementById('vozCasco').checked=!!store.get('vozCasco',false);document.getElementById('vozPanel').style.display='flex'}
+function vozPanelClose(){document.getElementById('vozPanel').style.display='none'}
+/* Botón del casco: reproducir/pausa = escuchar (si está activado) */
+(function(){
+  if(typeof cascoHandlers!=='function')return;
+  const orig=cascoHandlers;
+  cascoHandlers=function(){orig.apply(this,arguments);
+    if(!store.get('vozCasco',false)||!('mediaSession' in navigator))return;
+    const ms=navigator.mediaSession;const f=()=>{try{cascoKeep()}catch(e){}vozListen()};
+    try{ms.setActionHandler('play',f)}catch(e){}try{ms.setActionHandler('pause',f)}catch(e){}
+  };
+})();
+/* Botón: toque = hablar · mantener pulsado = opciones */
+(function(){
+  const b=document.getElementById('vozBtn');let t0=0,lp=null,done=false;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();t0=Date.now();done=false;lp=setTimeout(()=>{done=true;vib(40);vozPanelOpen()},700)});
+  b.addEventListener('pointerup',e=>{e.preventDefault();clearTimeout(lp);if(done)return;
+    if(VZ.on&&(VZ.oneShot||VZ.pending)){vozStop(true);VZ.oneShot=false;vozPill('🎤 Cancelado','',1500);if(VZ.cont)VZ.restartTO=setTimeout(vozStartCont,800);return}
+    vozListen()});
+  b.addEventListener('pointercancel',()=>clearTimeout(lp));
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(VZ.cont)setTimeout(vozStartCont,800)}else vozStop(true)});
+  VZ.cont=!!store.get('vozCont',false);vozUI();
+  if(VZ.cont)window.addEventListener('load',()=>setTimeout(vozStartCont,3000));
+  if(!store.get('vozIntro',false)){store.set('vozIntro',true);setTimeout(()=>{vozPill('🎤 Nuevo: órdenes por voz','Toca el botón 🎤 y habla. Mantén pulsado para ver qué decir',7000)},5000)}
+})();
+</script>
+<!-- ===== FIN VOZ BETA ===== -->
+<!-- ===== v1.2 — Deslizar hacia abajo para actualizar la app ===== -->
+<div id="ptr" style="position:fixed;left:50%;top:-60px;z-index:9460;width:48px;height:48px;margin-left:-24px;border-radius:50%;background:#0E1A2B;border:2px solid #A3E635;color:#A3E635;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5);pointer-events:none;transition:none">↻</div>
+<script>
+/* Deslizar hacia abajo desde arriba = actualizar la app.
+   No funciona sobre el mapa, en ventanas abiertas, grabando una salida ni planificando una ruta (para no perder nada). */
+(function(){
+  const P=document.getElementById('ptr');const MAX=110,GO=85;let y0=null,dy=0,act=false;
+  const scrollParent=el=>{for(let e=el;e&&e!==document.body;e=e.parentElement){const s=getComputedStyle(e);if(/(auto|scroll)/.test(s.overflowY)&&e.scrollHeight>e.clientHeight)return e}return null};
+  const blocked=el=>{try{if(typeof live!=='undefined'&&live.on)return true;if(typeof plan!=='undefined'&&plan.active)return true}catch(e){}
+    return !!(el.closest&&el.closest('#map,.maplibregl-map,canvas,.sheet,#vozPanel,#alarmBox,#saver,input,textarea,select,[contenteditable]'))};
+  const show=d=>{const k=Math.min(d,MAX);P.style.top=(k-60)+'px';P.style.transform='rotate('+(k*3)+'deg)';P.style.opacity=Math.min(1,k/50);P.style.background=d>=GO?'#A3E635':'#0E1A2B';P.style.color=d>=GO?'#0E1A2B':'#A3E635'};
+  const hide=()=>{P.style.transition='top .25s';P.style.top='-60px';setTimeout(()=>P.style.transition='none',260)};
+  document.addEventListener('touchstart',e=>{act=false;y0=null;if(e.touches.length!==1)return;const t=e.target;if(blocked(t))return;const sp=scrollParent(t);if(sp&&sp.scrollTop>2)return;y0=e.touches[0].clientY;dy=0},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=(e.touches[0].clientY-y0)*0.55;if(dy<=4){if(act){act=false;hide()}return}act=true;show(dy)},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0==null)return;y0=null;if(!act)return;act=false;
+    if(dy>=GO){P.style.top='24px';P.style.transition='transform 1s linear';P.style.transform='rotate(720deg)';try{vib(20)}catch(e){}setTimeout(()=>location.reload(),350)}else hide()},{passive:true});
+})();
+</script>
+<!-- ===== FIN deslizar para actualizar ===== -->
+
 </body>
 </html>
