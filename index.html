@@ -1247,7 +1247,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.40.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7499,6 +7499,7 @@ function vcDo(n){
   }
   const go=n.match(/^(?:oye bici |bici )?(?:ir a|ve a|vamos a|llevame a|lleva me a|guiame a|guia me a) (.{2,40})$/);
   if(go&&w<=9){vcOk2();vcSay('Busco el camino a '+go[1]);liveGuide(go[1]).then(()=>renderLive());return true}
+  if(/(llover|lluvia|llueve|tormenta|pronostic)/.test(n)&&w<=10){vcOk2();try{vozRain(n)}catch(e){}return true}   // v5.40.1
   if(w>6)return false;   // frases largas = conversación, no órdenes
   const has=re=>re.test(n);
   if(has(/\b(enciende la pantalla|encender la pantalla|enciende pantalla|encender pantalla|despierta|quita el modo ahorro|quitar el modo ahorro|quitar modo ahorro|sal del modo ahorro|salir del modo ahorro|pantalla encendida)\b/)){vcOk2();try{saverOff()}catch(e){}vcSay('Pantalla encendida');return true}
@@ -7508,7 +7509,8 @@ function vcDo(n){
   if(has(/\b(como voy|resumen|cuanto llevo|kilometros|distancia|cuantos kilometros)\b/)){vcOk2();vcSay(sumText());return true}
   if(has(/\b(repite|repitelo|repetir|otra vez)\b/)){vcOk2();vcSay(CASCO.last||'Todavía no hay indicaciones.');return true}
   if(has(/\b(que hora|hora es|la hora)\b/)){vcOk2();const d=new Date();vcSay('Son las '+d.getHours()+' y '+String(d.getMinutes()));return true}
-  if(has(/\b(viento|que tiempo hace|el tiempo|lluvia)\b/)){vcOk2();if(live.wx)vcSay(lwText());else vcSay('Todavía no tengo el viento');return true}
+  if(/(llover|lluvia|llueve|lloviendo|chubasco|chubasquero|tormenta|granizo|pronostic|prevision de lluvia|mojar)/.test(n)){vcOk2();try{vozRain(n)}catch(e){vcSay('No he podido consultar la lluvia.')}return true}   // v5.40.1
+  if(has(/\b(viento|que tiempo hace|el tiempo)\b/)){vcOk2();if(live.wx)vcSay(lwText());else vcSay('Todavía no tengo el viento');return true}
   if(has(/\b(quita la ruta|quitar ruta|quitar la ruta|sin ruta)\b/)){vcOk2();live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();vcSay('Ruta quitada. Sigo grabando.');return true}
   if(has(/\b(pinchazo|he pinchado|pinchado)\b/)){vcOk2();if(live.rideId){sendAlert('flat');vcSay('Aviso de pinchazo enviado al grupo')}else vcSay('El aviso de pinchazo es para salidas en grupo');return true}
   if(has(/\b(esperad|esperadme|esperame|esperar)\b/)){vcOk2();if(live.rideId){sendAlert('wait');vcSay('Aviso enviado: que te esperen')}else vcSay('El aviso es para salidas en grupo');return true}
@@ -7516,7 +7518,9 @@ function vcDo(n){
   if(has(/\b(habla|con voz|pon la voz|activa la voz)\b/)){vcOk2();if(!live.voice)toggleVoice();return true}
   if(has(/\b(emergencia|socorro|auxilio|sos|ayuda urgente)\b/)){vcOk2();try{sos()}catch(e){}VC.ask='sos';VC.askT=Date.now();vcSay('Emergencia. Di llamar, para llamar al uno uno dos, o di ubicación, para enviar tu ubicación por WhatsApp.');return true}
   if(has(/\b(terminar|termina|acabar|fin de la salida|finalizar)\b/)){vcOk2();VC.ask='fin';VC.askT=Date.now();vcSay('¿Terminar la salida y guardarla? Di sí, o di no.');return true}
-  if(has(/\b(ordenes|que puedo decir|comandos|ayuda de voz)\b/)){vcOk2();vcSay('Puedes decir: pausa, seguir, cómo voy, qué hora es, viento, ir a y el pueblo, quitar ruta, pinchazo, esperad, silencio, habla, modo ahorro, enciende la pantalla, emergencia y terminar.');return true}
+  if(has(/\b(ordenes|que puedo decir|comandos|ayuda de voz)\b/)){vcOk2();vcSay('Puedes decir: pausa, seguir, cómo voy, cuánto falta, va a llover, qué hora es, viento, ir a y el pueblo, quitar ruta, pinchazo, esperad, agua, dónde estoy, silencio, habla, modo ahorro, emergencia y terminar.');return true}
+  /* v5.40.1 — lo que no entiende aquí, lo prueban las órdenes nuevas (cuánto falta, agua, dónde estoy…) */
+  try{if(typeof vozRun==='function'&&!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(n)&&vozRun(n))return true}catch(e){}
   return false;
 }
 function vozSet(on){
@@ -7539,8 +7543,10 @@ function renderVoz(){
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
    <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
+   <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
+   <button class="btn btn-lime" style="width:100%;margin:8px 0 4px" onclick="try{closeSheets()}catch(e){}vozPanelOpen()">🎤 «Oye bici», casco y todas las órdenes</button>
    <b style="display:block;margin:14px 0 4px">Qué puedes decir</b>
-   ${row('Pausa','Pausa la grabación')}${row('Seguir','Sigue grabando')}${row('Cómo voy','Km, tiempo y lo que queda')}${row('Qué hora es','Te dice la hora')}${row('Viento','Viento y lluvia')}
+   ${row('Pausa','Pausa la grabación')}${row('Seguir','Sigue grabando')}${row('Cómo voy','Km, tiempo y lo que queda')}${row('Qué hora es','Te dice la hora')}${row('Va a llover','Lluvia ahora, a qué hora empieza y para, tormenta y lo fiable que es')}${row('Viento','Viento y temperatura')}
    ${row('Ir a Tàrrega','Te guía hasta ese pueblo')}${row('Quitar ruta','Sigue grabando sin ruta')}${row('Pinchazo · Esperad','Avisa a tu grupo')}${row('Silencio · Habla','Apaga o enciende la voz')}${row('Modo ahorro','Pantalla negra para ahorrar batería')}${row('Enciende la pantalla','Quita el modo ahorro')}
    ${row('Emergencia','Luego di «llamar» (112) o «ubicación»')}${row('Terminar','Te pregunta y dices «sí»')}${row('Repite','Repite la última indicación')}${row('Órdenes','Te dice esta lista')}
    <p class="casco-note" style="margin-top:12px">🔈 Habla claro y con frases cortas; si hablas con los compañeros, la app no hace caso.<br>📶 Necesita cobertura en la mayoría de móviles.<br>🎙️ Mientras escucha verás «🎙️ Te escucho» en verde, encima de «GRABANDO». Tócalo para apagarlo.<br>🗺️ Durante la salida también lo enciendes o apagas con <b>⋯ → 🎙️</b> (verde = escuchando).</p>`;
@@ -8184,11 +8190,11 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 </script>
 <!-- ===== v5.40.0 (antes Voz beta 1.5) — Órdenes por voz (manos libres con guantes) ===== -->
 <style>
-#vozBtn{position:fixed;right:12px;top:46%;z-index:65;width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,.25);background:#A3E635;color:#0E1A2B;font-size:38px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.45);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#vozBtn{position:fixed;right:12px;top:46%;z-index:65;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:#A3E635;color:#0E1A2B;font-size:26px;opacity:.92;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.45);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #vozBtn.on{background:#DC2626;color:#fff;animation:vozPulse 1s infinite}
 #vozBtn.cont{border-color:#A3E635;box-shadow:0 0 0 5px rgba(163,230,53,.35),0 6px 22px rgba(0,0,0,.45)}
 #vozBtn.cont:not(.on){background:#14532D;color:#A3E635}
-#vozBtn small{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
+#vozBtn small{position:absolute;bottom:-17px;font-size:10px!important;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 #vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 #vozPill small{display:block;font-size:14px;font-weight:600;color:#cbd5e1;margin-top:3px}
@@ -8209,8 +8215,9 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.40.1</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
+ <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
  <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
@@ -8246,7 +8253,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.40.0';
+const VOZ_VER='5.40.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8332,7 +8339,7 @@ function vozSay(t,thenListen){
   vozStop(true);
   try{cascoSay(t)}catch(e){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(x){}}
   clearTimeout(VZ.restartTO);
-  VZ.restartTO=setTimeout(()=>{if(thenListen)vozListen(true);else if(VZ.cont)vozStartCont()},ms);
+  VZ.restartTO=setTimeout(()=>{if(thenListen)vozListen(true);else{vozVcBack();if(VZ.cont)vozStartCont()}},ms);
 }
 function vozMake(continuous){
   const r=new VSR();r.lang='es-ES';r.continuous=continuous;r.interimResults=true;r.maxAlternatives=3;
@@ -8368,6 +8375,7 @@ function vozStartCont(){
 /* Escuchar una vez (toque en el botón, botón del casco o respuesta a una pregunta) */
 function vozListen(silent){
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz','Usa Chrome en Android',5000);return}
+  try{if(typeof VC!=='undefined'&&VC.rec){vcStop();VZ.vcBack=true;clearTimeout(VZ.vcT);VZ.vcT=setTimeout(vozVcBack,20000)}}catch(e){}
   vozStop(true);VZ.oneShot=true;
   if(!silent)vozBeep(880,.12);
   vozPill(VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Te escucho…','Di la orden',0);
@@ -8529,19 +8537,26 @@ const vrH=s=>+String(s).slice(11,13);
 const vrL=x=>x>=10?String(Math.round(x)):x.toFixed(1).replace(/\.0$/,'').replace('.',',');
 async function vozRain(t){
   t=t||'';
-  const h=vozHere()||(typeof hereLL==='function'?hereLL():null);if(!h){vozSay('Todavía no tengo tu posición.');return}
-  vozPill('🌧️ Mirando la lluvia…','3 modelos meteorológicos',0);
+  let h=vozHere()||(typeof hereLL==='function'?hereLL():null);
+  if(!h){try{const q=await vozHereLL();if(q)h=[q.lat,q.lng]}catch(e){}}
+  if(!h){vozSay('Todavía no tengo tu posición. Activa la ubicación.');return}
+  vozBeep(660,.1);vozPill('🌧️ Mirando la lluvia…','3 modelos meteorológicos',0);
   const la=(+h[0]).toFixed(3),lo=(+h[1]).toFixed(3);
   const day=/pasado manana/.test(t)?2:(/\bmanana\b/.test(t)&&!/esta manana/.test(t))?1:0;
   try{
     const base=`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&timezone=auto`;
-    const [A,B]=await Promise.allSettled([
-      omJSON(base+'&current=precipitation,weather_code&minutely_15=precipitation&forecast_minutely_15=12&hourly=precipitation_probability,precipitation,weather_code,wind_gusts_10m&forecast_hours=12&daily=precipitation_sum,precipitation_probability_max,precipitation_hours,weather_code&forecast_days=3&wind_speed_unit=kmh'),
-      getJSON(omUrl(h[0],h[1],'hourly=precipitation,weather_code&forecast_days=3'),9000)]);
+    /* v5.40.1: petición principal sencilla + extras por separado (si un extra falla, contesta igual) */
+    const [A,Q15,B,DD]=await Promise.allSettled([
+      day?Promise.resolve({}):omJSON(base+'&current=precipitation,weather_code&hourly=precipitation_probability,precipitation,weather_code,wind_gusts_10m&forecast_days=2&wind_speed_unit=kmh'),
+      day?Promise.reject('no'):getJSON(base+'&minutely_15=precipitation&forecast_days=1',7000),
+      getJSON(omUrl(h[0],h[1],'hourly=precipitation,weather_code&forecast_days=3'),8000),
+      day?omJSON(base+'&daily=precipitation_sum,precipitation_probability_max,precipitation_hours,weather_code&forecast_days=3'):Promise.resolve({})]);
     if(A.status!=='fulfilled')throw A.reason;
     const d=A.value,M=B.status==='fulfilled'?B.value.hourly:null;
+    if(DD.status==='fulfilled')d.daily=DD.value.daily;else if(day)throw DD.reason;
+    if(Q15.status==='fulfilled'&&Q15.value.minutely_15){const q=Q15.value.minutely_15,now=String((d.current||{}).time||new Date().toISOString()).slice(0,16);let i=(q.time||[]).findIndex(x=>x>=now);if(i>0)i--;if(i<0)i=0;d.minutely_15={time:q.time.slice(i,i+12),precipitation:(q.precipitation||[]).slice(i,i+12)}}
     if(day)return vrDay(d,M,day);
-    const H=d.hourly||{},c=d.current||{},nowS=String(c.time||'').slice(0,13);
+    const H=d.hourly||{},c=d.current||{},nowS=String(c.time||(typeof locH==='function'?locH(new Date()):'')).slice(0,13);
     const T=H.time||[],PP=H.precipitation_probability||[],MM=H.precipitation||[],WC=H.weather_code||[];
     let k=T.findIndex(x=>x.slice(0,13)>=nowS);if(k<0)k=0;
     // ¿Esta tarde / esta noche? → mira solo esas horas
@@ -8655,7 +8670,11 @@ function vozSetCont(on){
   else{vozStop();vozPill('🎤 Escucha continua apagada','Toca el botón para hablar',3500)}
 }
 function vozSetCasco(on){store.set('vozCasco',!!on);try{cascoHandlers()}catch(e){}vozPill(on?'⛑️ Botón del casco = hablar':'⛑️ Botón del casco como antes','',3500)}
-function vozPanelOpen(){document.getElementById('vozCont').checked=VZ.cont;document.getElementById('vozCasco').checked=!!store.get('vozCasco',false);document.getElementById('vozPanel').style.display='flex'}
+function vozPanelOpen(){vozBtnApply();document.getElementById('vozCont').checked=VZ.cont;document.getElementById('vozCasco').checked=!!store.get('vozCasco',false);document.getElementById('vozPanel').style.display='flex'}
+function vozVcBack(){if(!VZ.vcBack)return;VZ.vcBack=false;clearTimeout(VZ.vcT);try{if(live.on&&vcOn()&&!vcPtt())vcStart()}catch(e){}}
+/* v5.40.1 — Botón 🎤 más pequeño y que se puede ocultar (la voz sigue con «Oye bici» y el casco) */
+function vozBtnApply(){const b=document.getElementById('vozBtn');if(b)b.style.display=store.get('vozBtnHide',false)?'none':'flex';const c=document.getElementById('vozShowBtn');if(c)c.checked=!store.get('vozBtnHide',false)}
+function vozBtnShow(on){store.set('vozBtnHide',!on);vozBtnApply();try{renderVoz()}catch(e){}vozPill(on?'🎤 Botón del micrófono visible':'🎤 Botón oculto','Lo vuelves a poner en Perfil › Órdenes por voz',4000)}
 function vozPanelClose(){document.getElementById('vozPanel').style.display='none'}
 /* Botón del casco: reproducir/pausa = escuchar (si está activado) */
 (function(){
@@ -8677,7 +8696,7 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
   b.addEventListener('pointercancel',()=>clearTimeout(lp));
   b.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(VZ.cont)setTimeout(vozStartCont,800)}else vozStop(true)});
-  VZ.cont=!!store.get('vozCont',false);vozUI();
+  VZ.cont=!!store.get('vozCont',false);vozUI();vozBtnApply();
   if(VZ.cont)window.addEventListener('load',()=>setTimeout(vozStartCont,3000));
   if(!store.get('vozIntro',false)){store.set('vozIntro',true);setTimeout(()=>{vozPill('🎤 Nuevo: órdenes por voz','Toca el botón 🎤 y habla. Mantén pulsado para ver qué decir',7000)},5000)}
 })();
