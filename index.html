@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.7</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6394,7 +6394,7 @@ async function speak(t){
    pare la música, por eso el control «Música durante los avisos» no se notaba.
    Con Spotify (música fuera de la app) sigue valiendo «Voz que no para la música». */
 async function voiceSay(t){
-  if(!t)return;try{VC.quiet=Math.max(VC.quiet,Date.now()+Math.max(2500,String(t).length*85+1500))}catch(e){}
+  if(!t)return;try{VC.quiet=Math.max(VC.quiet,Date.now()+Math.max(2500,String(t).length*85+1500));if(VC.rec)vcStop();vcLater()}catch(e){}   // v5.41.7: no se oye a sí misma
   musDuck(Math.max(3200,String(t).length*85)+6000);
   if(!ttsOk()){speakLocal(t);return}
   const my=++ttsSeq;
@@ -7468,12 +7468,13 @@ const VC_IOS=(/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform===
 function vcStart(){
   if(VC_TAP){vcChip();return}   // v5.41.5: también en Android. v5.41.1: en iPhone, escuchar todo el rato pedía el micrófono una y otra vez y bloqueaba el móvil
   if(!vcOk()||VC.rec||!live.on||!vcOn()||vcPtt())return;
+  if(Date.now()<VC.quiet||musSpeaking()){vcLater();return}   // v5.41.7: espera a que la app calle
   try{if(VZ.oneShot||VZ.pending){clearTimeout(VC.waitT);VC.waitT=setTimeout(vcStart,1500);return}   // v5.41.6: el 🎤 está escuchando
     if(VZ.rec)vozStop(true)}catch(e){}                                                              // «Oye bici» se calla: en ruta escucha esta
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new R();
   r.lang='es-ES';r.continuous=true;r.interimResults=false;r.maxAlternatives=3;
   r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;
-    if(Date.now()<VC.quiet)continue;
+    if(Date.now()<VC.quiet||musSpeaking())continue;
     const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);vcHandle(alts)}};
   r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){store.set('vcOn',false);VC.rec=null;vcChip();toast('🎙️ Permite el micrófono para las órdenes por voz',5000);renderVoz()}
     else if(e.error==='network'){VC.fails++}};
@@ -7484,6 +7485,8 @@ function vcStart(){
   try{r.start();VC.rec=r;VC.fails=Math.max(0,VC.fails-1)}catch(e){VC.rec=null}
   vcChip();
 }
+/* v5.41.7 — Reabre el micrófono de ruta cuando la app ha terminado de hablar (+0,9 s) */
+function vcLater(){clearTimeout(VC.waitT);VC.waitT=setTimeout(()=>{if(!live.on||!vcOn()||VC.rec)return;if(Date.now()<VC.quiet||musSpeaking()){vcLater();return}VC.waitT=setTimeout(vcStart,900)},Math.max(600,VC.quiet-Date.now()))}
 function vcStop(){const r=VC.rec;VC.rec=null;if(r){try{r.abort()}catch(e){}}vcChip()}
 function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
 /* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
@@ -8246,7 +8249,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.6</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.7</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8284,7 +8287,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.41.6';
+const VOZ_VER='5.41.7';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
