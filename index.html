@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.41.10</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.42.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8255,7 +8255,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.41.10</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.42.0</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8293,7 +8293,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.41.10';
+const VOZ_VER='5.42.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8323,8 +8323,32 @@ async function vozHereLL(){const m=myLL();if(m)return m;try{const p=await gpsOnc
 async function vozRoute(t,kind){
   if(typeof live!=='undefined'&&live.on){vozSay('Termina primero la salida que estás grabando.');return}
   if(!map){vozSay('El mapa necesita conexión a internet.');return}
-  let start=null,dest=null,km=null;
-  if(kind==='loop'){
+  let start=null,dest=null,km=null,vias=[];
+  /* v5.42 — «Crea ruta Lleida más Balaguer más Agramunt» · «ruta Lleida + Balaguer + Agramunt»
+     · «ruta de Lleida a Agramunt pasando por Balaguer» → ruta con paradas, en ese orden */
+  if(kind!=='loop'){
+    let q=(/\bruta\b/.test(t)?t.replace(/^.*?\bruta\b/,''):t).replace(/\b(en bici|por favor|para manana|para hoy|ahora)\b/g,' ').replace(/\s+/g,' ').trim();
+    const SEP=/\s*(?:\+|\bmas\b|\by luego\b|\bluego\b|\by despues\b|\bdespues\b|\bpasando por\b|\bpor\b)\s*/;
+    if(/\+|\bmas\b|\bluego\b|\bdespues\b|\bpasando por\b/.test(q)){
+      let parts;
+      const pm=q.match(/^(?:de |desde )?(.+?)\s+(?:a|al|hasta|hacia)\s+(.+?)\s+pasando por\s+(.+)$/);
+      if(pm)parts=[pm[1],...pm[3].split(/\s*(?:\+|\bmas\b|\by\b|\bluego\b|\bdespues\b)\s*/),pm[2]];
+      else parts=q.split(SEP);
+      parts=parts.map(x=>x.replace(/^(?:de|desde|a|al|hasta|hacia|y)\s+/,'').replace(/\s+(?:y)$/,'').trim()).filter(Boolean);
+      if(parts.length>=2){
+        const pts=[];
+        for(const nm of parts){
+          vozPill('🗺️ Buscando «'+nm+'»…',parts.join(' → '),0);
+          const g=/^(aqui|donde estoy|mi posicion|mi ubicacion)$/.test(nm)?await vozHereLL():await vozGeo(nm);
+          if(!g){vozSay('No encuentro '+nm+'.');vozPill('❌ No encuentro «'+nm+'»','Prueba a decirlo de otra forma',6000);return}
+          pts.push(g)}
+        if(pts.length>10){vozSay('Como mucho diez pueblos.');return}
+        start=pts[0];dest=pts[pts.length-1];vias=pts.slice(1,-1);
+      }
+    }
+  }
+  if(dest){/* ya tenemos los pueblos */}
+  else if(kind==='loop'){
     const m=t.match(/(\d+)\s*(km|kilometro|kilometros)?/);km=m?Math.max(5,Math.min(200,+m[1])):40;
     vozPill('🔁 Ruta circular de '+km+' km','Buscando tu posición…',0);
     start=await vozHereLL();if(!start){vozSay('No tengo tu posición. Activa la ubicación.');return}
@@ -8348,13 +8372,13 @@ async function vozRoute(t,kind){
       if(!start){vozSay(a?'No encuentro '+a+'.':'No tengo tu posición. Di también desde dónde sales.');return}
     }
   }
-  vozPill('🗺️ Calculando la ruta…',kind==='loop'?'Circular de '+km+' km':(start.label||'')+' → '+(dest.label||''),0);
+  vozPill('🗺️ Calculando la ruta…',kind==='loop'?'Circular de '+km+' km':[start,...vias,dest].map(x=>x.label||'').join(' → '),0);
   vozSay('Calculando la ruta.');
   try{
     viewingComm=null;closeSheets();go('rutas');
     plan.active=true;plan.view=false;plan.mode=kind==='loop'?'loop':'ab';plan.seed=1;clearPlan(true);
     $('planPanel').classList.remove('draw');
-    plan.start=start;if(kind==='loop')plan.loopKm=km;else plan.dest=dest;
+    plan.start=start;if(kind==='loop')plan.loopKm=km;else{plan.dest=dest;plan.stops=vias.slice()}   // v5.42: paradas
     setPlanning(true);$('planTitle').textContent=PLAN_T[plan.mode];redrawPlanMarkers();renderPlan();
     await computeRoute();
   }catch(e){console.warn(e)}
@@ -8363,7 +8387,7 @@ async function vozRoute(t,kind){
   const mins=r.mins||estMins(r.km,r.up||0);const h=Math.floor(mins/60),mm=mins%60;
   const tt=h?`${h>1?h+' horas':'una hora'}${mm?' y '+mm+' minutos':''}`:mm+' minutos';
   vozPill('✅ Ruta: '+vozKm(r.km)+' km'+(r.up?' · +'+Math.round(r.up)+' m':''),'Di «empezar» para salir',8000);
-  vozSay(`Ruta preparada: ${vozKm(r.km)} kilómetros${r.up?', '+Math.round(r.up)+' metros de subida':''}, más o menos ${tt}. Di empezar para salir.`);
+  vozSay(`Ruta preparada${vias.length?' pasando por '+vias.map(x=>x.label).join(', '):''}: ${vozKm(r.km)} kilómetros${r.up?', '+Math.round(r.up)+' metros de subida':''}, más o menos ${tt}. Di empezar para salir.`);
 }
 
 const VSR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -8625,7 +8649,7 @@ function vozRun(t){
   if(vozHas(t,/(que hora|hora es|dime la hora)/)){const d=new Date();vozSay(`Son las ${d.getHours()} y ${String(d.getMinutes()).padStart(2,'0')}.`);return true}
   // --- Ayuda de órdenes ---
   if(vozHas(t,/(que puedo decir|ordenes|comandos|que sabes hacer|instrucciones)/)){
-    vozPanelOpen();vozSay('Puedes decir: prepárame una ruta de un pueblo a otro, empezar, pausa, seguir, terminar, cuánto falta, cómo voy, va a llover, agua, pinchazo o ayuda.');return true;
+    vozPanelOpen();vozSay('Puedes decir: crea ruta Lleida más Balaguer más Agramunt, prepárame una ruta de un pueblo a otro, empezar, pausa, seguir, terminar, cuánto falta, cómo voy, va a llover, agua, pinchazo o ayuda.');return true;
   }
   return false;
 }
