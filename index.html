@@ -1263,7 +1263,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.43.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8397,7 +8397,8 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.43.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.0</div>
+ <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8405,6 +8406,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
  <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
  <table>
   <tr><td>«Ruta de Mollerussa<br>a Cervera»</td><td>Calcula la ruta. También «ruta a Cervera» (desde donde estás) o «ruta circular de 40 kilómetros»</td></tr>
+  <tr><td>«Menú»</td><td>Menú por números: la app te lee 6 apartados y dices el número. Luego te pregunta lo que falta. Atajos: «rutas dos», «seguridad cuatro», «menú tres cinco»</td></tr>
   <tr><td>«Rutas marcadas»</td><td>Las rutas GR, PR, Caminos o BTT más cercanas. Luego di «la primera», «la segunda»… También «senderos cerca» o «rutas de BTT cerca»</td></tr>
   <tr><td>«Ruta GR 171»<br>«Sigue el Camino de Santiago»</td><td>Busca esa ruta marcada por su número o nombre</td></tr>
   <tr><td>«Entera» / «20 kilómetros»<br>«Al revés»</td><td>Con una ruta marcada elegida: la prepara entera o un tramo desde el punto más cercano a ti</td></tr>
@@ -8438,7 +8440,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.43.0';
+const VOZ_VER='5.44.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8689,6 +8691,8 @@ function vozHere(){try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[
 function vozRun(t){
   if(!t)return false;
   const L=typeof live!=='undefined'&&live&&live.on;
+  // --- v5.44.0: menú por números («menú», «rutas dos»…) ---
+  try{if(typeof vozMenu==='function'&&vozMenu(t))return true}catch(e){console.warn('vozMenu',e)}
   // --- v5.40.3: Lluvia primero (antes la tapaban otras órdenes) ---
   if(vozIsRain(t)){vozRain(t);return true}
   // --- v5.43.0: rutas marcadas (GR, PR, Caminos, BTT) ---
@@ -8999,6 +9003,170 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
 })();
 </script>
 <!-- ===== FIN deslizar para actualizar ===== -->
+
+<!-- ===== v5.44.0 — Menú por voz con números («Oye bici, menú») ===== -->
+<style>
+#vmOv{position:fixed;inset:0;z-index:10003;background:rgba(5,12,22,.55);display:flex;align-items:flex-end;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.vm-b{width:100%;max-width:460px;max-height:86vh;overflow-y:auto;background:#0E1A2B;border:2px solid #A3E635;border-radius:24px;padding:16px 14px 14px;box-shadow:0 20px 50px rgba(0,0,0,.55);color:#fff;font-family:inherit}
+.vm-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.vm-ic{font-size:28px;line-height:1}
+.vm-top h3{margin:0;font-size:21px;font-weight:900;flex:1;line-height:1.15}
+.vm-top small{display:block;font-size:12.5px;font-weight:700;color:#A3E635;letter-spacing:.3px;text-transform:uppercase}
+.vm-x{width:42px;height:42px;border-radius:50%;border:1px solid #2A3B55;background:#1C2F4A;color:#fff;font-size:18px;font-weight:900;flex-shrink:0}
+.vm-hint{display:flex;align-items:center;gap:8px;background:#16263D;border-radius:14px;padding:8px 12px;margin:8px 0 12px;font-size:14.5px;color:#cbd5e1}
+.vm-hint b{color:#A3E635}
+.vm-l{display:flex;flex-direction:column;gap:8px}
+.vm-o{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:8px 14px 8px 10px;border-radius:18px;border:1px solid #2A3B55;background:#16263D;color:#fff;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.vm-o:active{background:#1C2F4A;border-color:#A3E635}
+.vm-n{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#A3E635;color:#0E1A2B;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.vm-o .vm-e{font-size:22px;width:28px;text-align:center;flex-shrink:0}
+.vm-o b{display:block;font-size:17.5px;font-weight:800;line-height:1.2}
+.vm-o small{display:block;font-size:13px;color:#9AA8BC;margin-top:2px;line-height:1.25}
+.vm-f{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.vm-f button{min-height:48px;border-radius:24px;font-weight:800;font-size:16px;font-family:inherit;border:1px solid #2A3B55;background:#1C2F4A;color:#fff}
+.vm-f button.vm-talk{background:#A3E635;color:#0E1A2B;border-color:#A3E635}
+.vm-q{font-size:22px;font-weight:900;line-height:1.25;margin:10px 2px 4px}
+.vm-ex{font-size:14.5px;color:#9AA8BC;margin:0 2px 12px}
+.vm-in{display:flex;gap:8px}
+.vm-in input{flex:1;min-width:0;min-height:52px;border-radius:16px;border:2px solid #2A3B55;background:#16263D;color:#fff;font-size:18px;padding:0 14px;font-family:inherit}
+.vm-in input:focus{outline:none;border-color:#A3E635}
+.vm-in button{min-width:64px;border-radius:16px;border:0;background:#A3E635;color:#0E1A2B;font-weight:900;font-size:17px;font-family:inherit}
+.vm-done{font-size:14.5px;color:#cbd5e1;margin:10px 2px 0}.vm-done b{color:#A3E635;text-transform:capitalize}
+.vm-steps{display:flex;gap:6px;margin:4px 2px 0}.vm-steps i{flex:1;height:5px;border-radius:3px;background:#2A3B55}.vm-steps i.on{background:#A3E635}
+</style>
+<script>
+/* Menú por voz con números. «Oye bici, menú» → 6 apartados → número → la app pregunta lo que falta.
+   Atajos: «Oye bici, rutas» abre ese apartado · «rutas dos» va directo · «atrás» · «cancela». */
+const VM_S=[
+ {n:'Rutas',ic:'🗺️',say:'Rutas',items:[
+  {t:'De un pueblo a otro',d:'Ej.: de Mollerussa a Cervera',e:'🅰️',ask:[{q:'¿Desde qué pueblo sales?',ex:'Mollerussa'},{q:'¿A qué pueblo vas?',ex:'Cervera'}],run:a=>vozRoute('ruta de '+a[0]+' a '+a[1],'ab')},
+  {t:'Desde donde estás a un sitio',d:'Ej.: llévame a Cervera',e:'📍',ask:[{q:'¿A qué pueblo o sitio quieres ir?',ex:'Cervera'}],run:a=>vozRoute('ruta a '+a[0],'ab')},
+  {t:'Ruta circular',d:'Sales y vuelves al mismo sitio',e:'🔁',ask:[{q:'¿De cuántos kilómetros?',ex:'40',num:1}],run:a=>vozRoute('ruta circular de '+a[0]+' kilometros','loop')},
+  {t:'Pasando por varios pueblos',d:'Ej.: Lleida más Balaguer más Agramunt',e:'🔀',ask:[{q:'Dime los pueblos en orden, separados por «más»',ex:'Lleida más Balaguer más Agramunt'}],run:a=>vozRoute('ruta '+a[0].replace(/\s*,\s*/g,' mas '),'ab')}]},
+ {n:'Rutas marcadas',ic:'🥾',say:'Rutas marcadas',items:[
+  {t:'Las más cercanas',d:'GR, PR, Caminos y BTT cerca de ti',e:'📍',run:()=>mkNear(null,true)},
+  {t:'Solo de BTT',e:'🚵',run:()=>mkNear('mtb',true)},
+  {t:'Ciclistas',e:'🚴',run:()=>mkNear('cycling',true)},
+  {t:'Senderos',e:'🥾',run:()=>mkNear('hiking',true)},
+  {t:'Buscar por número o nombre',d:'Ej.: GR 171 · Camí de Sant Jaume',e:'🔎',ask:[{q:'¿Qué ruta buscas?',ex:'GR 171 · Camí de Sant Jaume'}],run:a=>mkFind(a[0],true)}]},
+ {n:'En marcha',ic:'🚴',say:'En marcha',items:[
+  {t:'Empezar',d:'Grabar, o navegar si hay ruta',e:'▶️',p:'empezar'},
+  {t:'Pausa',e:'⏸️',p:'pausa'},
+  {t:'Seguir',d:'Sigue después de una pausa',e:'⏯️',p:'seguir'},
+  {t:'Terminar',d:'Te pregunta antes de guardar',e:'🏁',p:'terminar'},
+  {t:'Cuánto falta',e:'📏',p:'cuanto falta'},
+  {t:'Cómo voy',d:'Km, tiempo y media',e:'📊',p:'como voy'},
+  {t:'Velocidad',e:'⚡',p:'velocidad'},
+  {t:'Dónde estoy',e:'🧭',p:'donde estoy'},
+  {t:'Centrar el mapa',e:'🎯',p:'centrar'}]},
+ {n:'El tiempo',ic:'🌦️',say:'El tiempo',items:[
+  {t:'¿Va a llover?',d:'Ahora y las próximas horas',e:'🌧️',p:'va a llover'},
+  {t:'Lluvia esta tarde',e:'🌆',p:'llovera esta tarde'},
+  {t:'Lluvia mañana',e:'📅',p:'llovera manana'},
+  {t:'Temperatura y viento',e:'🌬️',p:'tiempo'}]},
+ {n:'Seguridad',ic:'🛡️',say:'Seguridad',items:[
+  {t:'Ayuda o SOS',d:'Te pregunta antes. Nunca llama sola al 112',e:'🆘',p:'ayuda'},
+  {t:'Pinchazo',d:'Avisa a tu grupo',e:'🔧',p:'pinchazo'},
+  {t:'Esperad',d:'Avisa a tu grupo',e:'✋',p:'esperad'},
+  {t:'Fuente de agua',d:'La más cercana',e:'💧',p:'agua'}]},
+ {n:'Moverse por la app',ic:'📱',say:'Moverse por la app',items:[
+  {t:'Rutas',e:'🗺️',p:'ve a rutas'},
+  {t:'Comunidad',e:'👥',p:'ve a comunidad'},
+  {t:'Actividades',e:'📈',p:'ve a actividades'},
+  {t:'Perfil',e:'👤',p:'ve a perfil'},
+  {t:'Crear',d:'Salida, ruta, rutas marcadas…',e:'➕',p:'crear'},
+  {t:'Qué hora es',e:'🕒',p:'que hora es'}]}
+];
+const VM_W=['uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+const VM={sec:-1,item:-1,ans:[],el:null,t:0};
+function vmNum(t){
+  t=' '+String(t||'').replace(/\b(el|la|numero|opcion|apartado|la opcion|el numero)\b/g,' ').replace(/\s+/g,' ').trim()+' ';
+  if(t.trim().split(' ').length>3)return -1;
+  const O={uno:1,una:1,un:1,primero:1,primera:1,dos:2,segundo:2,segunda:2,tres:3,tercero:3,tercera:3,cuatro:4,cuarto:4,cuarta:4,cinco:5,quinto:5,quinta:5,seis:6,sexto:6,sexta:6,siete:7,septimo:7,ocho:8,octavo:8,nueve:9,noveno:9};
+  const m=t.match(/ (\d)\b| (uno|una|un|primero|primera|dos|segundo|segunda|tres|tercero|tercera|cuatro|cuarto|cuarta|cinco|quinto|quinta|seis|sexto|sexta|siete|septimo|ocho|octavo|nueve|noveno) /);
+  return m?(m[1]?+m[1]:O[m[2]]):-1;
+}
+function vmIsOpen(){return !!(VM.el&&document.body.contains(VM.el))}
+function vmClose(){if(VM.el)VM.el.remove();VM.el=null;VM.sec=-1;VM.item=-1;VM.ans=[];clearTimeout(VM.t)}
+function vmArm(){clearTimeout(VM.t);VM.t=setTimeout(vmClose,120000)}   // se cierra sola a los 2 minutos sin usarla
+function vmRender(){
+  if(!VM.el){VM.el=document.createElement('div');VM.el.id='vmOv';document.body.appendChild(VM.el);
+    VM.el.addEventListener('click',e=>{const b=e.target.closest('button');if(e.target===VM.el){vmClose();return}if(!b)return;
+      if(b.dataset.n)vmPick(+b.dataset.n,false);else if(b.dataset.a==='x')vmClose();else if(b.dataset.a==='back')vmBack(false);else if(b.dataset.a==='talk'){try{vozListen(true)}catch(x){}}else if(b.dataset.a==='ok')vmAnswer(VM.el.querySelector('#vmIn').value,false)});
+    VM.el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='vmIn'){e.preventDefault();vmAnswer(e.target.value,false)}});}
+  vmArm();
+  const S=VM.sec>=0?VM_S[VM.sec]:null,I=S&&VM.item>=0?S.items[VM.item]:null;
+  const head=(ic,crumb,title)=>`<div class="vm-top"><span class="vm-ic">${ic}</span><h3><small>${esc(crumb)}</small>${esc(title)}</h3><button type="button" class="vm-x" data-a="x" aria-label="Cerrar">✕</button></div>`;
+  const foot=`<div class="vm-f"><button type="button" data-a="back">← Atrás</button><button type="button" class="vm-talk" data-a="talk">🎤 Hablar</button></div>`;
+  let h;
+  if(I){const st=I.ask[VM.ans.length];
+    h=head(I.e,'Menú › '+S.n,I.t)+`<div class="vm-steps">${I.ask.map((x,i)=>`<i class="${i<=VM.ans.length?'on':''}"></i>`).join('')}</div>
+      ${VM.ans.map((v,i)=>`<div class="vm-done">✓ ${esc(I.ask[i].q.replace(/[¿?]/g,''))}: <b>${esc(v)}</b></div>`).join('')}
+      <div class="vm-q">${esc(st.q)}</div><div class="vm-ex">Por ejemplo: «${esc(st.ex)}»</div>
+      <div class="vm-in"><input id="vmIn" ${st.num?'inputmode="numeric"':''} autocomplete="off" placeholder="Dilo o escríbelo aquí"><button type="button" data-a="ok">OK</button></div>
+      <div class="vm-hint">🎤 <span>Contesta en voz alta o escríbelo. <b>«Atrás»</b> para volver.</span></div>`+foot;
+  }else{const L=S?S.items:VM_S;
+    h=head(S?S.ic:'📋',S?'Menú':'Oye bici',S?S.n:'Menú por números')+
+      `<div class="vm-hint">🎤 <span>Di el <b>número</b> o tócalo. <b>«Atrás»</b> · <b>«Cancela»</b></span></div><div class="vm-l">`+
+      L.map((x,i)=>`<button type="button" class="vm-o" data-n="${i+1}"><span class="vm-n">${i+1}</span><span class="vm-e">${S?x.e:x.ic}</span><span><b>${esc(S?x.t:x.n)}</b>${S&&x.d?`<small>${esc(x.d)}</small>`:''}</span></button>`).join('')+'</div>'+foot;
+  }
+  VM.el.innerHTML='<div class="vm-b">'+h+'</div>';
+}
+function vmSayList(){
+  const S=VM.sec>=0?VM_S[VM.sec]:null,L=S?S.items:VM_S;
+  vozSay((S?S.say:'Menú')+'. '+L.map((x,i)=>VM_W[i]+', '+(S?x.t:x.n).replace(/[¿?]/g,'')).join('. ')+'. ¿Cuál quieres?',true);
+}
+function vmOpen(sec,voice){VM.sec=sec==null?-1:sec;VM.item=-1;VM.ans=[];vmRender();if(voice)vmSayList()}
+function vmBack(voice){
+  if(VM.item>=0&&VM.ans.length){VM.ans.pop();vmRender();if(voice)vozSay(VM_S[VM.sec].items[VM.item].ask[VM.ans.length].q,true);return}
+  if(VM.item>=0){VM.item=-1;VM.ans=[];vmRender();if(voice)vmSayList();return}
+  if(VM.sec>=0){VM.sec=-1;vmRender();if(voice)vmSayList();return}
+  vmClose();if(voice)vozSay('Menú cerrado.');
+}
+function vmPick(n,voice){
+  if(VM.sec<0){if(n<1||n>VM_S.length){if(voice)vozSay('Di un número del uno al '+VM_W[VM_S.length-1]+'.',true);return}VM.sec=n-1;vmRender();if(voice)vmSayList();return}
+  const S=VM_S[VM.sec];
+  if(n<1||n>S.items.length){if(voice)vozSay('Di un número del uno al '+VM_W[S.items.length-1]+'.',true);return}
+  const I=S.items[n-1];
+  if(I.ask){VM.item=n-1;VM.ans=[];vmRender();vozSay(I.ask[0].q,true);setTimeout(()=>{const i=document.getElementById('vmIn');if(i&&!voice)i.focus()},300);return}
+  vmClose();vmDo(I,[]);
+}
+function vmDo(I,a){try{if(I.p){if(!vozRun(I.p))vozSay('No he podido hacerlo.')}else I.run(a)}catch(e){console.warn('vm',e);vozSay('No he podido hacerlo.')}}
+function vmAnswer(v,voice){
+  v=vozNorm(v);const I=VM_S[VM.sec].items[VM.item],st=I.ask[VM.ans.length];
+  if(!v){vozSay(st.q,true);return}
+  if(st.num){const m=v.match(/\d+/);if(!m){vozSay('Dime un número. Por ejemplo, cuarenta.',true);return}v=m[0]}
+  VM.ans.push(v);
+  if(VM.ans.length<I.ask.length){vmRender();vozSay(I.ask[VM.ans.length].q,true);return}
+  const a=VM.ans.slice();vmClose();vmDo(I,a);
+}
+/* Enganche en las órdenes de voz. Devuelve true si es del menú */
+function vozMenu(t){
+  t=String(t||'').trim();if(!t)return false;
+  const open=vmIsOpen();
+  if(open){
+    if(/^(cancela|cancelar|cierra|cerrar|salir|sal|nada|ninguna|ninguno|cierra el menu)$/.test(t)){vmClose();vozPill('✕ Menú cerrado','',1500);vozSay('Menú cerrado.');return true}
+    if(/^(atras|vuelve|volver|vuelve atras|anterior|para atras)$/.test(t)){vmBack(true);return true}
+    if(/^(menu|el menu|inicio del menu)$/.test(t)){vmOpen(null,true);return true}
+    if(VM.item>=0){vmAnswer(t,true);return true}
+    const n=vmNum(t);if(n>0){vmPick(n,true);return true}
+  }
+  /* abrir el menú o un apartado: «menú», «menú dos», «rutas», «rutas dos», «seguridad», «en marcha»… */
+  const SN=[/^(menu )?rutas$/,/^menu rutas marcadas$/,/^(menu )?(en marcha|marcha|navegacion)$/,/^(menu )?(el tiempo|menu del tiempo)$/,/^(menu )?(seguridad)$/,/^(menu )?(moverse|moverse por la app|la app)$/];
+  let m=t.match(/^(?:el )?(?:menu|menus|opciones|que puedo hacer|que puedo decir con numeros)(?:\s+(.+))?$/);
+  if(m){
+    if(!m[1]){vmOpen(null,true);return true}
+    const ws=m[1].split(' '),a=vmNum(ws[0]),b=ws.length>1?vmNum(ws.slice(1).join(' ')):-1;
+    if(a>0&&a<=VM_S.length){if(b>0){VM.sec=a-1;VM.item=-1;VM.ans=[];vmPick(b,true)}else vmOpen(a-1,true);return true}
+    vmOpen(null,true);return true;
+  }
+  for(let i=0;i<SN.length;i++){if(SN[i].test(t)){if(i===0){try{go('rutas')}catch(e){}}vmOpen(i,true);return true}}
+  /* «rutas dos», «seguridad cuatro», «en marcha uno» */
+  const D=[[/^rutas\s+(.+)$/,0],[/^(?:en marcha|marcha)\s+(.+)$/,2],[/^(?:el tiempo)\s+(.+)$/,3],[/^seguridad\s+(.+)$/,4],[/^moverse\s+(.+)$/,5]];
+  for(const [re,s] of D){const x=t.match(re);if(x){const n=vmNum(x[1]);if(n>0){VM.sec=s;VM.item=-1;VM.ans=[];vmPick(n,true);return true}}}
+  return false;
+}
+</script>
 
 </body>
 </html>
