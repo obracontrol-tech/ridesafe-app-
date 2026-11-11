@@ -1287,7 +1287,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.45.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.45.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7617,11 +7617,12 @@ function renderVoz(){
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
    <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
-   <button class="btn btn-lime" style="width:100%;margin:8px 0 4px" onclick="try{closeSheets()}catch(e){}vozPanelOpen()">🎤 «Oye bici», casco y todas las órdenes</button>
-   <b style="display:block;margin:14px 0 4px">Qué puedes decir</b>
-   ${row('Pausa','Pausa la grabación')}${row('Seguir','Sigue grabando')}${row('Cómo voy','Km, tiempo y lo que queda')}${row('Qué hora es','Te dice la hora')}${row('Va a llover','Lluvia ahora, a qué hora empieza y para, tormenta y lo fiable que es')}${row('Viento','Viento y temperatura')}
-   ${row('Ir a Tàrrega','Te guía hasta ese pueblo')}${row('Quitar ruta','Sigue grabando sin ruta')}${row('Pinchazo · Esperad','Avisa a tu grupo')}${row('Silencio · Habla','Apaga o enciende la voz')}${row('Modo ahorro','Pantalla negra para ahorrar batería')}${row('Enciende la pantalla','Quita el modo ahorro')}
-   ${row('Emergencia','Luego di «llamar» (112) o «ubicación»')}${row('Terminar','Te pregunta y dices «sí»')}${row('Repite','Repite la última indicación')}${row('Órdenes','Te dice esta lista')}
+   <button class="btn btn-lime" style="width:100%;margin:10px 0 6px" onclick="try{closeSheets()}catch(e){}vmOpen(null,true)">📋 Menú por números: dices el número</button>
+   <button class="btn btn-line" style="width:100%;margin:0 0 4px" onclick="try{closeSheets()}catch(e){}vozPanelOpen()">⚙️ «Oye bici», casco y lista completa</button>
+   <b style="display:block;margin:14px 0 2px">Di «Oye bici, menú» y elige</b>
+   <small style="display:block;color:var(--txt2);font-size:13px;margin-bottom:4px">La app te lee las opciones y te pregunta lo que falta. «Atrás» vuelve · «Cancela» cierra.</small>
+   ${[['1','🗺️ Rutas','De un pueblo a otro · desde donde estás · circular · varios pueblos'],['2','🥾 Rutas marcadas','Las más cercanas · BTT · ciclistas · senderos · buscar «GR 171»'],['3','🚴 En marcha','Empezar · pausa · seguir · terminar · cuánto falta · cómo voy…'],['4','🌦️ El tiempo','¿Va a llover? · esta tarde · mañana · temperatura y viento'],['5','🛡️ Seguridad','Ayuda o SOS · pinchazo · esperad · fuente de agua'],['6','📱 Moverse por la app','Rutas · comunidad · actividades · perfil · crear · qué hora es']].map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)"><span style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;display:flex;align-items:center;justify-content:center">${x[0]}</span><div><b style="display:block">${x[1]}</b><span style="color:var(--txt2);font-size:13.5px">${x[2]}</span></div></div>`).join('')}
+   <div style="border-top:1px solid var(--line);padding-top:9px;color:var(--txt2);font-size:13.5px"><b style="color:var(--lime)">Atajos:</b> «rutas dos» · «seguridad cuatro» · «menú tres cinco». Las frases de siempre también valen: «ruta a Cervera», «va a llover», «pinchazo»…</div>
    <p class="casco-note" style="margin-top:12px">🔈 Habla claro y con frases cortas; si hablas con los compañeros, la app no hace caso.<br>📶 Necesita cobertura en la mayoría de móviles.<br>🎙️ Mientras escucha verás «🎙️ Te escucho» en verde, encima de «GRABANDO». Tócalo para apagarlo.<br>🗺️ Durante la salida también lo enciendes o apagas con <b>⋯ → 🎙️</b> (verde = escuchando).</p>`;
 }
 /* Botones que arrancan el modo en vivo */
@@ -8424,7 +8425,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.45.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.45.2</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8468,7 +8469,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.45.1';
+const VOZ_VER='5.45.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
