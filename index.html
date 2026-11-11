@@ -1263,7 +1263,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6370,7 +6370,7 @@ const ttsCache=new Map();let ttsAudio=null,ttsOff=0;
 function ttsOk(){return GOOGLE_TTS_KEY&&!GOOGLE_TTS_KEY.startsWith('PON_')&&Date.now()>ttsOff}
 // Los móviles solo dejan sonar audio si antes hubo un toque: lo "despertamos" en el primer toque
 document.addEventListener('pointerdown',function un(){try{ttsAudio=ttsAudio||new Audio();ttsAudio.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA';ttsAudio.play().catch(()=>{})}catch(e){}document.removeEventListener('pointerdown',un)},{once:true});
-function speakLocal(t){if(!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>{musVoiceStart();musHold()};u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function speakLocal(t){if(!('speechSynthesis' in window))return;try{if(ttsAudio&&!ttsAudio.paused){ttsAudio._more=false;ttsAudio.pause()}}catch(e){}try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;u.onstart=()=>{musVoiceStart();musHold()};u.onend=u.onerror=()=>musAfterVoice();speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 async function ttsGet(t){
   if(ttsCache.has(t))return ttsCache.get(t);
   const ac=new AbortController();const to=setTimeout(()=>ac.abort(),8000);
@@ -6418,6 +6418,7 @@ async function voiceSay(t){
   musDuck(Math.max(3200,String(t).length*85)+6000);
   if(!ttsOk()){speakLocal(t);return}
   const my=++ttsSeq;
+  try{speechSynthesis.cancel()}catch(e){}   // v5.44.2: calla la voz del móvil del aviso anterior
   /* v5.27.3 — Spotify no se para con los avisos largos.
      En Android, Chrome deja sonar por encima de la música los audios de MENOS DE 5 s (la música baja un poco);
      si uno dura más, Android lo trata como música: Spotify se PAUSA y no vuelve solo.
@@ -6429,7 +6430,7 @@ async function voiceSay(t){
   const jobs=parts.map(p=>ttsShort(p,0));               // se piden todos a la vez, se dicen en orden
   jobs.forEach(j=>j.catch(()=>{}));
   let first;
-  try{first=await jobs[0]}catch(e){console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t);return}
+  try{first=await jobs[0]}catch(e){if(my!==ttsSeq)return;console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t);return}   // v5.44.2: si ya hay otro aviso, no habla la del móvil
   try{speechSynthesis.cancel()}catch(e){}
   if(!ttsAudio)ttsAudio=new Audio();
   if(!ttsAudio._rs){ttsAudio._rs=1;ttsAudio.addEventListener('play',()=>{musVoiceStart();musHold()});ttsAudio.addEventListener('ended',()=>{if(!ttsAudio._more)musAfterVoice()});ttsAudio.addEventListener('error',musAfterVoice);ttsAudio.addEventListener('pause',()=>{if(!ttsAudio.ended&&!ttsAudio._more)musAfterVoice()})}
@@ -6441,7 +6442,7 @@ async function voiceSay(t){
       if(my!==ttsSeq)return;                         // ha llegado otro aviso: manda el nuevo
       ttsAudio._more=k<jobs.length-1||j<srcs.length-1;
       ttsAudio.pause();ttsAudio.src=srcs[j];
-      try{await ttsAudio.play()}catch(e){ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}
+      try{await ttsAudio.play()}catch(e){if(my!==ttsSeq||(e&&e.name==='AbortError'))return;ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}   // v5.44.2: no duplicar voz
       await new Promise(res=>{const done=()=>{ttsAudio.removeEventListener('ended',done);ttsAudio.removeEventListener('error',done);clearTimeout(tm);res()};const tm=setTimeout(done,7000);ttsAudio.addEventListener('ended',done);ttsAudio.addEventListener('error',done)});
     }
   }
@@ -8397,7 +8398,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.2</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8441,7 +8442,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.44.1';
+const VOZ_VER='5.44.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -9146,11 +9147,15 @@ function vmRender(){
   }
   VM.el.innerHTML='<div class="vm-b">'+h+'</div>';
 }
-function vmSayList(){
-  const S=VM.sec>=0?VM_S[VM.sec]:null,L=S?S.items:VM_S;
-  vozSay((S?S.say:'Menú')+'. '+L.map((x,i)=>VM_W[i]+', '+(S?x.t:x.n).replace(/[¿?]/g,'')).join('. ')+'. ¿Cuál quieres?',true);
-}
-function vmOpen(sec,voice){VM.sec=sec==null?-1:sec;VM.item=-1;VM.ans=[];vmRender();if(voice)vmSayList()}
+function vmText(sec){const S=sec>=0?VM_S[sec]:null,L=S?S.items:VM_S;
+  return (S?S.say:'Menú')+'. '+L.map((x,i)=>VM_W[i]+', '+(S?x.t:x.n).replace(/[¿?]/g,'')).join('. ')+'. ¿Cuál quieres?'}
+function vmSayList(){vozSay(vmText(VM.sec),true)}
+/* v5.44.2: pide de antemano a Google las frases del menú para que conteste sin esperar */
+let vmPre=0;
+function vmPrefetch(){if(vmPre||typeof ttsChunks!=='function'||typeof ttsOk!=='function'||!ttsOk())return;vmPre=1;
+  const T=[vmText(-1)];VM_S.forEach((S,i)=>{T.push(vmText(i));S.items.forEach(I=>(I.ask||[]).forEach(a=>T.push(a.q)))});
+  let k=0;const next=()=>{if(k>=T.length)return;const t=T[k++];Promise.all(ttsChunks(t).map(c=>ttsShort(c,0).catch(()=>{}))).finally(()=>setTimeout(next,150))};next();next()}
+function vmOpen(sec,voice){VM.sec=sec==null?-1:sec;VM.item=-1;VM.ans=[];vmRender();if(voice)vmSayList();setTimeout(vmPrefetch,1200)}
 function vmBack(voice){
   if(VM.item>=0&&VM.ans.length){VM.ans.pop();vmRender();if(voice)vozSay(VM_S[VM.sec].items[VM.item].ask[VM.ans.length].q,true);return}
   if(VM.item>=0){VM.item=-1;VM.ans=[];vmRender();if(voice)vmSayList();return}
