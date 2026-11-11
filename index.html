@@ -782,6 +782,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* v4.5 — Dibujar ruta (como Strava) */
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
 .pdown{display:block;margin:-4px auto 8px;min-height:40px;padding:4px 22px;border-radius:20px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px;touch-action:manipulation;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+/* v5.45 — Tarjeta de la guía de la web */
+.guiaC{margin:0 0 12px;position:relative;border-radius:var(--r);border:1.5px solid var(--lime);background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));padding:14px}
+.guiaX{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--txt);font-size:16px;cursor:pointer}
+.guiaH{display:flex;align-items:center;gap:12px;padding-right:30px}.guiaE{font-size:30px;line-height:1}
+.guiaT{display:inline-block;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:11px;letter-spacing:.06em;padding:3px 10px;border-radius:99px}
+.guiaH b{display:block;margin-top:5px;font-size:17px;color:var(--txt);line-height:1.2}
+.guiaC small{display:block;color:var(--txt2);margin-top:8px;line-height:1.45;font-size:13.5px}
+.guiaB{display:grid;grid-template-columns:1.2fr 1fr;gap:8px;margin-top:12px}
+.guiaB a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:23px;font-weight:800;font-size:15px;text-decoration:none}
+.guiaL{background:var(--lime);color:var(--on-lime)}.guiaW{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
 /* v5.43.0 — Lista de rutas marcadas */
 .mk-box{max-width:440px;position:relative;padding-top:18px}
 .mk-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:var(--card2);color:var(--txt);border:1px solid var(--line);font-size:18px;font-weight:800}
@@ -1107,6 +1117,13 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="modBox"></div>
   <div id="annBox"></div>
   <div id="updBox"></div>
+  <!-- v5.45: tarjeta de la guía de la web (se puede cerrar; sigue siempre en Perfil) -->
+  <div id="guiaBox" class="guiaC" style="display:none">
+    <button class="guiaX" onclick="guiaClose()" aria-label="Cerrar">✕</button>
+    <div class="guiaH"><span class="guiaE">📖</span><div><span class="guiaT">GUÍA PASO A PASO</span><b>Saca el máximo a RideSafe IA</b></div></div>
+    <small>40 tarjetas con capturas: primero lo básico para tu primera salida, con la seguridad delante, y después todo lo demás. En la web también tienes el vídeo y la chuleta del menú «Oye bici» para imprimir.</small>
+    <div class="guiaB"><a class="guiaL" href="https://ridesafeia.es/guia/" target="_blank" rel="noopener">📖 Abrir la guía</a><a class="guiaW" href="https://ridesafeia.es/#voz" target="_blank" rel="noopener">🌐 ridesafeia.es</a></div>
+  </div>
   <!-- v5.26: aviso de NOVEDAD en Inicio (se puede cerrar) -->
   <div id="novBox" style="display:none;margin:0 0 12px;position:relative;border-radius:var(--r);border:1.5px solid var(--lime);background:linear-gradient(135deg,rgba(200,220,60,.18),rgba(200,220,60,.04));padding:14px 44px 14px 14px">
     <button onclick="novClose()" aria-label="Cerrar aviso" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--txt);font-size:16px;cursor:pointer">✕</button>
@@ -1230,6 +1247,13 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <!-- v5.35: actualizar la app con un toque -->
   <button id="updCard" onclick="rsUpdate(true)" style="display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:4px 16px 14px;padding:14px 16px;border-radius:18px;border:2px solid var(--lime);background:linear-gradient(135deg,rgba(200,220,60,.18),rgba(200,220,60,.05));color:var(--txt);font-family:inherit;text-align:left;cursor:pointer;position:relative;z-index:1"><span style="font-size:28px">🔄</span><span style="flex:1"><b style="display:block;font-size:17px">Buscar actualización</b><small id="updSub" style="color:var(--txt2);font-size:13.5px">Toca para tener la última versión</small></span><span style="background:var(--lime);color:var(--on-lime);font-weight:800;font-size:13px;padding:7px 12px;border-radius:99px">Actualizar</span></button>
+  <!-- v5.45: guía paso a paso (fija) -->
+  <div id="guiaCard" class="guiaC" style="margin:0 16px 14px;position:relative;z-index:1">
+    
+    <div class="guiaH"><span class="guiaE">📖</span><div><span class="guiaT">GUÍA PASO A PASO</span><b>Saca el máximo a RideSafe IA</b></div></div>
+    <small>40 tarjetas con capturas: primero lo básico para tu primera salida, con la seguridad delante, y después todo lo demás. En la web también tienes el vídeo y la chuleta del menú «Oye bici» para imprimir.</small>
+    <div class="guiaB"><a class="guiaL" href="https://ridesafeia.es/guia/" target="_blank" rel="noopener">📖 Abrir la guía</a><a class="guiaW" href="https://ridesafeia.es/#voz" target="_blank" rel="noopener">🌐 ridesafeia.es</a></div>
+  </div>
   <div class="f">
     <label class="l" for="nameIn">Tu nombre</label>
     <div class="row2"><input class="inp" id="nameIn" maxlength="24"><button class="mini" onclick="saveName()">Guardar</button></div>
@@ -1263,7 +1287,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.45.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8362,6 +8386,8 @@ setInterval(function(){
 <script>
 /* v5.26: aviso NOVEDAD en Inicio */
 (function(){var K='velogo_nov_rutas_526';try{if(!localStorage.getItem(K)){var b=document.getElementById('novBox');if(b)b.style.display='block'}}catch(e){}})();
+(function(){try{if(!localStorage.getItem('rs_guia_545')){var b=document.getElementById('guiaBox');if(b)b.style.display='block'}}catch(e){}})();
+function guiaClose(){try{localStorage.setItem('rs_guia_545','1')}catch(e){}var b=document.getElementById('guiaBox');if(b)b.style.display='none';try{toast('La guía sigue en Perfil')}catch(e){}}
 function novClose(){try{localStorage.setItem('velogo_nov_rutas_526','1')}catch(e){}var b=document.getElementById('novBox');if(b)b.style.display='none'}
 function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try{if(!trailsOn())trailsToggle(true);else toast('Toca una línea de color para ver la ruta')}catch(e){}},600)}
 </script>
@@ -8398,7 +8424,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.2</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.45.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8442,7 +8468,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.44.2';
+const VOZ_VER='5.45.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
