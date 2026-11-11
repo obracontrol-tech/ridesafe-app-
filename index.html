@@ -1263,7 +1263,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.44.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8397,7 +8397,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.44.1</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8406,6 +8406,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
  <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
  <table>
   <tr><td>«Ruta de Mollerussa<br>a Cervera»</td><td>Calcula la ruta. También «ruta a Cervera» (desde donde estás) o «ruta circular de 40 kilómetros»</td></tr>
+  <tr><td>«Uno» · «Dos» · «Tres»</td><td>Cuando la ruta tiene varios caminos, la app te los lee y eliges uno. También «la más corta» o «menos subida»</td></tr>
   <tr><td>«Menú»</td><td>Menú por números: la app te lee 6 apartados y dices el número. Luego te pregunta lo que falta. Atajos: «rutas dos», «seguridad cuatro», «menú tres cinco»</td></tr>
   <tr><td>«Rutas marcadas»</td><td>Las rutas GR, PR, Caminos o BTT más cercanas. Luego di «la primera», «la segunda»… También «senderos cerca» o «rutas de BTT cerca»</td></tr>
   <tr><td>«Ruta GR 171»<br>«Sigue el Camino de Santiago»</td><td>Busca esa ruta marcada por su número o nombre</td></tr>
@@ -8440,7 +8441,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.44.0';
+const VOZ_VER='5.44.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8534,7 +8535,29 @@ async function vozRoute(t,kind){
   const mins=r.mins||estMins(r.km,r.up||0);const h=Math.floor(mins/60),mm=mins%60;
   const tt=h?`${h>1?h+' horas':'una hora'}${mm?' y '+mm+' minutos':''}`:mm+' minutos';
   vozPill('✅ Ruta: '+vozKm(r.km)+' km'+(r.up?' · +'+Math.round(r.up)+' m':''),'Di «empezar» para salir',8000);
+  if(plan.alts&&plan.alts.length>1&&kind!=='loop'){vozAltsSay();return}   // v5.44.1
   vozSay(`Ruta preparada${vias.length?' pasando por '+vias.map(x=>x.label).join(', '):''}: ${vozKm(r.km)} kilómetros${r.up?', '+Math.round(r.up)+' metros de subida':''}, más o menos ${tt}. Di empezar para salir.`);
+}
+/* v5.44.1 — Elegir por voz entre los caminos: «uno», «dos», «tres», «la más corta» */
+function vozAltTxt(x){return x.km.toFixed(1).replace('.',',').replace(',0','')+' kilómetros'+(x.prof&&x.up!=null?', '+Math.round(x.up)+' metros de subida':'')}
+function vozAltName(x){return String(x.lbl||'').replace(/^\S+\s/,'').toLowerCase()}
+function vozAltsSay(){const A=plan.alts;if(!A)return;
+  vozPill('🔀 '+A.length+' caminos','Di «uno», «dos» o «tres»',9000);
+  vozSay('Hay '+A.length+' caminos. '+A.map((x,i)=>VM_W[i]+(x.lbl&&!/otra opci/i.test(x.lbl)?', '+vozAltName(x):'')+': '+vozAltTxt(x)).join('. ')+'. Di uno, dos o tres. O di empezar con el primero.',true)}
+function vozAlt(t){
+  if(typeof plan==='undefined'||!plan.active||plan.view||!plan.alts||plan.alts.length<2)return false;
+  try{if(live&&live.on)return false}catch(e){}
+  if(document.getElementById('mkOv')||document.getElementById('vmOv'))return false;
+  const A=plan.alts;let i=-1;
+  if(/\b(mas corta|corta y llana|la corta)\b/.test(t))i=A.findIndex(x=>/corta/i.test(x.lbl||''));
+  else if(/\b(menos subida|mas llana|llana)\b/.test(t))i=A.findIndex(x=>/subida|llana/i.test(x.lbl||''));
+  else if(/^(caminos|que caminos hay|opciones de ruta|alternativas|repite los caminos)$/.test(t)){vozAltsSay();return true}
+  else{const x=t.replace(/^(el |la )?(camino|opcion|ruta|alternativa)\s+/,'');if(x.split(' ').length<=2){const n=vmNum(x);if(n>0)i=n-1}}
+  if(i<0||i>=A.length)return false;
+  selectAlt(i);const r=A[i];
+  vozPill('✅ Camino '+(i+1)+': '+vozKm(r.km)+' km','Di «empezar» para salir',8000);
+  vozSay('Camino '+VM_W[i]+': '+vozAltTxt(r)+'. Di empezar para salir.',true);
+  return true;
 }
 
 const VSR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -8551,9 +8574,20 @@ function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classL
 function vozSay(t,thenListen){
   const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;   // v5.41.8: +2,5 s tras contestar
   vozStop(true);
-  try{cascoSay(t)}catch(e){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(x){}}
+  let sp=null;
+  try{const v=live.voice;live.voice=true;CASCO.last=t;sp=voiceSay(t);live.voice=v}catch(e){try{cascoSay(t)}catch(x){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(y){}}}
   clearTimeout(VZ.restartTO);
-  VZ.restartTO=setTimeout(()=>{if(thenListen)vozListen(true);else{vozVcBack();if(VZ.cont)vozStartCont()}},ms);
+  if(!thenListen){VZ.restartTO=setTimeout(()=>{vozVcBack();if(VZ.cont)vozStartCont()},ms);return}
+  /* v5.44.1: con pregunta, abre el micro en cuanto acaba de hablar (máximo el tiempo de antes) */
+  let done=false;const tok=(VZ.sayTok=(VZ.sayTok||0)+1);
+  const fin=()=>{if(done||tok!==VZ.sayTok)return;done=true;clearTimeout(VZ.restartTO);vozListen(true)};
+  VZ.restartTO=setTimeout(fin,ms);
+  Promise.resolve(sp).catch(()=>{}).then(()=>{
+    const chk=()=>{if(done||tok!==VZ.sayTok)return;
+      try{if(speechSynthesis.speaking){setTimeout(chk,200);return}}catch(e){}
+      try{if(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused&&!ttsAudio.ended){setTimeout(chk,200);return}}catch(e){}
+      setTimeout(fin,350)};
+    setTimeout(chk,250)});
 }
 function vozMake(continuous){
   const r=new VSR();r.lang='es-ES';r.continuous=continuous;r.interimResults=true;r.maxAlternatives=3;
@@ -9151,6 +9185,7 @@ function vozMenu(t){
     if(VM.item>=0){vmAnswer(t,true);return true}
     const n=vmNum(t);if(n>0){vmPick(n,true);return true}
   }
+  if(!open&&typeof vozAlt==='function'&&vozAlt(t))return true;   // v5.44.1: elegir camino 1, 2, 3
   /* abrir el menú o un apartado: «menú», «menú dos», «rutas», «rutas dos», «seguridad», «en marcha»… */
   const SN=[/^(menu )?rutas$/,/^menu rutas marcadas$/,/^(menu )?(en marcha|marcha|navegacion)$/,/^(menu )?(el tiempo|menu del tiempo)$/,/^(menu )?(seguridad)$/,/^(menu )?(moverse|moverse por la app|la app)$/];
   let m=t.match(/^(?:el )?(?:menu|menus|opciones|que puedo hacer|que puedo decir con numeros)(?:\s+(.+))?$/);
