@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.42.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.42.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8232,6 +8232,10 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 #vozBtn.on{background:#DC2626;color:#fff;animation:vozPulse 1s infinite}
 #vozBtn.cont{border-color:#A3E635;box-shadow:0 0 0 5px rgba(163,230,53,.35),0 6px 22px rgba(0,0,0,.45)}
 #vozBtn.cont:not(.on){background:#14532D;color:#A3E635}
+/* v5.42.1 — Micrófono arriba a la izquierda (no tapa «Cancelar» ni la tarjeta de ruta). En navegación sigue a la derecha */
+#vozBtn{left:12px;right:auto;top:calc(110px + env(safe-area-inset-top));width:50px;height:50px;font-size:22px}
+body:has(#s-rutas.planning) #vozBtn{top:calc(16px + env(safe-area-inset-top))}
+body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;font-size:26px}
 #vozBtn small{position:absolute;bottom:-17px;font-size:10px!important;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 #vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
@@ -8293,7 +8297,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.42.0';
+const VOZ_VER='5.42.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
