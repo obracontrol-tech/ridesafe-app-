@@ -1267,6 +1267,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
+  <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Si estás 1 minuto parado, el tiempo deja de contar':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Si estás <b>1 minuto parado</b> (semáforo, café, pinchazo…), el tiempo deja de contar desde que te paraste y la media de km/h no baja. Al moverte unos metros vuelve sola.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🧭 Si me salgo de la ruta<select class="inp" id="selNav" style="width:100%;margin-top:8px" onchange="store.set('navMode',this.value);toast({smart:'🤖 Automático: recalcula en carretera y te lleva de vuelta en montaña',auto:'🔄 Recalculará la ruta sola, como Google Maps',volver:'↩️ Te llevará de vuelta por donde has venido'}[this.value],4000)"><option value="smart">🤖 Automático (recomendado)</option><option value="auto">🔄 Recalcular siempre, como Google Maps</option><option value="volver">↩️ Volver por donde he venido</option></select><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px"><b>Automático:</b> en rutas por carretera hechas con el planificador, recalcula sola un camino nuevo al destino. En tracks de montaña, GPX o rutas del club te lleva de vuelta por donde has venido (lo más seguro). Siempre puedes pulsar «🔄 Recalcular desde aquí».</small></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
@@ -1287,7 +1288,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.45.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6776,7 +6777,7 @@ function sumText(){
   return s;
 }
 function sumSay(){if(!live.on){toast('Empieza una salida para oír el resumen');return}const t=sumText();if(!live.voice)toast('🗣️ '+t);speak(t)}
-setTimeout(()=>{const e=$('swRes');if(e)e.checked=store.get('resumen',true);const sn=$('selNav');if(sn)sn.value=store.get('navMode','smart')},0);
+setTimeout(()=>{const e=$('swRes');if(e)e.checked=store.get('resumen',true);const ap=$('swAP');if(ap)ap.checked=store.get('autoPause',true);const sn=$('selNav');if(sn)sn.value=store.get('navMode','smart')},0);
 function lwSay(tap){
   if(!live.wx){if(tap)toast('Buscando el viento…');return}
   const t=lwText();if(tap&&!live.voice)toast('🌬️ '+t);speak(t);
@@ -6846,6 +6847,7 @@ function onFix(pos){
   if(live.follow&&!lowPow()&&now-(live.camT||0)>=(live.eco?5000:1800)){live.camT=now;const ph=lvPH(),bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),duration:live.eco?600:1200,padding:{top:bh+20,bottom:ph,left:0,right:0}})}
   if(c.speed!=null&&c.speed>=0&&c.speed*3.6<90)live.speed=live.speed?live.speed*0.4+c.speed*3.6*0.6:c.speed*3.6;
   if(c.altitude!=null)live.alt=c.altitude;
+  try{apFix(p,now,c)}catch(e){}
   if(!live.paused){
     const last=live.pts.at(-1);
     const d=last?hav(last,p):0;
@@ -7126,18 +7128,18 @@ function checkStragglers(){
 }
 
 /* Panel en vivo */
-const elapsed=()=>live.on?Math.max(0,(live.paused?live.pauseStart:Date.now())-live.startT-live.pausedMs):0;
+const elapsed=()=>live.on?Math.max(0,(live.paused?live.pauseStart:(live.astop?live.astopStart:Date.now()))-live.startT-live.pausedMs):0;   // v5.46: pausa automática
 function clock(ms){const s=Math.floor(ms/1000);return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function renderLive(){
   if(!live.on||lowPow())return;
-  $('lvSpeed').textContent=live.paused?'—':Math.round(live.speed||0);
+  $('lvSpeed').textContent=live.paused?'—':live.astop?'0':Math.round(live.speed||0);
   $('lvKm').textContent=live.km.toFixed(2);
   $('lvTime').textContent=clock(elapsed());
   $('lvAlt').textContent=live.alt!=null?Math.round(live.alt):'—';
   $('lvUp').textContent=Math.round(live.up);
   {const t=live.paused?'▶ Seguir':'⏸ Pausa',b=$('lvPause');if(b.textContent!==t)b.textContent=t}
-  $('lvState').textContent=live.paused?'EN PAUSA':live.rideId?'🛰️ '+(live.rideTitle||'SALIDA EN GRUPO'):'● GRABANDO';
-  $('lvState').classList.toggle('paused',live.paused);
+  $('lvState').textContent=live.paused?'EN PAUSA':live.astop?'⏸ PAUSA AUTOMÁTICA':live.rideId?'🛰️ '+(live.rideTitle||'SALIDA EN GRUPO'):'● GRABANDO';
+  $('lvState').classList.toggle('paused',live.paused||!!live.astop);
   const n=live.nav;
   if(n&&n.left!=null){
     $('lvNavRow').style.display='grid';
@@ -7196,11 +7198,27 @@ function liveCatchStop(){
   else{live.nav=null;live.wps=null;live.fixTrk=null;setLine(map,null,'plan')}
   toast('Has dejado de ir a por el grupo');renderLive();
 }
+/* v5.46 — Pausa automática: 1 minuto sin moverte (menos de 25 m) → el tiempo se para desde que te paraste.
+   Sigue guardando el recorrido; al moverte vuelve sola y la media de km/h no baja. */
+function apOn(){return store.get('autoPause',true)}
+function apFix(p,now,c){
+  if(!live.on||live.paused||!apOn()){if(live.astop&&!apOn()){live.pausedMs+=now-live.astopStart;live.astop=false}return}
+  if(!live.anc){live.anc={p:p,t:now};return}
+  const d=hav(live.anc.p,p),v=c&&c.speed!=null&&c.speed>=0?c.speed*3.6:null;
+  if(d>=0.025||(v!=null&&v>=6&&d>=0.01)){
+    if(live.astop){live.pausedMs+=Math.max(0,now-live.astopStart);live.astop=false;try{renderLive()}catch(e){}}
+    live.anc={p:p,t:now};
+  }
+}
+setInterval(function(){
+  try{if(!live||!live.on||live.paused||live.astop||!live.anc||!apOn())return;
+    if(Date.now()-live.anc.t>60000){live.astop=true;live.astopStart=live.anc.t;try{renderLive()}catch(e){}}}catch(e){}
+},3000);
 function togglePause(){
   if(!live.on)return;
   if(live.paused){live.pausedMs+=Date.now()-live.pauseStart;live.paused=false;speak('Seguimos')}
-  else{live.paused=true;live.pauseStart=Date.now();speak('Pausa')}
-  renderLive();
+  else{if(live.astop){live.pausedMs+=Date.now()-live.astopStart;live.astop=false}live.paused=true;live.pauseStart=Date.now();speak('Pausa')}
+  live.anc=null;renderLive();
 }
 function toggleVoice(){live.voice=!live.voice;store.set('voice',live.voice);$('lvVoice').textContent=live.voice?'🔊':'🔇';if(live.voice)speak('Voz activada')}
 function toggleFollow(){live.follow=true;const m=live.pts.at(-1);if(m){const ph=lvPH();map.easeTo({center:[m[1],m[0]],zoom:16,padding:{top:20,bottom:ph,left:0,right:0}})}toast('Siguiendo tu posición')}
@@ -7420,7 +7438,7 @@ function phFromRide(){
 const LBK='velogo_liveBk';
 function liveBackup(){
   if(!live.on)return;
-  try{localStorage.setItem(LBK,JSON.stringify({v:1,t:Date.now(),mk:live.mk||('L'+live.startT),startT:live.startT,pausedMs:live.pausedMs||0,paused:!!live.paused,hike:!!live.hike,pauseStart:live.pauseStart||0,km:live.km,up:live.up,rideId:live.rideId||null,rideTitle:live.rideTitle||'',legs:live.legs||[],
+  try{localStorage.setItem(LBK,JSON.stringify({v:1,t:Date.now(),mk:live.mk||('L'+live.startT),startT:live.startT,pausedMs:(live.pausedMs||0)+(live.astop&&!live.paused?Math.max(0,Date.now()-live.astopStart):0),paused:!!live.paused,hike:!!live.hike,pauseStart:live.pauseStart||0,km:live.km,up:live.up,rideId:live.rideId||null,rideTitle:live.rideTitle||'',legs:live.legs||[],
     pts:live.pts.map(p=>[+(+p[0]).toFixed(6),+(+p[1]).toFixed(6),p[2]==null?null:Math.round(p[2]),p[3]])}))}catch(e){console.warn('copia de la salida',e)}
 }
 function liveBackupClear(){try{localStorage.removeItem(LBK)}catch(e){}}
@@ -7478,7 +7496,7 @@ function liveDesign(){
   if(!pill){pill=document.createElement('button');pill.id='lvDesignPill';pill.type='button';pill.onclick=()=>{exitPlanner();liveDesignEnd()};
     pill.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));z-index:9999;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;border:2px solid #fff;background:#EF4444;color:#fff;font:800 14.5px "Plus Jakarta Sans",system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap';
     document.body.appendChild(pill)}
-  const upd=()=>{if(!document.body.classList.contains('lvdesign')){clearInterval(pill.__t);return}const s=Math.max(0,Math.floor((Date.now()-live.startT-(live.pausedMs||0))/1000));
+  const upd=()=>{if(!document.body.classList.contains('lvdesign')){clearInterval(pill.__t);return}const s=Math.max(0,Math.floor(elapsed()/1000));
     pill.innerHTML='● Grabando · '+fmtNum(live.km||0,1)+' km · '+Math.floor(s/3600)+':'+String(Math.floor(s/60)%60).padStart(2,'0')+' &nbsp;<u>Volver</u>'};
   clearInterval(pill.__t);upd();pill.__t=setInterval(upd,1000);pill.style.display='flex';
   startPlanner('draw');
@@ -8425,7 +8443,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.45.2</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8469,7 +8487,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.45.2';
+const VOZ_VER='5.46.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
