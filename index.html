@@ -782,6 +782,19 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* v4.5 — Dibujar ruta (como Strava) */
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
 .pdown{display:block;margin:-4px auto 8px;min-height:40px;padding:4px 22px;border-radius:20px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px;touch-action:manipulation;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+/* v5.43.0 — Lista de rutas marcadas */
+.mk-box{max-width:440px;position:relative;padding-top:18px}
+.mk-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:var(--card2);color:var(--txt);border:1px solid var(--line);font-size:18px;font-weight:800}
+.mk-box h3{padding-right:46px}.mk-s{font-size:14px!important;margin:0 0 10px!important}
+.mk-ch{display:flex;gap:6px;margin:0 0 12px}.mk-ch button{flex:1;min-height:40px;border-radius:20px;background:var(--card2);color:var(--txt);border:1px solid var(--line);font-weight:800;font-size:14px}
+.mk-ch button.on{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+.mk-l{display:flex;flex-direction:column;gap:10px}.mk-wait{padding:24px 6px;text-align:center;color:var(--txt2);font-size:15px}
+.mk-c{background:var(--card2);border:1px solid var(--line);border-radius:18px;padding:12px}
+.mk-h{display:flex;align-items:flex-start;gap:10px}.mk-h b{display:block;font-size:16px;line-height:1.25;color:var(--txt)}.mk-h small{display:block;color:var(--txt2);font-size:13px;margin-top:4px}
+.mk-n{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+.mk-i{font-size:22px;line-height:26px}.mk-t{display:inline-block;color:#fff;font-weight:800;font-size:11.5px;padding:1px 8px;border-radius:9px}
+.mk-b{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.mk-b button{min-height:44px;border-radius:22px;font-weight:800;font-size:15px;background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.mk-b button.go{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
 /* v5.11.2 — «Ver más mapa» se queda fijo arriba aunque subas la tarjeta, y resalta en verde lima */
 #s-rutas.planning .planpanel>.pdown{position:sticky;top:-6px;z-index:4;box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(-8px -100vmax -8px -100vmax)}
 #pTiny{display:none}
@@ -1250,7 +1263,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.42.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.43.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1271,6 +1284,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="qa">
     <button class="main" onclick="openCreate()"><span class="em">📅</span><div><b>Crear salida</b><small>Día, hora, punto de salida y encuentro</small></div></button>
     <button onclick="closeSheets();go('rutas');setTimeout(()=>openSheet('sh-plan'),250)"><span class="em">🗺️</span><div><b>Nueva ruta</b><small>De A a B, por etapas o circular</small></div></button>
+    <button onclick="closeSheets();mkNear()"><span class="em">🥾</span><div><b>Rutas marcadas</b><small>GR, PR, Caminos y BTT ya hechos, cerca de ti · o di «Oye bici, rutas marcadas»</small></div></button>
     <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
   </div>
@@ -8149,38 +8163,162 @@ async function pick(lat,lng){
     if(!L.length){toast('No encuentro rutas marcadas justo ahí. Toca encima de la línea de color');return}
     var seen={};L=L.filter(function(x){if(seen[x.id])return false;seen[x.id]=1;return true});
     L.sort(function(a,b){return a.ord-b.ord});
-    var opts=L.slice(0,8).map(function(x){var ic=x.route==='mtb'?'🚵 ':(x.route==='bicycle'||x.route==='cycling')?'🚴 ':'🥾 ';
-      var sub=[x.net,x.dist?(String(x.dist).replace('.',',')+' km'):''].filter(Boolean).join(' · ');
-      return [ic+[x.ref,x.name].filter(Boolean).join(' · ')+(sub?' — '+sub:''),'',x.id]});
-    var i=await askChoice('¿Qué ruta quieres ver?',opts);if(i<0)return;
-    var rel=L[i],title=[rel.ref,rel.name].filter(Boolean).join(' · ').slice(0,40);
-    toast('⏳ Cargando '+title+'… (las rutas largas tardan un poco)');
-    var ways=await geomOf(rel.id);
-    if(!ways.length){toast('No se pudo cargar el trazado de esta ruta');return}
-    clearSel();
-    map.addSource('wsel',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:ways.map(function(w){return w.map(function(p){return [p[1],p[0]]})})}}});
-    map.addLayer({id:'wsel-c',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':10}});
-    map.addLayer({id:'wsel',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#C8DC3C','line-width':6}});
-    var all=[].concat.apply([],ways);
-    var c=chain(ways,[lat,lng]),total=km(c);selRoute={c:c,title:title};
-    var isLive=typeof live!=='undefined'&&live.on;
-    if(isLive){try{live.follow=false}catch(x){}
-      fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.3),left:40,right:40});
-      var jl=await askChoice('🟢 '+title+' · '+Math.round(total)+' km. Estás grabando: la ves en el mapa sin cambiar tu ruta.',[['👍 Vale, solo mirar','','x'],['🙈 Quitar la ruta resaltada','','off'],['📍 Volver a mi posición','','me']]);
-      if(jl===1)clearSel();if(jl===1||jl===2){try{toggleFollow()}catch(x){}}else toast('Pulsa ➤ para volver a seguir tu posición');return}
-    fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
-    var o2=[];
-    if(total<=300)o2.push(['🧭 Seguir la ruta entera ('+Math.round(total)+' km)','','all']);
-    if(total>40){o2.push(['➡️ Seguir 40 km desde aquí, en un sentido','','f']);o2.push(['⬅️ Seguir 40 km desde aquí, en el otro sentido','','b'])}
-    o2.push(['🙈 Quitar la ruta resaltada','','off']);o2.push(['Solo mirar','','x']);
-    var j=await askChoice('🟢 '+title+' · '+Math.round(total)+' km'+(rel.net?' · '+rel.net:''),o2);
-    if(j<0)return;var a=o2[j][2];
-    if(a==='all')follow(c,title);
-    else if(a==='f'||a==='b')follow(cut(c,[lat,lng],a==='f'?1:-1,40),title+' (tramo)');
-    else if(a==='off')clearSel();
+    L=L.slice(0,8);busy=false;
+    var r=await mkShow('Rutas marcadas aquí','Toca «Ver» para verla entera o «Seguir» para prepararla.',L,false);
+    if(r&&r.L)showRel(r.L[r.i],lat,lng,r.a,!!r.voice);
   }catch(e){console.warn('wsel',e);toast('No se pudo buscar ahora. Inténtalo otra vez en unos segundos')}
   finally{busy=false}
 }
+/* v5.43.0 — Rutas marcadas fáciles: tarjeta en «¿Qué quieres hacer?», lista clara y «Oye bici» */
+var MK={list:null,ov:null,res:null,sel:null,kind:null};
+var MK_KT={mtb:'🚵 BTT',cycling:'🚴 Ciclistas',hiking:'🥾 Senderos'};
+var MK_NC={Internacional:'#F59E0B',Nacional:'#EF4444',Regional:'#3B82F6',Local:'#84CC16'};
+function mkIc(x){return x.route==='mtb'?'🚵':(x.route==='bicycle'||x.route==='cycling')?'🚴':'🥾'}
+function mkName(x){return [x.ref,x.name].filter(Boolean).join(' · ')||'Ruta sin nombre'}
+function mkKmT(k){return k<10?k.toFixed(1).replace('.',','):String(Math.round(k))}
+function mkClose(){if(MK.ov){MK.ov.remove();MK.ov=null}var r=MK.res;MK.list=null;MK.res=null;if(r)r(null)}
+window.mkClose=mkClose;
+/* Ventana con la lista de rutas en tarjetas: número (para la voz), tipo, km, distancia y botones grandes */
+function mkShow(title,sub,L,chips){
+  if(MK.ov)MK.ov.remove();
+  var d=document.createElement('div');d.className='cfm';d.id='mkOv';
+  var ch=chips?'<div class="mk-ch">'+Object.keys(MK_KT).map(function(k){return '<button type="button" data-k="'+k+'" class="'+(k===MK.kind?'on':'')+'">'+MK_KT[k]+'</button>'}).join('')+'</div>':'';
+  var body=L===null?'<div class="mk-wait">⏳ Buscando rutas marcadas…</div>':!L.length?'<div class="mk-wait">No hay rutas de este tipo cerca. Prueba con otro tipo de arriba.</div>':
+    L.map(function(x,i){var info=[x.net?'<span class="mk-t" style="background:'+(MK_NC[x.net]||'#64748B')+'">'+esc(x.net)+'</span>':'',x.km?mkKmT(x.km)+' km':'',x.dk!=null?(x.dk<0.3?'📍 estás encima':'a '+mkKmT(x.dk)+' km de ti'):''].filter(Boolean).join(' · ');
+      return '<div class="mk-c"><div class="mk-h"><span class="mk-n">'+(i+1)+'</span><span class="mk-i">'+mkIc(x)+'</span><div><b>'+esc(mkName(x))+'</b><small>'+info+'</small></div></div>'+
+        '<div class="mk-b"><button type="button" data-i="'+i+'" data-a="see">👁️ Ver en mapa</button><button type="button" class="go" data-i="'+i+'" data-a="go">▶️ Seguir</button></div></div>'}).join('');
+  d.innerHTML='<div class="cfm-b mk-box"><button type="button" class="mk-x" aria-label="Cerrar">✕</button><h3>'+esc(title)+'</h3><p class="mk-s">'+sub+'</p>'+ch+'<div class="mk-l">'+body+'</div></div>';
+  d.onclick=function(e){
+    var b=e.target.closest('button');
+    if(e.target===d||(b&&b.classList.contains('mk-x'))){mkClose();return}
+    if(!b)return;
+    if(b.dataset.k){mkNear(b.dataset.k,false);return}
+    if(b.dataset.a){var r=MK.res,L2=MK.list;d.remove();MK.ov=null;MK.list=null;MK.res=null;if(r)r({i:+b.dataset.i,a:b.dataset.a,L:L2})}
+  };
+  document.body.appendChild(d);MK.ov=d;MK.list=L&&L.length?L:null;
+  return new Promise(function(res){MK.res=res});
+}
+/* Rutas marcadas cerca de ti */
+async function mkNear(kind,voice){
+  if(typeof map==='undefined'||!map){toast('El mapa necesita conexión a internet');if(voice)vozSay('El mapa necesita conexión a internet.');return}
+  try{if(typeof live!=='undefined'&&live.on){toast('Termina primero la salida que estás grabando');return}}catch(e){}
+  kind=kind||MK.kind||map.__wmt||trailsKind();MK.kind=kind;
+  try{go('rutas')}catch(e){}
+  store.set('trailsSel',kind);store.set('trailsOn',true);try{trailsSet(map,true);var c0=$('lmTrails');if(c0)c0.checked=true}catch(e){}
+  var me=myLL();if(!me){try{var p=await gpsOnce();me={lat:p[0],lng:p[1]}}catch(e){}}
+  var here=!!me;if(!me){var cc=map.getCenter();me={lat:cc.lat,lng:cc.lng}}
+  var sub=here?'Las más cercanas a ti. Toca una o di «la primera», «la segunda»…':'Alrededor de la zona del mapa (activa la ubicación para ver las más cercanas a ti).';
+  var tt='Rutas marcadas cerca';
+  var pr=mkShow(tt,sub,null,true);
+  var L=[];
+  try{
+    var base='https://'+kind+'.waymarkedtrails.org/api/v1/',c=m3857(me.lat,me.lng),R=15000/Math.cos(me.lat*Math.PI/180);
+    var j=await fetchT(base+'list/by_area?limit=30&bbox='+[c[0]-R,c[1]-R,c[0]+R,c[1]+R].map(function(v){return v.toFixed(1)}).join(','),15000);
+    L=(j.results||[]).filter(function(x){return x.type==='relation'||x.type==null}).map(function(x){return {id:x.id,ref:x.ref||'',name:x.name||'',net:grpName(x.group),ord:grpOrd(x.group),route:kind,src:'wmt'}});
+    var seen={};L=L.filter(function(x){if(seen[x.id])return false;seen[x.id]=1;return true}).slice(0,15);
+    /* longitud y distancia a ti (con el recuadro de cada ruta) */
+    var cosl=Math.cos(me.lat*Math.PI/180);
+    await Promise.all(L.map(function(x){return fetchT(base+'details/relation/'+x.id,9000).then(function(t){
+      var ml=+(t.official_length||(t.route&&t.route.length)||t.mapped_length||0);if(ml>0)x.km=ml/1000;
+      var b=t.bbox;if(b&&b.length===4){var dx=Math.max(b[0]-c[0],0,c[0]-b[2]),dy=Math.max(b[1]-c[1],0,c[1]-b[3]);x.dk=Math.hypot(dx,dy)*cosl/1000}
+    }).catch(function(){})}));
+    L.sort(function(a,b){var da=a.dk==null?99:a.dk,db=b.dk==null?99:b.dk;return Math.round(da)-Math.round(db)||a.ord-b.ord||da-db});
+    L=L.slice(0,10);
+  }catch(e){console.warn('mkNear',e);if(MK.ov&&kind===MK.kind){toast('El servidor de rutas va lento. Inténtalo en unos segundos');mkClose();if(voice)vozSay('No he podido buscar las rutas ahora. Inténtalo otra vez.')}return}
+  if(kind!==MK.kind||!MK.ov)return;   // ha cambiado de tipo o ha cerrado
+  var keep=MK.res;MK.res=null;
+  var pr2=mkShow(tt,sub,L,true);
+  if(keep)pr2.then(keep);
+  if(voice){
+    if(!L.length)vozSay('No encuentro rutas marcadas de '+MK_KT[kind].replace(/^\S+ /,'')+' cerca. Prueba con otro tipo.');
+    else vozSay('Tengo '+L.length+' rutas cerca. '+L.slice(0,3).map(function(x,i){return ['Una','Dos','Tres'][i]+': '+mkName(x).replace(/·/g,',')+(x.dk!=null?(x.dk<0.3?', estás encima':', a '+mkKmT(x.dk)+' kilómetros'):'')}).join('. ')+'. Di la primera, la segunda o la tercera.',true);
+  }
+  var r=await pr;
+  if(r&&r.L)showRel(r.L[r.i],me.lat,me.lng,r.a,!!r.voice);
+}
+window.mkNear=mkNear;
+/* Buscar una ruta por su nombre o número: «GR 171», «Camí de Sant Jaume» */
+function mkKey(s){return vozNorm(s).replace(/[\s\-\.]/g,'')}
+async function mkFind(q,voice){
+  if(typeof map==='undefined'||!map){vozSay('El mapa necesita conexión a internet.');return}
+  vozSay('Buscando '+q+'.');vozPill('🔎 Buscando «'+q+'»','',5000);
+  var kinds=[map.__wmt||trailsKind()].concat(['hiking','mtb','cycling']).filter(function(k,i,a){return a.indexOf(k)===i});
+  var me=myLL()||(function(){var c=map.getCenter();return{lat:c.lat,lng:c.lng}})(),qk=mkKey(q),found=[];
+  for(var n=0;n<kinds.length&&!found.length;n++){
+    try{var j=await fetchT('https://'+kinds[n]+'.waymarkedtrails.org/api/v1/list/search?limit=8&query='+encodeURIComponent(q),12000);
+      found=(j.results||[]).filter(function(x){return x.type==='relation'||x.type==null}).map(function(x){return {id:x.id,ref:x.ref||'',name:x.name||'',net:grpName(x.group),ord:grpOrd(x.group),route:kinds[n],src:'wmt'}});
+      var ex=found.filter(function(x){return mkKey(x.ref)===qk||mkKey(x.name)===qk});if(ex.length)found=ex;
+      if(found.length){MK.kind=kinds[n];store.set('trailsSel',kinds[n]);store.set('trailsOn',true);try{trailsSet(map,true)}catch(e){}}
+    }catch(e){console.warn('mkFind',e)}
+  }
+  if(!found.length){vozSay('No encuentro la ruta '+q+'. Di rutas marcadas para ver las de cerca.');vozPill('❌ No encuentro «'+q+'»','Di «rutas marcadas» para ver las de cerca',6000);return}
+  try{go('rutas')}catch(e){}
+  if(found.length===1){showRel(found[0],me.lat,me.lng,'go',true);return}
+  found=found.slice(0,6);
+  var pr=mkShow('Rutas «'+q+'»','He encontrado varias. Toca una o di «la primera», «la segunda»…',found,false);
+  vozSay('He encontrado '+found.length+'. '+found.slice(0,3).map(function(x,i){return ['Una','Dos','Tres'][i]+': '+mkName(x).replace(/·/g,',')}).join('. ')+'. ¿Cuál quieres?',true);
+  var r=await pr;if(r&&r.L)showRel(r.L[r.i],me.lat,me.lng,r.a,!!r.voice);
+}
+/* Enseña la ruta elegida y pregunta cómo seguirla (también por voz) */
+async function showRel(rel,lat,lng,act,voice){
+  if(busy)return;busy=true;var title=mkName(rel).slice(0,48),ways;
+  try{
+    toast('⏳ Cargando '+title+'… (las rutas largas tardan un poco)');if(voice)vozPill('⏳ Cargando '+title,'',5000);
+    ways=await geomOf(rel.id);
+  }catch(e){console.warn('showRel',e)}finally{busy=false}
+  if(!ways||!ways.length){toast('No se pudo cargar el trazado de esta ruta');if(voice)vozSay('No he podido cargar el trazado de esta ruta.');return}
+  clearSel();
+  map.addSource('wsel',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:ways.map(function(w){return w.map(function(p){return [p[1],p[0]]})})}}});
+  map.addLayer({id:'wsel-c',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':10}});
+  map.addLayer({id:'wsel',type:'line',source:'wsel',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#C8DC3C','line-width':6}});
+  var all=[].concat.apply([],ways),c=chain(ways,[lat,lng]),total=km(c);selRoute={c:c,title:title};MK.sel={c:c,title:title,ll:[lat,lng]};
+  var isLive=typeof live!=='undefined'&&live.on;
+  if(isLive){try{live.follow=false}catch(x){}
+    fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.3),left:40,right:40});
+    var jl=await askChoice('🟢 '+title+' · '+Math.round(total)+' km. Estás grabando: la ves en el mapa sin cambiar tu ruta.',[['👍 Vale, solo mirar','','x'],['🙈 Quitar la ruta resaltada','','off'],['📍 Volver a mi posición','','me']]);
+    if(jl===1)clearSel();if(jl===1||jl===2){try{toggleFollow()}catch(x){}}else toast('Pulsa ➤ para volver a seguir tu posición');return}
+  fitTo(map,all,{top:80,bottom:Math.round(window.innerHeight*0.45),left:40,right:40});
+  var o2=[];
+  if(total<=300)o2.push(['🧭 Seguir la ruta entera ('+Math.round(total)+' km)','','all']);
+  if(total>25){o2.push(['➡️ 20 km desde el punto más cercano','','f20']);o2.push(['➡️ 40 km desde el punto más cercano','','f']);o2.push(['⬅️ 40 km en el otro sentido','','b'])}
+  if(act!=='go'){o2.push(['🙈 Quitar la ruta resaltada','','off']);o2.push(['Solo mirar','','x'])}
+  if(voice)vozSay(title.replace(/·/g,',')+'. '+vozKm(total)+' kilómetros. Di: entera, o 20 kilómetros, o 40 kilómetros, o al revés.',true);
+  var j=await askChoice('🟢 '+title+' · '+Math.round(total)+' km'+(rel.net?' · '+rel.net:''),o2);
+  if(j<0)return;mkDo(o2[j][2]);
+}
+function mkDo(a,n){
+  var s=MK.sel;if(!s)return;document.querySelectorAll('.cfm:not(#mkOv)').forEach(function(x){x.remove()});
+  if(a==='all')follow(s.c,s.title);
+  else if(a==='f'||a==='b'||a==='f20'||a==='n')follow(cut(s.c,s.ll,a==='b'?-1:1,a==='f20'?20:a==='n'?n:40),s.title+' (tramo)');
+  else if(a==='nb')follow(cut(s.c,s.ll,-1,n),s.title+' (tramo)');
+  else if(a==='off'){clearSel();MK.sel=null}
+}
+/* «Oye bici» para rutas marcadas. Devuelve true si es una orden suya */
+window.vozMk=function(t){
+  var L=typeof live!=='undefined'&&live&&live.on;
+  if(MK.ov&&/\b(cierra|cerrar|cancela|cancelar|atras|ninguna)\b/.test(t)){mkClose();vozPill('✕ Cerrado','',1500);return true}
+  if(MK.ov&&MK.list){var m=t.match(/\b(primera|primer|primero|segunda|segundo|tercera|tercero|cuarta|cuarto|quinta|quinto|uno|una|dos|tres|cuatro|cinco|[1-9])\b/);
+    if(m&&t.split(' ').length<=5){var O={primera:0,primer:0,primero:0,uno:0,una:0,segunda:1,segundo:1,dos:1,tercera:2,tercero:2,tres:2,cuarta:3,cuarto:3,cuatro:3,quinta:4,quinto:4,cinco:4};
+      var i=O[m[1]]!=null?O[m[1]]:(+m[1]-1);if(i>=0&&i<MK.list.length){var r=MK.res,L2=MK.list;MK.ov.remove();MK.ov=null;MK.list=null;MK.res=null;if(r)r({i:i,a:'go',L:L2,voice:true});return true}}
+    var tk=t.match(/\b(btt|montana|mtb|ciclistas|ciclista|bici|senderos|sendero|a pie|andando)\b/);
+    if(tk){mkNear(/btt|montana|mtb/.test(tk[1])?'mtb':/cicl|bici/.test(tk[1])?'cycling':'hiking',true);return true}}
+  if(L)return false;
+  if(/\brutas? marcad|\b(senderos|rutas|caminos|grs|gr) (cerca|cercanos|cercanas|de aqui|por aqui)\b|\bque rutas hay\b|\bque senderos hay\b/.test(t)){
+    var k=/\b(btt|mtb|montana)\b/.test(t)?'mtb':/\b(ciclista|ciclistas|carretera)\b/.test(t)?'cycling':/\b(sendero|senderos|a pie|andando|caminar)\b/.test(t)?'hiking':null;
+    mkNear(k,true);return true}
+  if(MK.sel&&!MK.ov){
+    if(/\b(entera|completa)\b/.test(t)){mkDo('all');vozSay('Ruta preparada. Di empezar cuando quieras.');return true}
+    var nk=t.match(/\b(\d{1,3})\s*(km|kilometros|kilometro|k)\b/);
+    if(nk&&!/(ruta circular|circular de|vuelta de)/.test(t)){var rev=/(reves|otro sentido|al contrario|hacia atras)/.test(t);mkDo(rev?'nb':'n',+nk[1]);vozSay('Tramo de '+nk[1]+' kilómetros preparado. Di empezar cuando quieras.');return true}
+    if(/^(al reves|el otro sentido|en el otro sentido|al contrario)$/.test(t)){mkDo('b');vozSay('Tramo de 40 kilómetros en el otro sentido preparado. Di empezar cuando quieras.');return true}
+  }
+  /* por número o nombre: «ruta GR 171», «sigue el camí de Sant Jaume», «ruta marcada Senders del 1714» */
+  var g=t.match(/\b(gr|pr|sl|pr c|prc|gr t|cc c|ccc)\s*-?\s*(\d{1,3}(?:\s*\d)?)\b/);
+  if(g){mkFind((g[1].replace(/\s/g,'').replace('prc','PR-C').replace('ccc','CC-C').toUpperCase()+' '+g[2].replace(/\s/g,'')),true);return true}
+  var nm=t.match(/^(?:quiero hacer|quiero seguir|sigue|seguir|haz|hacer|busca|buscar|llevame por|ruta marcada|la ruta del?|ruta del?)\s+(?:el |la |los |las |del |de )?((?:camino|cami|via verde|senders|sender|ruta del cister|ruta)\b.*)$/);
+  if(nm&&nm[1].split(' ').length>=2&&/^(camino|cami|via verde|senders|sender|ruta del cister)/.test(nm[1])){mkFind(nm[1],true);return true}
+  return false;
+};
 var hooked=null;
 setInterval(function(){
   if(typeof map==='undefined'||!map||!map.on||hooked===map)return;hooked=map;
@@ -8259,7 +8397,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.42.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.43.0</div>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
@@ -8267,6 +8405,9 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
  <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
  <table>
   <tr><td>«Ruta de Mollerussa<br>a Cervera»</td><td>Calcula la ruta. También «ruta a Cervera» (desde donde estás) o «ruta circular de 40 kilómetros»</td></tr>
+  <tr><td>«Rutas marcadas»</td><td>Las rutas GR, PR, Caminos o BTT más cercanas. Luego di «la primera», «la segunda»… También «senderos cerca» o «rutas de BTT cerca»</td></tr>
+  <tr><td>«Ruta GR 171»<br>«Sigue el Camino de Santiago»</td><td>Busca esa ruta marcada por su número o nombre</td></tr>
+  <tr><td>«Entera» / «20 kilómetros»<br>«Al revés»</td><td>Con una ruta marcada elegida: la prepara entera o un tramo desde el punto más cercano a ti</td></tr>
   <tr><td>«Empezar»</td><td>Empieza a grabar (o a navegar si tienes una ruta preparada)</td></tr>
   <tr><td>«Pausa» / «Seguir»</td><td>Pausa o sigue la grabación</td></tr>
   <tr><td>«Terminar»</td><td>Te pregunta antes de guardar. Contesta «sí» o «no»</td></tr>
@@ -8297,7 +8438,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.42.1';
+const VOZ_VER='5.43.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8550,6 +8691,8 @@ function vozRun(t){
   const L=typeof live!=='undefined'&&live&&live.on;
   // --- v5.40.3: Lluvia primero (antes la tapaban otras órdenes) ---
   if(vozIsRain(t)){vozRain(t);return true}
+  // --- v5.43.0: rutas marcadas (GR, PR, Caminos, BTT) ---
+  try{if(window.vozMk&&vozMk(t))return true}catch(e){console.warn('vozMk',e)}
   // --- Ayuda / emergencia (siempre pregunta antes) ---
   if(vozHas(t,/\b(sos|socorro|emergencia|auxilio|ayuda|ayudame)\b/)&&!vozHas(t,/(que puedo decir|ordenes|comandos)/)){
     VZ.pending={until:Date.now()+15000,yes:()=>{
