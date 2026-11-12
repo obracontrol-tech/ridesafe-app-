@@ -1216,7 +1216,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.8 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.9 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3323,7 +3323,8 @@ function trkShareMenu(){try{
     <div style="font-weight:800;font-size:18px">📡 Que tu familia te siga</div>
     <div style="color:var(--txt2);font-size:14px;margin-top:4px">${id?'Con el seguimiento estable te ven aunque bloquees el móvil.':'Aún no has instalado el seguimiento estable.'}</div>
     ${id?`<button id="tmGo" style="${btn};background:var(--lime);color:var(--on-lime)">🛰️ Empezar seguimiento y avisar a la familia</button>
-    <button id="tmStop" style="${btn};background:transparent;color:var(--txt);border:1.5px solid var(--line)">⏹ Parar el seguimiento estable</button>`
+    <button id="tmStop" style="${btn};background:transparent;color:var(--txt);border:1.5px solid var(--line)">⏹ Parar el seguimiento estable</button>
+    <button id="tmDel" style="${btn};background:transparent;color:var(--txt);border:1.5px solid var(--line)">🗑️ Borrar mi recorrido y última ubicación</button>`
     :`<button id="tmSetup" style="${btn};background:var(--lime);color:var(--on-lime)">🛰️ Instalarlo (3 pasos, una vez)</button>`}
     <button id="tmWeb" style="${btn};background:transparent;color:var(--txt);border:1.5px solid var(--line)">📍 Enviar ubicación normal (sin instalar nada)</button>
     <button id="tmX" style="${btn};background:transparent;color:var(--txt2);margin-top:6px">Cerrar</button></div>`;
@@ -3340,6 +3341,9 @@ function trkShareMenu(){try{
       setTimeout(()=>{location.href='org.traccar.client://action/start'},400);
       try{toast('🛰️ Seguimiento estable en marcha')}catch(e){}};
     document.getElementById('tmStop').onclick=()=>{close();location.href='org.traccar.client://action/stop';try{toast('⏹ Seguimiento estable parado')}catch(e){}};
+    /* v5.47.4 — borrar la línea y la última posición guardadas (la familia deja de verlas) */
+    document.getElementById('tmDel').onclick=()=>{if(!confirm('¿Borrar tu recorrido y tu última ubicación? Tu familia dejará de verla hasta que vuelvas a empezar.'))return;close();
+      fetch(TRK_SRV+'/b/'+id,{method:'POST'}).then(r=>r.ok?r.json():null).then(d=>{try{toast(d&&d.ok?'🗑️ Recorrido borrado':'No se ha podido borrar. Inténtalo luego')}catch(e){}}).catch(()=>{try{toast('Sin conexión: inténtalo luego')}catch(e){}})};
   }else document.getElementById('tmSetup').onclick=()=>{close();trkBetaOpen()};
 }catch(e){famShare()}}
 async function famShare(){
