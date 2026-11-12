@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.35.1 — Con la beta activada se esconde la tarjeta vieja «Seguimiento estable» y seguimiento.html lleva a la tarjeta nueva de 3 pasos.
+/* v5.47.0 — Grabando: botón «‹ App» para ver el resto de la app sin parar la grabación (vuelve sola al minuto sin tocar). Voz: «Moverse por la app» abre todas las pestañas también en ruta, «baja/sube» funciona en cualquier ventana, y escucha «Oye bici» como Alexa más fácil de activar.
+   v5.35.1 — Con la beta activada se esconde la tarjeta vieja «Seguimiento estable» y seguimiento.html lleva a la tarjeta nueva de 3 pasos.
    v5.35.0 — «Buscar actualización» en Perfil y aviso automático cuando hay versión nueva.
    v5.34.0 — Beta: la parabólica 📡 de la salida ofrece «Empezar seguimiento estable y avisar a la familia» (Traccar).
    v5.33.0 — Beta privada: «Seguimiento con móvil bloqueado» (Traccar configurado con un toque), solo con ?trkbeta=1.
@@ -260,6 +261,17 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lv{display:none}
 #app.live .nav,#s-rutas.live .mtop,#s-rutas.live .rec,#s-rutas.live .mbottom,#s-rutas.live .planpanel,#s-rutas.live .mside{display:none!important}
 #s-rutas.live .lv{display:flex}
+/* v5.47.0 — Ver la app sin parar la grabación */
+.lvaway{flex-shrink:0;height:34px;padding:0 13px;border-radius:99px;border:2px solid #A3E635;background:rgba(11,20,34,.82);color:#A3E635;font:800 14px 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer}
+.lvaway2{height:58px;padding:0 16px;font-size:16px}
+.lvaway1{position:absolute;right:0;bottom:calc(100% + 8px);z-index:3;height:38px}
+#app.live.lvaway .nav{display:grid!important}
+#lvAway{display:none}
+#app.live.lvaway #lvAway{display:flex;position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 8px);z-index:60;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:99px;background:#991B1B;color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.45);font-weight:800;font-size:14.5px}
+#lvAway .la-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lvAway .la-t small{display:block;font-size:11.5px;font-weight:700;opacity:.85}
+#lvAway button{flex-shrink:0;min-height:44px;padding:0 16px;border-radius:99px;border:0;background:#fff;color:#991B1B;font:900 15px 'Plus Jakarta Sans',system-ui,sans-serif}
+#app.live.lvaway .screen.active{padding-top:calc(env(safe-area-inset-top) + 74px)}
 .lvbanner{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:7;background:#14532D;color:#fff;border-radius:22px;padding:12px 16px;gap:14px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .lvbanner.off{background:#7F1D1D}
 .lvbanner{flex-wrap:wrap}.lvrc{flex-basis:100%;min-height:46px;border-radius:14px;border:none;background:#fff;color:#7F1D1D;font-weight:800;font-size:15.5px;cursor:pointer}
@@ -1021,7 +1033,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   setTimeout(end,9000);                                        // tope de seguridad
 })();
 </script>
-<div id="app">
+<div id="app"><div id="lvAway" role="status"><span class="la-t">● Grabando <span id="lvAwayKm">0</span> km<small id="lvAwayTx">Sigue grabando · vuelve sola al minuto</small></span><button type="button" onclick="liveAway(false)">Volver ›</button></div>
 
 <!-- ============ RUTAS ============ -->
 <section class="screen" id="s-rutas">
@@ -1056,10 +1068,10 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <div class="lv lvbanner" id="lvBanner"><span class="ar" id="lvArrow">⬆️</span><div><span class="dd" id="lvDist"></span><span class="tx" id="lvInstr"></span></div><button type="button" class="lvrc" id="lvRecalc" onclick="navRecalc()" style="display:none">🔄 Recalcular desde aquí</button></div>
   
-  <div class="lvshow" id="lvShow"><button type="button" class="lvup" onclick="lvMin(false)" aria-label="Subir los datos">⌃ <b id="lvMinSp">0</b> km/h · Ver datos</button><button type="button" class="lvsosm" onclick="sos()">SOS</button></div>
+  <div class="lvshow" id="lvShow"><button type="button" class="lvaway lvaway2" onclick="liveAway(true)" aria-label="Ver la app sin parar la grabación">‹ App</button><button type="button" class="lvup" onclick="lvMin(false)" aria-label="Subir los datos">⌃ <b id="lvMinSp">0</b> km/h · Ver datos</button><button type="button" class="lvsosm" onclick="sos()">SOS</button></div>
   <div class="lv lvpanel">
     <div class="lvhandle" onclick="lvMin(true)" role="button" aria-label="Bajar los datos para ver solo el mapa"><i></i></div>
-    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><button type="button" id="vcChip" onclick="vozSet(false)" aria-label="Escuchando órdenes por voz (toca para apagar)" style="display:none;align-items:center;justify-content:center;position:absolute;left:0;bottom:calc(100% + 8px);z-index:3;width:auto;height:34px;padding:0 12px;gap:6px;color:#fff;font:800 13px 'Plus Jakarta Sans',system-ui,sans-serif;border-radius:99px;border:2px solid #fff;background:#16A34A;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎙️ Te escucho</button><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="vozSet(!vcOn())" id="lvVozBtn" aria-label="Órdenes por voz: encender o apagar">🎙️</button><button onclick="liveChangeRoute()" id="lvRouteBtn" aria-label="Cambiar de ruta sin perder km ni tiempo">🔀</button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
+    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><button type="button" class="lvaway lvaway1" onclick="liveAway(true)" aria-label="Ver la app sin parar la grabación">‹ Ver la app</button><button type="button" id="vcChip" onclick="vozSet(false)" aria-label="Escuchando órdenes por voz (toca para apagar)" style="display:none;align-items:center;justify-content:center;position:absolute;left:0;bottom:calc(100% + 8px);z-index:3;width:auto;height:34px;padding:0 12px;gap:6px;color:#fff;font:800 13px 'Plus Jakarta Sans',system-ui,sans-serif;border-radius:99px;border:2px solid #fff;background:#16A34A;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎙️ Te escucho</button><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="vozSet(!vcOn())" id="lvVozBtn" aria-label="Órdenes por voz: encender o apagar">🎙️</button><button onclick="liveChangeRoute()" id="lvRouteBtn" aria-label="Cambiar de ruta sin perder km ni tiempo">🔀</button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
     <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid" onclick="sumSay()" title="Toca para oír el resumen" style="cursor:pointer"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
@@ -1288,7 +1300,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1648,11 +1660,29 @@ const isOwner=r=>uid&&r.byUid===uid;
 
 /* ===== Navegación ===== */
 function go(tab){
+  try{liveAwaySync(tab)}catch(e){}
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id==='s-'+tab));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
   if(tab==='rutas')initMap();
   store.set('tab',tab);
 }
+/* v5.47.0 — Con la grabación en marcha se puede ir a otras pestañas: la salida sigue grabando
+   y la app vuelve sola al mapa al minuto sin tocar nada (o con «Volver», la pestaña Rutas o «Oye bici, vuelve a la ruta»). */
+const LA={t:0,last:'comunidad',tick:0};
+function liveAwaySync(tab){
+  const on=typeof live!=='undefined'&&live&&live.on;const app=document.getElementById('app');if(!app)return;
+  if(on&&tab!=='rutas'){LA.last=tab;app.classList.add('lvaway');liveAwayArm();liveAwayPaint();clearInterval(LA.tick);LA.tick=setInterval(liveAwayPaint,1000)}
+  else if(app.classList.contains('lvaway')){app.classList.remove('lvaway');clearTimeout(LA.t);clearInterval(LA.tick);
+    setTimeout(()=>{try{map.resize()}catch(e){}try{if(live&&live.on){live.follow=true;renderLive()}}catch(e){}},80)}
+}
+function liveAway(on){
+  if(on){if(!(live&&live.on))return;try{closeSheets()}catch(e){}go(LA.last&&LA.last!=='rutas'?LA.last:'comunidad');try{toast('Sigues grabando. Toca «Volver» o espera un minuto',3500)}catch(e){}}
+  else{try{closeSheets()}catch(e){}go('rutas')}
+}
+function liveAwayArm(){clearTimeout(LA.t);LA.t=setTimeout(()=>{const app=document.getElementById('app');if(app&&app.classList.contains('lvaway')&&live&&live.on){try{closeSheets()}catch(e){}go('rutas')}},60000)}
+function liveAwayPaint(){try{const k=document.getElementById('lvAwayKm'),x=document.getElementById('lvAwayTx');if(k)k.textContent=(live.km||0).toFixed(1).replace('.',',');
+  if(x)x.textContent=live.paused?'En pausa · vuelve sola al minuto':'Sigue grabando · '+clock(elapsed())}catch(e){}}
+['pointerdown','touchstart','keydown','wheel','scroll'].forEach(ev=>document.addEventListener(ev,()=>{const app=document.getElementById('app');if(app&&app.classList.contains('lvaway'))liveAwayArm()},{passive:true,capture:true}));
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{closeSheets();go(t.dataset.tab)});
 function openSheet(id){closeSheets(true);$('scrim').classList.add('show');$(id).classList.add('show');$(id).scrollTop=0;if(id==='sh-plus')$('plusBtn').classList.add('open')}
 function closeSheets(keep){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));$('app').classList.remove('psearch');$('plusBtn').classList.remove('open');if(!keep){$('scrim').classList.remove('show');openRideId=null;if(typeof stopChat==='function')stopChat()}}
@@ -7242,7 +7272,7 @@ async function finishLive(save){
   endShare(L);
   Object.values(L.mMarkers||{}).forEach(m=>m.remove());
   if(L.rideId&&db&&uid)db.collection('rides').doc(L.rideId).collection('live').doc(uid).delete().catch(()=>{});
-  $('app').classList.remove('live');$('s-rutas').classList.remove('live','lvmin');try{map.setPadding({top:0,bottom:0,left:0,right:0})}catch(e){}
+  $('app').classList.remove('live','lvaway');clearTimeout(LA.t);clearInterval(LA.tick);$('s-rutas').classList.remove('live','lvmin');try{map.setPadding({top:0,bottom:0,left:0,right:0})}catch(e){}
   setLine(map,null,'plan');setLine(map,null,'track','#60A5FA');drawRideMarkers();
   if(!save)return;
   const mins=Math.round((((L.paused?L.pauseStart:Date.now())-L.startT-L.pausedMs))/60000);
@@ -7592,7 +7622,7 @@ function vcDo(n){
     if(/^(no|cancelar|cancela|nada)\b/.test(n)){VC.ask=null;vcOk2();vcSay('Vale, seguimos.');try{closeSheets()}catch(e){}return true}
   }
   const go=n.match(/^(?:oye bici |bici )?(?:ir a|ve a|vamos a|llevame a|lleva me a|guiame a|guia me a) (.{2,40})$/);
-  if(go&&w<=9){vcOk2();vcSay('Busco el camino a '+go[1]);liveGuide(go[1]).then(()=>renderLive());return true}
+  if(go&&w<=9&&!/^(la |el )?(comunidad|club|actividades|actividad|perfil|ajustes|rutas|mapa|inicio|historial|mis salidas|grabacion|ruta|app)$/.test(go[1])){vcOk2();vcSay('Busco el camino a '+go[1]);liveGuide(go[1]).then(()=>renderLive());return true}
   if(vozIsRain(n)&&w<=12){vcOk2();try{vozRain(n)}catch(e){}return true}   // v5.40.3
   if(w>6)return false;   // frases largas = conversación, no órdenes
   const has=re=>re.test(n);
@@ -7637,12 +7667,13 @@ function renderVoz(){
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
    <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
+   <div class="set" style="flex-wrap:wrap${VZ_IOS?';opacity:.5':''}">🗣️ «Oye bici» como Alexa <label class="sw"><input type="checkbox" ${VZ.cont?'checked':''} ${VZ_IOS?'disabled':''} onchange="vozSetCont(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${VZ_IOS?'En iPhone no se puede: el iPhone no deja escuchar todo el rato. Toca 🎤 y habla.':'La app escucha siempre y solo hace caso cuando dices <b>«Oye bici»</b>. Ej.: «Oye bici, va a llover». Funciona con la app abierta en pantalla (Android). Gasta algo más de batería.'}</small></div>
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
    <button class="btn btn-lime" style="width:100%;margin:10px 0 6px" onclick="try{closeSheets()}catch(e){}vmOpen(null,true)">📋 Menú por números: dices el número</button>
    <button class="btn btn-line" style="width:100%;margin:0 0 4px" onclick="try{closeSheets()}catch(e){}vozPanelOpen()">⚙️ «Oye bici», casco y lista completa</button>
    <b style="display:block;margin:14px 0 2px">Di «Oye bici, menú» y elige</b>
    <small style="display:block;color:var(--txt2);font-size:13px;margin-bottom:4px">La app te lee las opciones y te pregunta lo que falta. «Atrás» vuelve · «Cancela» cierra.</small>
-   ${[['1','🗺️ Rutas','De un pueblo a otro · desde donde estás · circular · varios pueblos'],['2','🥾 Rutas marcadas','Las más cercanas · BTT · ciclistas · senderos · buscar «GR 171»'],['3','🚴 En marcha','Empezar · pausa · seguir · terminar · cuánto falta · cómo voy…'],['4','🌦️ El tiempo','¿Va a llover? · esta tarde · mañana · temperatura y viento'],['5','🛡️ Seguridad','Ayuda o SOS · pinchazo · esperad · fuente de agua'],['6','📱 Moverse por la app','Rutas · comunidad · actividades · perfil · crear · qué hora es']].map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)"><span style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;display:flex;align-items:center;justify-content:center">${x[0]}</span><div><b style="display:block">${x[1]}</b><span style="color:var(--txt2);font-size:13.5px">${x[2]}</span></div></div>`).join('')}
+   ${[['1','🗺️ Rutas','De un pueblo a otro · desde donde estás · circular · varios pueblos'],['2','🥾 Rutas marcadas','Las más cercanas · BTT · ciclistas · senderos · buscar «GR 171»'],['3','🚴 En marcha','Empezar · pausa · seguir · terminar · cuánto falta · cómo voy…'],['4','🌦️ El tiempo','¿Va a llover? · esta tarde · mañana · temperatura y viento'],['5','🛡️ Seguridad','Ayuda o SOS · pinchazo · esperad · fuente de agua'],['6','📱 Moverse por la app','Rutas · comunidad · actividades · perfil · crear · hora · bajar · subir · volver a la grabación']].map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)"><span style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;display:flex;align-items:center;justify-content:center">${x[0]}</span><div><b style="display:block">${x[1]}</b><span style="color:var(--txt2);font-size:13.5px">${x[2]}</span></div></div>`).join('')}
    <div style="border-top:1px solid var(--line);padding-top:9px;color:var(--txt2);font-size:13.5px"><b style="color:var(--lime)">Atajos:</b> «rutas dos» · «seguridad cuatro» · «menú tres cinco». Las frases de siempre también valen: «ruta a Cervera», «va a llover», «pinchazo»…</div>
    <p class="casco-note" style="margin-top:12px">🔈 Habla claro y con frases cortas; si hablas con los compañeros, la app no hace caso.<br>📶 Necesita cobertura en la mayoría de móviles.<br>🎙️ Mientras escucha verás «🎙️ Te escucho» en verde, encima de «GRABANDO». Tócalo para apagarlo.<br>🗺️ Durante la salida también lo enciendes o apagas con <b>⋯ → 🎙️</b> (verde = escuchando).</p>`;
 }
@@ -8446,7 +8477,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.5</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8490,7 +8521,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.46.5';
+const VOZ_VER='5.47.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8770,6 +8801,17 @@ const vozIsRain=t=>/(llover|llovera|lloviera|llueva|lluvia|lluvias|llueve|llovie
 function vozKm(km){return km<10?km.toFixed(1).replace('.',',').replace(',0',''):String(Math.round(km))}
 function vozDir(a,b){const y=Math.sin((b[1]-a[1])*Math.PI/180)*Math.cos(b[0]*Math.PI/180);const x=Math.cos(a[0]*Math.PI/180)*Math.sin(b[0]*Math.PI/180)-Math.sin(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.cos((b[1]-a[1])*Math.PI/180);const h=(Math.atan2(y,x)*180/Math.PI+360)%360;return['el norte','el noreste','el este','el sureste','el sur','el suroeste','el oeste','el noroeste'][Math.round(h/45)%8]}
 function vozHere(){try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[0],p[1]]}catch(e){}try{if(meMarker){const l=meMarker.getLngLat();return[l.lat,l.lng]}}catch(e){}return null}
+/* v5.47.0 — Subir y bajar en la ventana que está delante (menú, lista, ventana o pestaña) */
+function vozScroll(dir,all){
+  const vis=e=>e&&e.offsetParent!==null||e&&getComputedStyle(e).position==='fixed'&&getComputedStyle(e).display!=='none';
+  const canS=e=>e&&e.scrollHeight>e.clientHeight+4&&/(auto|scroll)/.test(getComputedStyle(e).overflowY);
+  const inner=root=>{if(!root)return null;if(canS(root))return root;let best=null;root.querySelectorAll('*').forEach(x=>{if(canS(x)&&x.clientHeight>60&&(!best||x.clientHeight>best.clientHeight))best=x});return best};
+  const C=[document.querySelector('#vmOv .vm-b'),document.getElementById('mkOv'),document.getElementById('vozPanel'),document.querySelector('.sheet.show'),document.querySelector('.screen.active')];
+  let el=null;for(const c of C){if(c&&vis(c)){el=inner(c);if(el)break}}
+  if(!el){const s=document.scrollingElement;if(s&&s.scrollHeight>s.clientHeight+4)el=s}
+  if(!el){vozSay(dir>0?'No hay más abajo.':'Ya estás arriba del todo.');return}
+  el.scrollBy({top:all?dir*el.scrollHeight:dir*Math.round(el.clientHeight*0.7),behavior:'smooth'});
+}
 /* Devuelve true si ha reconocido la orden */
 function vozRun(t){
   if(!t)return false;
@@ -8854,7 +8896,7 @@ function vozRun(t){
   }
   // --- Mapa ---
   if(vozHas(t,/\b(centrar|centra|centrame|sigueme|mi posicion en el mapa|volver al mapa)\b/)){
-    if(L){toggleFollow();vozSay('Mapa centrado.')}else vozSay('No estás en ruta.');return true;
+    if(L){try{if(document.getElementById('app').classList.contains('lvaway'))liveAway(false)}catch(e){}toggleFollow();vozSay('Mapa centrado.')}else vozSay('No estás en ruta.');return true;
   }
   if(vozHas(t,/(pantalla negra|modo ahorro|ahorro|ahorrar bateria|apaga la pantalla)/)){
     if(L){saverOn();vozSay('Modo ahorro. Toca tres veces la pantalla para volver.')}else vozSay('El modo ahorro funciona mientras grabas.');return true;
@@ -8866,18 +8908,25 @@ function vozRun(t){
   if(vozHas(t,/(habla|activa la voz|pon la voz|enciende la voz|con voz)/)){
     if(L){if(!live.voice)toggleVoice();else vozSay('La voz ya está activada.')}else vozSay('No estás en ruta.');return true;
   }
-  // --- v1.4: moverse por la app (pestañas, cerrar, subir y bajar) ---
-  {const TB=[[/\b(comunidad|club|mi club)\b/,'comunidad','Comunidad'],[/\b(actividades|actividad|mis salidas|historial)\b/,'actividades','Actividades'],[/\b(perfil|ajustes|configuracion|mi perfil)\b/,'perfil','Perfil'],[/\b(rutas|mapa|inicio|pantalla principal)\b/,'rutas','Rutas']];
+  // --- v1.4 / v5.47.0: moverse por la app (pestañas, cerrar, subir y bajar). En ruta también: sigue grabando ---
+  {const awayOn=()=>{const a=document.getElementById('app');return !!(a&&a.classList.contains('lvaway'))};
+   if(L&&/\b(vuelve|volver|vuelvo|regresa|regresar|ir|ve|llevame)\b.*\b(ruta|grabacion|mapa|navegacion|salida)\b|^(la )?(grabacion|ruta)$/.test(t)&&awayOn()){
+     try{closeSheets()}catch(e){}vozPanelClose();liveAway(false);vozPill('🗺️ Grabación','',2000);vozSay('Vuelvo a la grabación.');return true}
+   if(!L&&/\b(grabacion)\b/.test(t)&&/\b(vuelve|volver|regresa)\b/.test(t)){vozSay('No estás grabando ninguna salida.');return true}
+   const TB=[[/\b(comunidad|club|mi club|grupos)\b/,'comunidad','Comunidad'],[/\b(actividades|actividad|mis salidas|historial)\b/,'actividades','Actividades'],[/\b(perfil|ajustes|configuracion|mi perfil)\b/,'perfil','Perfil'],[/\b(rutas|mapa|inicio|pantalla principal)\b/,'rutas','Rutas']];
    const verb=/\b(ir|ve|vete|abre|abrir|pasa|pasar|muestra|muestrame|ensename|pon|cambia|cambiar|entra|entrar|llevame|quiero ver|ver)\b/;
    const short=t.split(' ').length<=3;
    for(const [re,tab,name] of TB){if(re.test(t)&&(short||verb.test(t))){
-     if(L){vozSay('Durante la salida la app se queda en el mapa.');return true}
-     try{closeSheets()}catch(e){}vozPanelClose();go(tab);vozPill('📂 '+name,'',2500);vozSay(name+'.');return true}}
+     try{closeSheets()}catch(e){}vozPanelClose();try{if(typeof MK!=='undefined'&&MK.ov)mkClose()}catch(e){}
+     go(tab);vozPill('📂 '+name,L&&tab!=='rutas'?'Sigues grabando':'',2500);
+     vozSay(L?(tab==='rutas'?'Vuelvo a la grabación.':name+'. Sigues grabando. Vuelvo al mapa en un minuto.'):name+'.');return true}}
    if(/\b(crear|nueva salida|crear salida|nueva quedada)\b/.test(t)&&!L){try{closeSheets()}catch(e){}togglePlus();vozSay('Crear.');return true}
    if(/\b(cierra|cerrar|cierralo|cierra la ventana|atras|vuelve atras)\b/.test(t)){try{closeSheets()}catch(e){}vozPanelClose();try{alarmClose()}catch(e){}vozPill('✕ Cerrado','',1500);return true}
-   const down=/^(baja|bajar|abajo|mas abajo|sigue bajando|baja mas)$/.test(t),up=/^(sube|subir|arriba|mas arriba|sube mas)$/.test(t);
-   if(down||up){const el=document.querySelector('.sheet.show')||document.querySelector('.screen.active');
-     if(el){el.scrollBy({top:(down?1:-1)*Math.round(el.clientHeight*0.7),behavior:'smooth'});vozPill(down?'⬇️ Bajando':'⬆️ Subiendo','',1200)}return true}
+   const sh=t.split(' ').length<=5&&!/\b(cuesta|subida|pendiente|voz|volumen|musica)\b/.test(t);
+   const top=sh&&/\b(arriba del todo|al principio|al inicio de la pagina)\b/.test(t),bot=sh&&/\b(abajo del todo|al final)\b/.test(t);
+   const down=bot||(sh&&/\b(baja|bajar|bajame|abajo|desliza|deslizar|mas abajo|sigue bajando|ver mas)\b/.test(t));
+   const up=top||(sh&&/\b(sube|subir|subeme|arriba|mas arriba)\b/.test(t));
+   if(down||up){vozScroll(down?1:-1,top||bot);vozPill(down?'⬇️ Bajando':'⬆️ Subiendo','',1200);return true}
   }
   // --- Hora ---
   if(vozHas(t,/(que hora|hora es|dime la hora)/)){const d=new Date();vozSay(`Son las ${d.getHours()} y ${String(d.getMinutes()).padStart(2,'0')}.`);return true}
@@ -9158,7 +9207,10 @@ const VM_S=[
   {t:'Actividades',e:'📈',p:'ve a actividades'},
   {t:'Perfil',e:'👤',p:'ve a perfil'},
   {t:'Crear',d:'Salida, ruta, rutas marcadas…',e:'➕',p:'crear'},
-  {t:'Qué hora es',e:'🕒',p:'que hora es'}]}
+  {t:'Qué hora es',e:'🕒',p:'que hora es'},
+  {t:'Bajar',d:'Ver más de la pantalla',e:'⬇️',p:'baja'},
+  {t:'Subir',e:'⬆️',p:'sube'},
+  {t:'Volver a la grabación',d:'Si estás grabando una salida',e:'🔴',p:'vuelve a la grabacion'}]}
 ];
 const VM_W=['uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
 const VM={sec:-1,item:-1,ans:[],el:null,t:0};
