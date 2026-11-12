@@ -1288,7 +1288,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7577,7 +7577,7 @@ function vcListenOnce(){
 }
 function vcPttSet(on){store.set('vcPtt',!!on);if(live.on){if(on){vcStop();vcPttArm()}else{vcPttDisarm();vcStart()}}renderVoz();vcChip();toast(on?'🎧 Pulsa ▶️/⏸ del casco y di la orden':'🎙️ La app escucha todo el rato durante la salida',4000)}
 function vcHandle(alts){
-  for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
+  for(const a of alts){let n=vcNorm(a);if(VOZ_WAKE.test(n))n=n.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();if(n&&vcDo(n))return}   // v5.46.3: quita «oye bici»
 }
 function vcOk2(){beepPtt(880);vib(40)}
 function vcDo(n){
@@ -8439,11 +8439,11 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 #vozPanel td:first-child{color:#A3E635;font-weight:800;white-space:nowrap;padding-right:10px}
 #vozPanel .vnote{font-size:13px;color:#cbd5e1;margin-top:12px;line-height:1.45}
 </style>
-<button id="vozBtn" aria-label="Órdenes por voz">🎤<small>VOZ</small></button>
+<button id="vozBtn" aria-label="Órdenes por voz">🎤<small>OYE BICI</small></button>
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.2</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.3</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8487,7 +8487,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.46.2';
+const VOZ_VER='5.46.3';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8615,7 +8615,7 @@ const VOZ_WAKE=/\b(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|\b(
 function vozPill(a,b,ms){const p=document.getElementById('vozPill');if(!p._x){p._x=1;p.addEventListener('click',()=>{p.style.display='none'})}p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
 function vozBeep(f,d){if(VZ_IOS)return;   /* v5.40.4: en iPhone el pitido corta la voz de la respuesta */
   try{const C=window.__vozAC||(window.__vozAC=new (window.AudioContext||window.webkitAudioContext)());if(C.state==='suspended')C.resume();const o=C.createOscillator(),g=C.createGain();o.frequency.value=f||880;g.gain.setValueAtTime(.0001,C.currentTime);g.gain.exponentialRampToValueAtTime(.35,C.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,C.currentTime+(d||.15));o.connect(g).connect(C.destination);o.start();o.stop(C.currentTime+(d||.15)+.02)}catch(e){}}
-function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
+function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent='OYE BICI'}
 /* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
 function vozSay(t,thenListen){
   const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;   // v5.41.8: +2,5 s tras contestar
@@ -8753,6 +8753,9 @@ function vozHeard(alts,raw){
     vozPill('🤔 «'+raw+'»','Contesta «sí» o «no»',3000);vozSay('No te he entendido. Di sí o no.',true);return;
   }
   VZ.pending=null;
+  if(VZ.oneShot&&alts.some(a=>VOZ_WAKE.test(a))){   // v5.46.3
+    alts=alts.map(a=>VOZ_WAKE.test(a)?a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim():a);t=alts[0];
+    if(!t){vozPill('🎤 Te escucho…','Di la orden',0);vozSay('Dime.',true);return}}
   if(VZ.cont&&!VZ.oneShot){
     const a=alts.find(x=>VOZ_WAKE.test(x));
     if(a){t=a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();
