@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.47.4 — Seguimiento estable: botón «Borrar mi recorrido y última ubicación»; cada salida empieza con la línea de cero.
+/* v5.47.5 — Música en ruta: «Playlist RideSafe» de 18 canciones por tramos (calentamiento, llano, subidas, vuelta). Un toque la abre en Spotify.
+   v5.47.4 — Seguimiento estable: botón «Borrar mi recorrido y última ubicación»; cada salida empieza con la línea de cero.
    v5.47.3 — Avisos en el Garmin: pasos propios para iPhone (instalar en pantalla de inicio, Ajustes › Notificaciones, modo Concentración).
    v5.47.2 — Seguridad del seguimiento estable: la familia recibe un código que solo sirve para ver (no para enviar posiciones).
    v5.47.1 — El micrófono 🎤 sube para no tapar «Ver la app». «Oye bici» pita al momento (se reconoce mientras lo dices).
@@ -1304,7 +1305,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3264,6 +3265,17 @@ async function radioFind(){
   B.innerHTML=__radRes.map((x,i)=>`<button class="li" style="margin-top:6px;padding:10px 12px" onclick="radioPick(${i})"><span class="em">📻</span><div><b>${esc(x.n)}</b></div></button>`).join('');
 }
 function radioPick(i){const x=(window.__radRes||[])[i];if(!x)return;mus.list=[{n:'📻 '+x.n,url:x.u,alts:[],radio:true,q:'_'+x.n,name:x.n,tries:0}];mus.i=0;store.set('radioLast',[x.n,'_'+x.n]);musLoad(0,true);toast('📻 '+x.n)}
+/* v5.47.5 — 🚴 Playlist RideSafe: canciones por tramos de la salida. Cada una abre la búsqueda en Spotify. */
+const RS_PLAYLIST=[
+ ['🚴 Calentamiento',[['Hoy puede ser un gran día','Joan Manuel Serrat'],['Mediterráneo','Joan Manuel Serrat'],['Libre','Nino Bravo'],['Camins','Sopa de Cabra']]],
+ ['🛣️ Ritmo en llano',[['Cuéntame','Fórmula V'],['La chica de ayer','Nacha Pop'],['Walking on Sunshine','Katrina and the Waves'],['Boig per tu','Sau'],['Venecia','Hombres G'],['Born to Be Wild','Steppenwolf']]],
+ ['⛰️ Subidas',[['Eye of the Tiger','Survivor'],["Don't Stop Me Now",'Queen'],['Resistiré','Dúo Dinámico'],['Rock and Roll Star','Loquillo y Los Trogloditas']]],
+ ['🏠 Vuelta a casa',[["L'Empordà",'Sopa de Cabra'],['Mi gran noche','Raphael'],['Que tinguem sort','Lluís Llach'],['Bicycle Race','Queen']]]];
+function rsSong(t,a){window.open('https://open.spotify.com/search/'+encodeURIComponent(t+' '+a),'_blank');try{toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}catch(e){}}
+function rsPlaylistHTML(){let n=0;
+  return `<details class="li" style="display:block;margin-bottom:14px;border-color:var(--lime)"><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px"><span class="em">🚴</span><div><b>Playlist RideSafe</b><small>18 canciones para la ruta, por tramos. Toca una para oírla en Spotify.</small></div></summary>
+   ${RS_PLAYLIST.map(([tr,L])=>`<div style="margin-top:12px;font-weight:700;color:var(--lime);font-size:14.5px">${tr}</div>`+L.map(([t,a])=>{n++;return `<button class="li" style="margin-top:6px;padding:10px 12px;width:100%" onclick="rsSong(${esc(JSON.stringify(t))},${esc(JSON.stringify(a))})"><span class="em" style="font-size:15px">${n}</span><div style="text-align:left"><b>${esc(t)}</b><small>${esc(a)}</small></div></button>`}).join('')).join('')}
+   <small style="display:block;color:var(--txt2);margin:10px 2px 0;line-height:1.4">💡 En Spotify, pulsa «⋯» → «Añadir a playlist» para guardarlas todas en tu lista.</small></details>`}
 function renderMusic(){
   /* Versión sencilla: la música va con Spotify */
   const B=$('musBody');if(!B)return;const vz=musVozOn();
@@ -3279,6 +3291,7 @@ function renderMusic(){
    <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
    <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
    <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+   ${rsPlaylistHTML()}
    <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
    <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>
@@ -8492,7 +8505,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.4</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.5</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8536,7 +8549,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.47.4';
+const VOZ_VER='5.47.5';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
