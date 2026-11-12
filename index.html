@@ -1288,7 +1288,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6411,11 +6411,11 @@ async function ttsGet(t){
 }
 /* v5.19.3 — Comprueba la voz de Google y dice por qué falla (clave, API sin activar, facturación, dominio…) */
 async function ttsCheck(){
-  const box=$('ttsDiag');if(!box)return;box.innerHTML='Comprobando…';
+  const box=$('ttsDiag');if(!box)return;box.innerHTML='Comprobando…';ttsMicOff(7000);const t0=Date.now();
   if(!navigator.onLine){box.innerHTML='📵 Sin conexión: la voz de Google necesita datos.';return}
   ttsCache.clear();window.ttsLastErr='';
   try{const src=await ttsGet('Hola, soy la voz de Google de RideSafe.');ttsOff=0;
-    box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Con tu música de RideSafe, la música bajará al nivel elegido.';
+    box.innerHTML='<span style="color:var(--lime);font-weight:700">✅ La voz de Google funciona.</span> Ha tardado '+((Date.now()-t0)/1000).toFixed(1).replace('.',',')+' s.'+(window.ttsFallo?'<br><small style="color:#FDBA74">Último paso a la voz del móvil: '+esc(window.ttsFallo)+'</small>':'')+'<br><small style="color:var(--txt2)">Con tu música de RideSafe, la música bajará al nivel elegido.</small>';
     const a=ttsAudio||new Audio();a.src=src;a.play().catch(()=>{});
   }catch(e){
     const m=window.ttsLastErr||String(e&&e.name==='AbortError'?'Tarda demasiado en responder (más de 6 s)':e&&e.message||e);
@@ -6438,8 +6438,10 @@ async function speak(t){
    suena dentro de la app y la música solo BAJA al nivel elegido. La voz del móvil hace que Android
    pare la música, por eso el control «Música durante los avisos» no se notaba.
    Con Spotify (música fuera de la app) sigue valiendo «Voz que no para la música». */
+/* v5.46.5 — Callar el micrófono de «Oye bici» mientras habla la app y volver a abrirlo al acabar */
+function ttsMicOff(ms){try{if(typeof VZ!=='undefined'&&VZ.cont&&VZ.rec&&!VZ.oneShot&&!VZ.pending){VZ.quietT=Math.max(VZ.quietT||0,Date.now()+ms);vozStop(true);clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(vozStartCont,ms+300)}}catch(e){}}
 async function voiceSay(t){
-  if(!t)return;try{VC.quiet=Math.max(VC.quiet,Date.now()+Math.max(2500,String(t).length*85+1500));if(VC.rec)vcStop();vcLater()}catch(e){}   // v5.41.7: no se oye a sí misma
+  if(!t)return;ttsMicOff(Math.max(2500,String(t).length*85+1500));try{VC.quiet=Math.max(VC.quiet,Date.now()+Math.max(2500,String(t).length*85+1500));if(VC.rec)vcStop();vcLater()}catch(e){}   // v5.41.7: no se oye a sí misma
   musDuck(Math.max(3200,String(t).length*85)+6000);
   if(!ttsOk()){speakLocal(t);return}
   const my=++ttsSeq;
@@ -6455,7 +6457,8 @@ async function voiceSay(t){
   const jobs=parts.map(p=>ttsShort(p,0));               // se piden todos a la vez, se dicen en orden
   jobs.forEach(j=>j.catch(()=>{}));
   let first;
-  try{first=await jobs[0]}catch(e){if(my!==ttsSeq)return;console.warn('Voz Google no disponible, uso la del móvil',e);ttsOff=Date.now()+20000;speakLocal(t);return}   // v5.44.2: si ya hay otro aviso, no habla la del móvil
+  const t0=Date.now();
+  try{first=await jobs[0]}catch(e){if(my!==ttsSeq)return;console.warn('Voz Google no disponible, uso la del móvil',e);window.ttsFallo=new Date().toLocaleTimeString('es-ES')+' · '+(e&&e.name==='AbortError'?'Google tardó más de 8 s':(window.ttsLastErr||String(e&&e.message||e)))+' ('+((Date.now()-t0)/1000).toFixed(1)+' s)';ttsOff=Date.now()+20000;speakLocal(t);return}   // v5.44.2: si ya hay otro aviso, no habla la del móvil
   try{speechSynthesis.cancel()}catch(e){}
   if(!ttsAudio)ttsAudio=new Audio();
   if(!ttsAudio._rs){ttsAudio._rs=1;ttsAudio.addEventListener('play',()=>{musVoiceStart();musHold()});ttsAudio.addEventListener('ended',()=>{if(!ttsAudio._more)musAfterVoice()});ttsAudio.addEventListener('error',musAfterVoice);ttsAudio.addEventListener('pause',()=>{if(!ttsAudio.ended&&!ttsAudio._more)musAfterVoice()})}
@@ -6467,7 +6470,7 @@ async function voiceSay(t){
       if(my!==ttsSeq)return;                         // ha llegado otro aviso: manda el nuevo
       ttsAudio._more=k<jobs.length-1||j<srcs.length-1;
       ttsAudio.pause();ttsAudio.src=srcs[j];
-      try{await ttsAudio.play()}catch(e){if(my!==ttsSeq||(e&&e.name==='AbortError'))return;ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}   // v5.44.2: no duplicar voz
+      try{await ttsAudio.play()}catch(e){if(my!==ttsSeq||(e&&e.name==='AbortError'))return;window.ttsFallo=new Date().toLocaleTimeString('es-ES')+' · el móvil no dejó sonar el audio ('+(e&&e.name||e)+')';ttsAudio._more=false;speakLocal(parts.slice(k).join(' '));return}   // v5.44.2: no duplicar voz
       await new Promise(res=>{const done=()=>{ttsAudio.removeEventListener('ended',done);ttsAudio.removeEventListener('error',done);clearTimeout(tm);res()};const tm=setTimeout(done,7000);ttsAudio.addEventListener('ended',done);ttsAudio.addEventListener('error',done)});
     }
   }
@@ -8443,7 +8446,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.4</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.5</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8487,7 +8490,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.46.4';
+const VOZ_VER='5.46.5';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
