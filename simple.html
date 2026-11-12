@@ -1216,7 +1216,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.6 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.7 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3308,9 +3308,14 @@ const famUrl=id=>location.origin+location.pathname.replace(/[^/]*$/,'')+'familia
 async function shareLive(){if(typeof trkBetaOn==='function'&&trkBetaOn()){trkShareMenu();return}famShare()}
 /* v5.34: con la beta activada, la parabólica 📡 ofrece el seguimiento con móvil bloqueado (Traccar) */
 function trkId(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}return /^[a-z0-9]{8,24}$/.test(id)?id:''}
+/* v5.47.2 — Seguridad: la familia recibe un código propio (f…) que solo sirve para VER.
+   El código del ciclista (rs…) es secreto: solo lo tiene Traccar Client para ENVIAR la posición. */
+function trkFam(){const id=trkId();if(!id)return'';let v='';try{v=localStorage.getItem('rsTrkFam')||''}catch(e){}const p=v.split(':');return p[0]===id&&/^f[a-z2-7]{15}$/.test(p[1]||'')?p[1]:''}
+function trkFamFetch(){const id=trkId();if(!id||trkFam())return;try{fetch(TRK_SRV+'/f/'+id,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d&&/^f[a-z2-7]{15}$/.test(d.fam||''))try{localStorage.setItem('rsTrkFam',id+':'+d.fam)}catch(e){}}).catch(()=>{})}catch(e){}}
+setTimeout(()=>{try{trkFamFetch()}catch(e){}},6000);
 function trkShareMenu(){try{
   const old=document.getElementById('trkMenu');if(old)old.remove();
-  const id=trkId();const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';
+  const id=trkId();const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';trkFamFetch();
   const d=document.createElement('div');d.id='trkMenu';
   d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(3,8,16,.6);display:flex;align-items:flex-end;justify-content:center;padding:12px';
   const btn='display:block;width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:16px;margin-top:10px;cursor:pointer;font-family:inherit';
@@ -3329,7 +3334,7 @@ function trkShareMenu(){try{
   document.getElementById('tmWeb').onclick=()=>{close();famShare()};
   if(id){
     document.getElementById('tmGo').onclick=()=>{close();
-      const fam=location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?t='+id+(n?'&n='+encodeURIComponent(n):'');
+      const fam=location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?t='+(trkFam()||id)+(n?'&n='+encodeURIComponent(n):'');
       const t='📍 '+(n||'Yo')+' · Sígueme en mi salida en bici con RideSafe IA (aunque lleve el móvil bloqueado):\n'+fam;
       window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
       setTimeout(()=>{location.href='org.traccar.client://action/start'},400);

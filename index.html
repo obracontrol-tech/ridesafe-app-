@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.47.1 — El micrófono 🎤 sube para no tapar «Ver la app». «Oye bici» pita al momento (se reconoce mientras lo dices).
+/* v5.47.2 — Seguridad del seguimiento estable: la familia recibe un código que solo sirve para ver (no para enviar posiciones).
+   v5.47.1 — El micrófono 🎤 sube para no tapar «Ver la app». «Oye bici» pita al momento (se reconoce mientras lo dices).
    v5.47.0 — Grabando: botón «‹ App» para ver el resto de la app sin parar la grabación (vuelve sola al minuto sin tocar). Voz: «Moverse por la app» abre todas las pestañas también en ruta, «baja/sube» funciona en cualquier ventana, y escucha «Oye bici» como Alexa más fácil de activar.
    v5.35.1 — Con la beta activada se esconde la tarjeta vieja «Seguimiento estable» y seguimiento.html lleva a la tarjeta nueva de 3 pasos.
    v5.35.0 — «Buscar actualización» en Perfil y aviso automático cuando hay versión nueva.
@@ -1301,7 +1302,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3394,9 +3395,14 @@ const famUrl=id=>{let b=false;try{b=localStorage.getItem('rsFamBeta')==='1'}catc
 async function shareLive(){if(typeof trkBetaOn==='function'&&trkBetaOn()){trkShareMenu();return}famShare()}
 /* v5.34: con la beta activada, la parabólica 📡 ofrece el seguimiento con móvil bloqueado (Traccar) */
 function trkId(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}return /^[a-z0-9]{8,24}$/.test(id)?id:''}
+/* v5.47.2 — Seguridad: la familia recibe un código propio (f…) que solo sirve para VER.
+   El código del ciclista (rs…) es secreto: solo lo tiene Traccar Client para ENVIAR la posición. */
+function trkFam(){const id=trkId();if(!id)return'';let v='';try{v=localStorage.getItem('rsTrkFam')||''}catch(e){}const p=v.split(':');return p[0]===id&&/^f[a-z2-7]{15}$/.test(p[1]||'')?p[1]:''}
+function trkFamFetch(){const id=trkId();if(!id||trkFam())return;try{fetch(TRK_SRV+'/f/'+id,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d&&/^f[a-z2-7]{15}$/.test(d.fam||''))try{localStorage.setItem('rsTrkFam',id+':'+d.fam)}catch(e){}}).catch(()=>{})}catch(e){}}
+setTimeout(()=>{try{trkFamFetch()}catch(e){}},6000);
 function trkShareMenu(){try{
   const old=document.getElementById('trkMenu');if(old)old.remove();
-  const id=trkId();const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';
+  const id=trkId();const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';trkFamFetch();
   const d=document.createElement('div');d.id='trkMenu';
   d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(3,8,16,.6);display:flex;align-items:flex-end;justify-content:center;padding:12px';
   const btn='display:block;width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:16px;margin-top:10px;cursor:pointer;font-family:inherit';
@@ -3415,7 +3421,7 @@ function trkShareMenu(){try{
   document.getElementById('tmWeb').onclick=()=>{close();famShare()};
   if(id){
     document.getElementById('tmGo').onclick=()=>{close();
-      const fam=location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?t='+id+(n?'&n='+encodeURIComponent(n):'');
+      const fam=location.origin+location.pathname.replace(/[^/]*$/,'')+'familia.html?t='+(trkFam()||id)+(n?'&n='+encodeURIComponent(n):'');
       const t='📍 '+(n||'Yo')+' · Sígueme en mi salida en bici con RideSafe IA (aunque lleve el móvil bloqueado):\n'+fam;
       window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
       setTimeout(()=>{location.href='org.traccar.client://action/start'},400);
@@ -8478,7 +8484,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.2</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8522,7 +8528,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.47.1';
+const VOZ_VER='5.47.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
