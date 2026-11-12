@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.47.0 — Grabando: botón «‹ App» para ver el resto de la app sin parar la grabación (vuelve sola al minuto sin tocar). Voz: «Moverse por la app» abre todas las pestañas también en ruta, «baja/sube» funciona en cualquier ventana, y escucha «Oye bici» como Alexa más fácil de activar.
+/* v5.47.1 — El micrófono 🎤 sube para no tapar «Ver la app». «Oye bici» pita al momento (se reconoce mientras lo dices).
+   v5.47.0 — Grabando: botón «‹ App» para ver el resto de la app sin parar la grabación (vuelve sola al minuto sin tocar). Voz: «Moverse por la app» abre todas las pestañas también en ruta, «baja/sube» funciona en cualquier ventana, y escucha «Oye bici» como Alexa más fácil de activar.
    v5.35.1 — Con la beta activada se esconde la tarjeta vieja «Seguimiento estable» y seguimiento.html lleva a la tarjeta nueva de 3 pasos.
    v5.35.0 — «Buscar actualización» en Perfil y aviso automático cuando hay versión nueva.
    v5.34.0 — Beta: la parabólica 📡 de la salida ofrece «Empezar seguimiento estable y avisar a la familia» (Traccar).
@@ -1300,7 +1301,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.47.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8453,7 +8454,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 /* v5.42.1 — Micrófono arriba a la izquierda (no tapa «Cancelar» ni la tarjeta de ruta). En navegación sigue a la derecha */
 #vozBtn{left:12px;right:auto;top:calc(110px + env(safe-area-inset-top));width:50px;height:50px;font-size:22px}
 body:has(#s-rutas.planning) #vozBtn{top:calc(16px + env(safe-area-inset-top))}
-body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;font-size:26px}
+body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;font-size:26px}
 #vozBtn small{position:absolute;bottom:-17px;font-size:10px!important;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 #vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
@@ -8477,7 +8478,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.47.1</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8521,7 +8522,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.47.0';
+const VOZ_VER='5.47.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8674,7 +8675,10 @@ function vozMake(continuous){
   r.onresult=e=>{
     for(let i=e.resultIndex;i<e.results.length;i++){
       const res=e.results[i];const txt=res[0].transcript;
-      if(!res.isFinal){if(VZ.oneShot||VZ.pending||Date.now()<VZ.armedT)vozPill('🎤 '+txt,'',0);
+      if(!res.isFinal){
+        /* v5.47.1: «Oye bici» se reconoce mientras lo dices (sin esperar a que el móvil dé la frase por acabada) */
+        if(r.continuous&&VZ.cont&&!VZ.oneShot&&!VZ.pending&&Date.now()>=VZ.armedT&&VOZ_WAKE.test(vozNorm(txt))){VZ.armedT=Date.now()+8000;vozBeep(988,.12);vozUI();vozPill('🎤 Te escucho…','Di la orden',8000)}
+        if(VZ.oneShot||VZ.pending||Date.now()<VZ.armedT)vozPill('🎤 '+txt,'',0);
         if(r.continuous===false){r._last=txt;clearTimeout(r._sil);r._sil=setTimeout(()=>{try{r.stop()}catch(e){}},1400)}   // v5.40.2: 1,4 s de silencio = fin de la orden
         continue}
       r._done=true;clearTimeout(r._sil);
@@ -8785,7 +8789,7 @@ function vozHeard(alts,raw){
   if(VZ.cont&&!VZ.oneShot){
     const a=alts.find(x=>VOZ_WAKE.test(x));
     if(a){t=a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();
-      if(!t){vozBeep(988,.12);VZ.armedT=Date.now()+7000;vozPill('🎤 Te escucho…','Di la orden',7000);vozUI();return}}
+      if(!t){if(Date.now()>=VZ.armedT)vozBeep(988,.12);VZ.armedT=Date.now()+7000;vozPill('🎤 Te escucho…','Di la orden',7000);vozUI();return}}
     else if(Date.now()<VZ.armedT){/* ya dijo «oye bici» antes: esta frase es la orden */}
     else return;   // sin palabra clave: no hace nada
   }
