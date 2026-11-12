@@ -1288,7 +1288,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.46.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8443,7 +8443,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.46.2</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8487,7 +8487,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:46%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.46.1';
+const VOZ_VER='5.46.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8649,27 +8649,32 @@ function vozMake(continuous){
     }
   };
   r.onerror=e=>{
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.cont=false;VZ.want=false;store.set('vozCont',false);vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Permite el micrófono a la app en Chrome',12000);vozUI();return}
+    r._err=e.error;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.want=false;VZ.blk=Date.now();   // v5.46.2: no borra «Oye bici»; se reactiva al tocar
+      if(!VZ.oneShot&&!VZ_IOS){vozPill('🎤 «Oye bici» en espera','Toca la pantalla o el 🎤 una vez y vuelve a escuchar',6000);vozUI();return}
+      vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Chrome › ⋮ › Configuración › Configuración de sitios › Micrófono › app.ridesafeia.es › Permitir',12000);vozUI();return}
     if(e.error==='network'){vozPill('📶 Sin conexión','El reconocimiento de voz necesita datos móviles',5000);VZ.errN++;return}
+    if(e.error==='audio-capture'){vozPill('🎤 El micrófono está ocupado','Cierra la llamada, nota de voz o grabación de pantalla y vuelve a tocar',6000)}   // v5.46.2
     if(e.error==='no-speech'&&VZ.oneShot){vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}
     if(e.error!=='no-speech'&&e.error!=='aborted')VZ.errN++;
   };
   r.onend=()=>{if(VZ.rec&&VZ.rec!==r)return;   // v5.40.5: un micrófono viejo no apaga al nuevo
     clearTimeout(VZ.wd);clearTimeout(VZ.wd2);VZ.on=false;VZ.rec=null;clearTimeout(r._sil);
     if(!r._done&&r._last&&VZ.oneShot){const t=r._last;r._last='';try{vozHeard([vozNorm(t)],t)}catch(e){}}   // v5.40.2: iPhone
+    else if(!r._done&&VZ.oneShot&&!r._err){vozPill('🎤 No te he oído','Toca 🎤 y vuelve a hablar',3000)}   // v5.46.2: no se queda «Te escucho…»
     if(VZ.oneShot){VZ.oneShot=false;if(VZ.pending&&Date.now()>VZ.pending.until)VZ.pending=null}
     vozUI();
     if(VZ.cont&&VZ.want&&document.visibilityState==='visible'&&Date.now()>VZ.quietT){
       const wait=Math.min(8000,300+VZ.errN*1500);clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(vozStartCont,wait)}
   };
-  r.onstart=()=>{r._started=true;VZ.on=true;vozUI()};
+  r.onstart=()=>{r._started=true;VZ.on=true;VZ.blk=0;vozUI()};
   return r;
 }
 function vozStop(keepCont){clearTimeout(VZ.restartTO);if(!keepCont)VZ.want=false;try{VZ.rec&&VZ.rec.abort()}catch(e){}VZ.rec=null;VZ.on=false;vozUI()}
 function vozStartCont(){
   if(VZ_IOS)return;   // v5.41.1
   try{if(live.on&&vcOn()&&!vcPtt()&&!VC_TAP)return}catch(e){}   // v5.41.6: en ruta ya escucha la voz de ruta
-  if(!VSR||!VZ.cont||VZ.rec||document.visibilityState!=='visible'||Date.now()<VZ.quietT)return;
+  if(!VSR||!VZ.cont||VZ.rec||VZ.blk||document.visibilityState!=='visible'||Date.now()<VZ.quietT)return;
   VZ.want=true;VZ.oneShot=false;
   try{VZ.rec=vozMake(true);VZ.rec.start()}catch(e){VZ.rec=null}
 }
@@ -8720,7 +8725,7 @@ function vozListen(silent,direct){
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz',VZ_IOS?'Actualiza el iPhone y usa Safari':'Usa Chrome en Android',6000);return}
   if(VZ_IOS&&!VZ.unl){VZ.unl=1;try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '))}catch(e){}}   // desbloquea la voz del iPhone
   try{if(typeof VC!=='undefined'&&VC.rec){vcStop();VZ.vcBack=true;clearTimeout(VZ.vcT);VZ.vcT=setTimeout(vozVcBack,20000)}}catch(e){}
-  vozStop(true);VZ.oneShot=true;
+  vozStop(true);VZ.oneShot=true;VZ.blk=0;VZ.want=VZ.cont;   // v5.46.2
   if(!silent&&!VZ_IOS)vozBeep(880,.12);
   vozPill(VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Te escucho…','Di la orden',0);
   /* v5.40.5: el iPhone a veces no vuelve a abrir el micrófono tras la primera orden.
@@ -9060,6 +9065,8 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(VZ.cont)setTimeout(vozStartCont,800)}else vozStop(true)});
   VZ.cont=!VZ_IOS&&!!store.get('vozCont',false);if(VZ_IOS)store.set('vozCont',false);vozUI();vozBtnApply();
   if(VZ.cont)window.addEventListener('load',()=>setTimeout(vozStartCont,3000));
+  document.addEventListener('pointerdown',e=>{if(!VZ.cont||!VZ.blk||VZ.rec||Date.now()-VZ.blk<1500||(e.target&&e.target.closest&&e.target.closest('#vozBtn')))return;   // v5.46.2
+    if(VZ.blkTry&&Date.now()-VZ.blkTry<30000)return;VZ.blkTry=Date.now();VZ.blk=0;VZ.quietT=0;vozStartCont()},true);
   if(!store.get('vozIntro',false)){store.set('vozIntro',true);setTimeout(()=>{vozPill('🎤 Nuevo: órdenes por voz','Toca el botón 🎤 y habla. Mantén pulsado para ver qué decir',7000)},5000)}
 })();
 </script>
