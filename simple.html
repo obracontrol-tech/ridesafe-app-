@@ -1216,7 +1216,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.7 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.16.8 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4586,7 +4586,9 @@ function openGarmin(br){
   const perm='Notification' in window?Notification.permission:'no';
   const app=isIOS?'RideSafe IA':'Chrome',appNote=isIOS?'':' (en Android los avisos de RideSafe IA llegan a través de Chrome)';
   const tabs=`<div class="chips" style="margin:0 0 12px;flex-wrap:wrap">${[['garmin','⌚ Garmin'],['igps','🚴 iGPSPORT'],['otro','📟 Wahoo, Bryton, reloj…']].map(([k,t])=>`<button class="chip${B===k?' on':''}" onclick="openGarmin(${jsq(k)})">${t}</button>`).join('')}</div>`;
-  const step1=`<li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>`;
+  const stand=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  /* v5.47.3 — iPhone: los avisos solo funcionan con la app instalada en la pantalla de inicio */
+  const step1=(isIOS&&!stand?`<li><b>iPhone, lo primero</b>: en Safari toca <b>Compartir ⬆️ → «Añadir a pantalla de inicio»</b> y abre RideSafe IA desde ese icono. Sin esto, el iPhone no deja que la app mande avisos.</li>`:'')+`<li><b>RideSafe IA</b>: Perfil → enciende <b>🔔 Avisos con la app cerrada</b> → Permitir. ${perm==='granted'?'<span style="color:var(--lime)">✓ Ya lo tienes</span>':''}</li>`;
   let steps,models;
   if(B==='igps'){
     steps=step1+`<li><b>App iGPSPORT</b> del móvil: entra en tu aparato (Dispositivo) → busca <b>Notificaciones</b> / «Recordatorio de mensajes» y actívalo. Si te deja elegir apps, marca <b>${app}</b>${appNote}.</li>
@@ -4601,7 +4603,7 @@ function openGarmin(br){
     models=`<p style="margin-top:8px;font-size:14px">Casi todos los cuentakilómetros GPS y relojes actuales muestran las notificaciones del móvil. Si el tuyo solo enseña llamadas y SMS, el aviso no saldrá en él (pero sí en el móvil). Pruébalo con el botón de arriba.</p>`;
   }else{
     steps=step1+`<li><b>Tu Garmin</b>: Ajustes → Funciones conectadas → Teléfono → <b>Notificaciones inteligentes</b> → activa la categoría <b>«Otros»</b> (y «Redes sociales» si aparece).</li>
-     <li><b>App Garmin Connect</b> del móvil: Ajustes → Notificaciones → Notificaciones de apps → permite <b>${app}</b>${appNote}.</li>
+     ${isIOS?`<li><b>iPhone</b>: Ajustes → Notificaciones → <b>RideSafe IA</b> → Permitir notificaciones, con <b>«Pantalla bloqueada»</b> y <b>«Centro de notificaciones»</b> activados. En el iPhone, el Garmin enseña lo que sale en la pantalla bloqueada (la app Garmin Connect no tiene lista de apps).</li><li>Si usas un <b>modo Concentración</b> (No molestar, Conducción…), añade RideSafe IA a las apps permitidas.</li>`:`<li><b>App Garmin Connect</b> del móvil: Ajustes → Notificaciones → Notificaciones de apps → permite <b>${app}</b>${appNote}.</li>`}
      <li>Durante la salida, el Garmin debe estar <b>conectado al móvil</b> por Bluetooth.</li>`;
     models=`<p style="margin-top:8px;font-size:14px"><b style="color:var(--lime)">✅ Sí</b> (muestran notificaciones de apps): ${GARMIN_OK.join(' · ')}</p>
     <p style="margin-top:6px;font-size:14px"><b style="color:#FBBF24">⚠️ Depende</b> (pruébalo con el botón): ${GARMIN_MAYBE.join(' · ')}</p>
