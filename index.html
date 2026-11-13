@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.48.0 — En ruta, mapa como un Garmin: flecha azul siempre en el centro y el mapa gira hacia donde vas (Perfil › «Mapa como un Garmin»). Nueva opción «Preferir caminos y pistas» para las rutas en bici.
+/* v5.48.1 — Tarjeta de giro de arriba mucho más pequeña (una franja) y el micrófono ya no la tapa.
+   v5.48.0 — En ruta, mapa como un Garmin: flecha azul siempre en el centro y el mapa gira hacia donde vas (Perfil › «Mapa como un Garmin»). Nueva opción «Preferir caminos y pistas» para las rutas en bici.
    v5.47.5 — Música en ruta: «Playlist RideSafe» de 18 canciones por tramos (calentamiento, llano, subidas, vuelta). Un toque la abre en Spotify.
    v5.47.4 — Seguimiento estable: botón «Borrar mi recorrido y última ubicación»; cada salida empieza con la línea de cero.
    v5.47.3 — Avisos en el Garmin: pasos propios para iPhone (instalar en pantalla de inicio, Ajustes › Notificaciones, modo Concentración).
@@ -637,6 +638,13 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #app.live #map .maplibregl-ctrl-bottom-right{top:calc(env(safe-area-inset-top) + 70px);bottom:auto;right:auto;left:0}
 .lvbanner{background:rgba(20,83,45,.78)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.18)}
 .lvbanner.off{background:rgba(127,29,29,.8)!important}
+/* v5.48.1 — Tarjeta de giro pequeña: flecha, metros e indicación en una franja baja para ver más mapa */
+.lvbanner{padding:7px 12px!important;gap:10px!important;border-radius:16px!important;top:calc(6px + env(safe-area-inset-top))!important;left:10px!important;right:10px!important}
+.lvbanner .ar{font-size:26px!important;flex:none}
+.lvbanner>div{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}
+.lvbanner .dd{font-size:19px!important;display:inline!important;white-space:nowrap}
+.lvbanner .tx{font-size:13.5px!important;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lvbanner .lvrc{min-height:40px;font-size:14.5px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.78)!important}}
 /* v5.11 — 🏪 Tienda amiga: logo de la tienda al abrir la app */
 #shopSp{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0E1A2B;opacity:0;transition:opacity .35s;padding:24px}
@@ -1309,7 +1317,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.48.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.48.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8534,6 +8542,7 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 /* v5.42.1 — Micrófono arriba a la izquierda (no tapa «Cancelar» ni la tarjeta de ruta). En navegación sigue a la derecha */
 #vozBtn{left:12px;right:auto;top:calc(110px + env(safe-area-inset-top));width:50px;height:50px;font-size:22px}
 body:has(#s-rutas.planning) #vozBtn{top:calc(16px + env(safe-area-inset-top))}
+body:has(#s-rutas.live) #vozBtn{top:calc(84px + env(safe-area-inset-top))}
 body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;font-size:26px}
 #vozBtn small{position:absolute;bottom:-17px;font-size:10px!important;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
@@ -8558,7 +8567,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.48.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.48.1</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8602,7 +8611,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.48.0';
+const VOZ_VER='5.48.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
