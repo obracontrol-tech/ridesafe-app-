@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.50.0 — Modo ahorro (🌙): la pantalla se enciende sola al avisar un giro (a 200 m) y vuelve a negro después del giro.
+/* v5.51.0 — Pausa automática al momento; «🏠 Volver a casa» con 3 caminos (mismo camino, más corto, otro); planificador con 3 rutas de colores: Carretera, Gravel y MTB.
+   v5.50.0 — Modo ahorro (🌙): la pantalla se enciende sola al avisar un giro (a 200 m) y vuelve a negro después del giro.
    v5.49.0 — Sitios guardados (🏠 Casa, 💼 Trabajo y los que quieras): salen al buscar destino, en Perfil y por voz («Oye bici, llévame a casa»).
    v5.48.1 — Tarjeta de giro de arriba mucho más pequeña (una franja) y el micrófono ya no la tapa.
    v5.48.0 — En ruta, mapa como un Garmin: flecha azul siempre en el centro y el mapa gira hacia donde vas (Perfil › «Mapa como un Garmin»). Nueva opción «Preferir caminos y pistas» para las rutas en bici.
@@ -270,6 +271,9 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lv{display:none}
 #app.live .nav,#s-rutas.live .mtop,#s-rutas.live .rec,#s-rutas.live .mbottom,#s-rutas.live .planpanel,#s-rutas.live .mside{display:none!important}
 #s-rutas.live .lv{display:flex}
+.altdot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.altsub{display:block;font-style:normal;font-size:11.5px;color:var(--txt2);margin-top:1px}
+.lvhome{display:none;width:100%;min-height:48px;border-radius:14px;border:2px solid var(--lime);background:transparent;color:var(--txt);font:800 16px inherit;font-family:inherit;margin:4px 0 6px;cursor:pointer}
 .splaces{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.splaces .chip{font-weight:700}
 .navArw{width:46px;height:46px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));pointer-events:none}
 /* v5.47.0 — Ver la app sin parar la grabación */
@@ -1099,6 +1103,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <div class="lvgroup" id="lvGroup" style="display:none"></div>
     <div class="lvalert" id="lvAlert" style="display:none"><button class="a-flat" onclick="sendAlert('flat')">🔧 Pinchazo</button><button class="a-wait" onclick="sendAlert('wait')">✋ Esperad</button><button class="a-help" onclick="sendAlert('help')">🆘 Ayuda</button><button class="a-more" onclick="moreAlerts()" aria-label="Más avisos">➕ Más</button><button class="a-ptt" id="lvPtt" aria-label="Walkie: mantén pulsado para hablar al grupo">🎙️ Mantén pulsado y habla al grupo</button></div>
     <div class="lvmus" id="lvMus" style="display:none"></div>
+    <button type="button" class="lvhome" id="lvHome" onclick="homeMenu()">🏠 Volver a casa</button>
     <div class="lvbtns"><button class="lvp" id="lvPause" onclick="togglePause()">⏸ Pausa</button><button class="lvs" onclick="stopLive()">⏹ Terminar</button><button class="lvmoon" onclick="saverOn()" aria-label="Modo ahorro: pantalla negra">🌙</button><button class="lvcam" onclick="camOpen()" aria-label="Cámara: fotos y vídeos">📷</button><button class="lvsos" onclick="sos()">SOS</button></div>
   </div>
   <div class="planpanel" id="planPanel">
@@ -1297,7 +1302,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
-  <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Si estás 1 minuto parado, el tiempo deja de contar':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Si estás <b>1 minuto parado</b> (semáforo, café, pinchazo…), el tiempo deja de contar desde que te paraste y la media de km/h no baja. Al moverte unos metros vuelve sola.</small></div>
+  <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Al pararte, el tiempo deja de contar al momento':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En cuanto <b>te paras</b> (semáforo, café, pinchazo…) el tiempo deja de contar y la media de km/h no baja. Al volver a pedalear sigue sola.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">▲ Mapa como un Garmin <label class="sw"><input type="checkbox" id="swNavUp" onchange="navUpSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta, tu posición va siempre en el centro con una flecha y el mapa gira hacia donde vas. En ruta, el botón 🧭 lo enciende y lo apaga.</small></div>
   <div class="set" style="flex-wrap:wrap">🛤️ Preferir caminos y pistas <label class="sw"><input type="checkbox" id="swCam" onchange="store.set('caminos',this.checked?1:0);toast(this.checked?'🛤️ Las rutas en bici irán por caminos y pistas siempre que se pueda':'Rutas normales',3500)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Para BTT y gravel: las rutas nuevas y los recálculos buscan caminos y pistas en vez de carreteras. Si el servidor de caminos no responde, se usa la ruta normal.</small></div>
@@ -1321,7 +1326,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.50.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.51.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6062,9 +6067,9 @@ async function mbRouteMany(wps){
    Si no responde, se usa la ruta normal de Mapbox. Los giros salen de la forma del camino (trackSteps). */
 const camOn=()=>!!store.get('caminos',0)&&!hikeNow();
 let camT=0;function camMsg(ok){if(Date.now()-camT<60000)return;camT=Date.now();toast(ok?'🛤️ Ruta por caminos y pistas':'El servidor de caminos no responde: ruta normal',3000)}
-async function brRoute(wps){
+async function brRoute(wps,prof){
   const ll=wps.map(p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6)).join('|');let last=null;
-  for(const pr of ['gravel','trekking']){
+  for(const pr of (prof||['gravel','trekking'])){
     try{const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),12000);
       const r=await fetch('https://brouter.de/brouter?lonlats='+ll+'&profile='+pr+'&alternativeidx=0&format=geojson',{signal:ac.signal});clearTimeout(tm);
       if(!r.ok){last=r.status;continue}
@@ -6074,6 +6079,78 @@ async function brRoute(wps){
       return{coords,km:cum.at(-1),legs,src:'caminos'}}catch(e){last=e}}
   throw last||new Error('caminos');
 }
+/* v5.51.0 — TRES RUTAS SEGÚN TU BICI, CADA UNA DE UN COLOR (como Garmin con Carretera / Gravel / MTB):
+   🔵 Carretera: solo asfalto · 🟠 Gravel: pistas y caminos anchos · 🟢 MTB: caminos y senderos sin asfaltar. */
+let RS_DISC=null;
+const DISC={road:{lbl:'Carretera',sub:'Solo asfalto',col:'#3B82F6'},gravel:{lbl:'Gravel',sub:'Pistas y caminos',col:'#F97316'},mtb:{lbl:'MTB',sub:'Caminos y senderos',col:'#16A34A'}};
+const DISC_PROF={gravel:['gravel','trekking'],mtb:['mtb','mtb-zossebart','trekking']};
+async function mbList(w,p,x,alt){const q=v=>(+v.lng).toFixed(6)+','+(+v.lat).toFixed(6);
+  const u='https://api.mapbox.com/directions/v5/mapbox/'+p+'/'+w.map(q).join(';')+'?geometries=geojson&overview=full&steps=false'+(alt?'&alternatives=true':'')+x+'&access_token='+MAPBOX_TOKEN;
+  const r=await fetch(u);const d=await r.json();if(!r.ok||d.code!=='Ok'||!d.routes||!d.routes.length)throw d;
+  return d.routes.map(rt=>({coords:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,legs:[rt.distance/1000]}))}
+async function discAlts(a,b){
+  const w=[a,b];
+  const one=async(p,x)=>(await mbList(w,p,x,false))[0];
+  const tk={
+    road:one('driving','&exclude=motorway,unpaved,toll,ferry').catch(()=>one('cycling','')),
+    gravel:brRoute(w,DISC_PROF.gravel).catch(()=>one('cycling','').then(r=>(r.mb=1,r))),
+    mtb:brRoute(w,DISC_PROF.mtb).catch(()=>null)};
+  const K=Object.keys(tk),V=await Promise.all(K.map(k=>tk[k].catch(()=>null)));
+  let out=[];V.forEach((r,i)=>{if(!r)return;const D=DISC[K[i]];r.disc=K[i];r.lbl=D.lbl;r.col=D.col;r.sub=r.mb?'Ruta en bici':D.sub;if(K[i]!=='road')r.nav=[a,...altNav(r),b];out.push(r)});
+  const same=(r,o)=>overlapFrac(r,o)>0.92&&Math.abs(r.km-o.km)<0.5;
+  out=out.filter((r,i)=>!out.slice(0,i).some(o=>same(r,o)));
+  if(!out.some(r=>r.disc==='mtb')){try{const r=await one('cycling','');if(!out.some(o=>same(r,o))){const D=DISC.mtb;Object.assign(r,{disc:'mtb',lbl:D.lbl,col:D.col,sub:'Ruta en bici',nav:[a,...altNav(r),b]});out.push(r)}}catch(e){}}
+  if(!out.length)return mbAlts(a,b);
+  const want=isMtb()?'mtb':'road';let k=out.findIndex(r=>r.disc===want);if(k<0&&want==='mtb')k=out.findIndex(r=>r.disc==='gravel');
+  out.disc0=Math.max(0,k);return out}
+/* v5.51.0 — VOLVER A CASA (como el «Volver al inicio» de Garmin): 3 caminos para elegir.
+   🔙 Por el mismo camino · 📏 La más corta · 🔀 Otro camino. Casa = la guardada en «Mis sitios»; si no, el punto de salida. */
+function homeTarget(){let P=null;try{const a=store.get('places',[]);P=Array.isArray(a)?a.find(p=>p&&p.k==='casa'&&isFinite(p.lat)&&isFinite(p.lng)):null}catch(e){}
+  if(P)return{lat:+P.lat,lng:+P.lng,n:'casa',casa:true};
+  const s=live&&live.pts&&live.pts[0];return s?{lat:s[0],lng:s[1],n:'el punto de salida',casa:false}:null}
+async function homeOpts(){
+  const H=homeTarget();const h=(live.pts&&live.pts.at(-1))||hereLL();if(!H||!h)return null;
+  const me={lat:h[0],lng:h[1]},HH=[H.lat,H.lng],out=[];
+  if(hav(h,HH)<0.15)return{H,opts:[],near:true};
+  if(live.pts.length>20&&hav(live.pts[0],HH)<0.6){const c=thinPts(live.pts.map(x=>[x[0],x[1]]),0.012).reverse();if(hav(c.at(-1),HH)>0.03)c.push(HH);
+    out.push({k:'same',lbl:'🔙 Por el mismo camino',sub:'Vuelves por donde has venido',col:'#A3E635',coords:c,km:cumDist(c).at(-1)})}
+  const P=routeProfile();let RR=[];
+  try{RR=await mbList([me,H],P.p,P.x,true)}catch(e){}
+  if(RR.length<2){try{RR=RR.concat(await mbList([me,H],'cycling','',true))}catch(e){}}
+  RR.sort((x,y)=>x.km-y.km);
+  if(RR[0]){const sm=out.find(o=>o.k==='same');if(sm&&overlapFrac(RR[0],sm)>0.85)sm.sub='Por donde has venido · es también la más corta';else out.push(Object.assign({k:'short',lbl:'📏 La más corta',sub:'El camino con menos km',col:'#3B82F6'},RR[0]))}
+  const diff=r=>r.km<=RR[0].km*1.7&&out.every(o=>overlapFrac(r,o)<0.75);
+  let alt=RR.slice(1).find(diff);
+  if(!alt&&RR[0]){const a=me,b=H,kx=111.32*Math.cos((a.lat+b.lat)/2*Math.PI/180),ky=111.32,dx=(b.lng-a.lng)*kx,dy=(b.lat-a.lat)*ky,L=Math.hypot(dx,dy)||1,off=Math.min(Math.max(L*0.2,1.2),8);
+    for(const sg of [1,-1]){if(alt)break;try{const via={lat:a.lat+(b.lat-a.lat)*0.5+sg*(dx/L)*off/ky,lng:a.lng+(b.lng-a.lng)*0.5-sg*(dy/L)*off/kx};const r=(await mbList([a,via,b],P.p,P.x,false))[0];if(!hasSpur(r)&&diff(r))alt=r}catch(e){}}}
+  if(alt)out.push(Object.assign({k:'alt',lbl:'🔀 Otro camino',sub:'Para variar el paisaje',col:'#F97316'},alt));
+  return{H,opts:out}}
+function homeClr(){try{for(let i=0;i<3;i++)setLine(map,null,'home'+i)}catch(e){}}
+function homeDlg(title,sub,opts,pick){const old=document.getElementById('homeMenu');if(old)old.remove();
+  const d=document.createElement('div');d.id='homeMenu';d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(3,8,16,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px';
+  const B='display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-top:10px;cursor:pointer;font-family:inherit;background:transparent;color:var(--txt)';
+  d.innerHTML=`<div style="background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:22px;width:100%;max-width:480px;padding:18px 16px 16px;box-shadow:0 -10px 40px rgba(0,0,0,.4)"><div style="font-weight:800;font-size:19px">${title}</div><div style="color:var(--txt2);font-size:14.5px;margin-top:4px">${sub}</div>${opts.map((o,i)=>`<button data-i="${i}" style="${B};border-left:9px solid ${o.col}"><div style="flex:1;min-width:0"><b style="display:block;font-size:17px">${o.lbl}</b><small style="color:var(--txt2);font-size:13.5px">${o.sub}</small></div><div style="text-align:right;flex:none"><b style="font-size:19px">${o.km.toFixed(1).replace('.',',')} km</b><small style="display:block;color:var(--txt2);font-size:13px">${hm(estMins(o.km,0))}</small></div></button>`).join('')}<button data-x="1" style="display:block;width:100%;border:0;border-radius:14px;padding:14px;font-weight:800;font-size:16px;margin-top:8px;cursor:pointer;font-family:inherit;background:transparent;color:var(--txt2)">Ahora no</button></div>`;
+  d.onclick=e=>{if(e.target===d||e.target.closest('[data-x]')){d.remove();homeClr();return}const b=e.target.closest('[data-i]');if(b&&pick){d.remove();pick(+b.dataset.i)}};
+  document.body.appendChild(d)}
+let homeBusy=false;
+async function homeMenu(fromArrive){
+  if(!live.on||homeBusy)return;homeBusy=true;homeDlg('🏠 Volver a casa','Buscando caminos…',[]);
+  let R=null;try{R=await homeOpts()}catch(e){console.warn('casa',e)}homeBusy=false;
+  if(!R){homeDlg('🏠 Volver a casa','Aún no sé dónde está tu casa. Guárdala en «Ir a un destino» › «🏠 Guardar casa».',[]);return}
+  if(R.near){homeDlg('🏠 Volver a casa','Ya estás en '+R.H.n+'. ¡Buena salida! 🎉',[]);return}
+  if(!R.opts.length){homeDlg('🏠 Volver a casa','No se ha podido calcular el camino. Revisa la conexión.',[]);return}
+  R.opts.forEach((o,i)=>{try{setLine(map,o.coords,'home'+i,o.col)}catch(e){}});
+  homeDlg(fromArrive?'🏁 ¡Has llegado! ¿Volvemos a casa?':'🏠 Volver a casa',R.H.casa?'Elige por dónde quieres volver:':'Aún no has guardado tu casa: te llevo al punto donde empezaste. Elige por dónde:',R.opts,i=>homeGo(R.H,R.opts[i]));
+  if(fromArrive)speak('¿Volvemos a casa? Elige el camino en la pantalla.')}
+function homeGo(H,o){homeClr();const h=live.pts.at(-1)||hereLL();
+  prepNav(o.coords,[]);live.wps=[{lat:h[0],lng:h[1]},{lat:H.lat,lng:H.lng}];live.follow=true;live.goHome=true;
+  try{if(typeof legMark==='function')legMark('Vuelta a casa')}catch(e){}
+  speak('Vamos a casa '+(o.k==='same'?'por el mismo camino':o.k==='short'?'por el camino más corto':'por otro camino')+'. '+o.km.toFixed(1).replace('.',',')+' kilómetros.');
+  toast('🏠 '+o.lbl+' · sigue la línea verde',3500);try{renderLive()}catch(e){}}
+function homeArrive(){try{if(live.goHome)return;const H=homeTarget(),h=live.pts.at(-1);if(H&&h&&hav(h,[H.lat,H.lng])>0.5)setTimeout(()=>{if(live.on&&!live.goHome)homeMenu(true)},4000)}catch(e){}}
+setInterval(()=>{try{const b=$('lvHome');if(!b)return;let show=false;
+  if(live&&live.on&&!live.goHome&&live.km>=1){const H=homeTarget(),h=live.pts.at(-1);show=!!(H&&h&&hav(h,[H.lat,H.lng])>0.5)}
+  b.style.display=show?'block':'none'}catch(e){}},3000);
 async function mbRoute(wps){
   if(camOn()){try{const b=await brRoute(wps);camMsg(true);return b}catch(e){camMsg(false)}}
   const P=routeProfile();
@@ -6112,20 +6189,20 @@ async function mbAlts(a,b){
   }
   return out;
 }
-function altLabels(){const A=plan.alts;if(!A)return;A.forEach(x=>x.lbl='🔀 Otra opción');
+function altLabels(){const A=plan.alts;if(!A)return;if(A.every(x=>x.disc))return;A.forEach(x=>x.lbl='🔀 Otra opción');
   const mk=A.reduce((m,x,i)=>x.km<A[m].km?i:m,0);A[mk].lbl='📏 La más corta';
   if(A.every(x=>x.prof)){const mu=A.reduce((m,x,i)=>x.up<A[m].up?i:m,0);if(mu!==mk&&A[mk].up-A[mu].up>=25)A[mu].lbl='⛰️ Menos subida';else if(mu===mk)A[mk].lbl='⭐ Corta y llana'}}
 function altsHTML(){const A=plan.alts;if(!A||A.length<2||plan.view||!plan.active)return '';
-  return `<div class="alts">${A.map((x,i)=>`<button class="alt${i===plan.altI?' on':''}" onclick="selectAlt(${i})"><i>${x.lbl||'Opción '+(i+1)}</i><b>${x.km.toFixed(1).replace('.',',')} km</b><small>${x.prof?'+'+Math.round(x.up)+' m · '+hm(x.mins||estMins(x.km,x.up)):'calculando…'}</small></button>`).join('')}</div><small class="ahint">${A.length} caminos. Toca uno aquí o la línea gris en el mapa para elegirlo.</small>`}
+  return `<div class="alts">${A.map((x,i)=>`<button class="alt${i===plan.altI?' on':''}" onclick="selectAlt(${i})"><i>${x.col?'<span class="altdot" style="background:'+x.col+'"></span>':''}${x.lbl||'Opción '+(i+1)}</i>${x.sub?'<em class="altsub">'+x.sub+'</em>':''}<b>${x.km.toFixed(1).replace('.',',')} km</b><small>${x.prof?'+'+Math.round(x.up)+' m · '+hm(x.mins||estMins(x.km,x.up)):'calculando…'}</small></button>`).join('')}</div><small class="ahint">${A.length} caminos. Toca uno aquí o la línea gris en el mapa para elegirlo.</small>`}
 function selectAlt(i){const A=plan.alts;if(!A||!A[i]||i===plan.altI)return;
-  plan.altI=i;plan.route=A[i];stopsClear();setLine(map,A[i].coords);drawAlts();vib(15);renderPlan();
+  plan.altI=i;plan.route=A[i];stopsClear();setLine(map,A[i].coords,'plan',A[i].col);RS_DISC=A[i].disc||null;drawAlts();vib(15);renderPlan();
   if(A[i].prof&&!A[i].stopsList&&!A[i].stopsBusy)loadStops()}
 function drawAlts(){if(!map)return;const m=map;if(!(m.style&&m.style._loaded)){m.once('load',drawAlts);return}
-  const A=plan.alts||[];const data={type:'FeatureCollection',features:A.map((x,i)=>i===plan.altI?null:{type:'Feature',properties:{i},geometry:{type:'LineString',coordinates:x.coords.map(p=>[p[1],p[0]])}}).filter(Boolean)};
+  const A=plan.alts||[];const data={type:'FeatureCollection',features:A.map((x,i)=>i===plan.altI?null:{type:'Feature',properties:{i,col:x.col||'#9AA7B8'},geometry:{type:'LineString',coordinates:x.coords.map(p=>[p[1],p[0]])}}).filter(Boolean)};
   const s=m.getSource('alts');if(s){s.setData(data);return}
   m.addSource('alts',{type:'geojson',data});const bf=m.getLayer('plan-case')?'plan-case':undefined;
   m.addLayer({id:'alts-case',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0E1A2B','line-width':8,'line-opacity':0.7}},bf);
-  m.addLayer({id:'alts-line',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#9AA7B8','line-width':4.5}},bf);
+  m.addLayer({id:'alts-line',type:'line',source:'alts',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','col'],'line-width':4.5,'line-opacity':0.8}},bf);
   m.addLayer({id:'alts-hit',type:'line',source:'alts',paint:{'line-color':'#000','line-width':26,'line-opacity':0}},bf)}
 function altTap(e){if(!plan.alts||!map.getLayer('alts-hit'))return false;
   const f=map.queryRenderedFeatures(e.point,{layers:['alts-hit']});if(!f.length)return false;
@@ -6142,15 +6219,15 @@ async function computeRoute(){
       const lw=loopWaypoints(plan.start,plan.loopKm,plan.seed);r=await mbRoute(lw);r.nav=lw;
       if(Math.abs(r.km-plan.loopKm)/plan.loopKm>0.2){const lw2=loopWaypoints(plan.start,plan.loopKm,plan.seed,plan.loopKm/r.km);const r2=await mbRoute(lw2);r2.nav=lw2;if(Math.abs(r2.km-plan.loopKm)<Math.abs(r.km-plan.loopKm))r=r2}
     }else if(plan.mode==='ab'&&wps.length===2){
-      const al=await mbAlts(wps[0],wps[1]);if(id!==plan.reqId)return;
-      plan.alts=al.length>1?al:null;plan.altI=0;r=al[0];
+      const al=hikeNow()?await mbAlts(wps[0],wps[1]):await discAlts(wps[0],wps[1]);if(id!==plan.reqId)return;
+      plan.alts=al.length>1?al:null;plan.altI=al.length>1?(al.disc0||0):0;r=al[plan.altI]||al[0];
     }else r=plan.mode==='draw'&&wps.some(p=>p.sg&&p.sg!=='road')?await drawBuild(wps):await mbRouteMany(wps);
     if(id!==plan.reqId)return;
     if(!(plan.mode==='ab'&&wps.length===2))plan.alts=null;
     r.mode=plan.mode==='draw'?'draw':plan.stops.length&&plan.mode!=='loop'?'stages':plan.mode;r.up=0;r.down=0;
     r.wps=plan.mode==='loop'?[plan.start]:wps;
     (plan.alts||[r]).forEach(a=>{a.mode=r.mode;a.up=0;a.down=0;a.wps=r.wps});
-    setLine(map,r.coords);drawAlts();plan.route=r;renderPlan();fitTo(map,plan.alts?[].concat(...plan.alts.map(a=>a.coords)):r.coords,{top:60,bottom:Math.round(window.innerHeight*0.58),left:40,right:90});
+    setLine(map,r.coords,'plan',r.col);drawAlts();plan.route=r;RS_DISC=r.disc||null;renderPlan();fitTo(map,plan.alts?[].concat(...plan.alts.map(a=>a.coords)):r.coords,{top:60,bottom:Math.round(window.innerHeight*0.58),left:40,right:90});
     await Promise.all((plan.alts||[r]).map(a=>addElevation(a).then(()=>{a.mins=estMins(a.km,a.up)}).catch(e=>{console.warn('desnivel',e);a.profFail=true})));
     if(id!==plan.reqId)return;
     altLabels();r=plan.route;r.mins=estMins(r.km,r.up);renderPlan();
@@ -6777,6 +6854,7 @@ function nearestIdx(c,p,from){
   return[best,bd*1000];
 }
 async function navSteps(wps){
+  if(RS_DISC==='gravel'||RS_DISC==='mtb'){try{const b=await brRoute(wps,DISC_PROF[RS_DISC]);return{coords:b.coords,steps:[]}}catch(e){}}
   if(camOn()){try{const b=await brRoute(wps);camMsg(true);return{coords:b.coords,steps:[]}}catch(e){camMsg(false)}}
   const P=routeProfile();
   const url='https://api.mapbox.com/directions/v5/mapbox/'+P.p+'/'+wps.map(p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6)).join(';')+'?geometries=geojson&overview=full&steps=true&language=es'+P.x+'&access_token='+MAPBOX_TOKEN;
@@ -7084,7 +7162,7 @@ function navUpdate(p,acc){
   }
   const done=n.done!=null?n.done:n.cum[n.last||0];n.left=Math.max(0,n.total-done);
   // Llegada
-  if(n.left<0.05&&!n.arrived&&live.off<2){n.arrived=true;speak('Has llegado a tu destino');vib([200,100,200]);toast('🏁 ¡Has llegado!')}
+  if(n.left<0.05&&!n.arrived&&live.off<2){n.arrived=true;speak(live.goHome?'Ya estás en casa. ¡Buena salida!':'Has llegado a tu destino');vib([200,100,200]);toast(live.goHome?'🏠 ¡En casa!':'🏁 ¡Has llegado!');homeArrive()}
   // Siguiente maniobra (no se anuncian giros mientras estás fuera de ruta)
   const st=n.steps.find(x=>x.at>done+0.01&&x.type!=='depart');
   n.next=st||null;
@@ -7356,22 +7434,24 @@ function liveCatchStop(){
   else{live.nav=null;live.wps=null;live.fixTrk=null;setLine(map,null,'plan')}
   toast('Has dejado de ir a por el grupo');renderLive();
 }
-/* v5.46 — Pausa automática: 1 minuto sin moverte (menos de 25 m) → el tiempo se para desde que te paraste.
-   Sigue guardando el recorrido; al moverte vuelve sola y la media de km/h no baja. */
+/* v5.51.0 — Pausa automática AL MOMENTO (como Garmin): parado ~4 s → el tiempo se para;
+   en cuanto vuelves a pedalear (2 lecturas a más de 4 km/h o 12 m) sigue solo. La media de km/h no baja. */
 function apOn(){return store.get('autoPause',true)}
 function apFix(p,now,c){
   if(!live.on||live.paused||!apOn()){if(live.astop&&!apOn()){live.pausedMs+=now-live.astopStart;live.astop=false}return}
-  if(!live.anc){live.anc={p:p,t:now};return}
-  const d=hav(live.anc.p,p),v=c&&c.speed!=null&&c.speed>=0?c.speed*3.6:null;
-  if(d>=0.025||(v!=null&&v>=6&&d>=0.01)){
+  const v=c&&c.speed!=null&&c.speed>=0?c.speed*3.6:null,acc=(c&&c.accuracy)||10;
+  if(!live.anc){live.anc={p:p,t:now};live.slowT=null;live.fastN=0;return}
+  const d=hav(live.anc.p,p),need=acc>20?0.025:0.012;
+  live.fastN=v!=null&&v>=4?(live.fastN||0)+1:0;
+  if(live.fastN>=2||d>=need||(!live.astop&&v!=null&&v>=4)){
     if(live.astop){live.pausedMs+=Math.max(0,now-live.astopStart);live.astop=false;try{renderLive()}catch(e){}}
-    live.anc={p:p,t:now};
-  }
+    live.anc={p:p,t:now};live.slowT=null;return}
+  if(v!=null&&v<2.5){if(!live.slowT)live.slowT=now}else if(v!=null)live.slowT=null;
 }
 setInterval(function(){
-  try{if(!live||!live.on||live.paused||live.astop||!live.anc||!apOn())return;
-    if(Date.now()-live.anc.t>60000){live.astop=true;live.astopStart=live.anc.t;try{renderLive()}catch(e){}}}catch(e){}
-},3000);
+  try{if(!live||!live.on||live.paused||live.astop||!live.anc||!apOn())return;const n=Date.now();
+    if((live.slowT&&n-live.slowT>=4000)||n-live.anc.t>=10000){live.astop=true;live.astopStart=live.slowT||live.anc.t;try{renderLive()}catch(e){}}}catch(e){}
+},1000);
 function togglePause(){
   if(!live.on)return;
   if(live.paused){live.pausedMs+=Date.now()-live.pauseStart;live.paused=false;speak('Seguimos')}
@@ -7427,7 +7507,7 @@ async function finishLive(save){
   $('app').classList.remove('live','lvaway');clearTimeout(LA.t);clearInterval(LA.tick);$('s-rutas').classList.remove('live','lvmin');try{map.setPadding({top:0,bottom:0,left:0,right:0})}catch(e){}
   setLine(map,null,'plan');setLine(map,null,'track','#60A5FA');drawRideMarkers();
   if(!save)return;
-  const mins=Math.round((((L.paused?L.pauseStart:Date.now())-L.startT-L.pausedMs))/60000);
+  const mins=Math.round((((L.paused?L.pauseStart:(L.astop?L.astopStart:Date.now()))-L.startT-L.pausedMs))/60000);
   if(L.km<0.2||L.pts.length<3){toast('Salida demasiado corta: no se ha guardado');return}
   const coords=L.pts.map(p=>[p[0],p[1],p[2]||0]);
   const r={coords,km:L.km,up:L.up,down:0,mins,mode:'track',legs:[]};
@@ -8630,7 +8710,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.50.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.51.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8674,7 +8754,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.50.0';
+const VOZ_VER='5.51.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
