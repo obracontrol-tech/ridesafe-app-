@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.51.1 — iPhone: antes de registrarse pide instalar la app (Safari y el icono no comparten datos; así solo se rellena una vez).
+/* v5.51.2 — El resumen por voz dice también la hora («Son las 17 y 20»).
+   v5.51.1 — iPhone: antes de registrarse pide instalar la app (Safari y el icono no comparten datos; así solo se rellena una vez).
    v5.51.0 — Pausa automática al momento; «🏠 Volver a casa» con 3 caminos (mismo camino, más corto, otro); planificador con 3 rutas de colores: Carretera, Gravel y MTB.
    v5.50.0 — Modo ahorro (🌙): la pantalla se enciende sola al avisar un giro (a 200 m) y vuelve a negro después del giro.
    v5.49.0 — Sitios guardados (🏠 Casa, 💼 Trabajo y los que quieras): salen al buscar destino, en Perfil y por voz («Oye bici, llévame a casa»).
@@ -1331,7 +1332,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.51.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.51.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7009,7 +7010,8 @@ function sumText(){
   const mm=n=>n+(n===1?' minuto':' minutos');const t=h?`${h} ${h>1?'horas':'hora'}${m?' y '+mm(m):''}`:mm(m);
   const km=live.km||0,kmT=km<10?km.toFixed(1).replace('.',','):String(Math.round(km));
   const avg=ms>60000?km/(ms/3600000):0;
-  let s=`Resumen. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
+  const D=new Date(),H=D.getHours(),M=D.getMinutes();const hora=(H===1||H===13?'Es la '+H:'Son las '+H)+(M===0?' en punto':' y '+M);   // la hora del reloj
+  let s=`Resumen. ${hora}. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
   if((live.up||0)>=15)s+=` Has subido ${Math.round(live.up)} metros.`;
   if(live.alt!=null)s+=` Estás a ${Math.round(live.alt)} metros de altitud.`;
   if(live.nav&&live.nav.left!=null&&live.nav.left>0.2)s+=` Te quedan ${live.nav.left<10?live.nav.left.toFixed(1).replace('.',','):Math.round(live.nav.left)} kilómetros.`;
@@ -8724,7 +8726,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.51.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.51.2</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8768,7 +8770,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.51.1';
+const VOZ_VER='5.51.2';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';

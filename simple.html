@@ -1233,7 +1233,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.18.1 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.18.2 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6867,7 +6867,8 @@ function sumText(){
   const mm=n=>n+(n===1?' minuto':' minutos');const t=h?`${h} ${h>1?'horas':'hora'}${m?' y '+mm(m):''}`:mm(m);
   const km=live.km||0,kmT=km<10?km.toFixed(1).replace('.',','):String(Math.round(km));
   const avg=ms>60000?km/(ms/3600000):0;
-  let s=`Resumen. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
+  const D=new Date(),H=D.getHours(),M=D.getMinutes();const hora=(H===1||H===13?'Es la '+H:'Son las '+H)+(M===0?' en punto':' y '+M);   // la hora del reloj
+  let s=`Resumen. ${hora}. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
   if((live.up||0)>=15)s+=` Has subido ${Math.round(live.up)} metros.`;
   if(live.alt!=null)s+=` Estás a ${Math.round(live.alt)} metros de altitud.`;
   if(live.nav&&live.nav.left!=null&&live.nav.left>0.2)s+=` Te quedan ${live.nav.left<10?live.nav.left.toFixed(1).replace('.',','):Math.round(live.nav.left)} kilómetros.`;
