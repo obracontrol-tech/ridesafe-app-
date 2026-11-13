@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.52.0 — En ruta, el botón «atrás» del móvil muestra la barra de abajo sin parar la grabación (otra vez atrás vuelve al mapa).
+/* v5.52.1 — Voz: «Oye bici, hora» (a secas) también dice la hora.
+   v5.52.0 — En ruta, el botón «atrás» del móvil muestra la barra de abajo sin parar la grabación (otra vez atrás vuelve al mapa).
    v5.51.2 — El resumen por voz dice también la hora («Son las 17 y 20»).
    v5.51.1 — iPhone: antes de registrarse pide instalar la app (Safari y el icono no comparten datos; así solo se rellena una vez).
    v5.51.0 — Pausa automática al momento; «🏠 Volver a casa» con 3 caminos (mismo camino, más corto, otro); planificador con 3 rutas de colores: Carretera, Gravel y MTB.
@@ -1333,7 +1334,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.52.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.52.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8730,7 +8731,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.52.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.52.1</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8774,7 +8775,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.52.0';
+const VOZ_VER='5.52.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -9188,7 +9189,7 @@ function vozRun(t){
    if(down||up){vozScroll(down?1:-1,top||bot);vozPill(down?'⬇️ Bajando':'⬆️ Subiendo','',1200);return true}
   }
   // --- Hora ---
-  if(vozHas(t,/(que hora|hora es|dime la hora)/)){const d=new Date();vozSay(`Son las ${d.getHours()} y ${String(d.getMinutes()).padStart(2,'0')}.`);return true}
+  if(vozHas(t,/(que hora|hora es|dime la hora|^(la )?hora$|^hora por favor$)/)){const d=new Date(),H=d.getHours(),M=d.getMinutes();vozSay((H===1?'Es la una':'Son las '+H)+(M===0?' en punto.':' y '+M+'.'));return true}   // v5.52.1: también «hora» a secas
   // --- Ayuda de órdenes ---
   if(vozHas(t,/(que puedo decir|ordenes|comandos|que sabes hacer|instrucciones)/)){
     vozPanelOpen();vozSay('Puedes decir: crea ruta Lleida más Balaguer más Agramunt, prepárame una ruta de un pueblo a otro, empezar, pausa, seguir, terminar, cuánto falta, cómo voy, va a llover, agua, pinchazo o ayuda.');return true;
