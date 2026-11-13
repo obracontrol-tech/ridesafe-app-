@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.49.0 — Sitios guardados (🏠 Casa, 💼 Trabajo y los que quieras): salen al buscar destino, en Perfil y por voz («Oye bici, llévame a casa»).
+/* v5.50.0 — Modo ahorro (🌙): la pantalla se enciende sola al avisar un giro (a 200 m) y vuelve a negro después del giro.
+   v5.49.0 — Sitios guardados (🏠 Casa, 💼 Trabajo y los que quieras): salen al buscar destino, en Perfil y por voz («Oye bici, llévame a casa»).
    v5.48.1 — Tarjeta de giro de arriba mucho más pequeña (una franja) y el micrófono ya no la tapa.
    v5.48.0 — En ruta, mapa como un Garmin: flecha azul siempre en el centro y el mapa gira hacia donde vas (Perfil › «Mapa como un Garmin»). Nueva opción «Preferir caminos y pistas» para las rutas en bici.
    v5.47.5 — Música en ruta: «Playlist RideSafe» de 18 canciones por tramos (calentamiento, llano, subidas, vuelta). Un toque la abre en Spotify.
@@ -1320,7 +1321,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.49.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.50.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4945,8 +4946,8 @@ async function stravaDisconnect(){
 /* ===== v3.6 — Modo ahorro: pantalla negra con el GPS grabando ===== */
 let saverT=null,saverTap=0,saverTaps=0;
 function saverOn(){
-  if(!live.on)return;
-  let d=$('saver');if(!d){d=document.createElement('div');d.id='saver';d.innerHTML='<div class="sv-in"><div class="sv-d" id="svData"></div><div class="sv-h" id="svHint">🌙 Modo ahorro · el GPS sigue grabando<br>Toca 3 veces seguidas para volver</div></div>';document.body.appendChild(d);
+  if(!live.on)return;clearTimeout(saverPeekT);saverPeekT=null;
+  let d=$('saver');if(!d){d=document.createElement('div');d.id='saver';d.innerHTML='<div class="sv-in"><div class="sv-d" id="svData"></div><div class="sv-h" id="svHint">🌙 Modo ahorro · el GPS sigue grabando<br>Toca 3 veces seguidas para volver<br>Se enciende sola en cada giro</div></div>';document.body.appendChild(d);
     d.addEventListener('click',()=>{const n=Date.now();saverTaps=(n-saverTap<700)?saverTaps+1:1;saverTap=n;if(saverTaps>=3){saverTaps=0;saverOff();return}   // v4.8.1: 3 toques (evita encenderla sin querer)
       const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,2500)})}
   d.classList.add('show');const h=$('svHint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>h.style.opacity=0,4000);
@@ -4959,7 +4960,17 @@ function saverTick(){
   d.textContent=`${live.km.toFixed(1).replace('.',',')} km · ${clock(elapsed())}`+(live.wx?`${live.wx.temp!=null?' · 🌡️ '+live.wx.temp+'°':''} · 🌬️ ${live.wx.spd} km/h ${(REL_T[windRel(live.wx,live.hdg??null)]||[""])[0]}`:"");
   if(Math.floor(Date.now()/1000)%30===0){const i=$('saver').querySelector('.sv-in');i.style.transform=`translate(${Math.round(Math.random()*60-30)}px,${Math.round(Math.random()*160-80)}px)`}
 }
-function saverOff(){clearInterval(saverT);const d=$('saver');if(d)d.classList.remove('show');try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}
+/* v5.50.0 — En modo ahorro, la pantalla se enciende sola al avisar un giro (a unos 200 m)
+   y vuelve a negro 15 s después de pasar el giro. Si tocas la pantalla, espera un poco más. */
+let saverPeekT=null;
+function saverPeek(ms){const d=$('saver');if(!d||!live.on)return;
+  if(!d.classList.contains('show')&&!saverPeekT)return;            // no estaba en modo ahorro
+  d.classList.remove('show');clearInterval(saverT);live.camT=0;live.follow=true;
+  clearTimeout(saverPeekT);saverPeekT=setTimeout(saverBack,ms||30000)}
+function saverBack(){saverPeekT=null;const d=$('saver');if(!d||!live.on)return;
+  d.classList.add('show');saverTick();clearInterval(saverT);saverT=setInterval(saverTick,1000)}
+['pointerdown','touchstart'].forEach(ev=>document.addEventListener(ev,e=>{if(saverPeekT&&!(e.target.closest&&e.target.closest('#saver'))){clearTimeout(saverPeekT);saverPeekT=setTimeout(saverBack,20000)}},{passive:true,capture:true}));
+function saverOff(){clearTimeout(saverPeekT);saverPeekT=null;clearInterval(saverT);const d=$('saver');if(d)d.classList.remove('show');try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}
 function alertWA(){if(!live.waText)return;window.open('https://wa.me/?text='+encodeURIComponent(live.waText),'_blank')}
 function alertGo(id){const v=(live.members||{})[id];if(!v)return;live.follow=false;map.easeTo({center:[v.lng,v.lat],zoom:16})}
 function alarmTest(){alarmUnlock();alarmSound('flat',2);alarmShow('flat','Prueba de aviso','Así sonará cuando alguien del grupo pinche. Sube el volumen del móvil.',[['Parar','al-main','alarmClose()']])}
@@ -7079,8 +7090,8 @@ function navUpdate(p,acc){
   n.next=st||null;
   if(st&&live.off<2){const dist=(st.at-done)*1000;n.nextDist=dist;
     const key=n.steps.indexOf(st);
-    if(dist<180&&dist>60&&!n.spoke[key+'a']){n.spoke[key+'a']=1;speak('En '+Math.round(dist/10)*10+' metros, '+st.txt)}
-    if(dist<=35&&!n.spoke[key+'b']){n.spoke[key+'b']=1;speak(st.txt);vib(120)}}
+    if(dist<220&&dist>60&&!n.spoke[key+'a']){n.spoke[key+'a']=1;speak('En '+Math.round(dist/10)*10+' metros, '+st.txt);saverPeek(45000)}
+    if(dist<=35&&!n.spoke[key+'b']){n.spoke[key+'b']=1;speak(st.txt);vib(120);saverPeek(15000)}}
   // Sin recálculo automático hacia el destino (seguridad).
 }
 function navBackStart(p,now,n,s){
@@ -8619,7 +8630,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.49.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.50.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8663,7 +8674,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.49.0';
+const VOZ_VER='5.50.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
