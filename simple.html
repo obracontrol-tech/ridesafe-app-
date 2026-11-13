@@ -471,6 +471,10 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 /* Onboarding */
 #onb{position:absolute;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column;padding:40px 24px calc(30px + env(safe-area-inset-bottom))}
 #onb.show{display:flex}
+#onb .iosst{list-style:none;padding:0;margin:4px 0 0;display:flex;flex-direction:column;gap:10px;max-width:340px;width:100%;text-align:left}
+#onb .iosst li{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:16.5px;line-height:1.35}
+#onb .iosst span{flex:none;width:32px;height:32px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;display:grid;place-items:center}
+#onb .iosweb{margin-top:6px;background:transparent;border:0;color:var(--txt2);font:600 14.5px inherit;font-family:inherit;text-decoration:underline;min-height:44px;cursor:pointer}
 #onb .logo{font-size:36px;font-weight:800;text-align:center;margin-top:20px}
 #onb .logo span{color:var(--lime)}
 #onb .slide{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px}
@@ -1229,7 +1233,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.18.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.18.1 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8001,12 +8005,21 @@ const ONB=[
   ['🚑','Seguridad primero','Antes de tu primera salida: ¿a quién avisamos si te caes?']
 ];
 let onbI=0;
-function showOnb(){if($('onb').classList.contains('show'))return;onbI=0;paintOnb();$('onb').classList.add('show')}
+function showOnb(){if($('onb').classList.contains('show'))return;
+  /* iPhone: Safari y el icono guardan los datos por separado → primero instalar, así solo se rellena una vez */
+  if(isIOS()&&!isStandalone()&&!store.get('iosWeb',false)){iosInstGate();return}
+  onbI=0;paintOnb();$('onb').classList.add('show')}
+function iosInstGate(){
+  const sh='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2F7CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-4px"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+  $('onbSlide').innerHTML=`<div class="big">📲</div><h2>Primero, instálala en tu iPhone</h2><p>Así solo pones tus datos <b>una vez</b>. Son 3 pasos:</p>
+  <ol class="iosst"><li><span>1</span><div>Abajo en Safari, toca <b>Compartir</b> ${sh}</div></li><li><span>2</span><div>Baja y toca <b>«Añadir a pantalla de inicio»</b></div></li><li><span>3</span><div>Toca <b>«Añadir»</b> y abre RideSafe IA desde el <b>icono nuevo</b> 🛡️</div></li></ol>
+  <button type="button" class="iosweb" onclick="store.set('iosWeb',true);$('onb').classList.remove('show');showOnb()">Prefiero seguir en Safari sin instalarla</button>`;
+  $('onbDots').innerHTML='';$('onbNext').style.display='none';$('onb').classList.add('show')}
 function paintOnb(){
   const [e,t,p]=ONB[onbI];
   $('onbSlide').innerHTML=`<div class="big">${e}</div><h2>${t}</h2><p>${p}</p>${onbI===2?'<input class="inp" id="onbName" placeholder="Tu nombre" maxlength="24" autocomplete="given-name">'+legalChecksHTML('onb'):''}${onbI===3?safeFormHTML('onb'):''}`;
   $('onbDots').innerHTML=ONB.map((_,i)=>`<i class="${i===onbI?'on':''}"></i>`).join('');
-  $('onbNext').textContent=onbI===3?'💾 Guardar y empezar':onbI===2?'Continuar':'Siguiente';
+  $('onbNext').style.display='';$('onbNext').textContent=onbI===3?'💾 Guardar y empezar':onbI===2?'Continuar':'Siguiente';
 }
 /* v5.8 — Formulario «Seguridad primero» (en la bienvenida y en el recordatorio) */
 function safeFormHTML(k){const c=store.get('sosContact',{})||{};
