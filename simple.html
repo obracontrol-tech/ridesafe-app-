@@ -6867,7 +6867,7 @@ function sumText(){
   const mm=n=>n+(n===1?' minuto':' minutos');const t=h?`${h} ${h>1?'horas':'hora'}${m?' y '+mm(m):''}`:mm(m);
   const km=live.km||0,kmT=km<10?km.toFixed(1).replace('.',','):String(Math.round(km));
   const avg=ms>60000?km/(ms/3600000):0;
-  const D=new Date(),H=D.getHours(),M=D.getMinutes();const hora=(H===1||H===13?'Es la '+H:'Son las '+H)+(M===0?' en punto':' y '+M);   // la hora del reloj
+  const D=new Date(),H=D.getHours(),M=D.getMinutes();const hora=(H===1?'Es la una':'Son las '+H)+(M===0?' en punto':' y '+M);   // la hora del reloj
   let s=`Resumen. ${hora}. Llevas ${kmT} kilómetros en ${t}.${avg>=3?' Media de '+Math.round(avg)+' kilómetros por hora.':''}`;
   if((live.up||0)>=15)s+=` Has subido ${Math.round(live.up)} metros.`;
   if(live.alt!=null)s+=` Estás a ${Math.round(live.alt)} metros de altitud.`;
