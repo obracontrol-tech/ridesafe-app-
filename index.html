@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.48.1 — Tarjeta de giro de arriba mucho más pequeña (una franja) y el micrófono ya no la tapa.
+/* v5.49.0 — Sitios guardados (🏠 Casa, 💼 Trabajo y los que quieras): salen al buscar destino, en Perfil y por voz («Oye bici, llévame a casa»).
+   v5.48.1 — Tarjeta de giro de arriba mucho más pequeña (una franja) y el micrófono ya no la tapa.
    v5.48.0 — En ruta, mapa como un Garmin: flecha azul siempre en el centro y el mapa gira hacia donde vas (Perfil › «Mapa como un Garmin»). Nueva opción «Preferir caminos y pistas» para las rutas en bici.
    v5.47.5 — Música en ruta: «Playlist RideSafe» de 18 canciones por tramos (calentamiento, llano, subidas, vuelta). Un toque la abre en Spotify.
    v5.47.4 — Seguimiento estable: botón «Borrar mi recorrido y última ubicación»; cada salida empieza con la línea de cero.
@@ -268,6 +269,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lv{display:none}
 #app.live .nav,#s-rutas.live .mtop,#s-rutas.live .rec,#s-rutas.live .mbottom,#s-rutas.live .planpanel,#s-rutas.live .mside{display:none!important}
 #s-rutas.live .lv{display:flex}
+.splaces{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.splaces .chip{font-weight:700}
 .navArw{width:46px;height:46px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));pointer-events:none}
 /* v5.47.0 — Ver la app sin parar la grabación */
 .lvaway{flex-shrink:0;height:34px;padding:0 13px;border-radius:99px;border:2px solid #A3E635;background:rgba(11,20,34,.82);color:#A3E635;font:800 14px 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer}
@@ -1303,6 +1305,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" id="vozCard" style="margin-bottom:10px;border:2px solid var(--lime)!important" onclick="openVoz()"><span class="em" style="font-size:26px">🎙️</span><div><b>Órdenes por voz <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small id="vozSub">Manos libres: sin quitarte los guantes</small></div></button>
   <button class="li" style="margin-bottom:10px" onclick="openCasco()"><span class="em casco-ic"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></span><div><b>Mi casco con altavoces</b><small id="cascoSub">Voz por el casco, botones y aviso de luz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li" style="margin-bottom:10px" onclick="placesManage()"><span class="em">📌</span><div><b>Mis sitios guardados</b><small>Casa, trabajo y tus sitios para ir en un toque</small></div></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -1317,7 +1320,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.48.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.49.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1491,6 +1494,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <p class="s-sub" id="sSub">Escribe el sitio o elige una opción</p>
   <div class="search" style="background:var(--card)"><svg class="i" viewBox="0 0 24 24" style="color:var(--txt2)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="sQ" placeholder="Pueblo, calle, bar, lugar…" enterkeyhint="search" autocomplete="off" aria-label="Buscar lugar"></div>
   <div class="sopt"><button class="mini" style="justify-content:center" onclick="searchUseHere()">📍 Mi ubicación</button><button class="mini" style="justify-content:center" onclick="searchOnMap()">🗺️ Elegir en el mapa</button></div>
+  <div class="splaces" id="sPlaces"></div>
   <div id="sRes"></div>
 </div>
 
@@ -5699,7 +5703,7 @@ const HERE='Ubicación actual';
 function myLL(){if(meMarker){const l=meMarker.getLngLat();return{lat:l.lat,lng:l.lng,label:HERE}}return null}
 function planWps(){return[plan.start,...plan.stops,plan.dest].filter(Boolean)}
 function setPlanning(on){$('s-rutas').classList.toggle('planning',on);$('app').classList.toggle('planning',on);if(on){rideMarkers.forEach(m=>m.remove());poiMarkers.forEach(m=>m.remove())}else{drawRideMarkers();drawPois()}}
-function startPlanner(mode){
+function startPlanner(mode,dest){
   viewingComm=null;closeSheets();go('rutas');
   if(!map){toast('El mapa necesita conexión a internet');return}
   plan.active=true;plan.view=false;plan.mode=mode;plan.seed=1;clearPlan(true);
@@ -5712,8 +5716,55 @@ function startPlanner(mode){
   if(!plan.start)locateForPlan();
   redrawPlanMarkers();renderPlan();
   if(plan.mode==='loop'&&plan.start)computeRoute();
-  else if(plan.mode!=='loop')setTimeout(()=>openPointSearch('dest'),250);
+  else if(plan.mode!=='loop'){if(dest){plan.dest=dest;redrawPlanMarkers();renderPlan();if(plan.start)computeRoute()}else setTimeout(()=>openPointSearch('dest'),250)}
 }
+/* v5.49.0 — SITIOS GUARDADOS: 🏠 Casa, 💼 Trabajo y otros. Se guardan en este móvil. */
+function placesAll(){const a=store.get('places',[]);return Array.isArray(a)?a.filter(p=>p&&isFinite(p.lat)&&isFinite(p.lng)):[]}
+function placeGet(k){return placesAll().find(p=>p.k===k)||null}
+function placeSave(P){const a=placesAll().filter(p=>p.k!==P.k);if(P.k==='casa')a.unshift(P);else a.push(P);store.set('places',a.slice(0,12))}
+function placeDel(k){store.set('places',placesAll().filter(p=>p.k!==k))}
+function placesRow(){const el=$('sPlaces');if(!el)return;const A=placesAll();
+  let h=A.map((p,i)=>`<button class="chip" onclick="placeUse(${i})">${p.e} ${esc(p.n)}</button>`).join('');
+  if(!A.some(p=>p.k==='casa'))h+=`<button class="chip" style="border-style:dashed" onclick="placeSetMenu('casa')">🏠 Guardar casa</button>`;
+  h+=`<button class="chip" style="border-style:dashed" onclick="placeSetMenu('new')">⭐ Guardar sitio</button>`;
+  if(A.length)h+=`<button class="chip" onclick="placesManage()" aria-label="Editar sitios guardados">✏️</button>`;
+  el.innerHTML=h}
+function placeUse(i){const p=placesAll()[i];if(!p)return;applyPoint({lat:p.lat,lng:p.lng,label:p.e+' '+p.n})}
+function placeGo(k){const P=placeGet(k);if(!P){placeSetMenu(k,()=>placeGo(k));return}
+  const ll={lat:P.lat,lng:P.lng};
+  if(typeof live!=='undefined'&&live&&live.on){liveGuide(P.n,ll);return}
+  startPlanner('ab',{...ll,label:P.e+' '+P.n})}
+function placeDlg(title,rows){const old=document.getElementById('plcMenu');if(old)old.remove();
+  const d=document.createElement('div');d.id='plcMenu';d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(3,8,16,.6);display:flex;align-items:flex-end;justify-content:center;padding:12px';
+  const B='display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:16px;margin-top:10px;cursor:pointer;font-family:inherit;';
+  d.innerHTML=`<div style="background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:22px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:18px 16px 16px;box-shadow:0 -10px 40px rgba(0,0,0,.4)"><div style="font-weight:800;font-size:18px">${title}</div>${rows.map((r,i)=>r.html?r.html:`<button data-i="${i}" style="${B}${r.main?'background:var(--lime);color:var(--on-lime)':'background:transparent;color:var(--txt);border:1.5px solid var(--line)'}">${r.t}</button>`).join('')}<button data-x="1" style="${B}background:transparent;color:var(--txt2);margin-top:6px">Cerrar</button></div>`;
+  d.onclick=e=>{if(e.target===d||e.target.closest('[data-x]')){d.remove();return}const b=e.target.closest('[data-i]');if(b){const r=rows[+b.dataset.i];d.remove();if(r&&r.f)r.f()}};
+  document.body.appendChild(d)}
+function placeSetMenu(k,then){
+  let e='⭐',n='';
+  if(k==='casa'){e='🏠';n='Casa'}else if(k==='trabajo'){e='💼';n='Trabajo'}
+  else{n=(prompt('Nombre del sitio (por ejemplo: Casa de mis padres, Bar de la plaza):','')||'').trim().slice(0,30);if(!n)return;k='p'+Date.now().toString(36)}
+  const key=searchKey,fromSearch=$('sh-search').classList.contains('show')&&plan.active;
+  const save=(lat,lng)=>{placeSave({k,e,n,lat:+lat,lng:+lng});toast(e+' '+n+' guardado',2500);
+    if(then)then();else if(fromSearch&&plan.active){searchKey=key;openPointSearch(key)}};
+  placeDlg(`Guardar ${e} ${esc(n)}`,[
+    {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}navigator.geolocation.getCurrentPosition(p=>save(p.coords.latitude,p.coords.longitude),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
+    {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);$('scrim').classList.remove('show');openPickerFor(e+' '+n,'#2563EB',null,ll=>save(ll.lat,ll.lng))}}])}
+function placesManage(){const A=placesAll();
+  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)} · 🗑️ Borrar`,f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(p.k);toast('Borrado');setTimeout(placesManage,200)}}}));
+  if(!A.some(p=>p.k==='casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',placesManage)});
+  if(!A.some(p=>p.k==='trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',placesManage)});
+  rows.push({t:'⭐ Guardar otro sitio',f:()=>placeSetMenu('new',placesManage)});
+  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Para ir: Rutas › «Ir a un destino» y toca el sitio. O di «Oye bici, llévame a casa». Toca un sitio para borrarlo.</div>`});
+  placeDlg('📌 Mis sitios guardados',rows)}
+/* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
+function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;
+  const verb=/\b(llevame|lleva|vamos|voy|vuelvo|volver|vuelve|ir|ruta|guiame|como llego|como voy|navega|regresar|regreso)\b/;
+  for(const p of placesAll().concat(placeGet('casa')?[]:[{k:'casa',n:'Casa'}]).concat(placeGet('trabajo')?[]:[{k:'trabajo',n:'Trabajo'}])){
+    const nm=vozNorm(p.n);if(!nm)continue;
+    const re=new RegExp('\\b(a|al|hasta|hacia|para|a la|a mi)\\s+'+nm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$');
+    if((re.test(t)&&verb.test(t))||t===nm)return p.k}
+  return null}
 function locateForPlan(){
   if(!navigator.geolocation)return;
   navigator.geolocation.getCurrentPosition(p=>{
@@ -5946,6 +5997,7 @@ function openPointSearch(key){
   $('sTitle').textContent=ttl;$('sQ').value='';$('sRes').innerHTML='';
   const who={start:['A','#22C55E','Punto de salida (A)'],dest:['B','#EF4444','Punto de llegada (B)']}[key]||['+','#C8DC3C','Parada en el camino'];
   $('sWho').textContent=who[0];$('sWho').style.background=who[1];$('sSub').textContent=who[2];
+  try{placesRow()}catch(e){}
   openSheet('sh-search');if(plan.active)$('app').classList.add('psearch');setTimeout(()=>$('sQ').focus(),250);
 }
 $('sQ').addEventListener('input',()=>{clearTimeout(searchT);const q=$('sQ').value.trim();if(q.length<3){$('sRes').innerHTML='';return}searchT=setTimeout(()=>searchPlaces(q),450)});
@@ -8567,7 +8619,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.48.1</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.49.0</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8611,7 +8663,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.48.1';
+const VOZ_VER='5.49.0';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
@@ -8915,6 +8967,9 @@ function vozRun(t){
   if(vozIsRain(t)){vozRain(t);return true}
   // --- v5.43.0: rutas marcadas (GR, PR, Caminos, BTT) ---
   try{if(window.vozMk&&vozMk(t))return true}catch(e){console.warn('vozMk',e)}
+  // --- v5.49.0: sitios guardados («llévame a casa») ---
+  try{const pk=placeVoz(t);if(pk){const P=placeGet(pk);if(!P){vozSay('Aún no has guardado ese sitio. Guárdalo ahora.');placeSetMenu(pk,()=>placeGo(pk));return true}
+    if(!L)vozSay('Calculando la ruta a '+P.n+'.');placeGo(pk);return true}}catch(e){console.warn('placeVoz',e)}
   // --- Ayuda / emergencia (siempre pregunta antes) ---
   if(vozHas(t,/\b(sos|socorro|emergencia|auxilio|ayuda|ayudame)\b/)&&!vozHas(t,/(que puedo decir|ordenes|comandos)/)){
     VZ.pending={until:Date.now()+15000,yes:()=>{
