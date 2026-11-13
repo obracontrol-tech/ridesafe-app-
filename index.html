@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.53.0 — Capa «🛤️ Caminos y pistas» en Capas del mapa: resalta pistas (naranja), senderos (marrón) y carriles bici (azul), como los mapas de Garmin.
+/* v5.53.1 — Capa Caminos: líneas más gruesas y aviso «Acerca el mapa para ver los caminos» cuando el mapa está lejos.
+   v5.53.0 — Capa «🛤️ Caminos y pistas» en Capas del mapa: resalta pistas (naranja), senderos (marrón) y carriles bici (azul), como los mapas de Garmin.
    v5.52.1 — Voz: «Oye bici, hora» (a secas) también dice la hora.
    v5.52.0 — En ruta, el botón «atrás» del móvil muestra la barra de abajo sin parar la grabación (otra vez atrás vuelve al mapa).
    v5.51.2 — El resumen por voz dice también la hora («Son las 17 y 20»).
@@ -1335,7 +1336,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.53.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.53.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5934,19 +5935,26 @@ function cmSet(m,on){
   const src=cmSrc(m);if(!src)return;
   if(on&&!m.getLayer('cm-track')){
     const before=['plan-case','track-case','alts-case'].find(id=>m.getLayer(id))||((m.getStyle().layers||[]).find(l=>l.type==='symbol')||{}).id;
-    const W=(a,b)=>['interpolate',['linear'],['zoom'],11,a,16,b];
+    const W=(a,b)=>['interpolate',['linear'],['zoom'],11,a,14,(a+b)/1.6,17,b];
     const TR=['==',['get','class'],'track'];
     const PA=['all',['==',['get','class'],'path'],['match',['get','subclass'],['path','bridleway'],true,false]];
     const CY=['all',['==',['get','class'],'path'],['==',['get','subclass'],'cycleway']];
     const L=(id,f,p,lay)=>m.addLayer({id,type:'line',source:src,'source-layer':'transportation',minzoom:11,filter:f,layout:Object.assign({'line-cap':'round','line-join':'round'},lay||{}),paint:p},before);
-    L('cm-track-case',TR,{'line-color':'#FFFFFF','line-width':W(3,9),'line-opacity':0.85});
-    L('cm-track',TR,{'line-color':'#EA580C','line-width':W(1.6,5.5)});
-    L('cm-path-case',PA,{'line-color':'#FFFFFF','line-width':W(2.4,7),'line-opacity':0.8});
-    L('cm-path',PA,{'line-color':'#7C2D12','line-width':W(1.2,3.6),'line-dasharray':[1.6,1.1]},{'line-cap':'butt'});
-    L('cm-cycle',CY,{'line-color':'#2563EB','line-width':W(1.4,4.5)});
+    L('cm-track-case',TR,{'line-color':'#FFFFFF','line-width':W(5,14),'line-opacity':0.9});
+    L('cm-track',TR,{'line-color':'#EA580C','line-width':W(3,9)});
+    L('cm-path-case',PA,{'line-color':'#FFFFFF','line-width':W(4,11),'line-opacity':0.85});
+    L('cm-path',PA,{'line-color':'#7C2D12','line-width':W(2.4,6.5),'line-dasharray':[1.6,1.1]},{'line-cap':'butt'});
+    L('cm-cycle',CY,{'line-color':'#2563EB','line-width':W(2.6,7.5)});
   }
   CM_IDS.forEach(id=>{if(m.getLayer(id))m.setLayoutProperty(id,'visibility',on?'visible':'none')});
 }
+function cmHint(){try{const m=map;let el=$('cmHint');const show=cmOn()&&m&&m.getZoom()<12.5&&!(typeof live!=='undefined'&&live&&live.on);
+  if(!show){if(el)el.style.display='none';return}
+  if(!el){el=document.createElement('button');el.id='cmHint';el.type='button';el.innerHTML='🛤️ Acerca el mapa para ver los caminos';
+    el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(14px + env(safe-area-inset-top));z-index:40;border:2px solid #EA580C;background:rgba(11,20,34,.92);color:#fff;font:800 14.5px inherit;font-family:inherit;padding:10px 16px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap';
+    el.onclick=()=>{try{map.easeTo({zoom:13.5,duration:600})}catch(e){}};document.body.appendChild(el)}
+  el.style.display=document.querySelector('#s-rutas.active')?'block':'none'}catch(e){}}
+setInterval(cmHint,1500);
 function cmToggle(on){store.set('caminosOn',!!on);cmSet(map,!!on);vib(15);const c=$('lmCm');if(c)c.checked=!!on;
   if(on){toast('🛤️ Caminos: naranja pistas · marrón senderos · azul carril bici',4000);if(map&&map.getZoom()<12)map.easeTo({zoom:13,duration:500})}}
 
@@ -8759,7 +8767,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 <div id="vozPill"></div>
 <div id="vozPanel" onclick="if(event.target===this)vozPanelClose()"><div class="vp">
  <h3>🎤 Órdenes por voz <button onclick="vozPanelClose()" aria-label="Cerrar">✕</button></h3>
- <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.53.0</div>
+ <div style="color:#cbd5e1;font-size:14px">Manos libres, ideal con guantes · RideSafe IA 5.53.1</div>
  <button class="vbtn" style="background:#1C2F4A;color:#fff;border:2px solid #A3E635;margin-bottom:8px" onclick="vozPanelClose();vmOpen(null,true)">📋 Menú por números (sin aprenderte frases)</button>
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
@@ -8803,7 +8811,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Toque: tocar el botón 🎤 y decir la orden.
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
-const VOZ_VER='5.53.0';
+const VOZ_VER='5.53.1';
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
