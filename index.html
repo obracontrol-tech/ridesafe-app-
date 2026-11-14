@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
+/* v5.57.0 — Voz: tus órdenes primero. La voz del navegador espera mientras das una orden y se calla al tocar 🎤 o decir «Oye bici».
+   v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
    v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
    v5.54.0 — Voz: no corta la pregunta (espera 2 s de silencio) y el micrófono vuelve 2 s después de que la app acabe de hablar.
    v5.53.1 — Capa Caminos: líneas más gruesas y aviso «Acerca el mapa para ver los caminos» cuando el mapa está lejos.
@@ -1339,7 +1340,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.56.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.57.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9725,6 +9726,35 @@ function vozMenu(t){
       var ps=$('rideBody').querySelector('.pstats');if(ps)ps.insertAdjacentHTML('afterend','<button class="btn btn-line" style="width:100%;margin-top:10px;border-color:var(--lime);color:var(--lime)" onclick="dayOpen(\''+a.date+'\')">📅 Ver todo el día junto ('+n+' salidas)</button>')}catch(e){}
   };
   setTimeout(function(){try{renderActs()}catch(e){}},1200);
+})();
+</script>
+<script>
+/* v5.57.0 — Tus órdenes primero: la voz del navegador ya no se cruza con el micrófono.
+   · Mientras das una orden (🎤, «Oye bici», o contestas «sí / no» al terminar), los avisos de navegación esperan
+     y se dicen al acabar (si han pasado más de 15 s se descartan: ya no valdrían).
+   · Si la navegación está hablando cuando tocas 🎤 o dices «Oye bici», se calla al momento para oírte a ti. */
+(function(){
+  var Q={t:null,at:0,on:false,timer:null};
+  function busy(){var n=Date.now();try{
+    if(VZ.oneShot||(VZ.pending&&n<VZ.pending.until)||n<VZ.armedT)return true;
+    if(typeof VC!=='undefined'&&VC.ask&&n-(VC.askT||0)<15000)return true}catch(e){}return false}
+  function hush(){try{ttsSeq++}catch(e){}try{if(ttsAudio){ttsAudio._more=false;ttsAudio.pause()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}}
+  function later(){clearTimeout(Q.timer);Q.timer=setTimeout(function(){
+    if(!Q.t)return;if(Date.now()-Q.at>15000){Q.t=null;return}
+    if(busy()||ttsSpeaking()){later();return}
+    var t=Q.t;Q.t=null;window.speak(t)},600)}
+  var sp=window.speak;
+  window.speak=function(t){
+    if(!t)return;
+    if(!Q.direct&&busy()){Q.t=t;Q.at=Date.now();later();return Promise.resolve()}
+    if(Q.direct)return sp.apply(this,arguments);   // respuestas a tus órdenes: suenan al momento
+    Q.on=true;var p=sp.apply(this,arguments);
+    Promise.resolve(p).catch(function(){}).then(function(){Q.on=false});return p};
+  // Si empiezas a dar una orden mientras habla la navegación: se calla
+  setInterval(function(){if(Q.on&&busy()&&ttsSpeaking()){hush();Q.on=false}},250);
+  var cs=window.cascoSay;window.cascoSay=function(){Q.direct=true;try{return cs.apply(this,arguments)}finally{Q.direct=false}};
+  var vl=window.vozListen;
+  window.vozListen=function(silent){if(!silent&&Q.on){hush();Q.on=false}return vl.apply(this,arguments)};
 })();
 </script>
 </body>
