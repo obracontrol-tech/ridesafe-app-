@@ -1245,7 +1245,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.25.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.26.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8003,14 +8003,14 @@ $('fileIn').onchange=async e=>{
     const done=mins>0;
     const op=[['🗺️ Una ruta para hacer: guardarla, crear una salida o compartirla con el club','','route'],['✅ Una salida que ya hice: guardarla en Actividades','','act']];
     if(done)op.reverse();
-    // v5.55.0: una ruta de GraphHopper (o recién planificada allí) va directa a la tarjeta y al mapa de la ruta, sin preguntar
-    if(!done&&(/graphhopper/i.test((xml.documentElement&&xml.documentElement.getAttribute('creator'))||'')||Date.now()-(+localStorage.getItem('rs_gh_t')||0)<3600000)){
-      try{localStorage.removeItem('rs_gh_t')}catch(_){}
-      const gn=/graphhopper/i.test(name)?'Ruta GraphHopper '+new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):name;
-      importRouteGpx(pts,km,up,gn);return}
-    const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m${mins?' · '+Math.floor(mins/60)+' h '+mins%60+' min':''}. ¿Qué es este archivo?`,op);
-    if(k<0)return;
-    if(op[k][2]==='route'){importRouteGpx(pts,km,up,name);return}
+    // v5.62.0: antes de guardar, el GPX se ve aparte: mapa completo, perfil con pendientes y dónde estás tú. Luego decides.
+    const gh=/graphhopper/i.test((xml.documentElement&&xml.documentElement.getAttribute('creator'))||'')||Date.now()-(+localStorage.getItem('rs_gh_t')||0)<3600000;
+    const gn=gh&&/graphhopper/i.test(name)?'Ruta GraphHopper '+new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):name;
+    let pick=null;
+    if(typeof gpxView==='function'){try{pick=await gpxView({pts,km,up,mins,name:gn,done:done&&!gh})}catch(_){pick=null}}
+    else{const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m. ¿Qué es este archivo?`,op);pick=k<0?null:op[k][2]}
+    if(!pick)return;
+    if(pick==='route'){try{localStorage.removeItem('rs_gh_t')}catch(_){}importRouteGpx(pts,km,up,gn);return}
     acts.unshift(a);store.set('acts',acts);saveActRemote(a);addRank(a);
     const gain=Math.min(300,Math.round(km))+10;addPoints(gain);
     renderActs();publishAct(a);checkBadges();addKmToBike(km);toast(`Actividad guardada · +${gain} puntos`);
@@ -8947,6 +8947,96 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
     d.innerHTML='<div class="bx"><div class="hd"><div><b>🔀 Otra ruta</b><small>Tus km y tu tiempo siguen contando</small></div><button type="button" aria-label="Cerrar" onclick="gmRtClose()">✕</button></div><div class="ls"></div></div>';
     d.addEventListener('click',function(x){if(x.target===d)close()});document.body.appendChild(d);paint();
   };
+})();
+</script>
+<style>
+/* v5.62.0 — Ver un GPX aparte antes de guardarlo */
+#gpxV{position:fixed;inset:0;z-index:9700;background:#E6E9ED;display:flex;flex-direction:column;color:#111;font-family:"Plus Jakarta Sans",sans-serif}
+#gpxV .gvmp{position:relative;flex:1 1 52%;min-height:220px}
+#gpxV .gvmp>div{position:absolute;inset:0}
+#gpxV .gvx{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));left:10px;width:50px;height:50px;border-radius:50%;border:2px solid #111;background:#fff;font-size:22px}
+#gpxV .gvly{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));right:10px;display:flex;flex-direction:column;gap:6px}
+#gpxV .gvly{left:auto!important;width:auto!important;align-items:flex-end}
+#gpxV .gvly button{width:auto!important;min-width:96px;height:38px;border-radius:19px;border:2px solid #111;background:#fff;font:800 13px "Plus Jakarta Sans",sans-serif;padding:0 10px}
+#gpxV .gvly button.gvon{background:#0B63CE;border-color:#0B63CE;color:#fff}
+#gpxV .gvme{position:absolute;z-index:3;right:10px;bottom:12px;height:46px;border-radius:23px;border:2px solid #111;background:#fff;font:800 14px "Plus Jakarta Sans",sans-serif;padding:0 14px}
+#gpxV .gvpn{flex:0 0 auto;max-height:52vh;overflow-y:auto;background:#fff;border-top:3px solid #111;border-radius:16px 16px 0 0;margin-top:-14px;position:relative;z-index:4;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+#gpxV h3{margin:0 0 6px;font-size:18px;line-height:1.25}
+#gpxV .gvst{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font:800 23px/1.05 "Barlow Condensed",sans-serif;border:1px solid #111;border-radius:8px;padding:6px 4px;margin:0 0 8px}
+#gpxV .gvst span+span{border-left:1px solid #CBD5E1}
+#gpxV .gvst i{display:block;font-style:normal;font:700 11.5px "Plus Jakarta Sans",sans-serif;color:#4B5563;margin-top:2px}
+#gpxV .gvlg{display:flex;border-radius:8px;overflow:hidden;margin:6px 0 4px;font:800 11.5px "Plus Jakarta Sans",sans-serif;color:#fff;text-align:center}
+#gpxV .gvlg span{flex:1;padding:5px 2px}
+#gpxV .gvwh{font:700 13.5px "Plus Jakarta Sans",sans-serif;color:#0B63CE;margin:4px 0 8px;min-height:18px}
+#gpxV .gvbt{display:grid;gap:8px;margin-top:8px}
+#gpxV .gvbt button{min-height:54px;border-radius:10px;border:2px solid #111;background:#fff;font:800 16px "Plus Jakarta Sans",sans-serif;color:#111}
+#gpxV .gvbt button.gvpri{background:#0B63CE;border-color:#0B63CE;color:#fff;min-height:60px;font-size:17px}
+</style>
+<script>
+/* v5.62.0 — Al abrir un GPX/TCX se ve APARTE antes de guardarlo:
+   · Mapa a pantalla completa con capas (Relieve, Calles, Híbrido, Normal), salida 🟢, llegada 🔴 y tu posición 🔵 para situarte.
+   · Línea y perfil coloreados por pendiente (bajada, llano, >2 %, >4 %, >6 %, >9 %).
+   · Botones: guardar en Rutas, guardar como salida hecha o cerrar sin guardar. */
+(function(){
+  var COL=[[-6,'#A855F7','< −6 %'],[-2,'#60A5FA','bajada'],[2,'#2563EB','llano'],[4,'#F59E0B','> 2 %'],[6,'#F97316','> 4 %'],[9,'#DC2626','> 6 %'],[99,'#7F1D1D','> 9 %']];
+  function col(g){for(var i=0;i<COL.length;i++)if(g<COL[i][0])return COL[i][1];return COL[COL.length-1][1]}
+  function segs(P){ // tramos de ~100 m con su pendiente
+    var S=[],i0=0;for(var i=1;i<P.length;i++){if(P[i].d-P[i0].d>=0.1||i===P.length-1){var g=P[i].ok&&P[i0].ok?(P[i].e-P[i0].e)/Math.max(1,(P[i].d-P[i0].d)*1000)*100:0;S.push({a:i0,b:i,g:g});i0=i}}return S}
+  function prof(P,S,W,H){
+    var tot=P[P.length-1].d||1,mn=1e9,mx=-1e9;P.forEach(function(p){if(p.ok){mn=Math.min(mn,p.e);mx=Math.max(mx,p.e)}});if(mn>mx){mn=0;mx=1}
+    var pad=Math.max(8,(mx-mn)*.12),lo=mn-pad,hi=mx+pad*.6,X=function(d){return 30+d/tot*(W-34)},Y=function(e){return H-16-(e-lo)/(hi-lo)*(H-22)};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:100%;height:auto;border:1px solid #111;border-radius:8px;background:#F8FAFC">';
+    S.forEach(function(sg){var a=P[sg.a],b=P[sg.b];s+='<polygon points="'+X(a.d).toFixed(1)+','+(H-16)+' '+X(a.d).toFixed(1)+','+Y(a.e).toFixed(1)+' '+X(b.d).toFixed(1)+','+Y(b.e).toFixed(1)+' '+X(b.d).toFixed(1)+','+(H-16)+'" fill="'+col(sg.g)+'" stroke="'+col(sg.g)+'" stroke-width=".6"/>'});
+    s+='<polyline fill="none" stroke="#111" stroke-width="1.4" points="'+P.filter(function(_,i){return i%Math.max(1,Math.floor(P.length/300))===0||i===P.length-1}).map(function(p){return X(p.d).toFixed(1)+','+Y(p.e).toFixed(1)}).join(' ')+'"/>';
+    s+='<text x="2" y="'+(Y(mx)+4).toFixed(0)+'" font-size="10" font-weight="700" fill="#111">'+Math.round(mx)+'</text><text x="2" y="'+(Y(mn)+4).toFixed(0)+'" font-size="10" font-weight="700" fill="#111">'+Math.round(mn)+'</text>';
+    for(var k=0;k<=4;k++){var d=tot*k/4;s+='<text x="'+X(d).toFixed(0)+'" y="'+(H-3)+'" font-size="10" font-weight="700" fill="#4B5563" text-anchor="'+(k===0?'start':k===4?'end':'middle')+'">'+Math.round(d)+' km</text>'}
+    return s+'</svg>';
+  }
+  window.gpxView=function(o){return new Promise(function(res){
+    var pts=o.pts,P=[],d=0,dn=0,ok=pts.some(function(p){return !isNaN(p[2])});
+    for(var i=0;i<pts.length;i++){if(i)d+=hav(pts[i-1],pts[i]);var e=pts[i][2];P.push({d:d,e:isNaN(e)?0:e,ok:!isNaN(e)});if(i&&!isNaN(e)&&!isNaN(pts[i-1][2])&&e<pts[i-1][2])dn+=pts[i-1][2]-e}
+    var S=segs(P),min=o.mins||estMins(o.km,o.up||0),tm=Math.floor(min/60)+':'+String(Math.round(min%60)).padStart(2,'0');
+    var v=document.createElement('div');v.id='gpxV';
+    v.innerHTML='<div class="gvmp"><div id="gpxVm"></div><button class="gvx" aria-label="Cerrar">✕</button><div class="gvly"></div><button class="gvme">📍 Dónde estoy</button></div>'+
+      '<div class="gvpn"><h3>📂 '+esc(o.name)+'</h3>'+
+      '<div class="gvst"><span>↔ '+fmtNum(o.km,1)+'<i>km</i></span><span>↑ '+Math.round(o.up||0)+'<i>m</i></span><span>↓ '+Math.round(dn)+'<i>m</i></span><span>⏱ '+tm+'<i>'+(o.mins?'h':'h aprox.')+'</i></span></div>'+
+      '<div class="gvwh" id="gpxWh">Buscando dónde estás…</div>'+
+      (ok?prof(P,S,360,110)+'<div class="gvlg">'+COL.map(function(c){return '<span style="background:'+c[1]+'">'+c[2]+'</span>'}).join('')+'</div>':'<p style="color:#4B5563;margin:4px 0">Este archivo no trae altitud.</p>')+
+      '<div class="gvbt">'+(o.done?'<button class="gvpri" data-k="act">✅ Guardar en Actividades (ya la hice)</button><button data-k="route">🗺️ Guardar en Rutas, para hacerla</button>'
+                               :'<button class="gvpri" data-k="route">🗺️ Guardar en Rutas</button><button data-k="act">✅ Es una salida que ya hice</button>')+
+      '<button data-k="">✕ Cerrar sin guardar</button></div></div>';
+    document.body.appendChild(v);
+    var m=null;function end(k){try{if(m)m.remove()}catch(_){}v.remove();res(k||null)}
+    v.querySelector('.gvx').onclick=function(){end(null)};
+    v.querySelectorAll('.gvbt button').forEach(function(b){b.onclick=function(){end(b.dataset.k)}});
+    if(typeof maplibregl==='undefined'){v.querySelector('.gvmp').innerHTML='<p style="padding:20px">Sin conexión: no se puede mostrar el mapa.</p>';return}
+    m=newMap({container:'gpxVm',center:[pts[0][1],pts[0][0]],zoom:11});
+    var L=[['outdoors','⛰️ Relieve'],['streets','🏘️ Calles'],['satst','🛰️ Híbrido'],['normal','🗺️ Normal']],cur='outdoors',ly=v.querySelector('.gvly');
+    function lay(k){cur=k;try{setLayer(m,k)}catch(_){}ly.innerHTML=L.map(function(l){return '<button data-l="'+l[0]+'" class="'+(l[0]===cur?'gvon':'')+'">'+l[1]+'</button>'}).join('');ly.querySelectorAll('button').forEach(function(b){b.onclick=function(){lay(b.dataset.l)}})}
+    lay(cur);
+    m.on('load',function(){
+      try{lay(cur);
+        var F=S.map(function(sg){var c=[];for(var i=sg.a;i<=sg.b;i++)c.push([pts[i][1],pts[i][0]]);return{type:'Feature',properties:{c:ok?col(sg.g):'#2563EB'},geometry:{type:'LineString',coordinates:c}}});
+        m.addSource('gpxv',{type:'geojson',data:{type:'FeatureCollection',features:F}});
+        m.addLayer({id:'gpxv-c',type:'line',source:'gpxv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':9}});
+        m.addLayer({id:'gpxv',type:'line',source:'gpxv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','c'],'line-width':5.5}});
+      }catch(_){}
+    });
+    var b=new maplibregl.LngLatBounds();pts.forEach(function(p){b.extend([p[1],p[0]])});
+    function fit(extra){var bb=new maplibregl.LngLatBounds(b.getSouthWest(),b.getNorthEast());if(extra)bb.extend(extra);m.fitBounds(bb,{padding:{top:70,bottom:30,left:30,right:110},duration:0,maxZoom:15})}
+    m.once('load',function(){fit()});setTimeout(function(){try{m.resize();fit()}catch(_){}},300);
+    function mk(ll,c,t){var e=document.createElement('div');e.style.cssText='width:30px;height:30px;border-radius:50%;background:'+c+';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:14px';e.textContent=t;return new maplibregl.Marker({element:e}).setLngLat(ll).addTo(m)}
+    mk([pts[0][1],pts[0][0]],'#16A34A','▶');mk([pts[pts.length-1][1],pts[pts.length-1][0]],'#DC2626','🏁');
+    var me=null;
+    function locate(go){var wh=document.getElementById('gpxWh');if(!navigator.geolocation){if(wh)wh.textContent='';return}
+      navigator.geolocation.getCurrentPosition(function(p){var ll=[p.coords.latitude,p.coords.longitude];if(!document.getElementById('gpxV'))return;
+        if(!me){var e=document.createElement('div');e.style.cssText='width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.25)';me=new maplibregl.Marker({element:e}).setLngLat([ll[1],ll[0]]).addTo(m)}else me.setLngLat([ll[1],ll[0]]);
+        var best=1e9;for(var i=0;i<pts.length;i+=Math.max(1,Math.floor(pts.length/800)))best=Math.min(best,hav(ll,pts[i]));
+        var ds=hav(ll,pts[0]);if(wh)wh.textContent=best<0.15?'🔵 Estás encima de la ruta':'🔵 Estás a '+fmtNum(ds,1)+' km de la salida'+(best<ds-0.2?' (a '+fmtNum(best,1)+' km de la ruta)':'');
+        if(go)fit([ll[1],ll[0]]);
+      },function(){var wh=document.getElementById('gpxWh');if(wh)wh.textContent=''},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
+    v.querySelector('.gvme').onclick=function(){locate(true)};locate(false);
+  })};
 })();
 </script>
 </body>
