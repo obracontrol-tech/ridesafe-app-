@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
+/* v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
+   v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
    v5.54.0 — Voz: no corta la pregunta (espera 2 s de silencio) y el micrófono vuelve 2 s después de que la app acabe de hablar.
    v5.53.1 — Capa Caminos: líneas más gruesas y aviso «Acerca el mapa para ver los caminos» cuando el mapa está lejos.
    v5.53.0 — Capa «🛤️ Caminos y pistas» en Capas del mapa: resalta pistas (naranja), senderos (marrón) y carriles bici (azul), como los mapas de Garmin.
@@ -1338,7 +1339,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.55.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.56.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9657,6 +9658,73 @@ function vozMenu(t){
     try{localStorage.removeItem('rs_gh_ask')}catch(e){}
     setTimeout(ghBack,400);
   });
+})();
+</script>
+<script>
+/* v5.56.0 — 📅 MI DÍA: todas las salidas del mismo día juntas en un solo mapa (de casa a casa), con km totales,
+   tiempo en movimiento (los ratos parados no cuentan: pausa automática) y media de km/h. Se comparte en redes como una foto. */
+(function(){
+  var DAYID=-1,dayMap=null;
+  function dayActs(d){return acts.filter(function(a){return a.date===d&&a.poly}).sort(function(a,b){return a.id-b.id})}
+  function dayBuild(d){
+    var L=dayActs(d);if(!L.length)return null;var C=[],km=0,up=0,mins=0;
+    L.forEach(function(a){try{decodePoly(a.poly).forEach(function(p){C.push(p)})}catch(e){}km+=+a.km||0;up+=+a.up||0;mins+=+a.mins||0});
+    if(C.length<2)return null;
+    var fd=new Date(d+'T12:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+    return{id:DAYID,name:'Mi día en bici',date:d,km:+km.toFixed(1),up:Math.round(up),mins:Math.round(mins),poly:encodePoly(C),coords:C,list:L,fd:fd,group:false};
+  }
+  window.dayOpen=function(d){
+    var M=dayBuild(d);if(!M){toast('Ese día no hay salidas con recorrido');return}
+    var vm=M.mins>0?M.km/(M.mins/60):0;
+    $('rideBody').innerHTML=sheetHead('📅 Mi día')+
+     '<p style="color:var(--txt2);margin:-8px 0 12px;text-transform:capitalize">'+esc(M.fd)+' · '+M.list.length+' '+(M.list.length>1?'salidas juntas':'salida')+'</p>'+
+     '<div class="rmap" id="dayMap"></div>'+
+     '<div class="pstats" style="margin-top:0"><div><b class="num">'+fmtNum(M.km,1)+'</b><span>km</span></div><div><b class="num">'+hm(M.mins)+'</b><span>en marcha</span></div><div><b class="num">+'+M.up+'</b><span>m subida</span></div><div><b class="num">'+(vm?fmtNum(vm,1):'—')+'</b><span>km/h media</span></div></div>'+
+     '<p style="color:var(--txt2);font-size:13px;margin:8px 0 12px">⏸️ Los ratos parado no cuentan: la media es solo con la bici en marcha.</p>'+
+     '<button class="btn btn-lime" style="width:100%;min-height:58px;font-size:17px" onclick="dayPhoto(\''+d+'\')">📸 Compartir mi día en redes</button>'+
+     '<button class="btn btn-line" style="width:100%;margin-top:8px" onclick="dayGpx(\''+d+'\')">⬇️ GPX de todo el día</button>'+
+     '<div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:12px"><b>🚴 Salidas del día</b>'+
+     M.list.map(function(a,i){return '<div onclick="openActDetail('+a.id+')" style="cursor:pointer;display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:'+(i?'1px solid var(--line)':'0')+'"><span>'+(i+1)+'. '+esc(a.name)+' · '+hm(a.mins||0)+'</span><b class="num">'+fmtNum(a.km,1)+' km ›</b></div>'}).join('')+
+     '<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:2px solid var(--lime);color:var(--lime)"><b>Total</b><b class="num">'+fmtNum(M.km,1)+' km</b></div></div>';
+    try{openRideId=null}catch(e){}openSheet('sh-ride');
+    try{if(dayMap){dayMap.remove();dayMap=null}}catch(e){}
+    if(typeof maplibregl==='undefined')return;
+    var c=M.coords;dayMap=newMap({container:'dayMap',center:[c[0][1],c[0][0]],zoom:12,attributionControl:false});
+    var b=new maplibregl.LngLatBounds();
+    M.list.forEach(function(a,i){try{var p=decodePoly(a.poly);setLine(dayMap,p,'dia'+i,'#C8DC3C');p.forEach(function(q){b.extend([q[1],q[0]])})}catch(e){}});
+    try{new maplibregl.Marker({color:'#22C55E'}).setLngLat([c[0][1],c[0][0]]).addTo(dayMap);new maplibregl.Marker({color:'#EF4444'}).setLngLat([c[c.length-1][1],c[c.length-1][0]]).addTo(dayMap)}catch(e){}
+    dayMap.fitBounds(b,{padding:28,duration:0});setTimeout(function(){if(dayMap){dayMap.resize();dayMap.fitBounds(b,{padding:28,duration:0})}},350);
+  };
+  window.dayGpx=function(d){var M=dayBuild(d);if(M)downloadGPX(M.coords,'Mi dia '+d)};
+  window.dayPhoto=function(d){
+    var M=dayBuild(d);if(!M)return;delete M.coords;delete M.list;
+    var fu=window.fixUp;window.fixUp=async function(){return false};   // la foto del día nunca se guarda como actividad
+    acts.push(M);
+    try{openPhoto(DAYID)}finally{var i=acts.indexOf(M);if(i>=0)acts.splice(i,1);window.fixUp=fu}
+    try{$('phTitle').textContent='📅 Mi día en bici'}catch(e){}
+  };
+  // Tarjeta «Hoy» en Actividades: toca para ver todo el día
+  var rA=window.renderActs;
+  window.renderActs=function(){
+    rA.apply(this,arguments);
+    try{
+      var t=iso(new Date()),td=acts.filter(function(a){return a.date===t});var el=$('aToday');
+      if(!el){el=document.createElement('div');el.id='aToday';$('actList').before(el)}
+      el.style.cssText='cursor:pointer;background:var(--card);border:1px solid var(--lime);border-radius:16px;padding:12px 14px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px';
+      el.style.display=td.length?'flex':'none';if(!td.length)return;
+      var km=td.reduce(function(s,a){return s+(+a.km||0)},0),mn=td.reduce(function(s,a){return s+(+a.mins||0)},0),vm=mn>0?km/(mn/60):0;
+      el.onclick=function(){dayOpen(t)};
+      el.innerHTML='<span>📅 <b>Hoy</b> · '+td.length+' '+(td.length>1?'salidas':'salida')+(vm?' · '+fmtNum(vm,1)+' km/h':'')+'<small style="display:block;color:var(--lime);font-weight:700;margin-top:2px">Ver mi día entero en el mapa ›</small></span><b class="num" style="color:var(--lime);font-size:20px">'+fmtNum(km,1)+' km</b>';
+    }catch(e){}
+  };
+  // En el detalle de una salida: si ese día hubo más, botón para verlo todo junto
+  var oD=window.openActDetail;
+  window.openActDetail=function(id){
+    oD.apply(this,arguments);
+    try{var a=acts.find(function(x){return x.id===id});if(!a)return;var n=dayActs(a.date).length;if(n<2)return;
+      var ps=$('rideBody').querySelector('.pstats');if(ps)ps.insertAdjacentHTML('afterend','<button class="btn btn-line" style="width:100%;margin-top:10px;border-color:var(--lime);color:var(--lime)" onclick="dayOpen(\''+a.date+'\')">📅 Ver todo el día junto ('+n+' salidas)</button>')}catch(e){}
+  };
+  setTimeout(function(){try{renderActs()}catch(e){}},1200);
 })();
 </script>
 </body>
