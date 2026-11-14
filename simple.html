@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.30.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.31.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4400,9 +4400,7 @@ const LAYERS=[
   ['satst',   'Híbrido',             'Satélite con calles',      'satellite-streets-v12'],
   ['sat',     'Satélite',            'Foto aérea pura',             'satellite-v9'],
   ['navday',  'Carretera',           'Vías muy marcadas',       'navigation-day-v1'],
-  ['navnight','Noche',               'Para rodar de noche',       'navigation-night-v1'],
-  ['light',   'Claro',               'Minimalista, se ve la ruta',  'light-v11'],
-  ['dark',    'Oscuro',              'Elegante, ahorra batería',    'dark-v11']
+  ['osm',     'OpenStreetMap',       'Mapa estándar de OSM',        'https://tile.openstreetmap.org/{z}/{x}/{y}.png']   // v5.67: + OSM estándar; fuera Noche, Claro y Oscuro
 ];
 const LAYER_BY=Object.fromEntries(LAYERS.map(l=>[l[0],l]));
 let LAYER=(()=>{try{const v=localStorage.getItem('velogo_layer')||'normal';return LAYER_BY[v]?v:'normal'}catch(e){return 'normal'}})();
@@ -4410,7 +4408,8 @@ function addLayers(m){
   if(!m||!m.getStyle())return;
   addSat(m);   // Esri: respaldo para mapas pequeños sin atribución
   LAYERS.forEach(([k,,,st])=>{if(!st||m.getSource('L_'+k))return;
-    m.addSource('L_'+k,{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
+    const web=/^https?:/.test(st);   // v5.67: capa con dirección propia (OpenStreetMap estándar)
+    m.addSource('L_'+k,web?{type:'raster',tiles:[st],tileSize:256,maxzoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}:{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
     m.addLayer({id:'L_'+k,type:'raster',source:'L_'+k,layout:{visibility:'none'}})});
 }
 function setLayer(m,k){
@@ -4429,6 +4428,7 @@ function satToggle(m,on){setLayer(m,on?'satst':'normal')}
 function layerThumb(k,m){
   const st=LAYER_BY[k][3];const c=m&&m.getCenter?m.getCenter():{lng:0.62,lat:41.6};const z=13;
   const x=lon2x(c.lng,z),y=lat2y(c.lat,z);
+  if(st&&/^https?:/.test(st))return st.replace('{z}',z).replace('{x}',x).replace('{y}',y);   // v5.67
   return st?`https://api.mapbox.com/styles/v1/mapbox/${st}/tiles/256/${z}/${x}/${y}?access_token=${MAPBOX_TOKEN}`:null;
 }
 function layerMenu(m){

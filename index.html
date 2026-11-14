@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.66.0 — Capa «Caminos y pistas»: añade los caminos SIN ASFALTAR (tierra y grava) en marrón a rayas.
+/* v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
+   v5.66.0 — Capa «Caminos y pistas»: añade los caminos SIN ASFALTAR (tierra y grava) en marrón a rayas.
    v5.65.0 — Actividades: apartado «🗺️ Mis rutas», una tarjeta por ruta (ver/seguir, cambiar nombre, GPX, compartir, borrar).
    v5.64.0 — Dibujar ruta: botones ↶ Deshacer y ⌨️ Escribir la ruta (pueblos por orden, separados por comas) siempre a mano.
    v5.63.0 — Ruta dibujada: los puntos de paso salen numerados (1, 2, 3…).
@@ -1367,7 +1368,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.66.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.67.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4517,9 +4518,7 @@ const LAYERS=[
   ['satst',   'Híbrido',             'Satélite con calles',      'satellite-streets-v12'],
   ['sat',     'Satélite',            'Foto aérea pura',             'satellite-v9'],
   ['navday',  'Carretera',           'Vías muy marcadas',       'navigation-day-v1'],
-  ['navnight','Noche',               'Para rodar de noche',       'navigation-night-v1'],
-  ['light',   'Claro',               'Minimalista, se ve la ruta',  'light-v11'],
-  ['dark',    'Oscuro',              'Elegante, ahorra batería',    'dark-v11']
+  ['osm',     'OpenStreetMap',       'Mapa estándar de OSM',        'https://tile.openstreetmap.org/{z}/{x}/{y}.png']   // v5.67: + OSM estándar; fuera Noche, Claro y Oscuro
 ];
 const LAYER_BY=Object.fromEntries(LAYERS.map(l=>[l[0],l]));
 let LAYER=(()=>{try{const v=localStorage.getItem('velogo_layer')||'normal';return LAYER_BY[v]?v:'normal'}catch(e){return 'normal'}})();
@@ -4527,7 +4526,8 @@ function addLayers(m){
   if(!m||!m.getStyle())return;
   addSat(m);   // Esri: respaldo para mapas pequeños sin atribución
   LAYERS.forEach(([k,,,st])=>{if(!st||m.getSource('L_'+k))return;
-    m.addSource('L_'+k,{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
+    const web=/^https?:/.test(st);   // v5.67: capa con dirección propia (OpenStreetMap estándar)
+    m.addSource('L_'+k,web?{type:'raster',tiles:[st],tileSize:256,maxzoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}:{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
     m.addLayer({id:'L_'+k,type:'raster',source:'L_'+k,layout:{visibility:'none'}})});
 }
 function setLayer(m,k){
@@ -4546,6 +4546,7 @@ function satToggle(m,on){setLayer(m,on?'satst':'normal')}
 function layerThumb(k,m){
   const st=LAYER_BY[k][3];const c=m&&m.getCenter?m.getCenter():{lng:0.62,lat:41.6};const z=13;
   const x=lon2x(c.lng,z),y=lat2y(c.lat,z);
+  if(st&&/^https?:/.test(st))return st.replace('{z}',z).replace('{x}',x).replace('{y}',y);   // v5.67
   return st?`https://api.mapbox.com/styles/v1/mapbox/${st}/tiles/256/${z}/${x}/${y}?access_token=${MAPBOX_TOKEN}`:null;
 }
 function layerMenu(m){
