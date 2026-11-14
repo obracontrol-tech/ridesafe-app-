@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.57.0 — Voz: tus órdenes primero. La voz del navegador espera mientras das una orden y se calla al tocar 🎤 o decir «Oye bici».
+/* v5.58.0 — 🎵 Música por voz («Oye bici, pon / quita la música», «siguiente canción», «sube / baja la música»); la música calla mientras das una orden.
+   v5.57.0 — Voz: tus órdenes primero. La voz del navegador espera mientras das una orden y se calla al tocar 🎤 o decir «Oye bici».
    v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
    v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
    v5.54.0 — Voz: no corta la pregunta (espera 2 s de silencio) y el micrófono vuelve 2 s después de que la app acabe de hablar.
@@ -1340,7 +1341,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.57.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.58.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7934,7 +7935,7 @@ function vcDo(n){
   if(has(/\b(habla|con voz|pon la voz|activa la voz)\b/)){vcOk2();if(!live.voice)toggleVoice();return true}
   if(has(/\b(emergencia|socorro|auxilio|sos|ayuda urgente)\b/)){vcOk2();try{sos()}catch(e){}VC.ask='sos';VC.askT=Date.now();vcSay('Emergencia. Di llamar, para llamar al uno uno dos, o di ubicación, para enviar tu ubicación por WhatsApp.');return true}
   if(has(/\b(terminar|termina|acabar|fin de la salida|finalizar)\b/)){vcOk2();VC.ask='fin';VC.askT=Date.now();vcSay('¿Terminar la salida y guardarla? Di sí, o di no.');return true}
-  if(has(/\b(ordenes|que puedo decir|comandos|ayuda de voz)\b/)){vcOk2();vcSay('Puedes decir: pausa, seguir, cómo voy, cuánto falta, va a llover, qué hora es, viento, ir a y el pueblo, quitar ruta, pinchazo, esperad, agua, dónde estoy, silencio, habla, modo ahorro, emergencia y terminar.');return true}
+  if(has(/\b(ordenes|que puedo decir|comandos|ayuda de voz)\b/)){vcOk2();vcSay('Puedes decir: pausa, seguir, cómo voy, cuánto falta, va a llover, qué hora es, viento, ir a y el pueblo, quitar ruta, pinchazo, esperad, agua, dónde estoy, silencio, habla, pon la música, quita la música, siguiente canción, modo ahorro, emergencia y terminar.');return true}
   /* v5.40.1 — lo que no entiende aquí, lo prueban las órdenes nuevas (cuánto falta, agua, dónde estoy…) */
   try{if(typeof vozRun==='function'&&!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(n)&&vozRun(n))return true}catch(e){}
   return false;
@@ -9755,6 +9756,47 @@ function vozMenu(t){
   var cs=window.cascoSay;window.cascoSay=function(){Q.direct=true;try{return cs.apply(this,arguments)}finally{Q.direct=false}};
   var vl=window.vozListen;
   window.vozListen=function(silent){if(!silent&&Q.on){hush();Q.on=false}return vl.apply(this,arguments)};
+})();
+</script>
+<script>
+/* v5.58.0 — 🎵 Música por voz: «Oye bici, pon la música» / «quita la música» / «siguiente canción» / «sube» o «baja la música».
+   Funciona con la música de la app (Música en ruta: tus canciones o la radio). Spotify y Wimbi van por fuera y la app no los puede mandar.
+   Y mientras das una orden («Oye bici», 🎤 o contestas sí/no), la música se para un momento para que el móvil te oiga, y luego vuelve sola. */
+(function(){
+  function hasSongs(){try{return mus.list.length>0}catch(e){return false}}
+  function playing(){try{return !!(mus.a&&!mus.a.paused)}catch(e){return false}}
+  function musCmd(t){
+    if(!/\b(musica|cancion|canciones|tema|radio)\b/.test(t))return null;
+    if(/\b(apaga|apagar|quita|quitar|para|parar|pausa|pausar|stop|desconecta|desconectar|sin|fuera|calla|silencia)\b/.test(t)||/\bmusica (off|no)\b/.test(t)){
+      try{musPause()}catch(e){}return 'Música apagada.'}
+    if(/\b(siguiente|otra|cambia|cambiar|pasa|salta)\b/.test(t)){if(!hasSongs())return 'none';try{musNext()}catch(e){}return 'Siguiente canción.'}
+    if(/\b(anterior|atras)\b/.test(t)){if(!hasSongs())return 'none';try{musPrev()}catch(e){}return 'Canción anterior.'}
+    if(/\b(sube|subir|mas alta|mas fuerte|alto)\b/.test(t)){try{musVol(mus.vol+0.2)}catch(e){}return 'Subo la música.'}
+    if(/\b(baja|bajar|mas baja|mas flojo|flojo)\b/.test(t)){try{musVol(Math.max(0.1,mus.vol-0.2))}catch(e){}return 'Bajo la música.'}
+    if(/\b(pon|poner|enciende|encender|activa|activar|quiero|play|dale|empieza|vuelve|volver)\b/.test(t)||/^(la )?musica( on| si)?$/.test(t)){
+      if(!hasSongs())return 'none';try{musPlay()}catch(e){}return 'Música.'}
+    return null;
+  }
+  function none(say){say('No tienes música en la app. Elige tus canciones o la radio en Música en ruta.');try{setTimeout(openMusic,2500)}catch(e){}}
+  // Durante la salida (escucha de ruta)
+  var vd=window.vcDo;
+  window.vcDo=function(n){
+    try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=musCmd(n);if(r){vcOk2();if(r==='none')none(vcSay);else vcSay(r);return true}}}catch(e){}
+    return vd.apply(this,arguments)};
+  // «Oye bici» y el botón 🎤
+  var vr=window.vozRun;
+  window.vozRun=function(t){
+    try{var r=musCmd(t);if(r){if(r==='none')none(vozSay);else vozSay(r);return true}}catch(e){}
+    return vr.apply(this,arguments)};
+  // Mientras das una orden, la música calla un momento y luego vuelve
+  var was=false;
+  function busy(){var n=Date.now();try{if(VZ.oneShot||(VZ.pending&&n<VZ.pending.until)||n<VZ.armedT)return true;if(typeof VC!=='undefined'&&VC.ask&&n-(VC.askT||0)<15000)return true}catch(e){}return false}
+  setInterval(function(){
+    try{
+      if(busy()){if(playing()&&mus.want){mus.a.pause();was=true}}
+      else if(was){was=false;if(mus.want&&mus.a&&mus.a.paused)setTimeout(function(){try{if(!busy()&&mus.want&&mus.a.paused)mus.a.play().catch(function(){})}catch(e){}},1500)}
+    }catch(e){}
+  },250);
 })();
 </script>
 </body>
