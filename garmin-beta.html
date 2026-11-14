@@ -67,7 +67,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Garmin beta</title>
+<title>RideSafe IA · Garmin beta 0.2</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -9817,7 +9817,7 @@ html.gmx .lvpanel{background:#fff!important;border-top:3px solid #111!important;
 html.gmx .lvstats{display:grid!important;grid-template-columns:1fr;gap:0!important;border-radius:0!important;padding:0!important;background:#fff!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html.gmx .lvstats .lvbig{border:0!important;border-bottom:1px solid #111!important;padding:4px 12px 2px!important;text-align:center!important;position:relative;color:#000}
 html.gmx .lvstats .lvbig::before{content:"VELOCIDAD";position:absolute;left:10px;top:4px;font:700 11px/1 "Plus Jakarta Sans",sans-serif;color:#4B5563;letter-spacing:.6px}
-html.gmx .lvbig b{font-size:84px!important;color:#000!important;line-height:.95!important}
+html.gmx .lvbig b{font-size:60px!important;color:#000!important;line-height:.95!important}
 html.gmx .lvbig span{color:#4B5563!important;font-size:16px!important}
 html.gmx .lvgrid{gap:0!important;background:#fff}
 html.gmx .lvgrid div{background:#fff!important;border:0!important;border-right:1px solid #111!important;border-bottom:1px solid #111!important;border-radius:0!important;padding:4px 4px 6px!important;display:flex!important;flex-direction:column-reverse;color:#000!important;box-shadow:none!important}
@@ -9862,7 +9862,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
   // Tema claro solo aquí (no se guarda: la app normal sigue como la tengas)
   function light(){try{document.documentElement.dataset.theme='light';var s=document.getElementById('swLight');if(s)s.checked=true;var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#111111'}catch(e){}}
   window.setTheme=function(){light()};light();
-  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.1';document.body.appendChild(tag);
+  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.2';document.body.appendChild(tag);
 
   // ---- Subidas a partir del perfil [{d:km,e:m}] ----
   function smooth(P){var Q=[],step=0.05,tot=P[P.length-1].d,j=1;function at(x){while(j<P.length-1&&P[j].d<x)j++;var a=P[j-1],b=P[j],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*Math.max(0,Math.min(1,t))}
@@ -9878,6 +9878,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
         else if(H===L&&P[i].e<P[L].e)L=H=i;
       }
       if(H>L)fin();return C;}
+  window.gmClimbsOf=function(P){try{return climbs(P)}catch(e){return[]}};
   function col(p){return p<3?'#22C55E':p<6?'#FACC15':p<9?'#F97316':p<12?'#DC2626':'#7F1D1D'}
   function bar(P,c){
     var seg=[],step=Math.max(0.1,c.len/12),x=c.d0,i=c.a;
@@ -9923,7 +9924,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
       var k=C.findIndex(function(c){return c.d1>done});
       el.style.display='block';
       if(k<0){el.className='gmClimb';el.innerHTML='<div class="h"><span>⛰️ Subidas</span><span>'+C.length+'/'+C.length+' hechas ✓</span></div>';return out}
-      var c=C[k],on=done>=c.d0;
+      var c=C[k],on=done>=c.d0;if(!on&&c.d0-done>2){el.style.display='none';return out}   // 0.2: solo cerca de la subida
       var txt=on?'Faltan '+f1(c.d1-done)+' km · ↑ '+Math.max(0,Math.round(c.gain-(at(P,done)-at(P,c.d0))))+' m':'Empieza en '+f1(c.d0-done)+' km';
       el.className='gmClimb';
       el.innerHTML='<div class="h"><span>⛰️ '+(on?'Subiendo':'Próxima subida')+'</span><span>'+k+'/'+C.length+' hechas</span></div>'+row(P,c,k+1,C.length,txt).replace('<div class="gmClimb">','<div>');
@@ -9932,6 +9933,151 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
       if(!on&&c.d0-done<0.5&&!live.gmSaid[k]){live.gmSaid[k]=1;try{speak('Subida a 500 metros. '+f1(c.len)+' kilómetros al '+Math.round(c.pct)+' por ciento.')}catch(e){}}
     }catch(e){console.warn('gm live',e)}
     return out};
+})();
+</script>
+<style id="gmTheme2">
+/* ===== GARMIN BETA 0.2 ===== */
+/* Campos de datos configurables (mantén pulsado un campo para cambiarlo) */
+html.gmx .lvstats .lvgrid,html.gmx #lvNavRow{display:none!important}
+#gmF{display:grid!important;grid-template-columns:1fr 1fr 1fr;gap:0!important;background:#fff;border-bottom:1px solid #111}
+#gmF>.f{margin:0!important}
+#gmF .f{position:relative;border-right:1px solid #111;border-top:1px solid #111;padding:2px 8px 3px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#gmF .f:nth-child(3n){border-right:0}
+#gmF .f:nth-child(-n+3){border-top:0}
+#gmF .f small{font:700 10.5px/1.15 "Plus Jakarta Sans",sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#4B5563}
+#gmF .f b{font:800 30px/1 "Barlow Condensed",sans-serif;color:#000;text-align:center;white-space:nowrap}
+#gmF .f b i{font:700 13px "Barlow Condensed",sans-serif;font-style:normal;color:#4B5563;margin-left:3px}
+#gmF .f.hold{background:#DBEAFE}
+#gmF .f.fn b{color:#0B63CE}
+/* Páginas como en el Garmin: ◀ Datos 1/2 ▶ */
+#gmPg{display:flex;align-items:center;justify-content:space-between;background:#111;color:#fff;font:800 14px "Plus Jakarta Sans",sans-serif;letter-spacing:.4px;text-transform:uppercase;min-height:34px}
+#gmPg button{background:none;border:0;color:#fff;font:800 20px sans-serif;width:52px;min-height:34px;cursor:pointer}
+#gmPg span i{font-style:normal;color:#9CA3AF;margin-left:6px}
+#gmP2{display:none;background:#fff;padding:6px 8px 4px}
+.lvpanel.gmPage2 #gmP2{display:block}
+.lvpanel.gmPage2 #gmF,.lvpanel.gmPage2 .lvstats,.lvpanel.gmPage2 #gmLive{display:none!important}
+.gmProf{display:block;width:100%;height:auto;border:1px solid #111;border-radius:4px;background:#F8FAFC}
+.gmPlanTop{background:#fff;border:1px solid #111;border-radius:10px;overflow:hidden;margin:2px 0 8px}
+.gmPlanTop .row{display:flex;justify-content:space-around;align-items:center;padding:6px 4px;border-top:1px solid #111;font:800 24px "Barlow Condensed",sans-serif;color:#000}
+.gmPlanTop .row span i{font-style:normal;font:700 13px "Barlow Condensed",sans-serif;color:#4B5563;margin-left:2px}
+.gmPlanTop .gmProf{border:0;border-radius:0}
+/* Aviso de giro con flechas de verdad */
+html.gmx .lvbanner{background:#111!important}
+html.gmx .lvbanner .ar svg{display:block;width:62px;height:62px}
+html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
+</style>
+<script>
+/* ===== GARMIN BETA 0.2 =====
+   · Campos de datos como el Garmin: 6 casillas que eliges tú (mantén pulsada una casilla para cambiarla).
+   · Páginas: ◀ Datos ▶ Subidas (perfil de la ruta con tu posición y las subidas en colores). Desliza o toca las flechas.
+   · Flechas de giro dibujadas (no emojis) en la barra de arriba.
+   · Al planificar: perfil de la ruta y fila ↔ km · ↑ m · ⏱ tiempo, como la pantalla de rutas del Garmin. */
+(function(){
+  var DEF=['dist','time','avg','up','grade','clock'];
+  var M={
+    dist:['Distancia',function(){return [live.km.toFixed(2),'km']}],
+    time:['Tiempo',function(){return [clock(elapsed()),'']}],
+    avg:['Vel. media',function(){var hh=elapsed()/3600000;return [hh>0.01?(live.km/hh).toFixed(1):'—','km/h']}],
+    max:['Vel. máxima',function(){return [(live.gmMax||0).toFixed(1),'km/h']}],
+    up:['Ascenso',function(){return [Math.round(live.up||0),'m']}],
+    alt:['Altitud',function(){return [live.alt!=null?Math.round(live.alt):'—','m']}],
+    grade:['Pendiente',function(){var g=gradeNow();return [g==null?'—':(g>0?'+':'')+Math.round(g),'%']}],
+    clock:['Hora',function(){var d=new Date();return [d.getHours()+':'+String(d.getMinutes()).padStart(2,'0'),'']}],
+    left:['Falta',function(){var n=live.nav;return [n&&n.left!=null?n.left.toFixed(1):'—','km']}],
+    eta:['Llegada',function(){var n=live.nav;if(!n||n.left==null)return ['—',''];var v=Math.max(10,live.speed>5?live.speed:18),e=new Date(Date.now()+n.left/v*3600000);return [e.getHours()+':'+String(e.getMinutes()).padStart(2,'0'),'']}],
+    climb:['Falta subida',function(){var c=curClimb();return c?[c.left.toFixed(1),'km']:['—','']}],
+    batt:['Batería',function(){return [BAT!=null?Math.round(BAT*100):'—','%']}]
+  };
+  var BAT=null;try{navigator.getBattery&&navigator.getBattery().then(function(b){BAT=b.level;b.addEventListener('levelchange',function(){BAT=b.level})})}catch(e){}
+  function fields(){try{var f=JSON.parse(localStorage.getItem('gm_fields')||'null');if(Array.isArray(f)&&f.length===6&&f.every(function(k){return M[k]}))return f}catch(e){}return DEF.slice()}
+  function at(P,x){for(var i=1;i<P.length;i++)if(P[i].d>=x){var a=P[i-1],b=P[i],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*t}return P[P.length-1].e}
+  function done(){var n=live.nav,P=live.gmP;if(!n||n.left==null||!P)return null;var tot=P[P.length-1].d;return Math.max(0,Math.min(tot,tot*(1-n.left/Math.max(.001,n.total||tot))))}
+  function gradeNow(){
+    var P=live.gmP,d=done();if(P&&d!=null)return (at(P,Math.min(P[P.length-1].d,d+0.1))-at(P,Math.max(0,d-0.1)))/2;
+    var p=live.pts;if(!p||p.length<5)return null;var s=0,j=p.length-1;while(j>0&&s<0.15){s+=hav(p[j-1],p[j]);j--}
+    if(s<0.08||p[j][2]==null||p[p.length-1][2]==null)return null;return (p[p.length-1][2]-p[j][2])/(s*10);
+  }
+  function curClimb(){var d=done(),C=live.gmC||[];if(d==null)return null;for(var i=0;i<C.length;i++)if(d>=C[i].d0&&d<C[i].d1)return{c:C[i],left:C[i].d1-d};return null}
+  function col(p){return p<3?'#22C55E':p<6?'#FACC15':p<9?'#F97316':p<12?'#DC2626':'#7F1D1D'}
+  // Perfil SVG: gris; subidas en colores; parte hecha más oscura; tu posición
+  window.gmProfSVG=function(P,C,pos,W,H){
+    W=W||360;H=H||90;var tot=P[P.length-1].d||1,mn=1e9,mx=-1e9;P.forEach(function(p){mn=Math.min(mn,p.e);mx=Math.max(mx,p.e)});
+    var pad=(mx-mn)*0.15+5;mn-=pad;mx+=pad*0.4;var X=function(d){return d/tot*W},Y=function(e){return H-(e-mn)/(mx-mn)*(H-4)};
+    var step=Math.max(1,Math.floor(P.length/240)),pts=[];for(var i=0;i<P.length;i+=step)pts.push(P[i]);pts.push(P[P.length-1]);
+    var line=pts.map(function(p){return X(p.d).toFixed(1)+','+Y(p.e).toFixed(1)}).join(' ');
+    var s='<svg class="gmProf" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><polygon points="0,'+H+' '+line+' '+W+','+H+'" fill="#CBD5E1"/>';
+    (C||[]).forEach(function(c,k){var seg=Math.max(0.05,(c.d1-c.d0)/14);for(var x=c.d0;x<c.d1-1e-6;x+=seg){var x2=Math.min(c.d1,x+seg),e1=at(P,x),e2=at(P,x2);
+      s+='<polygon points="'+X(x).toFixed(1)+','+H+' '+X(x).toFixed(1)+','+Y(e1).toFixed(1)+' '+X(x2).toFixed(1)+','+Y(e2).toFixed(1)+' '+X(x2).toFixed(1)+','+H+'" fill="'+col((e2-e1)/((x2-x)*10))+'" stroke="'+col((e2-e1)/((x2-x)*10))+'" stroke-width=".8"/>'}
+      s+='<text x="'+X((c.d0+c.d1)/2).toFixed(1)+'" y="11" text-anchor="middle" font-size="10" font-weight="800" fill="#111">'+(k+1)+'</text>'});
+    s+='<polyline points="'+line+'" fill="none" stroke="#111" stroke-width="1.5"/>';
+    if(pos!=null){var px=X(pos);s+='<rect x="0" y="0" width="'+px.toFixed(1)+'" height="'+H+'" fill="rgba(0,0,0,.18)"/><line x1="'+px.toFixed(1)+'" y1="0" x2="'+px.toFixed(1)+'" y2="'+H+'" stroke="#0B63CE" stroke-width="2"/><polygon points="'+(px-6).toFixed(1)+','+H+' '+(px+6).toFixed(1)+','+H+' '+px.toFixed(1)+','+(H-10)+'" fill="#0B63CE"/>'}
+    return s+'</svg>';
+  };
+  // ---- Flechas de giro dibujadas ----
+  var ANG={'⬅️':-90,'↖️':-45,'↩️':-135,'➡️':90,'↗️':45,'↪️':135,'⬆️':0,'🔄':180};
+  function arrowSVG(a){
+    if(a===180)return '<svg viewBox="0 0 48 48"><path d="M30 44V20a8 8 0 0 0-16 0v8" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><polygon points="6,26 22,26 14,38" fill="#fff"/></svg>';
+    var r=a*Math.PI/180,ex=24+15*Math.sin(r),ey=22-15*Math.cos(r),hx=Math.sin(r),hy=-Math.cos(r),px=-hy,py=hx;
+    var tip=(ex+hx*9).toFixed(1)+','+(ey+hy*9).toFixed(1),b1=(ex+px*9).toFixed(1)+','+(ey+py*9).toFixed(1),b2=(ex-px*9).toFixed(1)+','+(ey-py*9).toFixed(1);
+    return '<svg viewBox="0 0 48 48"><path d="M24 46V22L'+ex.toFixed(1)+' '+ey.toFixed(1)+'" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><polygon points="'+tip+' '+b1+' '+b2+'" fill="#fff"/></svg>';
+  }
+  // ---- Construir el panel ----
+  var page=1;
+  function build(){
+    var pn=document.querySelector('.lvpanel'),st=pn&&pn.querySelector('.lvstats');if(!st||document.getElementById('gmF'))return;
+    var pg=document.createElement('div');pg.id='gmPg';pg.innerHTML='<button type="button" aria-label="Página anterior">◀</button><span id="gmPgT">Datos</span><button type="button" aria-label="Página siguiente">▶</button>';
+    var f=document.createElement('div');f.id='gmF';
+    var p2=document.createElement('div');p2.id='gmP2';
+    st.before(pg);st.after(f);f.after(p2);
+    pg.querySelectorAll('button').forEach(function(b){b.onclick=function(){flip()}});
+    var x0=null;pn.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+    pn.addEventListener('touchend',function(e){if(x0==null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>70)flip()},{passive:true});
+    // mantener pulsado = cambiar el campo
+    var t=null;f.addEventListener('pointerdown',function(e){var c=e.target.closest('.f');if(!c)return;c.classList.add('hold');t=setTimeout(function(){c.classList.remove('hold');choose(+c.dataset.i)},650)});
+    ['pointerup','pointercancel','pointerleave'].forEach(function(ev){f.addEventListener(ev,function(){clearTimeout(t);f.querySelectorAll('.hold').forEach(function(x){x.classList.remove('hold')})})});
+    f.addEventListener('click',function(){try{sumSay()}catch(e){}});
+  }
+  function hasRoute(){return !!(live.nav&&live.gmP&&live.gmP.length>2)}
+  function flip(){if(!hasRoute()){page=1;toast('La página Subidas sale cuando sigues una ruta');return}page=page===1?2:1;try{vib(15)}catch(e){}paint()}
+  async function choose(i){
+    var F=fields(),keys=Object.keys(M);
+    var k=await askChoice('Casilla '+(i+1)+' · ahora: '+M[F[i]][0]+'. ¿Qué quieres ver?',keys.map(function(x){return [M[x][0]+(x===F[i]?' ✓':''),'',x]}));
+    if(k<0)return;F[i]=keys[k];try{localStorage.setItem('gm_fields',JSON.stringify(F))}catch(e){}paint();
+  }
+  function paint(){
+    if(!live.on)return;build();var pn=document.querySelector('.lvpanel');if(!pn)return;
+    if(!hasRoute())page=1;pn.classList.toggle('gmPage2',page===2);
+    var T=document.getElementById('gmPgT');if(T)T.innerHTML=(page===1?'Datos':'Subidas')+'<i>'+page+'/'+(hasRoute()?2:1)+'</i>';
+    var F=fields(),f=document.getElementById('gmF');
+    if(f){var nav=live.nav&&live.nav.left!=null,list=F.slice();
+      if(nav&&list.indexOf('left')<0&&list.indexOf('eta')<0)list=list.concat(['left','eta']);
+      var html=list.map(function(k,i){var v=M[k][1]();return '<div class="f'+(i>5?' fn':'')+'" data-i="'+Math.min(i,5)+'"><small>'+M[k][0]+'</small><b>'+v[0]+(v[1]?'<i>'+v[1]+'</i>':'')+'</b></div>'}).join('');
+      if(f._h!==html){f.innerHTML=html;f._h=html}}
+    if(page===2){var p2=document.getElementById('gmP2'),P=live.gmP,C=live.gmC||[],d=done();
+      var k=C.findIndex(function(c){return c.d1>(d||0)});
+      var tot=P[P.length-1].d;
+      var html2=gmProfSVG(P,C,d,360,96)+'<div style="display:flex;justify-content:space-between;font:800 18px Barlow Condensed,sans-serif;margin:4px 2px 2px"><span>📍 '+(d||0).toFixed(1)+' / '+tot.toFixed(1)+' km</span><span>⛰️ '+(k<0?C.length:k)+'/'+C.length+' hechas</span></div>';
+      if(p2._h!==html2){p2.innerHTML=html2;p2._h=html2}
+    }
+    // flecha de giro
+    var a=document.getElementById('lvArrow'),bn=document.getElementById('lvBanner');if(a&&!(bn&&bn.classList.contains('off'))){var e=a.textContent.trim();if(e in ANG)a.innerHTML=arrowSVG(ANG[e])}
+  }
+  var rl=window.renderLive;
+  window.renderLive=function(){var o=rl.apply(this,arguments);try{if(live.on){live.gmMax=Math.max(live.gmMax||0,live.astop||live.paused?0:(live.speed||0));paint()}}catch(e){console.warn('gm 0.2',e)}return o};
+  // la flecha: renderLive la vuelve a escribir cada segundo como emoji; se mantiene el dibujo
+  // ---- Planificar: cabecera como la pantalla de rutas del Garmin ----
+  var rp=window.renderPlan;
+  window.renderPlan=function(){
+    var o=rp.apply(this,arguments);
+    try{var old=document.getElementById('gmPlanTop');if(old)old.remove();var r=plan.route;if(!r)return o;var box=document.getElementById('pRows');if(!box)return o;
+      var P=null;if(r.prof&&r.prof.length>2)P=r.prof.map(function(p){return{d:+p.d,e:+p.e}});
+      var C=[];try{C=live&&live.gmP===P?live.gmC:null}catch(e){}
+      var mins=r.mins||estMins(r.km,r.up||0),tm=Math.floor(mins/60)+':'+String(Math.round(mins%60)).padStart(2,'0');
+      var top='<div class="gmPlanTop" id="gmPlanTop">'+(P?gmProfSVG(P,window.gmClimbsOf?gmClimbsOf(P):[],null,360,80):'')+
+        '<div class="row"><span>↔ '+fmtNum(r.km,1)+'<i>km</i></span><span>↑ '+Math.round(r.up||0)+'<i>m</i></span><span>⏱ '+tm+'<i>h</i></span></div></div>';
+      box.insertAdjacentHTML('afterbegin',top);
+    }catch(e){console.warn('gm plan 0.2',e)}
+    return o};
 })();
 </script>
 </body>
