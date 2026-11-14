@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.59.0 — Aspecto Garmin: pantalla clara, campos de datos (mantén pulsado para cambiarlos), páginas Datos/Ruta/Subidas, ClimbPro, flechas de giro, 🔔 timbre y ⚠️ avisos de peligro entre ciclistas.
+/* v5.60.0 — Sin vídeo de entrada ni aviso al abrir. Los nuevos ya no saltan solos a la Simple: en Inicio, tarjeta «Empieza por RideSafe IA Simple».
+   v5.59.0 — Aspecto Garmin: pantalla clara, campos de datos (mantén pulsado para cambiarlos), páginas Datos/Ruta/Subidas, ClimbPro, flechas de giro, 🔔 timbre y ⚠️ avisos de peligro entre ciclistas.
    v5.58.0 — 🎵 Música por voz («Oye bici, pon / quita la música», «siguiente canción», «sube / baja la música»); la música calla mientras das una orden.
    v5.57.0 — Voz: tus órdenes primero. La voz del navegador espera mientras das una orden y se calla al tocar 🎤 o decir «Oye bici».
    v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
@@ -63,7 +64,7 @@
   if(location.hash||location.search)return;
   var m=localStorage.getItem('rs_modo');
   if(m==='pro')return;
-  if(m==='simple'||!localStorage.getItem('velogo_me'))location.replace('simple.html');
+  if(m==='simple')location.replace('simple.html');   // v5.60: los nuevos ya no van solos a la Simple: ven la tarjeta «Empieza por la Simple»
 }catch(e){}})();
 </script>
 <meta charset="UTF-8">
@@ -1060,7 +1061,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 (function(){
   var s=document.getElementById('splash'),v=document.getElementById('splashV'),done=false;
   function end(){if(done)return;done=true;try{v.pause()}catch(e){}s.style.opacity='0';setTimeout(function(){s.remove()},460)}
-  var today=new Date().toISOString().slice(0,10),show=true;
+  var today=new Date().toISOString().slice(0,10),show=false;   // v5.60: sin vídeo de entrada
   try{if(location.hash||location.search)show=false;else if(localStorage.getItem('velogo_splash_day')===today)show=false}catch(e){}
   if(!show){s.remove();return}
   try{localStorage.setItem('velogo_splash_day',today)}catch(e){}
@@ -1170,6 +1171,22 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="annBox"></div>
   <div id="updBox"></div>
   <!-- v5.45: tarjeta de la guía de la web (se puede cerrar; sigue siempre en Perfil) -->
+  <!-- v5.60.0 — Tarjeta «Empieza por la Simple» (sustituye al cambio automático a la Simple) -->
+  <div id="rsSimpleCard" style="display:none;background:#fff;border:2px solid #111;border-radius:12px;padding:16px 16px 14px;margin:0 0 14px;color:#111">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:34px;line-height:1">🚲</span>
+      <div style="flex:1;min-width:0">
+        <div style="font:800 12px 'Plus Jakarta Sans',sans-serif;letter-spacing:.6px;color:#0B63CE">¿ACABAS DE LLEGAR?</div>
+        <b style="display:block;font-size:20px;line-height:1.2;margin:2px 0 6px">Empieza por RideSafe IA Simple</b>
+        <p style="margin:0;color:#374151;font-size:15px;line-height:1.45">La Pro es muy completa y al principio puede abrumar. La <b>Simple</b> tiene lo esencial para salir seguro: grabar tu salida, planificar rutas y avisar si pasa algo. Fácil y sin líos.</p>
+        <p style="margin:8px 0 0;color:#374151;font-size:15px;line-height:1.45">Cuando la tengas dominada, vuelve a la <b>Pro</b> y sácale todo el partido. <b style="color:#15803D">Las dos son gratis, siempre.</b></p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:8px;margin-top:12px">
+      <button class="btn btn-lime" style="min-height:52px;font-size:16px" onclick="rsToSimple()">▶ Probar la Simple</button>
+      <button class="btn btn-line" style="min-height:52px;font-size:15px" onclick="rsSimpleCardClose()">Seguir en Pro</button>
+    </div>
+  </div>
   <div id="guiaBox" class="guiaC" style="display:none">
     <button class="guiaX" onclick="guiaClose()" aria-label="Cerrar">✕</button>
     <div class="guiaH"><span class="guiaE">📖</span><div><span class="guiaT">GUÍA PASO A PASO</span><b>Saca el máximo a RideSafe IA</b></div></div>
@@ -1343,7 +1360,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.59.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.60.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8421,6 +8438,7 @@ Consejos para ahorrar batería en ruta:
 
 ¡Gracias por tu colaboración y buena ruta! 🚴`};
 function rsNoticeGate(n){n=n||0;try{
+  return;   // v5.60: sin aviso al abrir la app
   if($('rsNG')||store.get('rsNotice','')===RS_NOTICE.id)return;
   const busy=$('splash')||$('legalGate')||($('onb')&&$('onb').classList.contains('show'));
   if(busy){if(n<60)setTimeout(()=>rsNoticeGate(n+1),1500);return}
@@ -10243,6 +10261,12 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
   var vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=vozHz(n);if(r){if(r!=='bell'&&r!=='menu')vcSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}}catch(e){}return vd.apply(this,arguments)};
   var vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{var r=vozHz(t);if(r){if(r!=='bell'&&r!=='menu')vozSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}catch(e){}return vr.apply(this,arguments)};
 })();
+</script>
+<script>
+/* v5.60.0 — Tarjeta «Empieza por la Simple»: sale a quien tiene pocas salidas y no la ha cerrado */
+function rsToSimple(){try{localStorage.setItem('rs_modo','simple')}catch(e){}location.href='simple.html'}
+function rsSimpleCardClose(){try{localStorage.setItem('rs_simple_card','1')}catch(e){}var c=document.getElementById('rsSimpleCard');if(c)c.style.display='none';try{toast('Vale, seguimos en la Pro')}catch(e){}}
+(function(){try{if(localStorage.getItem('rs_simple_card'))return;if((acts||[]).length>=5)return;var c=document.getElementById('rsSimpleCard');if(c)c.style.display='block'}catch(e){}})();
 </script>
 </body>
 </html>

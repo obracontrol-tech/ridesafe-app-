@@ -988,7 +988,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 (function(){
   var s=document.getElementById('splash'),v=document.getElementById('splashV'),done=false;
   function end(){if(done)return;done=true;try{v.pause()}catch(e){}s.style.opacity='0';setTimeout(function(){s.remove()},460)}
-  var today=new Date().toISOString().slice(0,10),show=true;
+  var today=new Date().toISOString().slice(0,10),show=false;   // v5.60: sin vídeo de entrada
   try{if(location.hash||location.search)show=false;else if(localStorage.getItem('velogo_splash_day')===today)show=false}catch(e){}
   if(!show){s.remove();return}
   try{localStorage.setItem('velogo_splash_day',today)}catch(e){}
@@ -1245,7 +1245,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.23.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.24.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8264,6 +8264,7 @@ Consejos para ahorrar batería en ruta:
 
 ¡Gracias por tu colaboración y buena ruta! 🚴`};
 function rsNoticeGate(n){n=n||0;try{
+  return;   // v5.60: sin aviso al abrir la app
   if($('rsNG')||store.get('rsNotice','')===RS_NOTICE.id)return;
   const busy=$('splash')||$('legalGate')||($('onb')&&$('onb').classList.contains('show'));
   if(busy){if(n<60)setTimeout(()=>rsNoticeGate(n+1),1500);return}
