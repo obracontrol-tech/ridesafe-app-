@@ -67,7 +67,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Garmin beta 0.4</title>
+<title>RideSafe IA · Garmin beta 0.5</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -9862,7 +9862,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
   // Tema claro solo aquí (no se guarda: la app normal sigue como la tengas)
   function light(){try{document.documentElement.dataset.theme='light';var s=document.getElementById('swLight');if(s)s.checked=true;var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#111111'}catch(e){}}
   window.setTheme=function(){light()};light();
-  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.4';document.body.appendChild(tag);
+  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.5';document.body.appendChild(tag);
 
   // ---- Subidas a partir del perfil [{d:km,e:m}] ----
   function smooth(P){var Q=[],step=0.05,tot=P[P.length-1].d,j=1;function at(x){while(j<P.length-1&&P[j].d<x)j++;var a=P[j-1],b=P[j],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*Math.max(0,Math.min(1,t))}
@@ -10124,5 +10124,123 @@ html.gmx .lvstate{white-space:nowrap;font-size:11.5px!important;padding:4px 9px!
 .gmRB button:nth-child(2) small{color:#DBEAFE}
 .gmRB button:active{transform:scale(.97)}
 </style>
+<style id="gmTheme5">
+/* ===== GARMIN BETA 0.5 — 🔔 Timbre y ⚠️ Avisos de peligro ===== */
+.gmFab{position:fixed;left:10px;z-index:65;width:56px;height:56px;border-radius:50%;border:3px solid #111;background:#fff;font-size:27px;display:none;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+body:has(#app.live) .gmFab{display:flex}
+#gmBell{top:calc(12px + env(safe-area-inset-top))}
+#gmHaz{top:calc(78px + env(safe-area-inset-top));background:#FACC15}
+body:has(#app.live #lvBanner[style*="flex"]) #gmBell{top:calc(118px + env(safe-area-inset-top))}
+body:has(#app.live #lvBanner[style*="flex"]) #gmHaz{top:calc(184px + env(safe-area-inset-top))}
+body:has(#s-rutas.lvmin) .gmFab{display:flex}
+.gmFab:active{transform:scale(.92)}
+#gmBell.ring{animation:gmRing .5s}
+@keyframes gmRing{0%,100%{transform:rotate(0)}20%{transform:rotate(-22deg)}40%{transform:rotate(18deg)}60%{transform:rotate(-12deg)}80%{transform:rotate(8deg)}}
+.gmHzGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.gmHzGrid button{min-height:76px;border:2px solid #111;border-radius:10px;background:#fff;color:#111;font:800 16px "Plus Jakarta Sans",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.gmHzGrid button span{font-size:28px;line-height:1}
+.gmHzMk{width:34px;height:34px;border-radius:50%;background:#FACC15;border:3px solid #111;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}
+#gmHzAlert{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:9500;background:#FACC15;color:#111;border:3px solid #111;border-radius:12px;padding:12px 14px;font:800 20px "Plus Jakarta Sans",sans-serif;display:none;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+#gmHzAlert span{font-size:38px}
+#gmHzAlert small{display:block;font:700 14px "Plus Jakarta Sans",sans-serif;color:#374151}
+</style>
+<script>
+/* ===== GARMIN BETA 0.5 =====
+   🔔 TIMBRE: toca la campana (o di «Oye bici, timbre») y suena fuerte por el altavoz para avisar a peatones y ciclistas.
+   ⚠️ AVISOS DE PELIGRO entre ciclistas: marca un bache, piedras, cristales, obras… con un toque (o por voz: «bache», «obras»…).
+      A los demás ciclistas que pasen cerca la app les avisa por voz a unos 150 m. Los avisos caducan solos.
+      Firebase: colección «peligros» (hay que añadir su regla una vez). */
+(function(){
+  // ---------- 🔔 TIMBRE ----------
+  var AC=null;
+  function bell(){
+    try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
+      var comp=AC.createDynamicsCompressor();comp.connect(AC.destination);
+      [0,0.22].forEach(function(off){var t0=AC.currentTime+off;
+        [[2350,1],[3520,.55],[5480,.3],[7100,.15]].forEach(function(pa){
+          var o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=pa[0];
+          g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(pa[1],t0+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.9);
+          o.connect(g).connect(comp);o.start(t0);o.stop(t0+0.95)})});
+    }catch(e){}
+    try{vib(60)}catch(e){}var b=document.getElementById('gmBell');if(b){b.classList.remove('ring');void b.offsetWidth;b.classList.add('ring')}
+  }
+  window.gmBell=bell;
+  // ---------- ⚠️ PELIGROS ----------
+  var T={bache:['🕳️','Bache',3],piedras:['🪨','Piedras',3],cristales:['🍾','Cristales',3],obras:['🚧','Obras',15],arbol:['🌳','Árbol caído',5],aceite:['🛢️','Aceite o barro',3],gravilla:['⚪','Gravilla',5],otro:['⚠️','Otro peligro',3]};
+  var H={list:[],at:0,from:null,mk:[],said:{}};
+  function cell(la,lo){return Math.floor(la*10)+'_'+Math.floor(lo*10)}
+  function here(){try{var p=live.on&&live.pts&&live.pts[live.pts.length-1];if(p)return[p[0],p[1]]}catch(e){}try{return hereLL()}catch(e){return null}}
+  function alive(x){var dias=(T[x.t]||T.otro)[2];return x.ms&&Date.now()-x.ms<dias*86400000}
+  async function load(force){
+    var p=here();if(!p||!db)return;if(!force&&H.from&&hav(H.from,p)<4&&Date.now()-H.at<300000)return;
+    H.from=p;H.at=Date.now();var cs=[];for(var a=-1;a<=1;a++)for(var b=-1;b<=1;b++)cs.push(Math.floor(p[0]*10+a)+'_'+Math.floor(p[1]*10+b));
+    try{var s=await db.collection('peligros').where('g','in',cs).limit(300).get();
+      H.list=s.docs.map(function(d){var x=d.data();return{id:d.id,lat:x.lat,lng:x.lng,t:x.t,uid:x.uid,n:x.n||'',ms:x.ts&&x.ts.toMillis?x.ts.toMillis():0}}).filter(alive);
+      draw();
+    }catch(e){if(!H.warned){H.warned=1;console.warn('peligros',e)}}
+  }
+  function draw(){
+    try{H.mk.forEach(function(m){m.remove()});H.mk=[];if(typeof maplibregl==='undefined'||!map)return;
+      H.list.forEach(function(x){var el=document.createElement('div');el.className='gmHzMk';el.textContent=(T[x.t]||T.otro)[0];
+        el.onclick=function(ev){ev.stopPropagation();info(x)};
+        H.mk.push(new maplibregl.Marker({element:el}).setLngLat([x.lng,x.lat]).addTo(map))});
+    }catch(e){}
+  }
+  function ago(ms){var m=Math.round((Date.now()-ms)/60000);return m<60?'hace '+m+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'}
+  async function info(x){
+    var mine=x.uid===uid,k=(T[x.t]||T.otro);
+    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms)+(x.n?' por '+x.n:''),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
+    if(i===0&&mine){try{await db.collection('peligros').doc(x.id).delete();H.list=H.list.filter(function(y){return y.id!==x.id});draw();toast('Aviso quitado')}catch(e){toast('No se pudo quitar')}}
+  }
+  async function report(t,silent){
+    var p=here();if(!p){toast('Aún no tengo tu posición GPS');return}
+    if(!db||!uid){toast('Sin conexión: inténtalo en unos segundos');return}
+    var k=T[t]||T.otro;
+    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:String((typeof myName==='function'?myName():'')||'').slice(0,24),ts:FV.serverTimestamp()});
+      H.list.push({id:'tmp'+Date.now(),lat:p[0],lng:p[1],t:t,uid:uid,ms:Date.now()});draw();H.said['tmp']=1;
+      try{vib([60,40,60])}catch(e){}toast(k[0]+' '+k[1]+' marcado. ¡Gracias! Avisaremos a los demás ciclistas',4000);
+      if(!silent)try{speak(k[1]+' marcado. Gracias.')}catch(e){}
+    }catch(e){console.warn('peligro',e);toast(/permission/i.test(String(e&&e.code||e))?'⚠️ Falta activar los avisos de peligro en Firebase (regla «peligros»)':'No se pudo guardar el aviso',6000)}
+  }
+  window.gmHazReport=report;
+  window.gmHazMenu=function(){
+    var html=sheetHead('⚠️ Avisar de un peligro')+'<p style="color:var(--txt2);margin:-6px 0 6px">Se marca donde estás ahora. Los ciclistas que pasen por aquí recibirán el aviso por voz.</p><div class="gmHzGrid">'+
+      Object.keys(T).map(function(k){return '<button type="button" onclick="closeSheets();gmHazReport(\''+k+'\')"><span>'+T[k][0]+'</span>'+T[k][1]+'</button>'}).join('')+'</div>';
+    $('rideBody').innerHTML=html;try{openRideId=null}catch(e){}openSheet('sh-ride');
+  };
+  // Aviso al acercarte (unos 150 m, si va por delante)
+  function brg(a,b){var y=Math.sin((b[1]-a[1])*Math.PI/180)*Math.cos(b[0]*Math.PI/180),x=Math.cos(a[0]*Math.PI/180)*Math.sin(b[0]*Math.PI/180)-Math.sin(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.cos((b[1]-a[1])*Math.PI/180);return (Math.atan2(y,x)*180/Math.PI+360)%360}
+  var box=null;
+  function alertShow(x,d){
+    var k=T[x.t]||T.otro;if(!box){box=document.createElement('div');box.id='gmHzAlert';box.onclick=function(){box.style.display='none'};document.body.appendChild(box)}
+    box.innerHTML='<span>'+k[0]+'</span><div>'+k[1]+' a '+Math.round(d/10)*10+' m<small>Avisado por otro ciclista '+ago(x.ms)+'</small></div>';box.style.display='flex';
+    clearTimeout(box._t);box._t=setTimeout(function(){box.style.display='none'},9000);
+    try{vib([300,120,300])}catch(e){}try{speak('Atención. '+k[1]+' a '+Math.round(d/10)*10+' metros.')}catch(e){}
+  }
+  function check(){
+    if(!live.on||!H.list.length)return;var p=here();if(!p)return;
+    for(var i=0;i<H.list.length;i++){var x=H.list[i];if(H.said[x.id]||x.uid===uid)continue;var d=hav(p,[x.lat,x.lng])*1000;if(d>180)continue;
+      if(live.hd!=null&&d>40){var df=Math.abs(((brg(p,[x.lat,x.lng])-live.hd)+540)%360-180);if(df>70)continue}
+      H.said[x.id]=1;alertShow(x,d);break}
+  }
+  // ---------- Botones en la pantalla de ruta ----------
+  function fab(id,txt,lbl,fn){var b=document.createElement('button');b.type='button';b.id=id;b.className='gmFab';b.textContent=txt;b.setAttribute('aria-label',lbl);b.onclick=fn;document.body.appendChild(b)}
+  fab('gmBell','🔔','Timbre',bell);fab('gmHaz','⚠️','Avisar de un peligro',function(){gmHazMenu()});
+  var rl=window.renderLive;
+  window.renderLive=function(){var o=rl.apply(this,arguments);try{if(live.on){load(false);check()}}catch(e){}return o};
+  setTimeout(function(){try{load(true)}catch(e){}},8000);
+  // ---------- Por voz ----------
+  var VZK={bache:/\bbaches?\b/,piedras:/\bpiedras?\b/,cristales:/\b(cristales|cristal|vidrios?)\b/,obras:/\bobras?\b/,arbol:/\barbol(es)? caidos?\b|\barbol\b/,aceite:/\b(aceite|barro)\b/,gravilla:/\bgravilla\b/};
+  function vozHz(t){
+    if(/\b(timbre|campana|ring)\b/.test(t)){bell();return 'bell'}
+    if(!/\b(peligro|marca|marcar|avisa|aviso|hay)\b/.test(t)&&t.split(' ').length>2)return null;
+    for(var k in VZK)if(VZK[k].test(t)){report(k,true);return k}
+    if(/\bpeligro\b/.test(t)){gmHazMenu();return 'menu'}
+    return null;
+  }
+  var vd=window.vcDo;window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=vozHz(n);if(r){if(r!=='bell'&&r!=='menu')vcSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}}catch(e){}return vd.apply(this,arguments)};
+  var vr=window.vozRun;window.vozRun=function(t){try{var r=vozHz(t);if(r){if(r!=='bell'&&r!=='menu')vozSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}catch(e){}return vr.apply(this,arguments)};
+})();
+</script>
 </body>
 </html>
