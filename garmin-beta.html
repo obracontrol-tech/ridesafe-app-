@@ -67,7 +67,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Garmin beta 0.2</title>
+<title>RideSafe IA · Garmin beta 0.3</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -9862,7 +9862,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
   // Tema claro solo aquí (no se guarda: la app normal sigue como la tengas)
   function light(){try{document.documentElement.dataset.theme='light';var s=document.getElementById('swLight');if(s)s.checked=true;var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#111111'}catch(e){}}
   window.setTheme=function(){light()};light();
-  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.2';document.body.appendChild(tag);
+  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.3';document.body.appendChild(tag);
 
   // ---- Subidas a partir del perfil [{d:km,e:m}] ----
   function smooth(P){var Q=[],step=0.05,tot=P[P.length-1].d,j=1;function at(x){while(j<P.length-1&&P[j].d<x)j++;var a=P[j-1],b=P[j],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*Math.max(0,Math.min(1,t))}
@@ -10047,7 +10047,7 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
   function paint(){
     if(!live.on)return;build();var pn=document.querySelector('.lvpanel');if(!pn)return;
     if(!hasRoute())page=1;pn.classList.toggle('gmPage2',page===2);
-    var T=document.getElementById('gmPgT');if(T)T.innerHTML=(page===1?'Datos':'Subidas')+'<i>'+page+'/'+(hasRoute()?2:1)+'</i>';
+    var PG=document.getElementById('gmPg');if(PG)PG.classList.toggle('one',!hasRoute());var T=document.getElementById('gmPgT');if(T)T.innerHTML=(page===1?'Datos':'Subidas')+'<i>'+page+'/'+(hasRoute()?2:1)+'</i>';
     var F=fields(),f=document.getElementById('gmF');
     if(f){var nav=live.nav&&live.nav.left!=null,list=F.slice();
       if(nav&&list.indexOf('left')<0&&list.indexOf('eta')<0)list=list.concat(['left','eta']);
@@ -10080,5 +10080,17 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
     return o};
 })();
 </script>
+<style id="gmTheme3">
+/* ===== GARMIN BETA 0.3 — el micrófono ya no tapa los botones ni los datos ===== */
+/* En ruta: arriba a la derecha del mapa; si hay aviso de giro, justo debajo de él */
+html.gmx body:has(#app.live) #vozBtn{left:auto!important;right:10px!important;top:calc(12px + env(safe-area-inset-top))!important;width:52px!important;height:52px!important;font-size:22px!important}
+html.gmx body:has(#app.live #lvBanner[style*="flex"]) #vozBtn{top:calc(118px + env(safe-area-inset-top))!important}
+html.gmx body:has(#app.live) #vozBtn small{bottom:-15px}
+/* Botones redondos un poco más pequeños: así cabe «GRABANDO» entero */
+html.gmx .lvside button{width:44px!important;height:44px!important;font-size:19px!important}
+html.gmx .lvstate{white-space:nowrap;font-size:11.5px!important;padding:4px 9px!important}
+/* Sin ruta solo hay una página: sin flechas */
+#gmPg.one button{visibility:hidden}
+</style>
 </body>
 </html>
