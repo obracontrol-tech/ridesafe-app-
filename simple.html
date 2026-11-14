@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.27.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.28.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9038,6 +9038,48 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
       },function(){var wh=document.getElementById('gpxWh');if(wh)wh.textContent=''},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
     v.querySelector('.gvme').onclick=function(){locate(true)};locate(false);
   })};
+})();
+</script>
+<style>
+/* v5.64.0 — Dibujar ruta: botones siempre a mano (Deshacer y Escribir la ruta) */
+#drwFab{position:fixed;left:10px;top:calc(176px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}
+#drwFab.on{display:flex}
+#drwFab button{width:auto;min-width:118px;height:52px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
+#drwFab button:disabled{opacity:.45}
+#drwFab button.w{background:#0B63CE;border-color:#0B63CE;color:#fff}
+</style>
+<script>
+/* v5.64.0 — Al dibujar una ruta:
+   · ↶ Deshacer: quita el último punto (siempre visible, aunque el panel esté recogido).
+   · ⌨️ Escribir la ruta: escribes los pueblos o sitios por orden, separados por comas, y la app los une por caminos. */
+(function(){
+  var f=document.createElement('div');f.id='drwFab';
+  f.innerHTML='<button type="button" id="drwU" onclick="drawUndo()">↶ Deshacer</button><button type="button" class="w" onclick="drawWrite()">⌨️ Escribir la ruta</button>';
+  document.body.appendChild(f);
+  setInterval(function(){try{
+    var on=!!(plan.active&&plan.mode==='draw'&&!plan.view&&!(live&&live.on)&&document.getElementById('app').classList.contains('planning')&&document.getElementById('s-rutas').classList.contains('active'));
+    f.classList.toggle('on',on);if(on)document.getElementById('drwU').disabled=!planWps().length;
+  }catch(e){}},500);
+  window.drawWrite=async function(){
+    if(!plan.active||plan.mode!=='draw'||plan.view)return;
+    var t=prompt('Escribe los sitios POR ORDEN, separados por comas.\nEjemplo: Lleida, Castellnou de Seana, Bellpuig'+(planWps().length?'\n(se añaden después de los puntos que ya tienes)':''));
+    if(!t||!t.trim())return;
+    var names=t.split(/[,;\n]+/).map(function(s){return s.trim()}).filter(Boolean).slice(0,20);if(!names.length)return;
+    toast('Buscando '+names.length+' '+(names.length>1?'sitios':'sitio')+'…');
+    var ok=0,miss=[],B=null;
+    for(var i=0;i<names.length;i++){
+      var g=null;try{g=await geoTo(names[i])}catch(e){}
+      if(!g||g.lat==null){miss.push(names[i]);continue}
+      if(planWps().length>=60){toast('Máximo 60 puntos');break}
+      var p={lat:+g.lat,lng:+g.lng,label:names[i]};try{p.sg=drawSg()}catch(e){}
+      if(!plan.start)plan.start=p;else if(!plan.dest)plan.dest=p;else{plan.stops.push(plan.dest);plan.dest=p}
+      ok++;try{B=B||new maplibregl.LngLatBounds();B.extend([p.lng,p.lat])}catch(e){}
+    }
+    try{redrawPlanMarkers();renderPlan();if(planWps().length>1)computeRoute()}catch(e){}
+    try{if(B){planWps().forEach(function(q){B.extend([q.lng,q.lat])});map.fitBounds(B,{padding:60,duration:600,maxZoom:14})}}catch(e){}
+    if(miss.length)toast('✅ '+ok+' añadidos · ❓ No encuentro: '+miss.join(', ')+'. Escríbelo con la comarca o la provincia',7000);
+    else toast('✅ Ruta escrita: '+ok+' '+(ok>1?'sitios':'sitio')+'. Si te equivocas, ↶ Deshacer',4500);
+  };
 })();
 </script>
 </body>
