@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.29.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.30.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4437,7 +4437,7 @@ function layerMenu(m){
   const cur=m.__layer||'normal';const on=navigator.onLine;
   d.innerHTML='<div class="lm-h"><b>Capas del mapa</b><button class="lm-x" aria-label="Cerrar">✕</button></div><div class="lm-g">'+LAYERS.map(([k,t,sub,st])=>{
     const th=layerThumb(k,m);
-    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🛤️ Caminos y pistas (como Garmin)<small>🟠 pistas · 🟤 senderos · 🔵 carril bici</small></span><span class="sw"><input type="checkbox" id="lmCm" '+(cmOn()?'checked':'')+' onchange="cmToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
+    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🛤️ Caminos y pistas (como Garmin)<small>🟠 pistas · 🟫 caminos sin asfaltar · 🟤 senderos · 🔵 carril bici</small></span><span class="sw"><input type="checkbox" id="lmCm" '+(cmOn()?'checked':'')+' onchange="cmToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
   d.onclick=ev=>{if(ev.target.closest('.lm-x')){d.remove();return}const b=ev.target.closest('.lm-c');if(!b)return;const k=b.dataset.k;
     if(LAYER_BY[k][3]&&!navigator.onLine){toast('Esta capa necesita conexión');return}
     LAYER=k;try{localStorage.setItem('velogo_layer',k)}catch(e){}
@@ -5841,7 +5841,7 @@ function editRoute(r){
 /* v5.53.0 — CAPA «CAMINOS» (como los mapas de Garmin para BTT/gravel): resalta sobre el mapa
    🟠 pistas de tierra · 🟤 senderos · 🔵 carriles bici. Sale de OpenStreetMap (el mismo mapa de la app), sin servidores nuevos. */
 const cmOn=()=>!!store.get('caminosOn',false);
-const CM_IDS=['cm-track-case','cm-track','cm-path-case','cm-path','cm-cycle'];
+const CM_IDS=['cm-unp-case','cm-unp','cm-track-case','cm-track','cm-path-case','cm-path','cm-cycle'];   // v5.66: + caminos sin asfaltar
 function cmSrc(m){const S=(m.getStyle()||{}).sources||{};if(S.openmaptiles)return 'openmaptiles';const k=Object.keys(S).find(k=>S[k].type==='vector');return k||null}
 function cmSet(m,on){
   if(!m||!m.getStyle||!m.getStyle())return;
@@ -5854,6 +5854,10 @@ function cmSet(m,on){
     const PA=['all',['==',['get','class'],'path'],['match',['get','subclass'],['path','bridleway'],true,false]];
     const CY=['all',['==',['get','class'],'path'],['==',['get','subclass'],'cycleway']];
     const L=(id,f,p,lay)=>m.addLayer({id,type:'line',source:src,'source-layer':'transportation',minzoom:11,filter:f,layout:Object.assign({'line-cap':'round','line-join':'round'},lay||{}),paint:p},before);
+    // v5.66: caminos y carreteras pequeñas SIN ASFALTAR (tierra, grava) que no son «pista»
+    const UN=['all',['match',['get','class'],['minor','service','tertiary','secondary','unclassified'],true,false],['==',['get','surface'],'unpaved']];
+    L('cm-unp-case',UN,{'line-color':'#FFFFFF','line-width':W(5,14),'line-opacity':0.9});
+    L('cm-unp',UN,{'line-color':'#A16207','line-width':W(3,9),'line-dasharray':[2.2,0.9]},{'line-cap':'butt'});
     L('cm-track-case',TR,{'line-color':'#FFFFFF','line-width':W(5,14),'line-opacity':0.9});
     L('cm-track',TR,{'line-color':'#EA580C','line-width':W(3,9)});
     L('cm-path-case',PA,{'line-color':'#FFFFFF','line-width':W(4,11),'line-opacity':0.85});
