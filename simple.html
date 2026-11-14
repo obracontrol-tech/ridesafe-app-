@@ -1245,7 +1245,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.24.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.25.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8881,6 +8881,72 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
   }
   var vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=vozHz(n);if(r){if(r!=='bell'&&r!=='menu')vcSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}}catch(e){}return vd.apply(this,arguments)};
   var vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{var r=vozHz(t);if(r){if(r!=='bell'&&r!=='menu')vozSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}catch(e){}return vr.apply(this,arguments)};
+})();
+</script>
+<style>
+/* v5.61.0 — Otra ruta: borrar y cambiar el nombre de tus rutas */
+#gmRt{position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+#gmRt .bx{background:#F4F5F7;color:#111;width:100%;max-width:520px;max-height:88vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans",sans-serif}
+#gmRt .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px 8px}
+#gmRt .hd b{font-size:19px;line-height:1.2}
+#gmRt .hd small{display:block;font-size:13px;color:#15803D;font-weight:700}
+#gmRt .hd button{flex:none;width:46px;height:46px;border-radius:50%;border:2px solid #111;background:#fff;font-size:20px}
+#gmRt .ls{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 12px calc(14px + env(safe-area-inset-bottom))}
+#gmRt .big{width:100%;min-height:54px;border-radius:10px;border:2px solid #111;background:#fff;font:800 16px "Plus Jakarta Sans",sans-serif;margin:0 0 8px;text-align:left;padding:0 14px;color:#111}
+#gmRt .big.blue{background:#0B63CE;border-color:#0B63CE;color:#fff}
+#gmRt .big.red{color:#B91C1C;border-color:#B91C1C}
+#gmRt .sec{font:800 12px "Plus Jakarta Sans",sans-serif;letter-spacing:.6px;color:#4B5563;margin:10px 2px 6px;text-transform:uppercase}
+#gmRt .rw{display:flex;gap:6px;margin:0 0 8px}
+#gmRt .rw .go{flex:1;min-width:0;min-height:58px;border-radius:10px;border:2px solid #111;background:#fff;text-align:left;padding:6px 12px;font:800 15.5px/1.25 "Plus Jakarta Sans",sans-serif;color:#111}
+#gmRt .rw .go small{display:block;font:700 13px "Barlow Condensed","Plus Jakarta Sans",sans-serif;color:#4B5563;margin-top:2px}
+#gmRt .rw .ic{flex:none;width:54px;min-height:58px;border-radius:10px;border:2px solid #111;background:#fff;font-size:22px}
+#gmRt .rw .ic.del{border-color:#B91C1C;background:#FEF2F2}
+</style>
+<script>
+/* v5.61.0 — «Otra ruta»: cada ruta guardada con ✏️ (cambiar el nombre) y 🗑️ (borrar). Tus km y tu tiempo siguen contando. */
+(function(){
+  if(typeof window.liveChangeRoute!=='function')return;
+  function close(){var d=document.getElementById('gmRt');if(d)d.remove()}
+  function e(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function follow(id){
+    close();var r=store.get('routes',[]).find(function(x){return x.id===id});if(!r||!live.on)return;var u;
+    try{u=unpackRoute(r)}catch(x){toast('No se pudo abrir esa ruta');return}
+    legMark(r.name);navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
+    speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Nueva ruta: '+r.name+'. Tus km y tu tiempo siguen contando',5000);
+  }
+  function ren(id){
+    var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;
+    var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;
+    r.name=n;store.set('routes',L);toast('✏️ Nombre cambiado');paint();
+  }
+  function del(id){
+    var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;
+    if(!confirm('¿Borrar la ruta «'+r.name+'»? No se puede deshacer.'))return;
+    store.set('routes',L.filter(function(x){return x.id!==id}));toast('🗑️ Ruta borrada');paint();
+  }
+  window.gmRtFollow=follow;window.gmRtRen=ren;window.gmRtDel=del;
+  window.gmRtNew=function(){close();liveDesign()};
+  window.gmRtGo=async function(){close();var q=prompt('¿A dónde quieres ir? (pueblo, calle o sitio)');if(q&&q.trim()){toast('Buscando el camino…');await liveGuide(q.trim());renderLive()}};
+  window.gmRtOff=function(){close();legMark('Libre');live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')};
+  window.gmRtClose=close;
+  function paint(){
+    var d=document.getElementById('gmRt');if(!d)return;var L=store.get('routes',[]);
+    d.querySelector('.ls').innerHTML=
+      '<button class="big blue" onclick="gmRtNew()">✏️ Diseñar ruta nueva en el mapa</button>'+
+      '<button class="big" onclick="gmRtGo()">📍 Ir a un sitio (escribe el nombre)</button>'+
+      (live.nav?'<button class="big red" onclick="gmRtOff()">🚫 Quitar la ruta y seguir grabando libre</button>':'')+
+      '<div class="sec">📂 Mis rutas · '+L.length+' · ✏️ cambiar nombre · 🗑️ borrar</div>'+
+      (L.length?L.map(function(r){return '<div class="rw"><button class="go" onclick="gmRtFollow(\''+e(r.id)+'\')">🗺️ '+e(r.name)+'<small>'+r.km+' km'+(r.up?' · ↑ '+r.up+' m':'')+'</small></button>'+
+        '<button class="ic" aria-label="Cambiar el nombre" onclick="gmRtRen(\''+e(r.id)+'\')">✏️</button><button class="ic del" aria-label="Borrar" onclick="gmRtDel(\''+e(r.id)+'\')">🗑️</button></div>'}).join('')
+       :'<p style="color:#4B5563;margin:4px 2px">Aún no tienes rutas guardadas.</p>');
+  }
+  window.liveChangeRoute=async function(){
+    if(!live.on)return;
+    try{document.querySelectorAll('.lvside.open,.lvpop.open').forEach(function(x){x.classList.remove('open')})}catch(x){}
+    close();var d=document.createElement('div');d.id='gmRt';
+    d.innerHTML='<div class="bx"><div class="hd"><div><b>🔀 Otra ruta</b><small>Tus km y tu tiempo siguen contando</small></div><button type="button" aria-label="Cerrar" onclick="gmRtClose()">✕</button></div><div class="ls"></div></div>';
+    d.addEventListener('click',function(x){if(x.target===d)close()});document.body.appendChild(d);paint();
+  };
 })();
 </script>
 </body>
