@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.28.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.29.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9080,6 +9080,84 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
     if(miss.length)toast('✅ '+ok+' añadidos · ❓ No encuentro: '+miss.join(', ')+'. Escríbelo con la comarca o la provincia',7000);
     else toast('✅ Ruta escrita: '+ok+' '+(ok>1?'sitios':'sitio')+'. Si te equivocas, ↶ Deshacer',4500);
   };
+})();
+</script>
+<style>
+/* v5.65.0 — Actividades: apartado «Mis rutas» con una tarjeta por ruta */
+#rtSec{margin:0 0 14px}
+#rtSec .hd{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px}
+#rtSec .hd b{font-size:17px}
+#rtSec .hd button{width:auto;background:none;border:0;color:var(--lime);font:800 14px "Plus Jakarta Sans",sans-serif;padding:6px 4px}
+#rtSec .rl{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;scroll-snap-type:x mandatory}
+#rtSec .rc{flex:0 0 158px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;text-align:left;color:var(--txt)}
+#rtSec .rc svg{display:block;width:100%;height:84px;background:#EEF2F6;border-radius:8px}
+#rtSec .rc b{display:block;font-size:14px;line-height:1.25;margin:6px 0 2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:35px}
+#rtSec .rc small{font:700 13px "Barlow Condensed","Plus Jakarta Sans",sans-serif;color:var(--txt2)}
+#rtSec .rc.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed var(--line);font:800 14px "Plus Jakarta Sans",sans-serif;color:var(--lime);text-align:center}
+#rtSec .rc.add span{font-size:30px}
+.rtBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rtBtns button{min-height:52px;font-size:15px}
+</style>
+<script>
+/* v5.65.0 — En Actividades, apartado «🗺️ Mis rutas»: cada ruta guardada con su tarjeta (dibujo, km, subida).
+   Al tocarla: mapa grande, datos y botones Ver/Seguir, ✏️ Cambiar nombre, ⬇️ GPX, 🌍 Compartir y 🗑️ Borrar. */
+(function(){
+  var rtMap=null;
+  function L(){return store.get('routes',[])}
+  function thumb(r){
+    try{var c=decodePoly(r.poly);if(!c||c.length<2)return '<svg></svg>';var a=1e9,b=-1e9,x=1e9,y=-1e9;
+      c.forEach(function(p){a=Math.min(a,p[0]);b=Math.max(b,p[0]);x=Math.min(x,p[1]);y=Math.max(y,p[1])});
+      var k=Math.cos((a+b)/2*Math.PI/180),w=(y-x)*k||1e-6,h=(b-a)||1e-6,s=Math.min(130/w,70/h),ox=(142-w*s)/2,oy=(84-h*s)/2;
+      var st=Math.max(1,Math.floor(c.length/120)),pts=c.filter(function(_,i){return i%st===0||i===c.length-1}).map(function(p){return (ox+(p[1]-x)*k*s).toFixed(1)+','+(oy+(b-p[0])*s).toFixed(1)}).join(' ');
+      var f=pts.split(' ')[0].split(','),l=pts.split(' ').pop().split(',');
+      return '<svg viewBox="0 0 142 84"><polyline points="'+pts+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><polyline points="'+pts+'" fill="none" stroke="#0B63CE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+f[0]+'" cy="'+f[1]+'" r="4.5" fill="#16A34A" stroke="#fff" stroke-width="1.5"/><circle cx="'+l[0]+'" cy="'+l[1]+'" r="4.5" fill="#DC2626" stroke="#fff" stroke-width="1.5"/></svg>';
+    }catch(e){return '<svg></svg>'}
+  }
+  function paint(){
+    var list=document.getElementById('actList');if(!list)return;var s=document.getElementById('rtSec');
+    if(!s){s=document.createElement('div');s.id='rtSec';var t=document.getElementById('aToday');(t||list).before(s)}
+    var R=L();
+    s.innerHTML='<div class="hd"><b>🗺️ Mis rutas · '+R.length+'</b>'+(R.length?'<button type="button" onclick="rtAdd()">➕ Añadir</button>':'')+'</div><div class="rl">'+
+      R.map(function(r){return '<button type="button" class="rc" onclick="rtOpen(\''+String(r.id).replace(/'/g,'')+'\')">'+thumb(r)+'<b>'+esc(r.name)+'</b><small>↔ '+r.km+' km'+(r.up?' · ↑ '+r.up+' m':'')+'</small></button>'}).join('')+
+      '<button type="button" class="rc add" onclick="rtAdd()"><span>➕</span>Nueva ruta<small style="font-family:inherit">Planificar o subir GPX</small></button></div>';
+  }
+  window.rtPaint=paint;
+  window.rtAdd=async function(){
+    var k=await askChoice('➕ Nueva ruta',[['✏️ Dibujarla en el mapa','','d'],['📂 Subir un GPX','','g'],['🧭 Planificar en GraphHopper (MTB)','','h']]);
+    if(k===0){go('rutas');startPlanner('draw')}else if(k===1)pickFile();else if(k===2)ghPlan();
+  };
+  window.rtOpen=function(id){
+    var r=L().find(function(x){return String(x.id)===String(id)});if(!r)return;
+    var mins=r.mins||estMins(r.km,r.up||0);
+    $('rideBody').innerHTML=sheetHead('🗺️ '+esc(r.name))+
+      '<div class="rmap" id="rtMap"></div>'+
+      '<div class="pstats" style="margin-top:0"><div><b class="num">'+fmtNum(r.km,1)+'</b><span>km</span></div><div><b class="num">+'+(r.up||0)+'</b><span>m subida</span></div><div><b class="num">'+hm(mins)+'</b><span>aprox.</span></div></div>'+
+      '<button class="btn btn-lime" style="width:100%;min-height:58px;font-size:17px;margin-top:10px" onclick="closeSheets();go(\'rutas\');viewSaved(\''+r.id+'\')">▶ Ver en el mapa y seguirla</button>'+
+      '<div class="rtBtns"><button class="btn btn-line" onclick="rtRen(\''+r.id+'\')">✏️ Cambiar nombre</button><button class="btn btn-line" onclick="saveSavedGpx(\''+r.id+'\')">⬇️ GPX</button>'+
+      (typeof publishRoute==='function'?'<button class="btn btn-line" onclick="publishRoute(store.get(\'routes\',[]).find(function(x){return x.id===\''+r.id+'\'}))">🌍 Compartir</button>':'')+
+      '<button class="btn btn-line" style="color:var(--red);border-color:var(--red)" onclick="rtDel(\''+r.id+'\')">🗑️ Borrar</button></div>';
+    try{openRideId=null}catch(e){}openSheet('sh-ride');
+    try{if(rtMap){rtMap.remove();rtMap=null}}catch(e){}
+    if(typeof maplibregl==='undefined')return;
+    var c=decodePoly(r.poly);rtMap=newMap({container:'rtMap',center:[c[0][1],c[0][0]],zoom:11,attributionControl:false});
+    var b=new maplibregl.LngLatBounds();c.forEach(function(p){b.extend([p[1],p[0]])});
+    rtMap.on('load',function(){try{setLine(rtMap,c,'plan')}catch(e){}rtMap.fitBounds(b,{padding:26,duration:0})});
+    setTimeout(function(){try{rtMap.resize();rtMap.fitBounds(b,{padding:26,duration:0})}catch(e){}},350);
+  };
+  window.rtRen=function(id){
+    var R=L(),r=R.find(function(x){return x.id===id});if(!r)return;
+    var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;
+    r.name=n;store.set('routes',R);paint();toast('✏️ Nombre cambiado');rtOpen(id);
+  };
+  window.rtDel=function(id){
+    var R=L(),r=R.find(function(x){return x.id===id});if(!r)return;
+    if(!confirm('¿Borrar la ruta «'+r.name+'»? No se puede deshacer.'))return;
+    store.set('routes',R.filter(function(x){return x.id!==id}));closeSheets();paint();toast('🗑️ Ruta borrada');
+  };
+  // Se repinta al pintar Actividades y cuando cambian las rutas guardadas
+  var rA=window.renderActs;window.renderActs=function(){var o=rA.apply(this,arguments);try{paint()}catch(e){}return o};
+  var ss=store.set;store.set=function(k){var o=ss.apply(this,arguments);if(k==='routes')setTimeout(function(){try{paint()}catch(e){}},50);return o};
+  setTimeout(function(){try{paint()}catch(e){}},1300);
 })();
 </script>
 </body>
