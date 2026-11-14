@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <script>
-/* v5.54.0 — Voz: no corta la pregunta (espera 2 s de silencio) y el micrófono vuelve 2 s después de que la app acabe de hablar.
+/* v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
+   v5.54.0 — Voz: no corta la pregunta (espera 2 s de silencio) y el micrófono vuelve 2 s después de que la app acabe de hablar.
    v5.53.1 — Capa Caminos: líneas más gruesas y aviso «Acerca el mapa para ver los caminos» cuando el mapa está lejos.
    v5.53.0 — Capa «🛤️ Caminos y pistas» en Capas del mapa: resalta pistas (naranja), senderos (marrón) y carriles bici (azul), como los mapas de Garmin.
    v5.52.1 — Voz: «Oye bici, hora» (a secas) también dice la hora.
@@ -1337,7 +1338,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.54.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.55.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3042,7 +3043,7 @@ function ghPlan(){
   const p=ll&&isFinite(+ll[0])&&isFinite(+ll[1])&&(+ll[0]||+ll[1])?'point='+(+ll[0]).toFixed(5)+'%2C'+(+ll[1]).toFixed(5)+'&':'';
   window.open('https://graphhopper.com/maps/?'+p+'profile=mtb&layer=OpenStreetMap&locale=es','_blank','noopener');
   if(rsIOS()){setTimeout(ghIosSheet,600);return}
-  setTimeout(()=>toast('Dibuja la ruta, pulsa «GPX» y vuelve aquí: ➕ → «Subir GPX o TCX»',7000),500);
+  setTimeout(()=>toast('Dibuja la ruta, pulsa «GPX» y vuelve aquí con la ✕ (no pulses «Abrir»)',7000),500);
 }
 function ghIosSheet(){
   $('rideBody').innerHTML=sheetHead('📁 Traer la ruta al iPhone')+
@@ -8150,6 +8151,11 @@ $('fileIn').onchange=async e=>{
     const done=mins>0;
     const op=[['🗺️ Una ruta para hacer: guardarla, crear una salida o compartirla con el club','','route'],['✅ Una salida que ya hice: guardarla en Actividades','','act']];
     if(done)op.reverse();
+    // v5.55.0: una ruta de GraphHopper (o recién planificada allí) va directa a la tarjeta y al mapa de la ruta, sin preguntar
+    if(!done&&(/graphhopper/i.test((xml.documentElement&&xml.documentElement.getAttribute('creator'))||'')||Date.now()-(+localStorage.getItem('rs_gh_t')||0)<3600000)){
+      try{localStorage.removeItem('rs_gh_t')}catch(_){}
+      const gn=/graphhopper/i.test(name)?'Ruta GraphHopper '+new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):name;
+      importRouteGpx(pts,km,up,gn);return}
     const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m${mins?' · '+Math.floor(mins/60)+' h '+mins%60+' min':''}. ¿Qué es este archivo?`,op);
     if(k<0)return;
     if(op[k][2]==='route'){importRouteGpx(pts,km,up,name);return}
@@ -9625,5 +9631,33 @@ function vozMenu(t){
 }
 </script>
 
+<script>
+/* v5.55.0 — GPX de GraphHopper directo a la app: al volver de GraphHopper sale un botón grande para abrir la ruta descargada
+   (sin pulsar «Abrir» en el aviso de descarga, que abre otra app). La ruta entra directa a la tarjeta y al mapa. */
+(function(){
+  var orig=window.ghPlan;if(typeof orig!=='function')return;
+  window.ghPlan=function(){try{localStorage.setItem('rs_gh_t',String(Date.now()));localStorage.setItem('rs_gh_ask','1')}catch(e){}return orig.apply(this,arguments)};
+  function ghBack(){
+    $('rideBody').innerHTML=sheetHead('🧭 Traer la ruta de GraphHopper')+
+     '<div class="plc" style="margin-bottom:12px;border:2px solid #FDBA74"><small style="color:var(--txt2)">⚠️ Si al descargar sale un aviso con <b>«Abrir»</b>, <b>no lo pulses</b>: abre otra app. Vuelve aquí y pulsa el botón verde.</small></div>'+
+     '<ol style="margin:4px 0 14px;padding-left:20px;line-height:1.55;display:flex;flex-direction:column;gap:6px">'+
+     '<li>Pulsa <b>📂 Abrir la ruta descargada</b>.</li>'+
+     '<li>Entra en <b>Descargas</b> y toca el archivo <b>.gpx</b> (el más nuevo, arriba).</li>'+
+     '<li>La ruta sale directa en el <b>mapa</b> y queda guardada en <b>📂 Mis rutas</b>.</li></ol>'+
+     '<button class="btn btn-lime" style="width:100%;min-height:62px;font-size:18px" onclick="closeSheets();pickFile()">📂 Abrir la ruta descargada</button>'+
+     '<button class="btn btn-line" style="width:100%;margin-top:8px" onclick="closeSheets()">Todavía no la he descargado</button>'+
+     '<p style="color:var(--txt2);font-size:13px;margin-top:12px">Otra forma: en Descargas mantén pulsado el archivo → <b>Compartir</b> → <b>RideSafe IA</b>.</p>';
+    try{openRideId=null}catch(e){}openSheet('sh-ride');
+  }
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState!=='visible')return;
+    var t=0,a=null;try{t=+localStorage.getItem('rs_gh_t')||0;a=localStorage.getItem('rs_gh_ask')}catch(e){}
+    if(!a||Date.now()-t>3600000||Date.now()-t<4000)return;
+    try{if(rsIOS())return}catch(e){}
+    try{localStorage.removeItem('rs_gh_ask')}catch(e){}
+    setTimeout(ghBack,400);
+  });
+})();
+</script>
 </body>
 </html>

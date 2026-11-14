@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5540';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5550';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -48,16 +48,17 @@ self.addEventListener('fetch', e => {
   // v5.25: «Compartir» un GPX/TCX con RideSafe IA (Android): se guarda y se abre la app para importarlo
   if (req.method === 'POST' && new URL(req.url).pathname.endsWith('/share-gpx')) {
     e.respondWith((async () => {
+      const back = new URL(req.url).searchParams.get('app') === 'simple' ? './simple.html' : './index.html';   // v5.55: la Simple también recibe GPX
       try {
         const fd = await req.formData();
         const f = fd.getAll('gpx').find(x => x && typeof x !== 'string');
         if (f) {
           const c = await caches.open(SHARE);
           await c.put('./__shared-gpx', new Response(f, { headers: { 'Content-Type': 'application/octet-stream', 'X-Name': encodeURIComponent(f.name || 'ruta.gpx') } }));
-          return Response.redirect('./index.html?gpx=shared', 303);
+          return Response.redirect(back + '?gpx=shared', 303);
         }
       } catch (_) {}
-      return Response.redirect('./index.html?gpx=error', 303);
+      return Response.redirect(back + '?gpx=error', 303);
     })());
     return;
   }
