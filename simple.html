@@ -818,6 +818,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #layMenu .lm-tr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 2px 2px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);font-weight:800;font-size:14.5px;color:#fff}
 #layMenu .lm-tr small{display:block;font-weight:600;font-size:12px;opacity:.7}
 .ppt.dot{width:16px;height:16px;font-size:0;border-width:3px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.ppt.dot.num{width:24px;height:24px;font-size:12.5px;line-height:1;border:2px solid #111;background:#fff;color:#111;font-family:'Barlow Condensed','Plus Jakarta Sans',sans-serif;font-weight:800}   /* v5.63 */
 .drw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 8px}
 .drw button{min-height:54px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
 .drw button span{font-size:20px}
@@ -1245,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.26.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.27.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5944,7 +5945,7 @@ function redrawPlanMarkers(){
   plan.markers.forEach(m=>m.remove());plan.markers=[];
   const list=[];
   if(plan.start)list.push(['start',plan.start,plan.mode==='loop'?'⟲':'A','a']);
-  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,plan.mode==='draw'?'':String(i+1),plan.mode==='draw'?'dot':'']));
+  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,String(i+1),plan.mode==='draw'?'dot num':'']));   // v5.63: puntos de la ruta dibujada con su número
   if(plan.dest&&plan.mode!=='loop')list.push(['dest',plan.dest,'B','b']);
   list.forEach(([key,p,txt,cls])=>{
     const el=document.createElement('div');el.className='ppt '+cls;el.textContent=txt;

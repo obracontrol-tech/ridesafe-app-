@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.62.0 — Al abrir un GPX se ve aparte (mapa completo con capas, perfil por pendientes y tu posición) y luego decides: Rutas, Actividades o cerrar.
+/* v5.63.0 — Ruta dibujada: los puntos de paso salen numerados (1, 2, 3…).
+   v5.62.0 — Al abrir un GPX se ve aparte (mapa completo con capas, perfil por pendientes y tu posición) y luego decides: Rutas, Actividades o cerrar.
    v5.61.0 — «Otra ruta»: cada ruta guardada con ✏️ cambiar nombre y 🗑️ borrar.
    v5.60.0 — Sin vídeo de entrada ni aviso al abrir. Los nuevos ya no saltan solos a la Simple: en Inicio, tarjeta «Empieza por RideSafe IA Simple».
    v5.59.0 — Aspecto Garmin: pantalla clara, campos de datos (mantén pulsado para cambiarlos), páginas Datos/Ruta/Subidas, ClimbPro, flechas de giro, 🔔 timbre y ⚠️ avisos de peligro entre ciclistas.
@@ -923,6 +924,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #layMenu .lm-tk button{flex:1 1 auto;min-height:38px;padding:0 10px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-weight:800;font-size:13px;cursor:pointer}
 #layMenu .lm-tk button.on{background:#C8DC3C;color:#0E1A2B;border-color:#C8DC3C}
 .ppt.dot{width:16px;height:16px;font-size:0;border-width:3px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.ppt.dot.num{width:24px;height:24px;font-size:12.5px;line-height:1;border:2px solid #111;background:#fff;color:#111;font-family:'Barlow Condensed','Plus Jakarta Sans',sans-serif;font-weight:800}   /* v5.63 */
 .drw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 8px}
 .drw button{min-height:54px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
 .drw button span{font-size:20px}
@@ -1362,7 +1364,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.62.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.63.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6065,7 +6067,7 @@ function redrawPlanMarkers(){
   plan.markers.forEach(m=>m.remove());plan.markers=[];
   const list=[];
   if(plan.start)list.push(['start',plan.start,plan.mode==='loop'?'⟲':'A','a']);
-  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,plan.mode==='draw'?'':String(i+1),plan.mode==='draw'?'dot':'']));
+  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,String(i+1),plan.mode==='draw'?'dot num':'']));   // v5.63: puntos de la ruta dibujada con su número
   if(plan.dest&&plan.mode!=='loop')list.push(['dest',plan.dest,'B','b']);
   list.forEach(([key,p,txt,cls])=>{
     const el=document.createElement('div');el.className='ppt '+cls;el.textContent=txt;
