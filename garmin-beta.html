@@ -67,7 +67,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Garmin beta 0.3</title>
+<title>RideSafe IA · Garmin beta 0.4</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -9862,7 +9862,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
   // Tema claro solo aquí (no se guarda: la app normal sigue como la tengas)
   function light(){try{document.documentElement.dataset.theme='light';var s=document.getElementById('swLight');if(s)s.checked=true;var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#111111'}catch(e){}}
   window.setTheme=function(){light()};light();
-  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.3';document.body.appendChild(tag);
+  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.4';document.body.appendChild(tag);
 
   // ---- Subidas a partir del perfil [{d:km,e:m}] ----
   function smooth(P){var Q=[],step=0.05,tot=P[P.length-1].d,j=1;function at(x){while(j<P.length-1&&P[j].d<x)j++;var a=P[j-1],b=P[j],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*Math.max(0,Math.min(1,t))}
@@ -10027,18 +10027,32 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
     var pn=document.querySelector('.lvpanel'),st=pn&&pn.querySelector('.lvstats');if(!st||document.getElementById('gmF'))return;
     var pg=document.createElement('div');pg.id='gmPg';pg.innerHTML='<button type="button" aria-label="Página anterior">◀</button><span id="gmPgT">Datos</span><button type="button" aria-label="Página siguiente">▶</button>';
     var f=document.createElement('div');f.id='gmF';
-    var p2=document.createElement('div');p2.id='gmP2';
-    st.before(pg);st.after(f);f.after(p2);
-    pg.querySelectorAll('button').forEach(function(b){b.onclick=function(){flip()}});
+    var p2=document.createElement('div');p2.id='gmP2';var p3=document.createElement('div');p3.id='gmP3';
+    st.before(pg);st.after(f);f.after(p2);p2.after(p3);
+    var bb=pg.querySelectorAll('button');bb[0].onclick=function(){flip(-1)};bb[1].onclick=function(){flip(1)};
     var x0=null;pn.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
-    pn.addEventListener('touchend',function(e){if(x0==null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>70)flip()},{passive:true});
+    pn.addEventListener('touchend',function(e){if(x0==null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>70)flip(dx<0?1:-1)},{passive:true});
     // mantener pulsado = cambiar el campo
     var t=null;f.addEventListener('pointerdown',function(e){var c=e.target.closest('.f');if(!c)return;c.classList.add('hold');t=setTimeout(function(){c.classList.remove('hold');choose(+c.dataset.i)},650)});
     ['pointerup','pointercancel','pointerleave'].forEach(function(ev){f.addEventListener(ev,function(){clearTimeout(t);f.querySelectorAll('.hold').forEach(function(x){x.classList.remove('hold')})})});
     f.addEventListener('click',function(){try{sumSay()}catch(e){}});
   }
+  /* 0.4 — Página RUTA: la ruta hecha se queda guardada (sigue grabando) y eliges qué hacer ahora */
+  function paintRuta(){
+    var p3=document.getElementById('gmP3');if(!p3)return;
+    var tit=live.nav?('🧭 Siguiendo: '+(live.rideTitle||((live.legs||[]).slice(-1)[0]||{}).n||'una ruta')):'🚴 Ruta libre';
+    var html='<div class="gmRH"><span>'+esc(tit)+'</span><b>'+live.km.toFixed(1)+' km · '+clock(elapsed())+'</b></div>'+
+      '<small class="gmRS">✅ Lo que llevas hecho se queda guardado: los km y el tiempo siguen contando.</small>'+
+      '<div class="gmRB">'+
+      '<button type="button" onclick="liveDesign()"><span>✏️</span>Ruta nueva<small>Dibújala en el mapa</small></button>'+
+      '<button type="button" onclick="homeMenu()"><span>🏠</span>Volver a casa<small>3 caminos para elegir</small></button>'+
+      '<button type="button" onclick="liveChangeRoute()"><span>🔀</span>Otra ruta<small>Mis rutas o ir a un sitio</small></button>'+
+      '</div>';
+    if(p3._h!==html){p3.innerHTML=html;p3._h=html}
+  }
   function hasRoute(){return !!(live.nav&&live.gmP&&live.gmP.length>2)}
-  function flip(){if(!hasRoute()){page=1;toast('La página Subidas sale cuando sigues una ruta');return}page=page===1?2:1;try{vib(15)}catch(e){}paint()}
+  function pages(){return hasRoute()?['Datos','Ruta','Subidas']:['Datos','Ruta']}
+  function flip(dir){var L=pages().length;page=((page-1+(dir||1)+L)%L)+1;try{vib(15)}catch(e){}paint()}
   async function choose(i){
     var F=fields(),keys=Object.keys(M);
     var k=await askChoice('Casilla '+(i+1)+' · ahora: '+M[F[i]][0]+'. ¿Qué quieres ver?',keys.map(function(x){return [M[x][0]+(x===F[i]?' ✓':''),'',x]}));
@@ -10046,14 +10060,15 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
   }
   function paint(){
     if(!live.on)return;build();var pn=document.querySelector('.lvpanel');if(!pn)return;
-    if(!hasRoute())page=1;pn.classList.toggle('gmPage2',page===2);
-    var PG=document.getElementById('gmPg');if(PG)PG.classList.toggle('one',!hasRoute());var T=document.getElementById('gmPgT');if(T)T.innerHTML=(page===1?'Datos':'Subidas')+'<i>'+page+'/'+(hasRoute()?2:1)+'</i>';
+    var PS=pages();if(page>PS.length)page=1;var nm=PS[page-1];pn.classList.toggle('gmPage2',nm==='Subidas');pn.classList.toggle('gmPage3',nm==='Ruta');
+    var T=document.getElementById('gmPgT');if(T)T.innerHTML=nm+'<i>'+page+'/'+PS.length+'</i>';
+    if(nm==='Ruta')paintRuta();
     var F=fields(),f=document.getElementById('gmF');
     if(f){var nav=live.nav&&live.nav.left!=null,list=F.slice();
       if(nav&&list.indexOf('left')<0&&list.indexOf('eta')<0)list=list.concat(['left','eta']);
       var html=list.map(function(k,i){var v=M[k][1]();return '<div class="f'+(i>5?' fn':'')+'" data-i="'+Math.min(i,5)+'"><small>'+M[k][0]+'</small><b>'+v[0]+(v[1]?'<i>'+v[1]+'</i>':'')+'</b></div>'}).join('');
       if(f._h!==html){f.innerHTML=html;f._h=html}}
-    if(page===2){var p2=document.getElementById('gmP2'),P=live.gmP,C=live.gmC||[],d=done();
+    if(nm==='Subidas'){var p2=document.getElementById('gmP2'),P=live.gmP,C=live.gmC||[],d=done();
       var k=C.findIndex(function(c){return c.d1>(d||0)});
       var tot=P[P.length-1].d;
       var html2=gmProfSVG(P,C,d,360,96)+'<div style="display:flex;justify-content:space-between;font:800 18px Barlow Condensed,sans-serif;margin:4px 2px 2px"><span>📍 '+(d||0).toFixed(1)+' / '+tot.toFixed(1)+' km</span><span>⛰️ '+(k<0?C.length:k)+'/'+C.length+' hechas</span></div>';
@@ -10091,6 +10106,23 @@ html.gmx .lvside button{width:44px!important;height:44px!important;font-size:19p
 html.gmx .lvstate{white-space:nowrap;font-size:11.5px!important;padding:4px 9px!important}
 /* Sin ruta solo hay una página: sin flechas */
 #gmPg.one button{visibility:hidden}
+</style>
+<style id="gmTheme4">
+/* ===== GARMIN BETA 0.4 — página RUTA ===== */
+#gmP3{display:none;background:#fff;padding:8px 8px 4px}
+.lvpanel.gmPage3 #gmP3{display:block}
+.lvpanel.gmPage3 #gmF,.lvpanel.gmPage3 .lvstats,.lvpanel.gmPage3 #gmLive,.lvpanel.gmPage3 #gmP2{display:none!important}
+.gmRH{display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 14px "Plus Jakarta Sans",sans-serif;color:#111}
+.gmRH span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gmRH b{flex:none;font:800 24px "Barlow Condensed",sans-serif}
+.gmRS{display:block;color:#15803D;font:700 12.5px "Plus Jakarta Sans",sans-serif;margin:2px 0 8px}
+.gmRB{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.gmRB button{min-height:104px;border:2px solid #111;border-radius:10px;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 4px}
+.gmRB button span{font-size:30px;line-height:1}
+.gmRB button small{font:600 11px/1.2 "Plus Jakarta Sans",sans-serif;color:#4B5563}
+.gmRB button:nth-child(2){background:#0B63CE;border-color:#0B63CE;color:#fff}
+.gmRB button:nth-child(2) small{color:#DBEAFE}
+.gmRB button:active{transform:scale(.97)}
 </style>
 </body>
 </html>
