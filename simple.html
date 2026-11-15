@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.2 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.3 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9120,9 +9120,9 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
 </script>
 <style>
 /* v5.64.0 — Dibujar ruta: botones siempre a mano (Deshacer y Escribir la ruta) */
-#drwFab{position:fixed;left:10px;top:calc(176px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}
+#drwFab{position:fixed;left:12px;top:calc(124px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}   /* v5.76.3: más pequeño y arriba */
 #drwFab.on{display:flex}
-#drwFab button{width:auto;min-width:118px;height:52px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
+#drwFab button{width:auto;min-width:0;height:40px;padding:0 12px!important;font-size:14px!important;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
 #drwFab button:disabled{opacity:.45}
 #drwFab button.w{background:#0B63CE;border-color:#0B63CE;color:#fff}
 </style>
@@ -9132,11 +9132,11 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
    · ⌨️ Escribir la ruta: escribes los pueblos o sitios por orden, separados por comas, y la app los une por caminos. */
 (function(){
   var f=document.createElement('div');f.id='drwFab';
-  f.innerHTML='<button type="button" id="drwU" onclick="drawUndo()">↶ Deshacer</button><button type="button" class="w" onclick="drawWrite()">⌨️ Escribir la ruta</button>';
+  f.innerHTML='<button type="button" class="w" onclick="drawWrite()">⌨️ Escribir</button>';   // v5.76.3: el ↶ Deshacer ya está en la barra de abajo
   document.body.appendChild(f);
   setInterval(function(){try{
     var on=!!(plan.active&&plan.mode==='draw'&&!plan.view&&!(live&&live.on)&&document.getElementById('app').classList.contains('planning')&&document.getElementById('s-rutas').classList.contains('active'));
-    f.classList.toggle('on',on);if(on)document.getElementById('drwU').disabled=!planWps().length;
+    f.classList.toggle('on',on);
   }catch(e){}},500);
   window.drawWrite=async function(){
     if(!plan.active||plan.mode!=='draw'||plan.view)return;

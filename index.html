@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
+/* v5.76.3 — Dibujar ruta: fuera el «Deshacer» flotante (se tocaba sin querer al mover el mapa), «Escribir» pequeño; micrófono rojo de verdad al escuchar tu orden.
+   v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
    v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
    v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
    v5.75.0 — Carpetas de sitios (Casa y trabajo, Avituallamiento, Restaurantes, Puntos de interés, Lugares para volver), con su lista, su mapa y el nombre sacado de OpenStreetMap.
@@ -1383,7 +1384,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10548,9 +10549,9 @@ function rsSimpleCardClose(){try{localStorage.setItem('rs_simple_card','1')}catc
 </script>
 <style>
 /* v5.64.0 — Dibujar ruta: botones siempre a mano (Deshacer y Escribir la ruta) */
-#drwFab{position:fixed;left:10px;top:calc(176px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}
+#drwFab{position:fixed;left:12px;top:calc(124px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}   /* v5.76.3: más pequeño y arriba */
 #drwFab.on{display:flex}
-#drwFab button{width:auto;min-width:118px;height:52px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
+#drwFab button{width:auto;min-width:0;height:40px;padding:0 12px!important;font-size:14px!important;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
 #drwFab button:disabled{opacity:.45}
 #drwFab button.w{background:#0B63CE;border-color:#0B63CE;color:#fff}
 </style>
@@ -10560,11 +10561,11 @@ function rsSimpleCardClose(){try{localStorage.setItem('rs_simple_card','1')}catc
    · ⌨️ Escribir la ruta: escribes los pueblos o sitios por orden, separados por comas, y la app los une por caminos. */
 (function(){
   var f=document.createElement('div');f.id='drwFab';
-  f.innerHTML='<button type="button" id="drwU" onclick="drawUndo()">↶ Deshacer</button><button type="button" class="w" onclick="drawWrite()">⌨️ Escribir la ruta</button>';
+  f.innerHTML='<button type="button" class="w" onclick="drawWrite()">⌨️ Escribir</button>';   // v5.76.3: el ↶ Deshacer ya está en la barra de abajo
   document.body.appendChild(f);
   setInterval(function(){try{
     var on=!!(plan.active&&plan.mode==='draw'&&!plan.view&&!(live&&live.on)&&document.getElementById('app').classList.contains('planning')&&document.getElementById('s-rutas').classList.contains('active'));
-    f.classList.toggle('on',on);if(on)document.getElementById('drwU').disabled=!planWps().length;
+    f.classList.toggle('on',on);
   }catch(e){}},500);
   window.drawWrite=async function(){
     if(!plan.active||plan.mode!=='draw'||plan.view)return;
@@ -10701,7 +10702,7 @@ html.gmx #vozBtn{background:#0B63CE!important;color:#fff!important;border:3px so
 html.gmx #vozBtn.on{background:#DC2626!important;box-shadow:0 0 0 6px rgba(220,38,38,.35),0 4px 14px rgba(0,0,0,.35)!important}
 html.gmx #vozBtn.cont:not(.on){background:#0B63CE!important;color:#fff!important}
 /* v5.70.1 — rojo siempre que el micrófono está abierto (también en ruta y con «Oye bici») */
-html.gmx #vozBtn.hear{background:#DC2626!important;color:#fff!important}
+html.gmx #vozBtn.hear:not(.zz1):not(.zz2){background:#DC2626!important;color:#fff!important}   /* v5.76.3: gana también en modo «Oye bici» */
 html.gmx body:not(:has(#app.live)) #vozBtn{top:auto!important;left:auto!important;right:12px!important;bottom:calc(var(--nav-h,72px) + 30px + env(safe-area-inset-bottom))!important}
 html.gmx body:has(#s-rutas.planning):not(:has(#app.live)) #vozBtn{bottom:auto!important;right:auto!important;left:12px!important;top:calc(16px + env(safe-area-inset-top))!important}
 html.gmx body:has(.sheet.show):not(:has(#app.live)) #vozBtn{display:none!important}
@@ -10734,7 +10735,7 @@ function rtRenList(id,pick){var L=store.get('routes',[]),r=L.find(function(x){re
 (function(){
   setInterval(function(){try{
     var b=document.getElementById('vozBtn');if(!b)return;var n=Date.now(),h=false;
-    try{if(VZ.on)h=true}catch(e){}
+    try{if(VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||VZ.pending))h=true}catch(e){}   // v5.76.3: esperando «Oye bici» = azul; escuchando tu orden = rojo
     try{if(typeof VC!=='undefined'&&VC.rec&&!(n<VC.quiet)&&!musSpeaking())h=true}catch(e){}
     try{if(ttsSpeaking()&&!VZ.oneShot)h=false}catch(e){}
     b.classList.toggle('hear',h);
