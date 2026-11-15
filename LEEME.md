@@ -1,3 +1,12 @@
+## Versión 5.75.0 (Simple 1.36.0) — Carpetas de sitios
+- «Mis sitios guardados» ahora va por carpetas, cada una con su icono: 🏠 Casa y trabajo · 💧 Avituallamiento · 🍽️ Restaurantes · 📍 Puntos de interés · ⭐ Lugares para volver.
+- Cada carpeta tiene su lista y «🗺️ Ver todos en el mapa» (salen en el mapa de Rutas con su nombre; «✖ Quitar» para esconderlos).
+- ➕ Añadir sitio: «Donde estoy ahora» o «Elegir en el mapa». El nombre se saca solo de OpenStreetMap (el bar, fuente o restaurante más cercano) y se puede cambiar antes de guardar.
+- Al tocar un sitio: 🧭 Ir aquí, 🗺️ Ver en el mapa, ✏️ Cambiar nombre, 📂 Cambiar de carpeta, 🗑️ Borrar.
+- Los sitios que ya tenías no se pierden: Casa y Trabajo van a «Casa y trabajo» y los demás a «Lugares para volver». Caben hasta 150 sitios.
+- En Rutas › buscar destino salen Casa, Trabajo y los 8 últimos sitios; 📂 abre todas las carpetas.
+- Archivos: index.html, simple.html y sw.js. Las reglas de Firebase no cambian (los sitios se guardan en el móvil).
+
 ## Versión 5.74.1 (Simple 1.35.1) — Mis sitios guardados: tocar = ir
 - Antes, al tocar un sitio en «Mis sitios guardados» salía «¿Borrar …?». Ahora se abre el sitio con 🧭 Ir aquí (botón grande), 🗑️ Borrar y ↩️ Volver.
 - Borrar sigue pidiendo confirmación. Archivos: index.html, simple.html y sw.js.

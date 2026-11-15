@@ -1198,7 +1198,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <div class="block">
     <div class="sec"><h3>Mis sitios guardados</h3></div>
-    <button class="li" onclick="placesManage()"><span class="em">📌</span><div><b>Casa, trabajo y tus sitios</b><small>Para ir en un toque o volver a casa</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="li" onclick="placesManage()"><span class="em">📌</span><div><b>Mis carpetas de sitios</b><small>🏠 Casa · 💧 Avituallamiento · 🍽️ Restaurantes · 📍 Interés · ⭐ Volver</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="block">
     <div class="sec"><h3>Historial</h3></div>
@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.35.1 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.36.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5666,15 +5666,21 @@ function startPlanner(mode,dest){
   else if(plan.mode!=='loop'){if(dest){plan.dest=dest;redrawPlanMarkers();renderPlan();if(plan.start)computeRoute()}else setTimeout(()=>openPointSearch('dest'),250)}
 }
 /* v5.49.0 — SITIOS GUARDADOS: 🏠 Casa, 💼 Trabajo y otros. Se guardan en este móvil. */
+/* v5.75.0 — CARPETAS de sitios: 🏠 Casa y trabajo · 💧 Avituallamiento · 🍽️ Restaurantes · 📍 Puntos de interés · ⭐ Lugares para volver.
+   Cada carpeta tiene su lista y su mapa. Al añadir un sitio, el nombre se saca solo del mapa de OpenStreetMap (y se puede cambiar). */
+const PL_F=[['casa','🏠','Casa y trabajo'],['avit','💧','Avituallamiento'],['rest','🍽️','Restaurantes'],['poi','📍','Puntos de interés'],['volver','⭐','Lugares para volver']];
+function plF(c){return PL_F.find(f=>f[0]===c)||PL_F[4]}
+function placeCat(p){return p&&p.c&&PL_F.some(f=>f[0]===p.c)?p.c:(p&&(p.k==='casa'||p.k==='trabajo')?'casa':'volver')}
 function placesAll(){const a=store.get('places',[]);return Array.isArray(a)?a.filter(p=>p&&isFinite(p.lat)&&isFinite(p.lng)):[]}
 function placeGet(k){return placesAll().find(p=>p.k===k)||null}
-function placeSave(P){const a=placesAll().filter(p=>p.k!==P.k);if(P.k==='casa')a.unshift(P);else a.push(P);store.set('places',a.slice(0,12))}
+function placeSave(P){const a=placesAll().filter(p=>p.k!==P.k);if(P.k==='casa')a.unshift(P);else a.push(P);store.set('places',a.slice(0,150))}
 function placeDel(k){store.set('places',placesAll().filter(p=>p.k!==k))}
-function placesRow(){const el=$('sPlaces');if(!el)return;const A=placesAll();
-  let h=A.map((p,i)=>`<button class="chip" onclick="placeUse(${i})">${p.e} ${esc(p.n)}</button>`).join('');
-  if(!A.some(p=>p.k==='casa'))h+=`<button class="chip" style="border-style:dashed" onclick="placeSetMenu('casa')">🏠 Guardar casa</button>`;
+function placesRow(){const el=$('sPlaces');if(!el)return;const A=placesAll().map((p,i)=>[p,i]);
+  const top=A.filter(([p])=>p.k==='casa'||p.k==='trabajo').concat(A.filter(([p])=>p.k!=='casa'&&p.k!=='trabajo').slice(-8).reverse());
+  let h=top.map(([p,i])=>`<button class="chip" onclick="placeUse(${i})">${p.e} ${esc(p.n)}</button>`).join('');
+  if(!A.some(([p])=>p.k==='casa'))h+=`<button class="chip" style="border-style:dashed" onclick="placeSetMenu('casa')">🏠 Guardar casa</button>`;
   h+=`<button class="chip" style="border-style:dashed" onclick="placeSetMenu('new')">⭐ Guardar sitio</button>`;
-  if(A.length)h+=`<button class="chip" onclick="placesManage()" aria-label="Editar sitios guardados">✏️</button>`;
+  if(A.length)h+=`<button class="chip" onclick="placesManage()" aria-label="Mis sitios guardados">📂</button>`;
   el.innerHTML=h}
 function placeUse(i){const p=placesAll()[i];if(!p)return;applyPoint({lat:p.lat,lng:p.lng,label:p.e+' '+p.n})}
 function placeGo(k){const P=placeGet(k);if(!P){placeSetMenu(k,()=>placeGo(k));return}
@@ -5692,23 +5698,73 @@ function placeSetMenu(k,then){
   if(k==='casa'){e='🏠';n='Casa'}else if(k==='trabajo'){e='💼';n='Trabajo'}
   else{n=(prompt('Nombre del sitio (por ejemplo: Casa de mis padres, Bar de la plaza):','')||'').trim().slice(0,30);if(!n)return;k='p'+Date.now().toString(36)}
   const key=searchKey,fromSearch=$('sh-search').classList.contains('show')&&plan.active;
-  const save=(lat,lng)=>{placeSave({k,e,n,lat:+lat,lng:+lng});toast(e+' '+n+' guardado',2500);
+  const save=(lat,lng)=>{placeSave({k,e,n,c:(k==='casa'||k==='trabajo')?'casa':'volver',lat:+lat,lng:+lng});toast(e+' '+n+' guardado',2500);
     if(then)then();else if(fromSearch&&plan.active){searchKey=key;openPointSearch(key)}};
   placeDlg(`Guardar ${e} ${esc(n)}`,[
     {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}navigator.geolocation.getCurrentPosition(p=>save(p.coords.latitude,p.coords.longitude),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
     {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);$('scrim').classList.remove('show');openPickerFor(e+' '+n,'#2563EB',null,ll=>save(ll.lat,ll.lng))}}])}
-function placeOne(k){const p=placeGet(k);if(!p)return;
-  placeDlg(`${p.e} ${esc(p.n)}`,[
-    {t:'🧭 Ir aquí',main:1,f:()=>placeGo(k)},
-    {t:'🗑️ Borrar',f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(k);toast('Borrado');setTimeout(placesManage,200)}else setTimeout(()=>placeOne(k),150)}},
-    {t:'↩️ Volver',f:()=>setTimeout(placesManage,150)}])}
+/* Nombre del sitio sacado de OpenStreetMap: el bar, fuente, restaurante… más cercano (45 m); si no, la calle o el pueblo */
+async function osmName(ll){
+  try{const d=await overpassQ(`[out:json][timeout:8];nwr(around:45,${(+ll.lat).toFixed(6)},${(+ll.lng).toFixed(6)})[name][~"^(amenity|shop|tourism|leisure|historic|natural|man_made|craft|office|sport)$"~"."];out center 30;`);
+    let best=null,bd=1e9;const k=Math.cos(ll.lat*Math.PI/180);
+    (d.elements||[]).forEach(e=>{const la=e.lat!=null?e.lat:e.center&&e.center.lat,lo=e.lon!=null?e.lon:e.center&&e.center.lon;if(la==null)return;const dd=(la-ll.lat)**2+((lo-ll.lng)*k)**2;if(dd<bd){bd=dd;best=e}});
+    if(best&&best.tags&&best.tags.name)return best.tags.name}catch(e){}
+  try{const j=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&accept-language=es&lat=${ll.lat}&lon=${ll.lng}`)).json();
+    const a=(j&&j.address)||{};if(j&&j.name&&j.name!==a.road)return j.name;return a.road||a.village||a.town||a.city||''}catch(e){}
+  return ''}
+async function placeNameAsk(c,ll,hint){
+  toast('🔎 Buscando el nombre en el mapa…',2500);
+  let nm='';try{nm=await Promise.race([osmName(ll),new Promise(r=>setTimeout(()=>r(''),9000))])}catch(e){}
+  if(!nm&&hint)nm=String(hint).split(',')[0];if(/^Punto en el mapa/.test(nm))nm='';
+  const n=(prompt(nm?'Nombre del sitio (sacado del mapa; puedes cambiarlo):':'Nombre del sitio:',nm||'')||'').trim().slice(0,40);
+  if(!n){toast('No se ha guardado');setTimeout(()=>placesFolder(c),200);return}
+  const F=plF(c);placeSave({k:'p'+Date.now().toString(36),e:F[1],n,c,lat:+(+ll.lat).toFixed(6),lng:+(+ll.lng).toFixed(6)});
+  toast(F[1]+' '+n+' guardado en '+F[2],2800);try{placesRow()}catch(e){}setTimeout(()=>placesFolder(c),200)}
+function placeAddIn(c){const F=plF(c);
+  placeDlg(`➕ Añadir a ${F[1]} ${F[2]}`,[
+    {html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">El nombre lo sacamos solo del mapa (OpenStreetMap). Luego lo puedes cambiar.</div>`},
+    {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}toast('📍 Buscando dónde estás…',2000);navigator.geolocation.getCurrentPosition(p=>placeNameAsk(c,{lat:p.coords.latitude,lng:p.coords.longitude}),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
+    {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);try{$('scrim').classList.remove('show')}catch(e){}openPickerFor(F[1]+' '+F[2],'#2563EB',null,(ll,name)=>placeNameAsk(c,ll,name))}},
+    {t:'↩️ Volver',f:()=>setTimeout(()=>placesFolder(c),150)}])}
+function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c);
+  const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">${A.length?'Toca un sitio para ir, verlo en el mapa, cambiarle el nombre o borrarlo.':'Aún no hay sitios en esta carpeta. Añade el primero:'}</div>`}];
+  A.forEach(p=>rows.push({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
+  if(A.length)rows.push({t:'🗺️ Ver todos en el mapa',f:()=>placesMap(c)});
+  if(c==='casa'){if(!placeGet('casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',()=>placesFolder('casa'))});
+    if(!placeGet('trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',()=>placesFolder('casa'))})}
+  else rows.push({t:'➕ Añadir sitio',main:1,f:()=>placeAddIn(c)});
+  rows.push({t:'↩️ Carpetas',f:()=>setTimeout(placesManage,150)});
+  placeDlg(`${F[1]} ${F[2]}`,rows)}
+/* Tocar un sitio = ir. Borrar y lo demás van dentro */
+function placeOne(k){const p=placeGet(k);if(!p)return;const c=placeCat(p),fix=p.k==='casa'||p.k==='trabajo';
+  const rows=[{t:'🧭 Ir aquí',main:1,f:()=>placeGo(k)},{t:'🗺️ Ver en el mapa',f:()=>placesMap(c,k)}];
+  if(!fix){rows.push({t:'✏️ Cambiar nombre',f:()=>{const n=(prompt('Nombre del sitio:',p.n)||'').trim().slice(0,40);if(n){placeSave({...p,n});toast('✏️ Nombre cambiado');try{placesRow()}catch(e){}}setTimeout(()=>placeOne(k),150)}});
+    rows.push({t:'📂 Cambiar de carpeta',f:()=>setTimeout(()=>placeDlg('📂 ¿A qué carpeta?',PL_F.filter(f=>f[0]!=='casa'&&f[0]!==c).map(f=>({t:`${f[1]} ${f[2]}`,f:()=>{placeSave({...p,c:f[0],e:f[1]});toast(`${f[1]} Movido a ${f[2]}`);setTimeout(()=>placesFolder(f[0]),150)}}))),150)})}
+  else rows.push({t:'📍 Cambiar ubicación',f:()=>placeSetMenu(k,()=>placeOne(k))});
+  rows.push({t:'🗑️ Borrar',f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(k);placesMapOff();toast('Borrado');try{placesRow()}catch(e){}setTimeout(()=>placesFolder(c),200)}else setTimeout(()=>placeOne(k),150)}});
+  rows.push({t:'↩️ Volver',f:()=>setTimeout(()=>placesFolder(c),150)});
+  placeDlg(`${p.e} ${esc(p.n)}`,rows)}
+/* Sitios de una carpeta en el mapa de Rutas (con su nombre). Se quitan con «✖ Quitar». */
+let plMk=[];
+function placesMapOff(){plMk.forEach(m=>{try{m.remove()}catch(e){}});plMk=[];const b=$('plMapBar');if(b)b.remove()}
+function placesMap(c,k){
+  const L=k?[placeGet(k)].filter(Boolean):placesAll().filter(p=>placeCat(p)===c);if(!L.length)return;
+  go('rutas');if(!map){toast('El mapa necesita conexión a internet');return}
+  placesMapOff();const F=plF(c);
+  L.forEach(p=>{const el=document.createElement('div');el.style.cssText='display:flex;flex-direction:column;align-items:center;cursor:pointer';
+    el.innerHTML=`<div style="width:36px;height:36px;border-radius:50%;background:#fff;border:2.5px solid #111;display:grid;place-items:center;font-size:19px;box-shadow:0 2px 6px rgba(0,0,0,.35)">${p.e}</div><b style="margin-top:2px;background:#fff;color:#111;border:1.5px solid #111;border-radius:6px;padding:1px 6px;font-size:11.5px;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${esc(p.n)}</b>`;
+    el.onclick=e=>{e.stopPropagation();placeOne(p.k)};
+    plMk.push(new maplibregl.Marker({element:el,anchor:'top'}).setLngLat([p.lng,p.lat]).addTo(map))});
+  const bar=document.createElement('button');bar.id='plMapBar';
+  bar.style.cssText='position:absolute;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top));z-index:40;background:#111;color:#fff;border:2px solid #fff;border-radius:10px;padding:8px 14px;font-weight:800;font-size:14px;line-height:1.2;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.4);white-space:nowrap';
+  bar.textContent=(k?L[0].e+' '+L[0].n:F[1]+' '+F[2]+' · '+L.length)+'  ✖ Quitar';bar.onclick=placesMapOff;
+  ($('s-rutas')||document.body).appendChild(bar);
+  setTimeout(()=>{try{map.resize();if(L.length===1)map.flyTo({center:[L[0].lng,L[0].lat],zoom:16});
+    else{const b=new maplibregl.LngLatBounds();L.forEach(p=>b.extend([p.lng,p.lat]));map.fitBounds(b,{padding:{top:170,bottom:200,left:50,right:50},maxZoom:16})}}catch(e){}},350);
+  toast(k?'Toca el sitio para ir':'Toca un sitio para ir',2500)}
 function placesManage(){const A=placesAll();
-  /* v5.74.1 — Tocar un sitio = ir. Borrar va dentro (antes, al tocarlo, preguntaba «¿Borrar…?») */
-  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
-  if(!A.some(p=>p.k==='casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',placesManage)});
-  if(!A.some(p=>p.k==='trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',placesManage)});
-  rows.push({t:'⭐ Guardar otro sitio',f:()=>placeSetMenu('new',placesManage)});
-  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Toca un sitio para ir o borrarlo.</div>`});
+  const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Elige una carpeta para ver sus sitios, ir a ellos o añadir nuevos.</div>`}];
+  PL_F.forEach(([c,e,n])=>{const k=A.filter(p=>placeCat(p)===c).length;rows.push({t:`${e} ${n} · ${k}`,f:()=>placesFolder(c)})});
   placeDlg('📌 Mis sitios guardados',rows)}
 /* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
 function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;
