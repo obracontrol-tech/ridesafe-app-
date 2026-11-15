@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.76.3 — Dibujar ruta: fuera el «Deshacer» flotante (se tocaba sin querer al mover el mapa), «Escribir» pequeño; micrófono rojo de verdad al escuchar tu orden.
+/* v5.76.4 — En ruta: timbre, peligro y micrófono en una fila bajo el aviso de giro; ya no tapan nada.
+   v5.76.3 — Dibujar ruta: fuera el «Deshacer» flotante (se tocaba sin querer al mover el mapa), «Escribir» pequeño; micrófono rojo de verdad al escuchar tu orden.
    v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
    v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
    v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
@@ -1384,7 +1385,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10833,5 +10834,21 @@ html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaL,.guiaW,.guiaT,#up
 html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .guiaW{white-space:nowrap;font-size:14px!important;background:#fff!important;border:1.5px solid #111!important;color:#111!important}
 html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set small{font-weight:500!important;font-size:13px!important;color:#4B5563!important}
 </style>
+<style id="gmTheme7">
+/* v5.76.4 — En ruta: 🔔, ⚠️ y 🎤 en UNA FILA arriba a la izquierda del mapa, justo debajo del aviso de giro (medido de verdad).
+   Ya no tapan «GRABANDO», «‹ Ver la app» ni el botón ⋯ aunque el mapa quede pequeño. */
+html.gmx body:has(#app.live) .gmFab,html.gmx body:has(#app.live) #vozBtn{top:var(--gmFabTop,12px)!important;bottom:auto!important;right:auto!important;width:46px!important;height:46px!important;font-size:21px!important}
+html.gmx body:has(#app.live) #gmBell{left:10px!important}
+html.gmx body:has(#app.live) #gmHaz{left:64px!important}
+html.gmx body:has(#app.live) #vozBtn{left:118px!important}
+html.gmx body:has(#app.live) #vozBtn small{display:none!important}
+</style>
+<script>
+(function(){setInterval(function(){try{
+  if(!(live&&live.on))return;var t=12,b=document.getElementById('lvBanner');
+  if(b&&getComputedStyle(b).display!=='none'){var r=b.getBoundingClientRect();if(r.height>0)t=Math.round(r.bottom)+8}
+  document.documentElement.style.setProperty('--gmFabTop',t+'px');
+}catch(e){}},400)})();
+</script>
 </body>
 </html>

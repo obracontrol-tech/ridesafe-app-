@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.3 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.4 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9362,5 +9362,21 @@ html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaL,.guiaW,.guiaT,#up
 html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .guiaW{white-space:nowrap;font-size:14px!important;background:#fff!important;border:1.5px solid #111!important;color:#111!important}
 html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set small{font-weight:500!important;font-size:13px!important;color:#4B5563!important}
 </style>
+<style id="gmTheme7">
+/* v5.76.4 — En ruta: 🔔, ⚠️ y 🎤 en UNA FILA arriba a la izquierda del mapa, justo debajo del aviso de giro (medido de verdad).
+   Ya no tapan «GRABANDO», «‹ Ver la app» ni el botón ⋯ aunque el mapa quede pequeño. */
+html.gmx body:has(#app.live) .gmFab,html.gmx body:has(#app.live) #vozBtn{top:var(--gmFabTop,12px)!important;bottom:auto!important;right:auto!important;width:46px!important;height:46px!important;font-size:21px!important}
+html.gmx body:has(#app.live) #gmBell{left:10px!important}
+html.gmx body:has(#app.live) #gmHaz{left:64px!important}
+html.gmx body:has(#app.live) #vozBtn{left:118px!important}
+html.gmx body:has(#app.live) #vozBtn small{display:none!important}
+</style>
+<script>
+(function(){setInterval(function(){try{
+  if(!(live&&live.on))return;var t=12,b=document.getElementById('lvBanner');
+  if(b&&getComputedStyle(b).display!=='none'){var r=b.getBoundingClientRect();if(r.height>0)t=Math.round(r.bottom)+8}
+  document.documentElement.style.setProperty('--gmFabTop',t+'px');
+}catch(e){}},400)})();
+</script>
 </body>
 </html>
