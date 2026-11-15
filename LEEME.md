@@ -1,3 +1,8 @@
+## Versión 5.74.0 (Simple 1.35.0) — «Mis sitios guardados» en Actividades
+- La tarjeta «📌 Mis sitios guardados» (Casa, trabajo y tus sitios) pasa de Perfil a Actividades, encima del Historial.
+- En la Simple no había tarjeta: ahora también está en Actividades.
+- Funciona igual que antes; los sitios guardados no se pierden. Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.73.0 (Simple 1.34.0) — Comunidad/Inicio, Actividades y Perfil con el aspecto Garmin
 - Las tres pantallas que faltaban ya van como Rutas: barra negra arriba con el título (fija al bajar), números como campos de datos del Garmin (km, salidas, desnivel), títulos de apartado en mayúsculas con marca azul, tarjetas blancas con marco negro y todas del mismo ancho, interruptores cuadrados en azul. Fuera fotos de fondo y degradados.
 - Solo cambia la imagen: botones, orden y funciones son los mismos.
