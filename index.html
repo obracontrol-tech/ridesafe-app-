@@ -1371,7 +1371,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.70.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.70.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10593,6 +10593,8 @@ html.gmx #vozBtn{background:#0B63CE!important;color:#fff!important;border:3px so
 /* v5.70.0 — Micrófono: ROJO cuando te está escuchando (habla ahora), AZUL cuando no escucha */
 html.gmx #vozBtn.on{background:#DC2626!important;box-shadow:0 0 0 6px rgba(220,38,38,.35),0 4px 14px rgba(0,0,0,.35)!important}
 html.gmx #vozBtn.cont:not(.on){background:#0B63CE!important;color:#fff!important}
+/* v5.70.1 — rojo siempre que el micrófono está abierto (también en ruta y con «Oye bici») */
+html.gmx #vozBtn.hear{background:#DC2626!important;color:#fff!important}
 html.gmx body:not(:has(#app.live)) #vozBtn{top:auto!important;left:auto!important;right:12px!important;bottom:calc(var(--nav-h,72px) + 30px + env(safe-area-inset-bottom))!important}
 html.gmx body:has(#s-rutas.planning):not(:has(#app.live)) #vozBtn{bottom:auto!important;right:auto!important;left:12px!important;top:calc(16px + env(safe-area-inset-top))!important}
 html.gmx body:has(.sheet.show):not(:has(#app.live)) #vozBtn{display:none!important}
@@ -10618,6 +10620,20 @@ html.gmx .lvside button{background:#fff!important;border:2px solid #111!importan
 <script>
 /* v5.69.0 — «Mis rutas» (ventana): botón ✏️ para cambiar el nombre */
 function rtRenList(id,pick){var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;r.name=n;store.set('routes',L);toast('✏️ Nombre cambiado');openRoutes(!!pick)}
+</script>
+<script>
+/* v5.70.1 — Micrófono ROJO siempre que el móvil te está escuchando (toque, «Oye bici» o escucha en ruta); AZUL cuando no escucha
+   (apagado, o mientras la app habla y no atiende). */
+(function(){
+  setInterval(function(){try{
+    var b=document.getElementById('vozBtn');if(!b)return;var n=Date.now(),h=false;
+    try{if(VZ.on)h=true}catch(e){}
+    try{if(typeof VC!=='undefined'&&VC.rec&&!(n<VC.quiet)&&!musSpeaking())h=true}catch(e){}
+    try{if(ttsSpeaking()&&!VZ.oneShot)h=false}catch(e){}
+    b.classList.toggle('hear',h);
+    var sm=b.querySelector('small');if(sm){var t=h?'ESCUCHO':(VZ.cont?'OYE BICI':'VOZ');if(sm.textContent!==t)sm.textContent=t}
+  }catch(e){}},300);
+})();
 </script>
 </body>
 </html>
