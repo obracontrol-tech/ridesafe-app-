@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.75.0 — Carpetas de sitios (Casa y trabajo, Avituallamiento, Restaurantes, Puntos de interés, Lugares para volver), con su lista, su mapa y el nombre sacado de OpenStreetMap.
+/* v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
+   v5.75.0 — Carpetas de sitios (Casa y trabajo, Avituallamiento, Restaurantes, Puntos de interés, Lugares para volver), con su lista, su mapa y el nombre sacado de OpenStreetMap.
    v5.74.1 — Mis sitios guardados: tocar un sitio = 🧭 Ir aquí; 🗑️ Borrar va dentro.
    v5.74.0 — «Mis sitios guardados» pasa de Perfil a Actividades (también en la Simple).
    v5.73.0 — Comunidad, Actividades y Perfil con el aspecto Garmin (barra negra, campos de datos, tarjetas con marco). Solo imagen.
@@ -1380,7 +1381,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.75.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5852,6 +5853,15 @@ function placeAddIn(c){const F=plF(c);
     {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}toast('📍 Buscando dónde estás…',2000);navigator.geolocation.getCurrentPosition(p=>placeNameAsk(c,{lat:p.coords.latitude,lng:p.coords.longitude}),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
     {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);try{$('scrim').classList.remove('show')}catch(e){}openPickerFor(F[1]+' '+F[2],'#2563EB',null,(ll,name)=>placeNameAsk(c,ll,name))}},
     {t:'↩️ Volver',f:()=>setTimeout(()=>placesFolder(c),150)}])}
+/* v5.76.0 — Buscar restaurantes cerca en la app de Google Maps (gratis: solo abre Google Maps, no usa su servicio de mapas) */
+function gmapsRest(){
+  const open=ll=>{const u=ll?`https://www.google.com/maps/search/restaurantes/@${(+ll.lat).toFixed(5)},${(+ll.lng).toFixed(5)},15z`:'https://www.google.com/maps/search/restaurantes+cerca+de+mi';
+    const w=window.open(u,'_blank','noopener');if(!w)location.href=u};
+  let me=null;try{me=myLL()}catch(e){}
+  if(me){open(me);return}
+  if(!navigator.geolocation){open(null);return}
+  toast('📍 Buscando dónde estás…',2000);
+  navigator.geolocation.getCurrentPosition(p=>open({lat:p.coords.latitude,lng:p.coords.longitude}),()=>open(null),{enableHighAccuracy:false,timeout:6000,maximumAge:120000})}
 function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c);
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">${A.length?'Toca un sitio para ir, verlo en el mapa, cambiarle el nombre o borrarlo.':'Aún no hay sitios en esta carpeta. Añade el primero:'}</div>`}];
   A.forEach(p=>rows.push({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
@@ -5859,6 +5869,7 @@ function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c)
   if(c==='casa'){if(!placeGet('casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',()=>placesFolder('casa'))});
     if(!placeGet('trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',()=>placesFolder('casa'))})}
   else rows.push({t:'➕ Añadir sitio',main:1,f:()=>placeAddIn(c)});
+  if(c==='rest')rows.splice(1,0,{t:'🔎 Buscar restaurantes cerca en Google Maps',main:1,f:gmapsRest});
   rows.push({t:'↩️ Carpetas',f:()=>setTimeout(placesManage,150)});
   placeDlg(`${F[1]} ${F[2]}`,rows)}
 /* Tocar un sitio = ir. Borrar y lo demás van dentro */

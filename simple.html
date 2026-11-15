@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.36.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5726,6 +5726,15 @@ function placeAddIn(c){const F=plF(c);
     {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}toast('📍 Buscando dónde estás…',2000);navigator.geolocation.getCurrentPosition(p=>placeNameAsk(c,{lat:p.coords.latitude,lng:p.coords.longitude}),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
     {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);try{$('scrim').classList.remove('show')}catch(e){}openPickerFor(F[1]+' '+F[2],'#2563EB',null,(ll,name)=>placeNameAsk(c,ll,name))}},
     {t:'↩️ Volver',f:()=>setTimeout(()=>placesFolder(c),150)}])}
+/* v5.76.0 — Buscar restaurantes cerca en la app de Google Maps (gratis: solo abre Google Maps, no usa su servicio de mapas) */
+function gmapsRest(){
+  const open=ll=>{const u=ll?`https://www.google.com/maps/search/restaurantes/@${(+ll.lat).toFixed(5)},${(+ll.lng).toFixed(5)},15z`:'https://www.google.com/maps/search/restaurantes+cerca+de+mi';
+    const w=window.open(u,'_blank','noopener');if(!w)location.href=u};
+  let me=null;try{me=myLL()}catch(e){}
+  if(me){open(me);return}
+  if(!navigator.geolocation){open(null);return}
+  toast('📍 Buscando dónde estás…',2000);
+  navigator.geolocation.getCurrentPosition(p=>open({lat:p.coords.latitude,lng:p.coords.longitude}),()=>open(null),{enableHighAccuracy:false,timeout:6000,maximumAge:120000})}
 function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c);
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">${A.length?'Toca un sitio para ir, verlo en el mapa, cambiarle el nombre o borrarlo.':'Aún no hay sitios en esta carpeta. Añade el primero:'}</div>`}];
   A.forEach(p=>rows.push({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
@@ -5733,6 +5742,7 @@ function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c)
   if(c==='casa'){if(!placeGet('casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',()=>placesFolder('casa'))});
     if(!placeGet('trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',()=>placesFolder('casa'))})}
   else rows.push({t:'➕ Añadir sitio',main:1,f:()=>placeAddIn(c)});
+  if(c==='rest')rows.splice(1,0,{t:'🔎 Buscar restaurantes cerca en Google Maps',main:1,f:gmapsRest});
   rows.push({t:'↩️ Carpetas',f:()=>setTimeout(placesManage,150)});
   placeDlg(`${F[1]} ${F[2]}`,rows)}
 /* Tocar un sitio = ir. Borrar y lo demás van dentro */

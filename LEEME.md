@@ -1,3 +1,7 @@
+## Versión 5.76.0 (Simple 1.37.0) — Buscar restaurantes en Google Maps
+- En Actividades › Mis carpetas de sitios › 🍽️ Restaurantes, el primer botón es «🔎 Buscar restaurantes cerca en Google Maps»: abre la app de Google Maps con los restaurantes de alrededor de donde estás.
+- Gratis: solo abre Google Maps (no usa ningún servicio de pago de Google). Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.75.0 (Simple 1.36.0) — Carpetas de sitios
 - «Mis sitios guardados» ahora va por carpetas, cada una con su icono: 🏠 Casa y trabajo · 💧 Avituallamiento · 🍽️ Restaurantes · 📍 Puntos de interés · ⭐ Lugares para volver.
 - Cada carpeta tiene su lista y «🗺️ Ver todos en el mapa» (salen en el mapa de Rutas con su nombre; «✖ Quitar» para esconderlos).
