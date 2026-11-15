@@ -1,3 +1,11 @@
+## Versión 5.72.0 (solo Pro) — «Oye bici» contesta siempre
+- En ruta (con las órdenes por voz activadas), al decir «Oye bici» la app ahora pita y pone «🎤 Te escucho…». Antes no hacía nada y parecía que no oía.
+- Tras «Oye bici» vale cualquier orden, también frases largas (antes las de más de 6 palabras se ignoraban, y «oye bici» contaba como 2).
+- Si no entiende la orden, lo dice («No te he entendido») y enseña en pantalla lo que ha oído. Antes se quedaba callada.
+- Fuera de ruta: la orden ya no caduca si tardas en decirla o es larga (antes, pasados 7 s desde «Oye bici», se perdía sin avisar).
+- Sin «Oye bici», en ruta todo sigue igual: «pausa», «cómo voy»… funcionan directamente.
+- Archivos: index.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.71.0 (solo Pro) — Voz más fiable
 - Vigilante de la voz: cada 3 s comprueba que el micrófono que debería escuchar («Oye bici» o la escucha en ruta) está abierto de verdad. Si se ha quedado apagado, lo vuelve a abrir solo. Antes podía quedarse sordo sin avisar al tocar el 🎤 mientras la app hablaba, al volver de la pantalla apagada o si el móvil no dejaba abrir el micro a la primera.
 - Sin huecos sordos: cuando la app no está hablando, el micrófono se reabre en 0,4 s (antes 2,3 s en cada vuelta). Tras decir «Oye bici» se reabre al momento para no perder la orden.

@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
+/* v5.72.0 — «Oye bici» contesta siempre, también en ruta (pitido, «Te escucho» y «No te he entendido»); la orden ya no caduca mientras hablas.
+   v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
    v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
    v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
    v5.68.0 — Revisión completa: avisos de peligro sin el nombre del ciclista (privacidad), fuera el interruptor «Modo claro» que ya no hacía nada, la Simple funciona sin conexión desde la primera vez.
@@ -1372,7 +1373,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.71.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.72.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7899,7 +7900,9 @@ function vcStart(){
     if(Date.now()<VC.quiet||musSpeaking())continue;
     const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
     VC.buf=VC.buf||[];VC.buf.push(alts);clearTimeout(VC.bt);   // v5.54.0: espera 1,5 s por si la frase sigue
-    VC.bt=setTimeout(()=>{const B=VC.buf||[];VC.buf=[];if(!B.length)return;vcHandle(B.length===1?B[0]:[B.map(a=>a[0]).join(' '),...B.at(-1)])},1500)}};
+    if(Date.now()<(VC.armT||0))VC.armT=Date.now()+6000;   // v5.72.0: sigues hablando tras «Oye bici»
+    let solo=false;try{solo=VC.buf.length===1&&alts.some(a=>{const x=vozNorm(a);return VOZ_WAKE.test(x)&&!x.replace(VOZ_WAKE_CUT,'').trim()})}catch(e){}   // solo «Oye bici»: pitido al momento
+    VC.bt=setTimeout(()=>{const B=VC.buf||[];VC.buf=[];if(!B.length)return;vcHandle(B.length===1?B[0]:[B.map(a=>a[0]).join(' '),...B.at(-1)])},solo?60:1500)}};
   r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){store.set('vcOn',false);VC.rec=null;vcChip();toast('🎙️ Permite el micrófono para las órdenes por voz',5000);renderVoz()}
     else if(e.error==='network'){VC.fails++}};
   r.onend=()=>{if(VC.rec!==r)return;VC.rec=null;vcChip();
@@ -7937,7 +7940,20 @@ function vcListenOnce(){
   setTimeout(()=>{try{r.start();VC.rec=r;vcChip()}catch(e){VC.rec=null}},250);
 }
 function vcPttSet(on){store.set('vcPtt',!!on);if(live.on){if(on){vcStop();vcPttArm()}else{vcPttDisarm();vcStart()}}renderVoz();vcChip();toast(on?'🎧 Pulsa ▶️/⏸ del casco y di la orden':'🎙️ La app escucha todo el rato durante la salida',4000)}
+/* v5.72.0 — En ruta, «Oye bici» SIEMPRE contesta: pitido y «Te escucho» al decirlo, y si no entiende la orden lo dice
+   (antes se quedaba callada). Tras «Oye bici» vale cualquier orden, también las frases largas. */
 function vcHandle(alts){
+  let N=[];try{N=alts.map(a=>vozNorm(a)).filter(Boolean)}catch(e){}
+  let wk=null;try{wk=N.find(x=>VOZ_WAKE.test(x))}catch(e){}
+  const armed=Date.now()<(VC.armT||0);
+  if(wk&&!wk.replace(VOZ_WAKE_CUT,'').trim()){VC.armT=Date.now()+10000;beepPtt(990);vib(40);try{vozPill('🎤 Te escucho…','Di la orden',8000)}catch(e){}return}
+  if(wk||armed){VC.armT=0;
+    const C=N.map(x=>x.replace(VOZ_WAKE_CUT,'').trim()).filter(Boolean);if(!C.length)return;
+    try{vozPill('🎤 «'+C[0]+'»','',4000)}catch(e){}
+    for(const c of C){const n=vcNorm(c);if(n&&vcDo(n))return}
+    for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c))return}catch(e){}}
+    beepPtt(330);try{vozPill('🤔 «'+C[0]+'»','No te he entendido',4500)}catch(e){}
+    vcSay('No te he entendido. Di órdenes para oír la lista.');return}
   for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
 }
 function vcOk2(){beepPtt(880);vib(40)}
@@ -9025,6 +9041,7 @@ function vozMake(continuous){
     vozHeard(alts,t)};
   r._flush=flush;
   r.onresult=e=>{r._ev=Date.now();
+    if(Date.now()<VZ.armedT)VZ.armedT=Math.max(VZ.armedT,Date.now()+5000);   // v5.72.0: mientras hablas tras «Oye bici», la orden no caduca
     for(let i=e.resultIndex;i<e.results.length;i++){
       const res=e.results[i];const txt=res[0].transcript;
       if(!res.isFinal){
