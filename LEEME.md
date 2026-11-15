@@ -1,3 +1,10 @@
+## Versión 5.71.0 (solo Pro) — Voz más fiable
+- Vigilante de la voz: cada 3 s comprueba que el micrófono que debería escuchar («Oye bici» o la escucha en ruta) está abierto de verdad. Si se ha quedado apagado, lo vuelve a abrir solo. Antes podía quedarse sordo sin avisar al tocar el 🎤 mientras la app hablaba, al volver de la pantalla apagada o si el móvil no dejaba abrir el micro a la primera.
+- Sin huecos sordos: cuando la app no está hablando, el micrófono se reabre en 0,4 s (antes 2,3 s en cada vuelta). Tras decir «Oye bici» se reabre al momento para no perder la orden.
+- «Oye bici» más tolerante: también vale cuando el móvil escribe «oye vichi», «oye bisi», «oyebici», «oye bicicleta»…
+- Si Chrome deja el micrófono colgado (más de 75 s abierto sin oír nada), se reinicia solo.
+- La Simple no cambia (no tiene órdenes por voz). Archivos: index.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.27.4 (Simple 1.5.4) — Planificar en GraphHopper
 - Nuevo botón «🧭 Planificar en GraphHopper» (menú ➕ y en «Mis rutas»): abre graphhopper.com/maps con el perfil MTB en tu zona.
 - El ciclista dibuja la ruta por senderos, pulsa «GPX» y la sube a la app con «Subir GPX o TCX».

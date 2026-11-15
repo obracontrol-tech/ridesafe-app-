@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
+/* v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
+   v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
    v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
    v5.68.0 — Revisión completa: avisos de peligro sin el nombre del ciclista (privacidad), fuera el interruptor «Modo claro» que ya no hacía nada, la Simple funciona sin conexión desde la primera vez.
    v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
@@ -1371,7 +1372,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.70.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.71.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8988,14 +8989,16 @@ const VSR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const VZ_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const VZ={rec:null,on:false,cont:false,want:false,armedT:0,pending:null,quietT:0,errN:0,restartTO:null,oneShot:false};
 function vozNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[¿?¡!.,;:«»"]/g,' ').replace(/\s+/g,' ').trim()}
-const VOZ_WAKE=/\b(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|\b(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|\bridesafe\b/;
+/* v5.71.0 — «Oye bici» se reconoce aunque el móvil lo escriba mal (oye vichi, oye bisi, oyebici, oye bicicleta…) */
+const VOZ_WAKE=/\b(?:oye|oyes|oie|oy|hoy|olle|hey|ey|ei|joye|o ye)\s*(?:bicicleta|bicis|bici|vici|biki|bichi|bisi|visi|bizi|vichi|vichy|bixi|pici|bc)\b|\b(?:ride|raid|rai|ray|right)\s*(?:safe|seif|sef|seyf|save)\b|\bridesafe\b/;
+const VOZ_WAKE_CUT=new RegExp('^.*?(?:'+VOZ_WAKE.source+')');
 function vozPill(a,b,ms){const p=document.getElementById('vozPill');if(!p._x){p._x=1;p.addEventListener('click',()=>{p.style.display='none'})}p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
 function vozBeep(f,d){if(VZ_IOS)return;   /* v5.40.4: en iPhone el pitido corta la voz de la respuesta */
   try{const C=window.__vozAC||(window.__vozAC=new (window.AudioContext||window.webkitAudioContext)());if(C.state==='suspended')C.resume();const o=C.createOscillator(),g=C.createGain();o.frequency.value=f||880;g.gain.setValueAtTime(.0001,C.currentTime);g.gain.exponentialRampToValueAtTime(.35,C.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,C.currentTime+(d||.15));o.connect(g).connect(C.destination);o.start();o.stop(C.currentTime+(d||.15)+.02)}catch(e){}}
 function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
 /* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
 function vozSay(t,thenListen){
-  const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;   // v5.41.8: +2,5 s tras contestar
+  const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;VZ.sayEnd=VZ.quietT;   // v5.41.8: +2,5 s tras contestar
   vozStop(true);
   let sp=null;
   try{const v=live.voice;live.voice=true;CASCO.last=t;sp=voiceSay(t);live.voice=v}catch(e){try{cascoSay(t)}catch(x){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(y){}}}
@@ -9015,13 +9018,13 @@ function vozSay(t,thenListen){
 function vozMake(continuous){
   const one=!continuous&&!VZ_IOS;   // v5.54.0: Android con el 🎤 → escucha la frase entera y espera 2 s de silencio
   const r=new VSR();r.lang='es-ES';r.continuous=continuous||one;r.interimResults=true;r.maxAlternatives=3;
-  r._acc='';r._accN=0;
+  r._acc='';r._accN=0;r._t0=Date.now();
   const flush=()=>{clearTimeout(r._fl);let t=r._acc.trim();if(!t&&one&&r._last)t=r._last.trim();if(!t)return;
     const alts=r._accN===1&&r._accAlts?r._accAlts:[vozNorm(t)];r._acc='';r._accN=0;r._accAlts=null;r._last='';
     if(one){r._done=true;try{r.stop()}catch(e){}}
     vozHeard(alts,t)};
   r._flush=flush;
-  r.onresult=e=>{
+  r.onresult=e=>{r._ev=Date.now();
     for(let i=e.resultIndex;i<e.results.length;i++){
       const res=e.results[i];const txt=res[0].transcript;
       if(!res.isFinal){
@@ -9039,7 +9042,7 @@ function vozMake(continuous){
     }
   };
   r.onerror=e=>{
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.want=false;   /* v5.46.4: no borra «Oye bici» */vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Permite el micrófono a la app en Chrome',12000);vozUI();return}
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.want=false;VZ.blk=true;   /* v5.46.4: no borra «Oye bici» */vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Permite el micrófono a la app en Chrome',12000);vozUI();return}
     if(e.error==='network'){vozPill('📶 Sin conexión','El reconocimiento de voz necesita datos móviles',5000);VZ.errN++;return}
     if(e.error==='no-speech'&&VZ.oneShot){vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}
     if(e.error!=='no-speech'&&e.error!=='aborted')VZ.errN++;
@@ -9051,7 +9054,14 @@ function vozMake(continuous){
     if(VZ.oneShot){VZ.oneShot=false;if(VZ.pending&&Date.now()>VZ.pending.until)VZ.pending=null}
     vozUI();
     if(VZ.cont&&VZ.want&&document.visibilityState==='visible'&&Date.now()>VZ.quietT){
-      const wait=Math.min(8000,300+VZ.errN*1500);vozRestartQuiet(wait)}
+      const wait=Math.min(8000,300+VZ.errN*1500);
+      /* v5.71.0 — Si la app no está hablando, el micrófono vuelve a abrirse enseguida (antes se quedaba sordo 2,3 s en cada vuelta).
+         Y si acabas de decir «Oye bici», se reabre al momento para no perder la orden. */
+      VZ.quickN=(Date.now()-(r._t0||0)<1500&&!r._ev)?(VZ.quickN||0)+1:0;
+      const calm=!ttsSpeaking()&&Date.now()>(VZ.speakUntil||0)+1500&&Date.now()>(VZ.sayEnd||0);
+      if(calm&&Date.now()<VZ.armedT&&VZ.quickN<3){VZ.armedT=Date.now()+8000;clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(()=>{VZ.quietT=0;vozStartCont();vozUI()},120)}
+      else if(calm&&!VZ.errN){clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(()=>{if(ttsSpeaking()){vozRestartQuiet(0);return}VZ.quietT=0;vozStartCont()},VZ.quickN>4?5000:VZ.quickN>1?1500:400)}
+      else vozRestartQuiet(wait)}
   };
   r.onstart=()=>{r._started=true;VZ.on=true;vozUI()};
   return r;
@@ -9111,7 +9121,7 @@ function vozListen(silent,direct){
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz',VZ_IOS?'Actualiza el iPhone y usa Safari':'Usa Chrome en Android',6000);return}
   if(VZ_IOS&&!VZ.unl){VZ.unl=1;try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '))}catch(e){}}   // desbloquea la voz del iPhone
   try{if(typeof VC!=='undefined'&&VC.rec){vcStop();VZ.vcBack=true;clearTimeout(VZ.vcT);VZ.vcT=setTimeout(vozVcBack,20000)}}catch(e){}
-  vozStop(true);VZ.oneShot=true;VZ.want=VZ.cont;   // v5.46.4
+  vozStop(true);VZ.oneShot=true;VZ.want=VZ.cont;VZ.blk=false;   // v5.46.4
   if(!silent&&!VZ_IOS)vozBeep(880,.12);
   vozPill(VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Te escucho…','Di la orden',0);
   /* v5.40.5: el iPhone a veces no vuelve a abrir el micrófono tras la primera orden.
@@ -9142,7 +9152,7 @@ function vozHeard(alts,raw){
   VZ.pending=null;
   if(VZ.cont&&!VZ.oneShot){
     const a=alts.find(x=>VOZ_WAKE.test(x));
-    if(a){t=a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();
+    if(a){t=a.replace(VOZ_WAKE_CUT,'').trim();
       if(!t){if(Date.now()>=VZ.armedT)vozBeep(988,.12);VZ.armedT=Date.now()+7000;vozPill('🎤 Te escucho…','Di la orden',7000);vozUI();return}}
     else if(Date.now()<VZ.armedT){/* ya dijo «oye bici» antes: esta frase es la orden */}
     else return;   // sin palabra clave: no hace nada
@@ -10633,6 +10643,29 @@ function rtRenList(id,pick){var L=store.get('routes',[]),r=L.find(function(x){re
     b.classList.toggle('hear',h);
     var sm=b.querySelector('small');if(sm){var t=h?'ESCUCHO':(VZ.cont?'OYE BICI':'VOZ');if(sm.textContent!==t)sm.textContent=t}
   }catch(e){}},300);
+})();
+</script>
+<script>
+/* v5.71.0 — VIGILANTE DE LA VOZ. Cada 3 s comprueba que el micrófono que debería estar escuchando lo está de verdad.
+   Antes, «Oye bici» y la escucha en ruta podían quedarse apagadas sin avisar (al tocar el 🎤 mientras hablaba la app,
+   al volver de la pantalla apagada, o si el móvil no dejaba abrir el micro a la primera) y ya no volvían solas.
+   También reinicia un micrófono que lleva más de 75 s abierto sin oír nada (Chrome a veces se queda colgado). */
+(function(){
+  var idle=0,idleVc=0;
+  setInterval(function(){try{
+    if(typeof VZ==='undefined')return;
+    if(document.visibilityState!=='visible'){idle=0;idleVc=0;return}
+    var n=Date.now(),talk=false;
+    try{talk=ttsSpeaking()||(typeof musSpeaking==='function'&&musSpeaking())}catch(e){}
+    var busy=!!(VZ.oneShot||VZ.pending||talk||n<(VZ.speakUntil||0)+1500||n<(VZ.sayEnd||0));
+    var route=false;try{route=!!(live.on&&vcOn()&&!vcPtt()&&!VC_TAP)}catch(e){}
+    /* «Oye bici» */
+    if(VZ.cont&&!VZ_IOS&&!VZ.blk&&!route&&!VZ.rec&&!busy){if(++idle>=3){idle=0;clearTimeout(VZ.restartTO);VZ.quietT=0;vozStartCont()}}else idle=0;
+    /* micrófono colgado */
+    var r=VZ.rec;if(r&&!VZ.oneShot&&!VZ.pending&&r._t0&&n>=VZ.armedT&&n-Math.max(r._t0,r._ev||0)>75000){try{r.abort()}catch(e){}}
+    /* escucha en ruta */
+    if(route&&!VC.rec&&!busy&&n>VC.quiet){if(++idleVc>=3){idleVc=0;vcStart()}}else idleVc=0;
+  }catch(e){}},3000);
 })();
 </script>
 </body>
