@@ -1223,7 +1223,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="sec"><h3 style="font-size:18px">🚲 Mi bici</h3></div>
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
-  <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🧭 Si me salgo de la ruta<select class="inp" id="selNav" style="width:100%;margin-top:8px" onchange="store.set('navMode',this.value);toast({smart:'🤖 Automático: recalcula en carretera y te lleva de vuelta en montaña',auto:'🔄 Recalculará la ruta sola, como Google Maps',volver:'↩️ Te llevará de vuelta por donde has venido'}[this.value],4000)"><option value="smart">🤖 Automático (recomendado)</option><option value="auto">🔄 Recalcular siempre, como Google Maps</option><option value="volver">↩️ Volver por donde he venido</option></select><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px"><b>Automático:</b> en rutas por carretera hechas con el planificador, recalcula sola un camino nuevo al destino. En tracks de montaña, GPX o rutas del club te lleva de vuelta por donde has venido (lo más seguro). Siempre puedes pulsar «🔄 Recalcular desde aquí».</small></div>
@@ -1246,7 +1246,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.31.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.32.0 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8835,14 +8835,14 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
   function ago(ms){var m=Math.round((Date.now()-ms)/60000);return m<60?'hace '+m+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'}
   async function info(x){
     var mine=x.uid===uid,k=(T[x.t]||T.otro);
-    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms)+(x.n?' por '+x.n:''),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
+    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
     if(i===0&&mine){try{await db.collection('peligros').doc(x.id).delete();H.list=H.list.filter(function(y){return y.id!==x.id});draw();toast('Aviso quitado')}catch(e){toast('No se pudo quitar')}}
   }
   async function report(t,silent){
     var p=here();if(!p){toast('Aún no tengo tu posición GPS');return}
     if(!db||!uid){toast('Sin conexión: inténtalo en unos segundos');return}
     var k=T[t]||T.otro;
-    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:String((typeof myName==='function'?myName():'')||'').slice(0,24),ts:FV.serverTimestamp()});
+    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:'',   /* v5.68: sin nombre (privacidad) */ts:FV.serverTimestamp()});
       H.list.push({id:'tmp'+Date.now(),lat:p[0],lng:p[1],t:t,uid:uid,ms:Date.now()});draw();H.said['tmp']=1;
       try{vib([60,40,60])}catch(e){}toast(k[0]+' '+k[1]+' marcado. ¡Gracias! Avisaremos a los demás ciclistas',4000);
       if(!silent)try{speak(k[1]+' marcado. Gracias.')}catch(e){}

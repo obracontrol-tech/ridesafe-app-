@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
+/* v5.68.0 — Revisión completa: avisos de peligro sin el nombre del ciclista (privacidad), fuera el interruptor «Modo claro» que ya no hacía nada, la Simple funciona sin conexión desde la primera vez.
+   v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
    v5.66.0 — Capa «Caminos y pistas»: añade los caminos SIN ASFALTAR (tierra y grava) en marrón a rayas.
    v5.65.0 — Actividades: apartado «🗺️ Mis rutas», una tarjeta por ruta (ver/seguir, cambiar nombre, GPX, compartir, borrar).
    v5.64.0 — Dibujar ruta: botones ↶ Deshacer y ⌨️ Escribir la ruta (pueblos por orden, separados por comas) siempre a mano.
@@ -1342,7 +1343,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="sec"><h3 style="font-size:18px">🚲 Mi bici</h3></div>
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
-  <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Al pararte, el tiempo deja de contar al momento':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En cuanto <b>te paras</b> (semáforo, café, pinchazo…) el tiempo deja de contar y la media de km/h no baja. Al volver a pedalear sigue sola.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
@@ -1368,7 +1369,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.67.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.68.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10221,14 +10222,14 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
   function ago(ms){var m=Math.round((Date.now()-ms)/60000);return m<60?'hace '+m+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'}
   async function info(x){
     var mine=x.uid===uid,k=(T[x.t]||T.otro);
-    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms)+(x.n?' por '+x.n:''),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
+    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
     if(i===0&&mine){try{await db.collection('peligros').doc(x.id).delete();H.list=H.list.filter(function(y){return y.id!==x.id});draw();toast('Aviso quitado')}catch(e){toast('No se pudo quitar')}}
   }
   async function report(t,silent){
     var p=here();if(!p){toast('Aún no tengo tu posición GPS');return}
     if(!db||!uid){toast('Sin conexión: inténtalo en unos segundos');return}
     var k=T[t]||T.otro;
-    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:String((typeof myName==='function'?myName():'')||'').slice(0,24),ts:FV.serverTimestamp()});
+    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:'',   /* v5.68: sin nombre (privacidad) */ts:FV.serverTimestamp()});
       H.list.push({id:'tmp'+Date.now(),lat:p[0],lng:p[1],t:t,uid:uid,ms:Date.now()});draw();H.said['tmp']=1;
       try{vib([60,40,60])}catch(e){}toast(k[0]+' '+k[1]+' marcado. ¡Gracias! Avisaremos a los demás ciclistas',4000);
       if(!silent)try{speak(k[1]+' marcado. Gracias.')}catch(e){}

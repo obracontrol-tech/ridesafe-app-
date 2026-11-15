@@ -1,11 +1,12 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5670';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5680';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
 const SHARE = 'velogo-share';                // v5.25: GPX recibido desde «Compartir» de Android
 const KEEP = [CACHE, MAPS, VIEW, LIBS, SHARE];
-const CORE = ['./', './index.html', './manifest.json', './privacidad.html', './icons/qr.svg', './icons/icon-192.png', './icons/icon-512.png'];
+/* v5.68: la Simple también sin conexión */
+const CORE = ['./', './index.html', './simple.html', './manifest.json', './manifest-simple.json', './privacidad.html', './icons/qr.svg', './icons/icon-192.png', './icons/icon-512.png'];
 const VIEW_MAX = 4000;
 
 self.addEventListener('install', e => {
