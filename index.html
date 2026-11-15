@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
+/* v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
+   v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
    v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
    v5.75.0 — Carpetas de sitios (Casa y trabajo, Avituallamiento, Restaurantes, Puntos de interés, Lugares para volver), con su lista, su mapa y el nombre sacado de OpenStreetMap.
    v5.74.1 — Mis sitios guardados: tocar un sitio = 🧭 Ir aquí; 🗑️ Borrar va dentro.
@@ -1382,7 +1383,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5856,13 +5857,10 @@ function placeAddIn(c){const F=plF(c);
     {t:'↩️ Volver',f:()=>setTimeout(()=>placesFolder(c),150)}])}
 /* v5.76.0 — Buscar restaurantes cerca en la app de Google Maps (gratis: solo abre Google Maps, no usa su servicio de mapas) */
 function gmapsRest(){
-  const open=ll=>{const u=ll?`https://www.google.com/maps/search/restaurantes/@${(+ll.lat).toFixed(5)},${(+ll.lng).toFixed(5)},15z`:'https://www.google.com/maps/search/restaurantes+cerca+de+mi';
+  /* v5.76.2: enlace oficial de búsqueda de Google Maps → abre directamente la LISTA de restaurantes de alrededor (antes solo abría el mapa) */
+  const open=ll=>{const u='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('restaurantes cerca de mí');
     const w=window.open(u,'_blank','noopener');if(!w)location.href=u};
-  let me=null;try{me=myLL()}catch(e){}
-  if(me){open(me);return}
-  if(!navigator.geolocation){open(null);return}
-  toast('📍 Buscando dónde estás…',2000);
-  navigator.geolocation.getCurrentPosition(p=>open({lat:p.coords.latitude,lng:p.coords.longitude}),()=>open(null),{enableHighAccuracy:false,timeout:6000,maximumAge:120000})}
+  open(null)}
 function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c);
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">${A.length?'Toca un sitio para ir, verlo en el mapa, cambiarle el nombre o borrarlo.':'Aún no hay sitios en esta carpeta. Añade el primero:'}</div>`}];
   A.forEach(p=>rows.push({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));

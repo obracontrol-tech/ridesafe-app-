@@ -1,3 +1,6 @@
+## Versión 5.76.2 (Simple 1.37.2)
+- «Buscar restaurantes en Google Maps» abre directamente la lista de restaurantes cerca de ti (antes abría el mapa y había que tocar «Restaurantes»). Usa el enlace oficial de búsqueda de Google Maps; la posición la pone Google Maps.
+
 ## Versión 5.76.1 (Simple 1.37.1)
 - «🔎 Buscar restaurantes en Google Maps» ahora sale también en la pantalla de carpetas de «Mis sitios guardados», debajo de las carpetas (antes solo dentro de 🍽️ Restaurantes).
 
