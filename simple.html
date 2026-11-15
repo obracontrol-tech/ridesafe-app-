@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.37.1 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5775,6 +5775,7 @@ function placesMap(c,k){
 function placesManage(){const A=placesAll();
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Elige una carpeta para ver sus sitios, ir a ellos o añadir nuevos.</div>`}];
   PL_F.forEach(([c,e,n])=>{const k=A.filter(p=>placeCat(p)===c).length;rows.push({t:`${e} ${n} · ${k}`,f:()=>placesFolder(c)})});
+  rows.push({t:'🔎 Buscar restaurantes en Google Maps',main:1,f:gmapsRest});   // v5.76.1: a la vista, sin entrar en la carpeta
   placeDlg('📌 Mis sitios guardados',rows)}
 /* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
 function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;

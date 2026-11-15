@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
+/* v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
+   v5.76.0 — Carpeta 🍽️ Restaurantes: botón «Buscar restaurantes cerca en Google Maps».
    v5.75.0 — Carpetas de sitios (Casa y trabajo, Avituallamiento, Restaurantes, Puntos de interés, Lugares para volver), con su lista, su mapa y el nombre sacado de OpenStreetMap.
    v5.74.1 — Mis sitios guardados: tocar un sitio = 🧭 Ir aquí; 🗑️ Borrar va dentro.
    v5.74.0 — «Mis sitios guardados» pasa de Perfil a Actividades (también en la Simple).
@@ -1381,7 +1382,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5902,6 +5903,7 @@ function placesMap(c,k){
 function placesManage(){const A=placesAll();
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Elige una carpeta. También puedes decir «Oye bici, llévame a casa» o al nombre de un sitio.</div>`}];
   PL_F.forEach(([c,e,n])=>{const k=A.filter(p=>placeCat(p)===c).length;rows.push({t:`${e} ${n} · ${k}`,f:()=>placesFolder(c)})});
+  rows.push({t:'🔎 Buscar restaurantes en Google Maps',main:1,f:gmapsRest});   // v5.76.1: a la vista, sin entrar en la carpeta
   placeDlg('📌 Mis sitios guardados',rows)}
 /* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
 function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;
