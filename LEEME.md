@@ -1,3 +1,9 @@
+## Versión 5.73.0 (Simple 1.34.0) — Comunidad/Inicio, Actividades y Perfil con el aspecto Garmin
+- Las tres pantallas que faltaban ya van como Rutas: barra negra arriba con el título (fija al bajar), números como campos de datos del Garmin (km, salidas, desnivel), títulos de apartado en mayúsculas con marca azul, tarjetas blancas con marco negro y todas del mismo ancho, interruptores cuadrados en azul. Fuera fotos de fondo y degradados.
+- Solo cambia la imagen: botones, orden y funciones son los mismos.
+- Simple: textos más cortos en «Seguimiento con móvil bloqueado» y en «Si me salgo de la ruta».
+- Archivos: index.html, simple.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.72.0 (solo Pro) — «Oye bici» contesta siempre
 - En ruta (con las órdenes por voz activadas), al decir «Oye bici» la app ahora pita y pone «🎤 Te escucho…». Antes no hacía nada y parecía que no oía.
 - Tras «Oye bici» vale cualquier orden, también frases largas (antes las de más de 6 palabras se ignoraban, y «oye bici» contaba como 2).

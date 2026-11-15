@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.72.0 — «Oye bici» contesta siempre, también en ruta (pitido, «Te escucho» y «No te he entendido»); la orden ya no caduca mientras hablas.
+/* v5.73.0 — Comunidad, Actividades y Perfil con el aspecto Garmin (barra negra, campos de datos, tarjetas con marco). Solo imagen.
+   v5.72.0 — «Oye bici» contesta siempre, también en ruta (pitido, «Te escucho» y «No te he entendido»); la orden ya no caduca mientras hablas.
    v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
    v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
    v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
@@ -1373,7 +1374,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.72.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.73.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10685,5 +10686,72 @@ function rtRenList(id,pick){var L=store.get('routes',[]),r=L.find(function(x){re
   }catch(e){}},3000);
 })();
 </script>
+<style id="gmx2">
+/* ===== v5.73.0 / Simple 1.34.0 — Comunidad, Actividades y Perfil con el aspecto Garmin Edge =====
+   Solo cambia la imagen (colores, tipos de letra y marcos). No toca botones, nombres ni funciones. */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.acbg,.pfbg){display:none!important}
+/* 1 · Barra de título negra, como la cabecera de página de un Edge */
+html.gmx :is(#s-comunidad,#s-actividades) .head{background:#111!important;margin:-16px -16px 14px!important;padding:calc(10px + env(safe-area-inset-top)) 14px 10px!important;border-bottom:4px solid var(--gmBlue);position:sticky;top:-16px;z-index:6;gap:10px!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head h1{color:#fff!important;font:800 28px/1 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.6px}
+html.gmx :is(#s-comunidad,#s-actividades) .head .avatar{width:40px!important;height:40px!important;font-size:18px!important;background:var(--gmBlue)!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head .round{width:42px!important;height:42px!important;background:#222!important;border:1px solid #555!important;color:#fff!important;border-radius:10px!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head .round *{color:#fff!important;stroke:#fff}
+html.gmx :is(#s-comunidad,#s-actividades) .head .mini{min-height:42px!important;background:var(--gmBlue)!important;color:#fff!important;border:0!important;border-radius:10px!important}
+/* Perfil: la ficha del ciclista en la barra negra */
+html.gmx #s-perfil .prof{display:grid!important;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;text-align:left!important;background:#111!important;margin:-16px -16px 14px!important;padding:calc(14px + env(safe-area-inset-top)) 16px 14px!important;border-bottom:4px solid var(--gmBlue)}
+html.gmx #s-perfil .prof .avatar{grid-row:1/3;width:60px!important;height:60px!important;font-size:26px!important;margin:0!important;background:var(--gmBlue)!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx #s-perfil .prof h2{color:#fff!important;font:800 30px/1 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.5px;align-self:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.gmx #s-perfil .prof p{color:#FDBA74!important;font:700 12px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.8px;align-self:start;margin-top:3px}
+/* 2 · Títulos de apartado, como los menús del Edge */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec{margin:20px 0 8px!important;border-left:5px solid var(--gmBlue);padding-left:9px}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec h3{font:800 13.5px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.9px;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec a,html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec>span{font-size:13px!important;font-weight:800!important;color:var(--gmBlue)!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .block{margin-bottom:6px!important}
+/* 3 · Los números, como campos de datos del Garmin */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stats{gap:0!important;background:#fff;border:2px solid #111;border-radius:10px;overflow:hidden}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat{background:#fff!important;border:0!important;border-right:1.5px solid #111!important;border-radius:0!important;padding:7px 9px 9px!important;gap:1px!important;min-width:0}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat:last-child{border-right:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat svg{display:none!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat span{order:-1;font:700 10.5px/1.25 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.6px;color:#4B5563!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat b{font:800 40px/1 "Barlow Condensed",system-ui,sans-serif!important;color:#000!important;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat.bronze b{font-size:28px!important;line-height:40px!important;text-transform:uppercase;color:#B45309!important}
+/* 4 · Tarjeta de entrada: panel negro compacto */
+html.gmx :is(#s-comunidad,#s-actividades) .hero{background:#111!important;min-height:0!important;padding:16px 16px 14px!important;border:0!important;box-shadow:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero :is(.deco,.grp),html.gmx :is(#s-comunidad,#s-actividades) .hero::before,html.gmx :is(#s-comunidad,#s-actividades) .hero::after{display:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero h2{font:800 28px/1.05 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.4px;color:#fff!important;max-width:none!important;text-shadow:none!important;padding-right:44px}
+html.gmx :is(#s-comunidad,#s-actividades) .hero p{color:#D1D5DB!important;font-size:14.5px!important;margin:6px 0 12px!important;max-width:none!important;text-shadow:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero .btn-line{background:#111!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero .btn-line *{color:#fff!important}
+/* 5 · Filas y tarjetas: blanco con marco negro, como las listas del Edge */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.li,.set,.act,.goal,.bars,.rank,.guiaC,#novBox,#updCard){background:#fff!important;background-image:none!important;border:1.5px solid #111!important;box-shadow:none!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.li,.set){padding:12px 14px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set{margin-bottom:6px!important;font-weight:800!important;font-size:15.5px}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li b{font-size:16.5px!important;font-weight:800!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li small{font-size:13.5px!important;color:#4B5563!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li .em{font-size:26px!important;width:36px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li .chev{color:var(--gmBlue)!important;stroke:var(--gmBlue)}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaC,#novBox,#updCard){border-left:7px solid var(--gmBlue)!important;border-radius:10px!important}
+/* listas agrupadas: una sola caja con rayas finas */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list{gap:0!important;border:1.5px solid #111;border-radius:10px;overflow:hidden;background:#fff}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list>.li{border:0!important;border-bottom:1px solid #BFC6CE!important;border-radius:0!important;margin:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list>.li:last-child{border-bottom:0!important}
+/* historial de salidas */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act{margin-bottom:6px!important;padding:11px 12px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act .ic{background:#111!important;color:#fff!important;border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act .ic *{color:#fff!important;stroke:#fff}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act b{font-weight:800!important;color:#111!important}
+/* interruptores y campos */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw span{background:#9CA3AF!important;border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw span:before{border-radius:6px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw input:checked+span{background:var(--gmBlue)!important}
+html.gmx #s-perfil .inp{border:1.5px solid #111!important;border-radius:10px!important;background:#fff!important}
+html.gmx #s-perfil .f .mini{background:#111!important;color:#fff!important;border:0!important;border-radius:10px!important}
+html.gmx #s-perfil .l{font:800 12px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.8px;color:#4B5563!important}
+/* todo al mismo ancho y con las mismas esquinas */
+html.gmx #s-perfil :is(#updCard,#guiaCard){width:100%!important;margin-left:0!important;margin-right:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaL,.guiaW,.guiaT,#updCard span[style*="border-radius"]){border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .guiaW{white-space:nowrap;font-size:14px!important;background:#fff!important;border:1.5px solid #111!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set small{font-weight:500!important;font-size:13px!important;color:#4B5563!important}
+</style>
 </body>
 </html>
