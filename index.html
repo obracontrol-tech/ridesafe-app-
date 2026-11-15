@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
+/* v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
+   v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
    v5.68.0 — Revisión completa: avisos de peligro sin el nombre del ciclista (privacidad), fuera el interruptor «Modo claro» que ya no hacía nada, la Simple funciona sin conexión desde la primera vez.
    v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
    v5.66.0 — Capa «Caminos y pistas»: añade los caminos SIN ASFALTAR (tierra y grava) en marrón a rayas.
@@ -1370,7 +1371,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.69.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.70.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10589,6 +10590,9 @@ html.gmx #s-rutas .rec{background:#fff!important;border:2px solid #111!important
 html.gmx #s-rutas .rec *{color:inherit}
 /* Micrófono de voz: azul Garmin y abajo a la derecha, para que no tape títulos ni tarjetas */
 html.gmx #vozBtn{background:#0B63CE!important;color:#fff!important;border:3px solid #fff!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;opacity:1!important}
+/* v5.70.0 — Micrófono: ROJO cuando te está escuchando (habla ahora), AZUL cuando no escucha */
+html.gmx #vozBtn.on{background:#DC2626!important;box-shadow:0 0 0 6px rgba(220,38,38,.35),0 4px 14px rgba(0,0,0,.35)!important}
+html.gmx #vozBtn.cont:not(.on){background:#0B63CE!important;color:#fff!important}
 html.gmx body:not(:has(#app.live)) #vozBtn{top:auto!important;left:auto!important;right:12px!important;bottom:calc(var(--nav-h,72px) + 30px + env(safe-area-inset-bottom))!important}
 html.gmx body:has(#s-rutas.planning):not(:has(#app.live)) #vozBtn{bottom:auto!important;right:auto!important;left:12px!important;top:calc(16px + env(safe-area-inset-top))!important}
 html.gmx body:has(.sheet.show):not(:has(#app.live)) #vozBtn{display:none!important}
