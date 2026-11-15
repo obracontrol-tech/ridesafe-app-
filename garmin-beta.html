@@ -2,7 +2,21 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.58.0 — 🎵 Música por voz («Oye bici, pon / quita la música», «siguiente canción», «sube / baja la música»); la música calla mientras das una orden.
+/* v5.72.0 — «Oye bici» contesta siempre, también en ruta (pitido, «Te escucho» y «No te he entendido»); la orden ya no caduca mientras hablas.
+   v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
+   v5.70.0 — Micrófono: rojo cuando escucha, azul cuando no.
+   v5.69.0 — Revisión visual: todo con el estilo Garmin (esquinas iguales, fuera los verdes lima, micrófono azul abajo a la derecha, Rutas en blanco con borde negro, ✏️ en Mis rutas).
+   v5.68.0 — Revisión completa: avisos de peligro sin el nombre del ciclista (privacidad), fuera el interruptor «Modo claro» que ya no hacía nada, la Simple funciona sin conexión desde la primera vez.
+   v5.67.0 — Capas: añadido el mapa estándar de OpenStreetMap; quitados Noche, Claro y Oscuro.
+   v5.66.0 — Capa «Caminos y pistas»: añade los caminos SIN ASFALTAR (tierra y grava) en marrón a rayas.
+   v5.65.0 — Actividades: apartado «🗺️ Mis rutas», una tarjeta por ruta (ver/seguir, cambiar nombre, GPX, compartir, borrar).
+   v5.64.0 — Dibujar ruta: botones ↶ Deshacer y ⌨️ Escribir la ruta (pueblos por orden, separados por comas) siempre a mano.
+   v5.63.0 — Ruta dibujada: los puntos de paso salen numerados (1, 2, 3…).
+   v5.62.0 — Al abrir un GPX se ve aparte (mapa completo con capas, perfil por pendientes y tu posición) y luego decides: Rutas, Actividades o cerrar.
+   v5.61.0 — «Otra ruta»: cada ruta guardada con ✏️ cambiar nombre y 🗑️ borrar.
+   v5.60.0 — Sin vídeo de entrada ni aviso al abrir. Los nuevos ya no saltan solos a la Simple: en Inicio, tarjeta «Empieza por RideSafe IA Simple».
+   v5.59.0 — Aspecto Garmin: pantalla clara, campos de datos (mantén pulsado para cambiarlos), páginas Datos/Ruta/Subidas, ClimbPro, flechas de giro, 🔔 timbre y ⚠️ avisos de peligro entre ciclistas.
+   v5.58.0 — 🎵 Música por voz («Oye bici, pon / quita la música», «siguiente canción», «sube / baja la música»); la música calla mientras das una orden.
    v5.57.0 — Voz: tus órdenes primero. La voz del navegador espera mientras das una orden y se calla al tocar 🎤 o decir «Oye bici».
    v5.56.0 — 📅 Mi día: todas las salidas del día en un solo mapa, con media km/h en marcha, y foto para redes.
    v5.55.0 — GraphHopper: el GPX descargado entra directo a la app (tarjeta + mapa de ruta) con un botón grande al volver.
@@ -62,12 +76,12 @@
   if(location.hash||location.search)return;
   var m=localStorage.getItem('rs_modo');
   if(m==='pro')return;
-  /* Garmin beta: nunca se desvía a la Simple */
+  if(m==='simple')location.replace('simple.html');   // v5.60: los nuevos ya no van solos a la Simple: ven la tarjeta «Empieza por la Simple»
 }catch(e){}})();
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Garmin beta 0.5</title>
+<title>RideSafe IA · Garmin beta 0.6</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -87,7 +101,7 @@
 <style>
 :root{
   --bg:#0E1A2B; --card:#16263D; --card2:#1C2F4A; --line:#2A3B55;
-  --lime:#C8DC3C; --on-lime:#0E1A2B; --txt:#FFFFFF; --txt2:#9AA8BC;
+  --lime:#0B63CE; --on-lime:#0E1A2B; --txt:#FFFFFF; --txt2:#9AA8BC;
   --bronze:#E0913A; --red:#EF4444; --green:#22C55E;
   --r:22px; --nav-h:84px;
 }
@@ -161,7 +175,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .ride .date{font-size:13px;font-weight:800;color:var(--lime);letter-spacing:.06em}
 .ride .hour{font-size:30px;font-weight:800;line-height:1.1}
 .tag{font-size:12px;font-weight:700;padding:5px 10px;border-radius:20px;background:var(--card2);color:var(--txt2);white-space:nowrap}
-.tag.lime{background:rgba(200,220,60,.15);color:var(--lime)}
+.tag.lime{background:rgba(11,99,206,.15);color:var(--lime)}
 .ride .title{font-size:17px;font-weight:700;margin:8px 0 10px}
 .pt{display:flex;gap:10px;align-items:flex-start;color:var(--txt2);font-size:14px;margin-bottom:6px}
 .pt b{color:var(--txt);font-weight:600}
@@ -180,7 +194,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .rank{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .rrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .rrow:last-child{border:none}
-.rrow.me{background:rgba(200,220,60,.08)}
+.rrow.me{background:rgba(11,99,206,.08)}
 .pos{width:32px;height:32px;border-radius:50%;border:2px solid var(--txt2);display:grid;place-items:center;font-weight:800;font-size:14px}
 .pos.p1{border-color:#F5C518;color:#F5C518}.pos.p2{border-color:#C0C8D2}.pos.p3{border-color:var(--bronze);color:var(--bronze)}
 .rrow .face{margin:0;width:40px;height:40px;font-size:15px}
@@ -203,7 +217,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--txt2);font-size:12px;font-weight:600;height:100%;justify-content:center}
 .tab.active{color:var(--txt)}
 .tab.active svg{color:var(--lime)}
-.plus{justify-self:center;width:74px;height:74px;border-radius:50%;background:var(--lime);display:grid;place-items:center;margin-top:-44px;box-shadow:0 8px 24px rgba(200,220,60,.35);border:5px solid var(--bg);transition:transform .2s}
+.plus{justify-self:center;width:74px;height:74px;border-radius:50%;background:var(--lime);display:grid;place-items:center;margin-top:-44px;box-shadow:0 8px 24px rgba(11,99,206,.35);border:5px solid var(--bg);transition:transform .2s}
 .plus svg{width:34px;height:34px;color:var(--on-lime);stroke-width:2.6}
 .plus.open{transform:rotate(45deg)}
 
@@ -222,7 +236,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .qa .em{font-size:30px}
 .qa b{display:block;font-size:18px}
 .qa small{color:var(--txt2);font-size:14px}
-.qa .main{border-color:var(--lime);background:rgba(200,220,60,.08)}
+.qa .main{border-color:var(--lime);background:rgba(11,99,206,.08)}
 
 /* Formulario crear salida */
 .f{margin-bottom:18px}
@@ -289,7 +303,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .splaces{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.splaces .chip{font-weight:700}
 .navArw{width:46px;height:46px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));pointer-events:none}
 /* v5.47.0 — Ver la app sin parar la grabación */
-.lvaway{flex-shrink:0;height:34px;padding:0 13px;border-radius:99px;border:2px solid #A3E635;background:rgba(11,20,34,.82);color:#A3E635;font:800 14px 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer}
+.lvaway{flex-shrink:0;height:34px;padding:0 13px;border-radius:99px;border:2px solid #0B63CE;background:rgba(11,20,34,.82);color:#0B63CE;font:800 14px 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer}
 .lvaway2{height:58px;padding:0 16px;font-size:16px}
 .lvaway1{position:absolute;right:0;bottom:calc(100% + 8px);z-index:3;height:38px}
 #app.live.lvaway .nav{display:grid!important}
@@ -367,7 +381,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .fr{width:96px;height:96px;border-radius:14px;background:var(--card2);flex-shrink:0}
 .freact{display:flex;gap:8px;margin-top:10px}
 .freact button{min-height:40px;padding:0 14px;border-radius:20px;background:var(--card2);border:1px solid var(--line);font-size:17px}
-.freact button.on{border-color:var(--lime);background:rgba(200,220,60,.15)}
+.freact button.on{border-color:var(--lime);background:rgba(11,99,206,.15)}
 .freact span{font-size:14px;font-weight:700;color:var(--txt2)}
 .badges{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .bdg{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center;opacity:.4;filter:grayscale(1)}
@@ -418,7 +432,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .msg{display:flex;gap:8px;align-items:flex-end}
 .msg.me{justify-content:flex-end}
 .bub{background:var(--card2);border-radius:16px 16px 16px 4px;padding:8px 12px;max-width:80%}
-.msg.me .bub{background:rgba(200,220,60,.18);border-radius:16px 16px 4px 16px}
+.msg.me .bub{background:rgba(11,99,206,.18);border-radius:16px 16px 4px 16px}
 .mh{display:flex;gap:8px;align-items:baseline}
 .mh b{font-size:13px}.mh small{color:var(--txt2);font-size:11px;flex:1}
 .mh button{color:var(--txt2);font-size:12px;padding:0 2px}
@@ -430,7 +444,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .admtabs{flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
 .admtabs .chip{white-space:nowrap}
 .admtabs::-webkit-scrollbar{display:none}
-.ann{display:flex;gap:10px;align-items:center;background:linear-gradient(90deg,rgba(224,145,58,.22),rgba(200,220,60,.12));border:1px solid var(--bronze);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.ann{display:flex;gap:10px;align-items:center;background:linear-gradient(90deg,rgba(224,145,58,.22),rgba(11,99,206,.12));border:1px solid var(--bronze);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
 .ann p{flex:1;font-weight:700;font-size:15px}
 .sres{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:12px 6px;border-bottom:1px solid var(--line)}
 .sres span{font-size:22px}.sres b{display:block;font-size:16px}.sres small{color:var(--txt2);font-size:13px}
@@ -451,7 +465,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .stp-li .k{min-width:52px;font-weight:900;color:var(--lime);font-size:13px}.stp-li b{font-size:14px;display:block}.stp-li small{color:var(--txt2);font-size:12px}
 .stp-warn{background:rgba(249,115,22,.14);border:1px solid #F97316;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:6px}
 .stpm{font-size:18px;width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #0E1A2B;cursor:pointer}
-#supType .mini.on{border-color:var(--lime);color:var(--lime);background:rgba(200,220,60,.12)}
+#supType .mini.on{border-color:var(--lime);color:var(--lime);background:rgba(11,99,206,.12)}
 .conf{border:1px solid var(--line);border-left:6px solid var(--cc,#22C55E);border-radius:14px;padding:10px 12px;margin:6px 0;background:var(--card)}
 .conf-h{display:flex;align-items:center;gap:10px}.conf-dot{width:34px;height:34px;border-radius:50%;background:var(--cc,#22C55E);display:grid;place-items:center;font-weight:900;color:#0E1A2B;font-size:13px;flex-shrink:0}
 .conf-h b{display:block;font-size:15px}.conf-h small{color:var(--txt2);font-size:12px}
@@ -513,7 +527,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 
 /* Actividades */
 .act{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px}
-.act .ic{width:48px;height:48px;border-radius:14px;background:rgba(200,220,60,.15);color:var(--lime);display:grid;place-items:center}
+.act .ic{width:48px;height:48px;border-radius:14px;background:rgba(11,99,206,.15);color:var(--lime);display:grid;place-items:center}
 .act>div:not(.ic){flex:1;min-width:0}
 .act .ic{flex-shrink:0}
 .act b{display:block}
@@ -585,8 +599,8 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #layMenu .lm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 #layMenu .lm-c{display:flex;flex-direction:column;align-items:stretch;text-align:left;background:transparent;border:0;padding:0;color:#fff;font:inherit;cursor:pointer;min-width:0}
 #layMenu .lm-i{position:relative;display:grid;place-items:center;height:74px;border-radius:14px;background:#2A4A3A linear-gradient(135deg,#dfe8d5,#b9cfa7);background-size:cover;background-position:center;border:2.5px solid transparent;font-size:28px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
-#layMenu .lm-c.on .lm-i{border-color:#C8DC3C;box-shadow:0 0 0 3px rgba(200,220,60,.25)}
-#layMenu .lm-i i{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:#C8DC3C;color:#0E1A2B;font-style:normal;font-weight:900;font-size:13px;display:grid;place-items:center}
+#layMenu .lm-c.on .lm-i{border-color:#0B63CE;box-shadow:0 0 0 3px rgba(11,99,206,.25)}
+#layMenu .lm-i i{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:#0B63CE;color:#0E1A2B;font-style:normal;font-weight:900;font-size:13px;display:grid;place-items:center}
 #layMenu .lm-c b{font-size:13px;font-weight:800;margin:6px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #layMenu .lm-c small{font-size:10.5px;opacity:.7;margin:1px 2px 0;line-height:1.2}
 #layMenu .lm-c.dis{opacity:.45}
@@ -601,11 +615,11 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #s-rutas.live.lvmin .lvpanel>*{pointer-events:none!important}
 .lvhandle{display:none}
 #s-rutas.live .lvhandle{display:flex;justify-content:center;align-items:center;width:100%;min-height:22px;cursor:pointer}
-.lvhandle i{display:block;width:70px;height:9px;border-radius:9px;background:#C8DC3C;border:2px solid #0E1A2B;box-shadow:0 2px 8px rgba(0,0,0,.55)}
+.lvhandle i{display:block;width:70px;height:9px;border-radius:9px;background:#0B63CE;border:2px solid #0E1A2B;box-shadow:0 2px 8px rgba(0,0,0,.55)}
 .lvshow{display:none}
 #s-rutas.live.lvmin .lvshow{display:flex;position:absolute;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:8;gap:10px;align-items:center}
 .lvshow .lvup{flex:1;min-height:58px;border-radius:99px;border:1px solid rgba(255,255,255,.22);background:rgba(14,26,43,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;font:inherit;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
-.lvshow .lvup b{font-size:20px;color:#C8DC3C;font-variant-numeric:tabular-nums}
+.lvshow .lvup b{font-size:20px;color:#0B63CE;font-variant-numeric:tabular-nums}
 .lvshow .lvsosm{width:62px;height:62px;flex-shrink:0;border-radius:50%;border:0;background:#991B1B;color:#fff;font:inherit;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .lvglass,.lvstats,.lvgroup,.lvbtns button.lvp,.lvside button,.lvalert button{background:rgba(11,20,34,.52)!important;-webkit-backdrop-filter:blur(12px) saturate(150%);backdrop-filter:blur(12px) saturate(150%);border:1px solid rgba(255,255,255,.16)!important;color:#fff!important;box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .lvstate{font-size:12px;padding:4px 12px;box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:.95}
@@ -617,16 +631,16 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .lvgrid div{background:transparent!important;border:0!important;padding:4px 2px!important}
 .lvgrid b{font-size:19px!important;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35)}
 .lvgrid span{font-size:11px!important;color:rgba(255,255,255,.78)!important}
-.lvgrid.nav{border-radius:18px;padding:4px 6px;background:rgba(20,83,45,.55);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(200,220,60,.5)}
+.lvgrid.nav{border-radius:18px;padding:4px 6px;background:rgba(20,83,45,.55);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(11,99,206,.5)}
 .lvgroup{border-radius:18px!important;padding:8px 12px!important;font-size:13px!important;max-height:84px;overflow-y:auto}
 .lvgroup .gm{color:#fff}
 .lvalert{margin-bottom:0!important;gap:6px!important}
-.lvalert .a-ptt{grid-column:1/-1;background:rgba(200,220,60,.9)!important;color:#0E1A2B!important;border-color:#C8DC3C!important;font-size:15.5px!important;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.lvalert .a-ptt{grid-column:1/-1;background:rgba(11,99,206,.9)!important;color:#0E1A2B!important;border-color:#0B63CE!important;font-size:15.5px!important;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .lvalert .a-ptt.talk{background:#DC2626!important;color:#fff!important;border-color:#fff!important;animation:pttp 1s infinite}
 .lvalert .a-ptt.busy{opacity:.7}
 @keyframes pttp{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8)}50%{box-shadow:0 0 0 10px rgba(220,38,38,0)}}
-#pttMsg{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9500;background:rgba(14,26,43,.94);color:#fff;border:2px solid #C8DC3C;border-radius:22px;padding:10px 16px;font-weight:800;font-size:16px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:92vw}
-#pttMsg.show{display:flex}#pttMsg span{white-space:nowrap}#pttMsg button{white-space:nowrap;background:#C8DC3C;color:#0E1A2B;border:0;border-radius:14px;padding:6px 12px;font-weight:900;font-size:14px}
+#pttMsg{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9500;background:rgba(14,26,43,.94);color:#fff;border:2px solid #0B63CE;border-radius:22px;padding:10px 16px;font-weight:800;font-size:16px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:92vw}
+#pttMsg.show{display:flex}#pttMsg span{white-space:nowrap}#pttMsg button{white-space:nowrap;background:#0B63CE;color:#0E1A2B;border:0;border-radius:14px;padding:6px 12px;font-weight:900;font-size:14px}
 .lvalert button{min-height:42px!important;border-radius:21px!important;font-size:14px!important}
 .lvalert .a-more{border-color:rgba(167,139,250,.9)!important}.lvalert .a-flat{border-color:rgba(245,158,11,.9)!important}.lvalert .a-wait{border-color:rgba(96,165,250,.9)!important}.lvalert .a-help{background:rgba(127,29,29,.72)!important;border-color:rgba(239,68,68,.9)!important}
 .lvbtns{gap:6px!important}
@@ -674,10 +688,10 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 #shopSp.show{opacity:1}#shopSp.light{background:#FFFFFF}
 #shopSp .ssp-in{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;max-width:320px}
 #shopSp img{max-width:240px;max-height:160px;object-fit:contain}
-#shopSp .ssp-ini{width:120px;height:120px;border-radius:30px;background:#C8DC3C;color:#0E1A2B;display:grid;place-items:center;font-size:44px;font-weight:900}
+#shopSp .ssp-ini{width:120px;height:120px;border-radius:30px;background:#0B63CE;color:#0E1A2B;display:grid;place-items:center;font-size:44px;font-weight:900}
 #shopSp b{font-size:30px;color:#fff;line-height:1.15}#shopSp.light b{color:#0E1A2B}
 #shopSp small{font-size:15px;color:#A7B4C6}#shopSp.light small{color:#55657A}
-#shopSp .ssp-app{margin-top:18px;font-size:14px;font-weight:800;color:#C8DC3C;letter-spacing:.5px}#shopSp.light .ssp-app{color:#5B7A12}
+#shopSp .ssp-app{margin-top:18px;font-size:14px;font-weight:800;color:#0B63CE;letter-spacing:.5px}#shopSp.light .ssp-app{color:#5B7A12}
 .shopline{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;color:var(--txt2);font-size:13px}
 .shopline img{height:28px;max-width:90px;object-fit:contain;background:#0E1A2B;border-radius:6px;padding:3px}
 /* v5.13 — 🎵 mini reproductor en la salida */
@@ -734,10 +748,10 @@ body:has(#app.live) #toast{top:calc(84px + env(safe-area-inset-top))!important;b
 #s-rutas .mbottom button{height:40px;border-radius:20px;font-size:14px;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 #s-rutas .mbottom .i{width:18px;height:18px}
 .join{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
-.join.on{background:rgba(200,220,60,.16)!important;border:1.5px solid var(--lime)!important;color:var(--lime)!important;padding:4px 16px}
+.join.on{background:rgba(11,99,206,.16)!important;border:1.5px solid var(--lime)!important;color:var(--lime)!important;padding:4px 16px}
 .join small{font-size:10px;font-weight:600;opacity:.8;margin-top:2px;white-space:nowrap}
 .join.org{background:transparent;border:1px dashed var(--line);color:var(--txt2);font-size:13px;cursor:default}
-.joinbig{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(200,220,60,.16);border:1.5px solid var(--lime);color:var(--lime)}
+.joinbig{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(11,99,206,.16);border:1.5px solid var(--lime);color:var(--lime)}
 .joinbig small{font-size:12px;font-weight:600;opacity:.85}
 .joinnote{text-align:center;color:var(--txt2);font-weight:600;padding:6px}
 .cfm{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:lmIn2 .15s ease-out}
@@ -780,7 +794,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .plc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin:0 0 14px}
 .pc-h{display:flex;align-items:center;gap:8px}.pc-h b{font-size:15.5px}
 .pc-s{display:block;color:var(--txt2);font-size:12.5px;margin-top:4px}
-.pc-tag,.ptag{display:inline-block;background:rgba(200,220,60,.16);color:var(--lime);border:1px solid rgba(200,220,60,.4);font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:8px;flex-shrink:0}
+.pc-tag,.ptag{display:inline-block;background:rgba(11,99,206,.16);color:var(--lime);border:1px solid rgba(11,99,206,.4);font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:8px;flex-shrink:0}
 .rp-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .rp-chip{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:4px 6px 4px 8px;font-size:13.5px;font-weight:700}
 .rp-chip b{color:var(--lime)}.rp-chip button{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--txt);font-size:12px;border:0}
@@ -796,7 +810,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ws-sub{color:var(--txt2);margin:-8px 0 12px;font-size:14px}
 .ws-hours{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin:4px -2px 6px;scrollbar-width:none}
 .ws-h{flex:0 0 74px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
-.ws-h.on{border-color:var(--lime);box-shadow:0 0 0 2px rgba(200,220,60,.25) inset}
+.ws-h.on{border-color:var(--lime);box-shadow:0 0 0 2px rgba(11,99,206,.25) inset}
 .ws-h small{font-size:12px;color:var(--txt2)}.ws-h b{font-size:17px}.ws-h .wind-arrow{margin:2px 0}
 .ws-lv{display:inline-block;padding:1px 6px;border-radius:8px;font-size:11px;font-weight:800}
 .ws-lv.l1{background:rgba(34,197,94,.18);color:#4ADE80}.ws-lv.l2{background:rgba(245,158,11,.18);color:#FBBF24}.ws-lv.l3{background:rgba(239,68,68,.2);color:#F87171}
@@ -809,7 +823,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .rp-stop.end{border-color:var(--lime);color:var(--lime)}
 .rp-arr{color:var(--txt2);font-weight:800}
 /* v4.4 — Alcanza tu grupo */
-.ctc{background:var(--card);border:2px solid rgba(200,220,60,.55);border-radius:22px;padding:18px;margin:0 0 16px}
+.ctc{background:var(--card);border:2px solid rgba(11,99,206,.55);border-radius:22px;padding:18px;margin:0 0 16px}
 .ctc .ct-t{font-weight:800;font-size:22px;line-height:1.2}
 .ctc .ct-big{font-size:19px;line-height:1.4;margin:10px 0 14px}.ctc .ct-big b{color:var(--lime)}
 .ctc .ct-small{font-size:14px;color:var(--txt2);margin:-6px 0 12px}
@@ -818,9 +832,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ctc .ct-leg span{display:flex;align-items:center;gap:6px}.ctc .ct-leg i{width:12px;height:12px;border-radius:50%;display:block}
 .ctc .btn{font-size:18px;margin-top:10px}
 .ct-me{width:22px;height:22px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
-.ct-gr{width:24px;height:24px;border-radius:50%;background:#C8DC3C;border:3px solid #0E1A2B;box-shadow:0 0 0 7px rgba(200,220,60,.28)}
+.ct-gr{width:24px;height:24px;border-radius:50%;background:#0B63CE;border:3px solid #0E1A2B;box-shadow:0 0 0 7px rgba(11,99,206,.28)}
 .ct-fl{font-size:24px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
-.ctc-home{border:2px solid rgba(200,220,60,.55)!important;margin-bottom:14px}
+.ctc-home{border:2px solid rgba(11,99,206,.55)!important;margin-bottom:14px}
 /* v4.4.2 — Buscar un punto de la ruta: pantalla limpia (sin el panel de la ruta detrás y con el mapa a la vista) */
 #app.psearch .planpanel{display:none!important}
 #app.psearch .scrim{background:linear-gradient(to top,rgba(3,8,16,.6) 0%,rgba(3,8,16,.18) 50%,rgba(3,8,16,0) 75%)}
@@ -833,7 +847,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #s-rutas #planPanel.mini.draw>#pRows{display:block!important}
 .pdown{display:block;margin:-4px auto 8px;min-height:40px;padding:4px 22px;border-radius:20px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px;touch-action:manipulation;box-shadow:0 4px 14px rgba(0,0,0,.28)}
 /* v5.45 — Tarjeta de la guía de la web */
-.guiaC{margin:0 0 12px;position:relative;border-radius:var(--r);border:1.5px solid var(--lime);background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));padding:14px}
+.guiaC{margin:0 0 12px;position:relative;border-radius:var(--r);border:1.5px solid var(--lime);background:linear-gradient(135deg,rgba(11,99,206,.16),rgba(11,99,206,.04));padding:14px}
 .guiaX{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--txt);font-size:16px;cursor:pointer}
 .guiaH{display:flex;align-items:center;gap:12px;padding-right:30px}.guiaE{font-size:30px;line-height:1}
 .guiaT{display:inline-block;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:11px;letter-spacing:.06em;padding:3px 10px;border-radius:99px}
@@ -863,7 +877,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .poll .pq b{display:block;font-size:16.5px;line-height:1.3}.poll .pq small{display:block;color:var(--txt2);font-size:12.5px;margin:3px 0 8px}
 .popts{display:flex;flex-direction:column;gap:6px}
 .popt{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:700;font-size:15px;text-align:left;touch-action:manipulation}
-.popt i{position:absolute;left:0;top:0;bottom:0;background:rgba(200,220,60,.22);border-radius:14px 0 0 14px;transition:width .4s}
+.popt i{position:absolute;left:0;top:0;bottom:0;background:rgba(11,99,206,.22);border-radius:14px 0 0 14px;transition:width .4s}
 .popt span,.popt em{position:relative;font-style:normal}.popt em{font-size:13px;color:var(--txt2);font-weight:800;white-space:nowrap}
 .popt.mine{border-color:var(--lime)}.popt.win{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
 .popt:disabled{opacity:1}
@@ -907,7 +921,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .drw-seg button.on{background:var(--lime);color:var(--on-lime)}
 .drw-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .drw-mini button{min-height:40px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:13.5px;touch-action:manipulation}
-.drw-mini button.on{border-color:var(--lime);color:var(--lime);background:rgba(200,220,60,.1)}
+.drw-mini button.on{border-color:var(--lime);color:var(--lime);background:rgba(11,99,206,.1)}
 .drw-mini button:disabled{opacity:.35}
 .profwrap{position:relative;touch-action:pan-y}
 #profTip{position:absolute;top:-4px;width:150px;text-align:center;background:#0E1A2B;border:1px solid var(--lime);color:#fff;border-radius:10px;font-size:12.5px;font-weight:800;padding:3px 4px;pointer-events:none;z-index:2}
@@ -917,26 +931,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #layMenu .lm-tr small{display:block;font-weight:600;font-size:12px;opacity:.7}
 #layMenu .lm-tk{display:flex;gap:6px;flex-wrap:wrap;margin:8px 2px 0}
 #layMenu .lm-tk button{flex:1 1 auto;min-height:38px;padding:0 10px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-weight:800;font-size:13px;cursor:pointer}
-#layMenu .lm-tk button.on{background:#C8DC3C;color:#0E1A2B;border-color:#C8DC3C}
+#layMenu .lm-tk button.on{background:#0B63CE;color:#0E1A2B;border-color:#0B63CE}
 .ppt.dot{width:16px;height:16px;font-size:0;border-width:3px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.ppt.dot.num{width:24px;height:24px;font-size:12.5px;line-height:1;border:2px solid #111;background:#fff;color:#111;font-family:'Barlow Condensed','Plus Jakarta Sans',sans-serif;font-weight:800}   /* v5.63 */
 .drw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 8px}
 .drw button{min-height:54px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
 .drw button span{font-size:20px}
 .drw button:disabled{opacity:.35}
-.drw-here{width:100%;min-height:50px;border-radius:16px;border:1px dashed var(--lime);background:rgba(200,220,60,.08);color:var(--lime);font-family:inherit;font-weight:800;font-size:15px;margin:0 0 8px}
+.drw-here{width:100%;min-height:50px;border-radius:16px;border:1px dashed var(--lime);background:rgba(11,99,206,.08);color:var(--lime);font-family:inherit;font-weight:800;font-size:15px;margin:0 0 8px}
 .pcard.star{border:2px solid var(--lime)!important}
 /* v4.5.1 — Brújula del mapa */
 #cmpBtn svg,.cmpb svg{width:34px;height:34px;transition:transform .15s linear}
-.cmpb.on{background:rgba(200,220,60,.18);box-shadow:inset 0 0 0 3px var(--lime)}
+.cmpb.on{background:rgba(11,99,206,.18);box-shadow:inset 0 0 0 3px var(--lime)}
 /* v4.5.2 — Dibujar ruta: botón «Listo», paradas que se pueden quitar, cifras que no se cortan */
-.drw-ok{width:100%;min-height:58px;border-radius:18px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:18px;margin:8px 0 6px;box-shadow:0 4px 14px rgba(200,220,60,.25)}
+.drw-ok{width:100%;min-height:58px;border-radius:18px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:18px;margin:8px 0 6px;box-shadow:0 4px 14px rgba(11,99,206,.25)}
 .drw-tg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 2px;font-weight:700;font-size:14px;color:var(--txt2)}
 .pstats b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #map.zfar .stpm{display:none}
 /* v4.5.3 — Alcanzar al grupo durante la salida */
 .lvgroup:has(.lvcatch){max-height:150px}
 .lvcatch{display:block;width:100%;margin:2px 0 8px;min-height:48px;border-radius:14px;border:0;background:var(--lime);color:var(--on-lime);font-family:inherit;font-weight:900;font-size:16px}
-.lvcatch.going{background:rgba(200,220,60,.15);color:var(--lime);border:1px solid var(--lime)}
+.lvcatch.going{background:rgba(11,99,206,.15);color:var(--lime);border:1px solid var(--lime)}
 /* v4.5.4 — Brújula mejorada: letras N E S O y rumbo en grande */
 #cmpBtn svg,.cmpb svg{width:42px;height:42px}
 #cmpInfo{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 74px);z-index:40;display:none;align-items:center;gap:10px;background:rgba(11,20,34,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:2px solid var(--lime);color:#fff;border-radius:999px;padding:8px 16px 8px 10px;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap}
@@ -961,7 +976,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .cam-bot{position:absolute;left:0;right:0;bottom:0;padding:14px 22px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.6));z-index:2}
 .cam-mode{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
 .cam-mode button{border:0;background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;border-radius:18px;padding:9px 18px}
-.cam-mode button.on{background:#C8DC3C;color:#0E1A2B}
+.cam-mode button.on{background:#0B63CE;color:#0E1A2B}
 .cam-row{display:flex;align-items:center;justify-content:space-between}
 .cam-th{width:56px;height:56px;border-radius:14px;border:2px solid rgba(255,255,255,.8);background:rgba(255,255,255,.12) center/cover no-repeat;font-size:22px;color:#fff;display:grid;place-items:center}
 .cam-shot{width:80px;height:80px;border-radius:50%;border:5px solid #fff;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.25) inset;transition:transform .1s}
@@ -992,7 +1007,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .mv-top div{flex:1;font-weight:700;font-size:14px;text-shadow:0 1px 3px #000}
 .mv-bar{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:12px 14px calc(14px + env(safe-area-inset-bottom));background:#0B1422}
 .mv-bar button{min-height:52px;border-radius:26px;border:1px solid #2A3B55;background:#16263D;color:#fff;font-weight:800;font-size:15px;padding:0 14px}
-.mv-bar .lime{background:#C8DC3C;color:#0E1A2B;border:0}
+.mv-bar .lime{background:#0B63CE;color:#0E1A2B;border:0}
 .camPin{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#0E1A2B center/cover no-repeat;box-shadow:0 2px 8px rgba(0,0,0,.45);display:grid;place-items:center;font-size:14px;cursor:pointer}
 
 
@@ -1000,7 +1015,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .sup-dot{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:800;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .sup-it{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
 .sup-q{margin:6px 0 0;color:var(--txt);font-size:14.5px;white-space:pre-wrap}
-.sup-a{margin-top:10px;background:rgba(200,220,60,.1);border:1px solid rgba(200,220,60,.35);border-radius:12px;padding:10px 12px}
+.sup-a{margin-top:10px;background:rgba(11,99,206,.1);border:1px solid rgba(11,99,206,.35);border-radius:12px;padding:10px 12px}
 .sup-a b{color:var(--lime);font-size:13.5px}.sup-a p{margin:4px 0 0;white-space:pre-wrap;font-size:14.5px}
 /* v4.9.1 — Pueblos y velocidad en el 3D */
 .r3-here{font-size:13px;font-weight:800;color:var(--lime);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
@@ -1012,10 +1027,10 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 .r3-by{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;align-items:center}
 .r3-by:empty{display:none}
 .r3-by small{font-size:12px;color:#9FB0C5;font-weight:700;flex-shrink:0}
-.r3-by button{flex-shrink:0;border:0;background:rgba(200,220,60,.12);color:#E7F0A8;border-radius:14px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700}
+.r3-by button{flex-shrink:0;border:0;background:rgba(11,99,206,.12);color:#E7F0A8;border-radius:14px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700}
 .r3-by button.on{background:var(--lime);color:var(--on-lime)}
 /* v4.9 — Vídeo del recorrido en 3D */
-.r3-vid{display:block;width:100%;margin-top:12px;min-height:50px;border-radius:25px;border:1px solid var(--lime);background:rgba(200,220,60,.12);color:var(--lime);font:inherit;font-weight:800;font-size:16px}
+.r3-vid{display:block;width:100%;margin-top:12px;min-height:50px;border-radius:25px;border:1px solid var(--lime);background:rgba(11,99,206,.12);color:var(--lime);font:inherit;font-weight:800;font-size:16px}
 #r3vBox,#r3vRes{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,9,15,.55)}
 #r3vBox{background:transparent;align-items:flex-start;padding-top:calc(90px + env(safe-area-inset-top))}
 #r3vBox.show,#r3vRes.show{display:flex}
@@ -1040,7 +1055,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 #r3Seek{flex:1;accent-color:var(--lime);height:28px}
 .r3-st{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;text-align:center}
 .r3-st b{display:block;font-size:19px;font-weight:900;white-space:nowrap}.r3-st span{font-size:11px;color:#9FB0C5}
-.r3-mk{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--lime);box-shadow:0 0 0 6px rgba(200,220,60,.25),0 2px 6px rgba(0,0,0,.5)}
+.r3-mk{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--lime);box-shadow:0 0 0 6px rgba(11,99,206,.25),0 2px 6px rgba(0,0,0,.5)}
 .r3-lbl{display:flex;flex-direction:column;align-items:center;pointer-events:none}
 .r3-lbl div{background:rgba(11,20,34,.9);color:#fff;border-radius:8px;padding:3px 8px;font-weight:900;font-size:17px;line-height:1.05;text-align:left}
 .r3-lbl div small{display:block;font-size:10px;color:#C9D3E0;font-weight:800;letter-spacing:.05em}
@@ -1059,7 +1074,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
 (function(){
   var s=document.getElementById('splash'),v=document.getElementById('splashV'),done=false;
   function end(){if(done)return;done=true;try{v.pause()}catch(e){}s.style.opacity='0';setTimeout(function(){s.remove()},460)}
-  var today=new Date().toISOString().slice(0,10),show=true;
+  var today=new Date().toISOString().slice(0,10),show=false;   // v5.60: sin vídeo de entrada
   try{if(location.hash||location.search)show=false;else if(localStorage.getItem('velogo_splash_day')===today)show=false}catch(e){}
   if(!show){s.remove();return}
   try{localStorage.setItem('velogo_splash_day',today)}catch(e){}
@@ -1169,6 +1184,22 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="annBox"></div>
   <div id="updBox"></div>
   <!-- v5.45: tarjeta de la guía de la web (se puede cerrar; sigue siempre en Perfil) -->
+  <!-- v5.60.0 — Tarjeta «Empieza por la Simple» (sustituye al cambio automático a la Simple) -->
+  <div id="rsSimpleCard" style="display:none;background:#fff;border:2px solid #111;border-radius:12px;padding:16px 16px 14px;margin:0 0 14px;color:#111">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:34px;line-height:1">🚲</span>
+      <div style="flex:1;min-width:0">
+        <div style="font:800 12px 'Plus Jakarta Sans',sans-serif;letter-spacing:.6px;color:#0B63CE">¿ACABAS DE LLEGAR?</div>
+        <b style="display:block;font-size:20px;line-height:1.2;margin:2px 0 6px">Empieza por RideSafe IA Simple</b>
+        <p style="margin:0;color:#374151;font-size:15px;line-height:1.45">La Pro es muy completa y al principio puede abrumar. La <b>Simple</b> tiene lo esencial para salir seguro: grabar tu salida, planificar rutas y avisar si pasa algo. Fácil y sin líos.</p>
+        <p style="margin:8px 0 0;color:#374151;font-size:15px;line-height:1.45">Cuando la tengas dominada, vuelve a la <b>Pro</b> y sácale todo el partido. <b style="color:#15803D">Las dos son gratis, siempre.</b></p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:8px;margin-top:12px">
+      <button class="btn btn-lime" style="min-height:52px;font-size:16px" onclick="rsToSimple()">▶ Probar la Simple</button>
+      <button class="btn btn-line" style="min-height:52px;font-size:15px" onclick="rsSimpleCardClose()">Seguir en Pro</button>
+    </div>
+  </div>
   <div id="guiaBox" class="guiaC" style="display:none">
     <button class="guiaX" onclick="guiaClose()" aria-label="Cerrar">✕</button>
     <div class="guiaH"><span class="guiaE">📖</span><div><span class="guiaT">GUÍA PASO A PASO</span><b>Saca el máximo a RideSafe IA</b></div></div>
@@ -1316,7 +1347,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="sec"><h3 style="font-size:18px">🚲 Mi bici</h3></div>
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
-  <div class="set">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div>
+  <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Al pararte, el tiempo deja de contar al momento':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En cuanto <b>te paras</b> (semáforo, café, pinchazo…) el tiempo deja de contar y la media de km/h no baja. Al volver a pedalear sigue sola.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
@@ -1342,7 +1373,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.58.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.72.0 · Garmin beta 0.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4492,9 +4523,7 @@ const LAYERS=[
   ['satst',   'Híbrido',             'Satélite con calles',      'satellite-streets-v12'],
   ['sat',     'Satélite',            'Foto aérea pura',             'satellite-v9'],
   ['navday',  'Carretera',           'Vías muy marcadas',       'navigation-day-v1'],
-  ['navnight','Noche',               'Para rodar de noche',       'navigation-night-v1'],
-  ['light',   'Claro',               'Minimalista, se ve la ruta',  'light-v11'],
-  ['dark',    'Oscuro',              'Elegante, ahorra batería',    'dark-v11']
+  ['osm',     'OpenStreetMap',       'Mapa estándar de OSM',        'https://tile.openstreetmap.org/{z}/{x}/{y}.png']   // v5.67: + OSM estándar; fuera Noche, Claro y Oscuro
 ];
 const LAYER_BY=Object.fromEntries(LAYERS.map(l=>[l[0],l]));
 let LAYER=(()=>{try{const v=localStorage.getItem('velogo_layer')||'normal';return LAYER_BY[v]?v:'normal'}catch(e){return 'normal'}})();
@@ -4502,7 +4531,8 @@ function addLayers(m){
   if(!m||!m.getStyle())return;
   addSat(m);   // Esri: respaldo para mapas pequeños sin atribución
   LAYERS.forEach(([k,,,st])=>{if(!st||m.getSource('L_'+k))return;
-    m.addSource('L_'+k,{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
+    const web=/^https?:/.test(st);   // v5.67: capa con dirección propia (OpenStreetMap estándar)
+    m.addSource('L_'+k,web?{type:'raster',tiles:[st],tileSize:256,maxzoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}:{type:'raster',tiles:[MBX(st)],tileSize:512,maxzoom:22,attribution:MB_ATTR});
     m.addLayer({id:'L_'+k,type:'raster',source:'L_'+k,layout:{visibility:'none'}})});
 }
 function setLayer(m,k){
@@ -4521,6 +4551,7 @@ function satToggle(m,on){setLayer(m,on?'satst':'normal')}
 function layerThumb(k,m){
   const st=LAYER_BY[k][3];const c=m&&m.getCenter?m.getCenter():{lng:0.62,lat:41.6};const z=13;
   const x=lon2x(c.lng,z),y=lat2y(c.lat,z);
+  if(st&&/^https?:/.test(st))return st.replace('{z}',z).replace('{x}',x).replace('{y}',y);   // v5.67
   return st?`https://api.mapbox.com/styles/v1/mapbox/${st}/tiles/256/${z}/${x}/${y}?access_token=${MAPBOX_TOKEN}`:null;
 }
 function layerMenu(m){
@@ -4529,7 +4560,7 @@ function layerMenu(m){
   const cur=m.__layer||'normal';const on=navigator.onLine;
   d.innerHTML='<div class="lm-h"><b>Capas del mapa</b><button class="lm-x" aria-label="Cerrar">✕</button></div><div class="lm-g">'+LAYERS.map(([k,t,sub,st])=>{
     const th=layerThumb(k,m);
-    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label>'+trkChips()+'<label class="lm-tr"><span>🛤️ Caminos y pistas (como Garmin)<small>🟠 pistas · 🟤 senderos · 🔵 carril bici</small></span><span class="sw"><input type="checkbox" id="lmCm" '+(cmOn()?'checked':'')+' onchange="cmToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
+    return `<button class="lm-c${k===cur?' on':''}${st&&!on?' dis':''}" data-k="${esc(k)}"><span class="lm-i" style="${th?`background-image:url('${th}')`:''}">${th?'':'🗺️'}${k===cur?'<i>✓</i>':''}</span><b>${t}</b><small>${st&&!on?'Necesita conexión':sub}</small></button>`}).join('')+'</div><label class="lm-tr"><span>🥾🚵 Senderos y rutas marcadas<small>Waymarked Trails · OpenStreetMap</small></span><span class="sw"><input type="checkbox" id="lmTrails" '+(trailsOn()?'checked':'')+' onchange="trailsToggle(this.checked)"><span></span></span></label>'+trkChips()+'<label class="lm-tr"><span>🛤️ Caminos y pistas (como Garmin)<small>🟠 pistas · 🟫 caminos sin asfaltar · 🟤 senderos · 🔵 carril bici</small></span><span class="sw"><input type="checkbox" id="lmCm" '+(cmOn()?'checked':'')+' onchange="cmToggle(this.checked)"><span></span></span></label><label class="lm-tr"><span>🌧️ Radar de lluvia<small id="lmRadarT">'+radarInfo()+'</small></span><span class="sw"><input type="checkbox" id="lmRadar" '+(radarOn()?'checked':'')+' onchange="radarToggle(this.checked)"><span></span></span></label><div class="lm-f">Mapas de Mapbox · el Normal es el que se guarda sin conexión</div>';
   d.onclick=ev=>{if(ev.target.closest('.lm-x')){d.remove();return}const b=ev.target.closest('.lm-c');if(!b)return;const k=b.dataset.k;
     if(LAYER_BY[k][3]&&!navigator.onLine){toast('Esta capa necesita conexión');return}
     LAYER=k;try{localStorage.setItem('velogo_layer',k)}catch(e){}
@@ -5933,7 +5964,7 @@ function editRoute(r){
 /* v5.53.0 — CAPA «CAMINOS» (como los mapas de Garmin para BTT/gravel): resalta sobre el mapa
    🟠 pistas de tierra · 🟤 senderos · 🔵 carriles bici. Sale de OpenStreetMap (el mismo mapa de la app), sin servidores nuevos. */
 const cmOn=()=>!!store.get('caminosOn',false);
-const CM_IDS=['cm-track-case','cm-track','cm-path-case','cm-path','cm-cycle'];
+const CM_IDS=['cm-unp-case','cm-unp','cm-track-case','cm-track','cm-path-case','cm-path','cm-cycle'];   // v5.66: + caminos sin asfaltar
 function cmSrc(m){const S=(m.getStyle()||{}).sources||{};if(S.openmaptiles)return 'openmaptiles';const k=Object.keys(S).find(k=>S[k].type==='vector');return k||null}
 function cmSet(m,on){
   if(!m||!m.getStyle||!m.getStyle())return;
@@ -5946,6 +5977,10 @@ function cmSet(m,on){
     const PA=['all',['==',['get','class'],'path'],['match',['get','subclass'],['path','bridleway'],true,false]];
     const CY=['all',['==',['get','class'],'path'],['==',['get','subclass'],'cycleway']];
     const L=(id,f,p,lay)=>m.addLayer({id,type:'line',source:src,'source-layer':'transportation',minzoom:11,filter:f,layout:Object.assign({'line-cap':'round','line-join':'round'},lay||{}),paint:p},before);
+    // v5.66: caminos y carreteras pequeñas SIN ASFALTAR (tierra, grava) que no son «pista»
+    const UN=['all',['match',['get','class'],['minor','service','tertiary','secondary','unclassified'],true,false],['==',['get','surface'],'unpaved']];
+    L('cm-unp-case',UN,{'line-color':'#FFFFFF','line-width':W(5,14),'line-opacity':0.9});
+    L('cm-unp',UN,{'line-color':'#A16207','line-width':W(3,9),'line-dasharray':[2.2,0.9]},{'line-cap':'butt'});
     L('cm-track-case',TR,{'line-color':'#FFFFFF','line-width':W(5,14),'line-opacity':0.9});
     L('cm-track',TR,{'line-color':'#EA580C','line-width':W(3,9)});
     L('cm-path-case',PA,{'line-color':'#FFFFFF','line-width':W(4,11),'line-opacity':0.85});
@@ -6045,7 +6080,7 @@ function redrawPlanMarkers(){
   plan.markers.forEach(m=>m.remove());plan.markers=[];
   const list=[];
   if(plan.start)list.push(['start',plan.start,plan.mode==='loop'?'⟲':'A','a']);
-  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,plan.mode==='draw'?'':String(i+1),plan.mode==='draw'?'dot':'']));
+  plan.stops.forEach((s,i)=>list.push(['stop'+i,s,String(i+1),plan.mode==='draw'?'dot num':'']));   // v5.63: puntos de la ruta dibujada con su número
   if(plan.dest&&plan.mode!=='loop')list.push(['dest',plan.dest,'B','b']);
   list.forEach(([key,p,txt,cls])=>{
     const el=document.createElement('div');el.className='ppt '+cls;el.textContent=txt;
@@ -6532,7 +6567,7 @@ async function useRoute(){
 function openRoutes(pick){
   const list=store.get('routes',[]);
   $('routesList').innerHTML=(pick?'':'<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="closeSheets();pickFile()">📂 Subir una ruta GPX</button><button class="btn btn-line" style="width:100%;margin:-4px 0 12px" onclick="closeSheets();ghPlan()">🧭 Planificar en GraphHopper (MTB)</button>')+(list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
-    <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button><button class="mini" onclick="saveSavedGpx(${jsq(r.id)})">💾 GPX</button>`}<button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
+    <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button><button class="mini" onclick="saveSavedGpx(${jsq(r.id)})">💾 GPX</button>`}<button class="mini" onclick="rtRenList(${jsq(r.id)},${pick?1:0})">✏️ Nombre</button><button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
     :`<div class="empty">Aún no tienes rutas guardadas.<br>Planifica una y pulsa "Guardar".</div>`);
   openSheet('sh-routes');
 }
@@ -7865,7 +7900,9 @@ function vcStart(){
     if(Date.now()<VC.quiet||musSpeaking())continue;
     const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
     VC.buf=VC.buf||[];VC.buf.push(alts);clearTimeout(VC.bt);   // v5.54.0: espera 1,5 s por si la frase sigue
-    VC.bt=setTimeout(()=>{const B=VC.buf||[];VC.buf=[];if(!B.length)return;vcHandle(B.length===1?B[0]:[B.map(a=>a[0]).join(' '),...B.at(-1)])},1500)}};
+    if(Date.now()<(VC.armT||0))VC.armT=Date.now()+6000;   // v5.72.0: sigues hablando tras «Oye bici»
+    let solo=false;try{solo=VC.buf.length===1&&alts.some(a=>{const x=vozNorm(a);return VOZ_WAKE.test(x)&&!x.replace(VOZ_WAKE_CUT,'').trim()})}catch(e){}   // solo «Oye bici»: pitido al momento
+    VC.bt=setTimeout(()=>{const B=VC.buf||[];VC.buf=[];if(!B.length)return;vcHandle(B.length===1?B[0]:[B.map(a=>a[0]).join(' '),...B.at(-1)])},solo?60:1500)}};
   r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){store.set('vcOn',false);VC.rec=null;vcChip();toast('🎙️ Permite el micrófono para las órdenes por voz',5000);renderVoz()}
     else if(e.error==='network'){VC.fails++}};
   r.onend=()=>{if(VC.rec!==r)return;VC.rec=null;vcChip();
@@ -7903,7 +7940,20 @@ function vcListenOnce(){
   setTimeout(()=>{try{r.start();VC.rec=r;vcChip()}catch(e){VC.rec=null}},250);
 }
 function vcPttSet(on){store.set('vcPtt',!!on);if(live.on){if(on){vcStop();vcPttArm()}else{vcPttDisarm();vcStart()}}renderVoz();vcChip();toast(on?'🎧 Pulsa ▶️/⏸ del casco y di la orden':'🎙️ La app escucha todo el rato durante la salida',4000)}
+/* v5.72.0 — En ruta, «Oye bici» SIEMPRE contesta: pitido y «Te escucho» al decirlo, y si no entiende la orden lo dice
+   (antes se quedaba callada). Tras «Oye bici» vale cualquier orden, también las frases largas. */
 function vcHandle(alts){
+  let N=[];try{N=alts.map(a=>vozNorm(a)).filter(Boolean)}catch(e){}
+  let wk=null;try{wk=N.find(x=>VOZ_WAKE.test(x))}catch(e){}
+  const armed=Date.now()<(VC.armT||0);
+  if(wk&&!wk.replace(VOZ_WAKE_CUT,'').trim()){VC.armT=Date.now()+10000;beepPtt(990);vib(40);try{vozPill('🎤 Te escucho…','Di la orden',8000)}catch(e){}return}
+  if(wk||armed){VC.armT=0;
+    const C=N.map(x=>x.replace(VOZ_WAKE_CUT,'').trim()).filter(Boolean);if(!C.length)return;
+    try{vozPill('🎤 «'+C[0]+'»','',4000)}catch(e){}
+    for(const c of C){const n=vcNorm(c);if(n&&vcDo(n))return}
+    for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c))return}catch(e){}}
+    beepPtt(330);try{vozPill('🤔 «'+C[0]+'»','No te he entendido',4500)}catch(e){}
+    vcSay('No te he entendido. Di órdenes para oír la lista.');return}
   for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
 }
 function vcOk2(){beepPtt(880);vib(40)}
@@ -8155,14 +8205,14 @@ $('fileIn').onchange=async e=>{
     const done=mins>0;
     const op=[['🗺️ Una ruta para hacer: guardarla, crear una salida o compartirla con el club','','route'],['✅ Una salida que ya hice: guardarla en Actividades','','act']];
     if(done)op.reverse();
-    // v5.55.0: una ruta de GraphHopper (o recién planificada allí) va directa a la tarjeta y al mapa de la ruta, sin preguntar
-    if(!done&&(/graphhopper/i.test((xml.documentElement&&xml.documentElement.getAttribute('creator'))||'')||Date.now()-(+localStorage.getItem('rs_gh_t')||0)<3600000)){
-      try{localStorage.removeItem('rs_gh_t')}catch(_){}
-      const gn=/graphhopper/i.test(name)?'Ruta GraphHopper '+new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):name;
-      importRouteGpx(pts,km,up,gn);return}
-    const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m${mins?' · '+Math.floor(mins/60)+' h '+mins%60+' min':''}. ¿Qué es este archivo?`,op);
-    if(k<0)return;
-    if(op[k][2]==='route'){importRouteGpx(pts,km,up,name);return}
+    // v5.62.0: antes de guardar, el GPX se ve aparte: mapa completo, perfil con pendientes y dónde estás tú. Luego decides.
+    const gh=/graphhopper/i.test((xml.documentElement&&xml.documentElement.getAttribute('creator'))||'')||Date.now()-(+localStorage.getItem('rs_gh_t')||0)<3600000;
+    const gn=gh&&/graphhopper/i.test(name)?'Ruta GraphHopper '+new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):name;
+    let pick=null;
+    if(typeof gpxView==='function'){try{pick=await gpxView({pts,km,up,mins,name:gn,done:done&&!gh})}catch(_){pick=null}}
+    else{const k=await askChoice(`📂 ${name} · ${a.km} km · +${a.up} m. ¿Qué es este archivo?`,op);pick=k<0?null:op[k][2]}
+    if(!pick)return;
+    if(pick==='route'){try{localStorage.removeItem('rs_gh_t')}catch(_){}importRouteGpx(pts,km,up,gn);return}
     acts.unshift(a);store.set('acts',acts);saveActRemote(a);addRank(a);
     const gain=Math.min(300,Math.round(km))+10;addPoints(gain);
     renderActs();publishAct(a);checkBadges();addKmToBike(km);toast(`Actividad guardada · +${gain} puntos`);
@@ -8420,6 +8470,7 @@ Consejos para ahorrar batería en ruta:
 
 ¡Gracias por tu colaboración y buena ruta! 🚴`};
 function rsNoticeGate(n){n=n||0;try{
+  return;   // v5.60: sin aviso al abrir la app
   if($('rsNG')||store.get('rsNotice','')===RS_NOTICE.id)return;
   const busy=$('splash')||$('legalGate')||($('onb')&&$('onb').classList.contains('show'));
   if(busy){if(n<60)setTimeout(()=>rsNoticeGate(n+1),1500);return}
@@ -8754,10 +8805,10 @@ function novTry(){novClose();try{go('rutas')}catch(e){}setTimeout(function(){try
 </script>
 <!-- ===== v5.40.0 (antes Voz beta 1.5) — Órdenes por voz (manos libres con guantes) ===== -->
 <style>
-#vozBtn{position:fixed;right:12px;top:46%;z-index:65;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:#A3E635;color:#0E1A2B;font-size:26px;opacity:.92;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.45);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#vozBtn{position:fixed;right:12px;top:46%;z-index:65;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:#0B63CE;color:#0E1A2B;font-size:26px;opacity:.92;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.45);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #vozBtn.on{background:#DC2626;color:#fff;animation:vozPulse 1s infinite}
-#vozBtn.cont{border-color:#A3E635;box-shadow:0 0 0 5px rgba(163,230,53,.35),0 6px 22px rgba(0,0,0,.45)}
-#vozBtn.cont:not(.on){background:#14532D;color:#A3E635}
+#vozBtn.cont{border-color:#0B63CE;box-shadow:0 0 0 5px rgba(11,99,206,.35),0 6px 22px rgba(0,0,0,.45)}
+#vozBtn.cont:not(.on){background:#14532D;color:#0B63CE}
 /* v5.42.1 — Micrófono arriba a la izquierda (no tapa «Cancelar» ni la tarjeta de ruta). En navegación sigue a la derecha */
 #vozBtn{left:12px;right:auto;top:calc(110px + env(safe-area-inset-top));width:50px;height:50px;font-size:22px}
 body:has(#s-rutas.planning) #vozBtn{top:calc(16px + env(safe-area-inset-top))}
@@ -8765,12 +8816,12 @@ body:has(#s-rutas.live) #vozBtn{top:calc(84px + env(safe-area-inset-top))}
 body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;font-size:26px}
 #vozBtn small{position:absolute;bottom:-17px;font-size:10px!important;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.6);padding:1px 7px;border-radius:9px;white-space:nowrap}
 @keyframes vozPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
-#vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #A3E635;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+#vozPill{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9450;max-width:92vw;background:rgba(14,26,43,.94);color:#fff;border:2px solid #0B63CE;border-radius:22px;padding:10px 18px;font-size:19px;font-weight:800;text-align:center;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 #vozPill small{display:block;font-size:14px;font-weight:600;color:#cbd5e1;margin-top:3px}
 #vozPill{max-height:46vh;overflow-y:auto;cursor:pointer}   /* v5.40.3: respuestas largas se leen y se cierran con un toque */
 #vozPill small{line-height:1.35;text-align:left}
 #vozPanel{position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
-#vozPanel .vp{background:#0E1A2B;color:#fff;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-top:2px solid #A3E635}
+#vozPanel .vp{background:#0E1A2B;color:#fff;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-top:2px solid #0B63CE}
 #vozPanel h3{font-size:21px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 #vozPanel h3 button{background:none;border:0;color:#fff;font-size:28px;padding:4px 8px}
 #vozPanel .vbtn{width:100%;min-height:60px;border-radius:16px;border:0;font-size:18px;font-weight:800;margin-top:10px}
@@ -8779,7 +8830,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
 #vozPanel .vopt small{display:block;color:#cbd5e1;font-size:13px;font-weight:500;margin-top:2px}
 #vozPanel table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
 #vozPanel td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
-#vozPanel td:first-child{color:#A3E635;font-weight:800;white-space:nowrap;padding-right:10px}
+#vozPanel td:first-child{color:#0B63CE;font-weight:800;white-space:nowrap;padding-right:10px}
 #vozPanel .vnote{font-size:13px;color:#cbd5e1;margin-top:12px;line-height:1.45}
 </style>
 <button id="vozBtn" aria-label="Órdenes por voz">🎤<small>VOZ</small></button>
@@ -8954,14 +9005,16 @@ const VSR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const VZ_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const VZ={rec:null,on:false,cont:false,want:false,armedT:0,pending:null,quietT:0,errN:0,restartTO:null,oneShot:false};
 function vozNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[¿?¡!.,;:«»"]/g,' ').replace(/\s+/g,' ').trim()}
-const VOZ_WAKE=/\b(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|\b(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|\bridesafe\b/;
+/* v5.71.0 — «Oye bici» se reconoce aunque el móvil lo escriba mal (oye vichi, oye bisi, oyebici, oye bicicleta…) */
+const VOZ_WAKE=/\b(?:oye|oyes|oie|oy|hoy|olle|hey|ey|ei|joye|o ye)\s*(?:bicicleta|bicis|bici|vici|biki|bichi|bisi|visi|bizi|vichi|vichy|bixi|pici|bc)\b|\b(?:ride|raid|rai|ray|right)\s*(?:safe|seif|sef|seyf|save)\b|\bridesafe\b/;
+const VOZ_WAKE_CUT=new RegExp('^.*?(?:'+VOZ_WAKE.source+')');
 function vozPill(a,b,ms){const p=document.getElementById('vozPill');if(!p._x){p._x=1;p.addEventListener('click',()=>{p.style.display='none'})}p.innerHTML=a+(b?'<small>'+b+'</small>':'');p.style.display='block';clearTimeout(p._t);if(ms!==0)p._t=setTimeout(()=>p.style.display='none',ms||3500)}
 function vozBeep(f,d){if(VZ_IOS)return;   /* v5.40.4: en iPhone el pitido corta la voz de la respuesta */
   try{const C=window.__vozAC||(window.__vozAC=new (window.AudioContext||window.webkitAudioContext)());if(C.state==='suspended')C.resume();const o=C.createOscillator(),g=C.createGain();o.frequency.value=f||880;g.gain.setValueAtTime(.0001,C.currentTime);g.gain.exponentialRampToValueAtTime(.35,C.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,C.currentTime+(d||.15));o.connect(g).connect(C.destination);o.start();o.stop(C.currentTime+(d||.15)+.02)}catch(e){}}
 function vozUI(){const b=document.getElementById('vozBtn');if(!b)return;b.classList.toggle('on',VZ.on&&(VZ.oneShot||Date.now()<VZ.armedT||!!VZ.pending));b.classList.toggle('cont',VZ.cont);b.querySelector('small').textContent=VZ.cont?'OYE BICI':'VOZ'}
 /* La app contesta en voz alta. Mientras habla, no escucha (para no oírse a sí misma) */
 function vozSay(t,thenListen){
-  const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;   // v5.41.8: +2,5 s tras contestar
+  const ms=Math.max(1600,String(t).length*80)+2500;VZ.quietT=Date.now()+ms;VZ.sayEnd=VZ.quietT;   // v5.41.8: +2,5 s tras contestar
   vozStop(true);
   let sp=null;
   try{const v=live.voice;live.voice=true;CASCO.last=t;sp=voiceSay(t);live.voice=v}catch(e){try{cascoSay(t)}catch(x){try{speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(t),{lang:'es-ES'}))}catch(y){}}}
@@ -8981,13 +9034,14 @@ function vozSay(t,thenListen){
 function vozMake(continuous){
   const one=!continuous&&!VZ_IOS;   // v5.54.0: Android con el 🎤 → escucha la frase entera y espera 2 s de silencio
   const r=new VSR();r.lang='es-ES';r.continuous=continuous||one;r.interimResults=true;r.maxAlternatives=3;
-  r._acc='';r._accN=0;
+  r._acc='';r._accN=0;r._t0=Date.now();
   const flush=()=>{clearTimeout(r._fl);let t=r._acc.trim();if(!t&&one&&r._last)t=r._last.trim();if(!t)return;
     const alts=r._accN===1&&r._accAlts?r._accAlts:[vozNorm(t)];r._acc='';r._accN=0;r._accAlts=null;r._last='';
     if(one){r._done=true;try{r.stop()}catch(e){}}
     vozHeard(alts,t)};
   r._flush=flush;
-  r.onresult=e=>{
+  r.onresult=e=>{r._ev=Date.now();
+    if(Date.now()<VZ.armedT)VZ.armedT=Math.max(VZ.armedT,Date.now()+5000);   // v5.72.0: mientras hablas tras «Oye bici», la orden no caduca
     for(let i=e.resultIndex;i<e.results.length;i++){
       const res=e.results[i];const txt=res[0].transcript;
       if(!res.isFinal){
@@ -9005,7 +9059,7 @@ function vozMake(continuous){
     }
   };
   r.onerror=e=>{
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.want=false;   /* v5.46.4: no borra «Oye bici» */vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Permite el micrófono a la app en Chrome',12000);vozUI();return}
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){VZ.want=false;VZ.blk=true;   /* v5.46.4: no borra «Oye bici» */vozPill('🎤 Micrófono bloqueado',VZ_IOS?'iPhone: Ajustes › General › Teclado › activa «Dictado». Y en Ajustes › Safari › Micrófono › Permitir. Si usas la app instalada y falla, ábrela en Safari':'Permite el micrófono a la app en Chrome',12000);vozUI();return}
     if(e.error==='network'){vozPill('📶 Sin conexión','El reconocimiento de voz necesita datos móviles',5000);VZ.errN++;return}
     if(e.error==='no-speech'&&VZ.oneShot){vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}
     if(e.error!=='no-speech'&&e.error!=='aborted')VZ.errN++;
@@ -9017,7 +9071,14 @@ function vozMake(continuous){
     if(VZ.oneShot){VZ.oneShot=false;if(VZ.pending&&Date.now()>VZ.pending.until)VZ.pending=null}
     vozUI();
     if(VZ.cont&&VZ.want&&document.visibilityState==='visible'&&Date.now()>VZ.quietT){
-      const wait=Math.min(8000,300+VZ.errN*1500);vozRestartQuiet(wait)}
+      const wait=Math.min(8000,300+VZ.errN*1500);
+      /* v5.71.0 — Si la app no está hablando, el micrófono vuelve a abrirse enseguida (antes se quedaba sordo 2,3 s en cada vuelta).
+         Y si acabas de decir «Oye bici», se reabre al momento para no perder la orden. */
+      VZ.quickN=(Date.now()-(r._t0||0)<1500&&!r._ev)?(VZ.quickN||0)+1:0;
+      const calm=!ttsSpeaking()&&Date.now()>(VZ.speakUntil||0)+1500&&Date.now()>(VZ.sayEnd||0);
+      if(calm&&Date.now()<VZ.armedT&&VZ.quickN<3){VZ.armedT=Date.now()+8000;clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(()=>{VZ.quietT=0;vozStartCont();vozUI()},120)}
+      else if(calm&&!VZ.errN){clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(()=>{if(ttsSpeaking()){vozRestartQuiet(0);return}VZ.quietT=0;vozStartCont()},VZ.quickN>4?5000:VZ.quickN>1?1500:400)}
+      else vozRestartQuiet(wait)}
   };
   r.onstart=()=>{r._started=true;VZ.on=true;vozUI()};
   return r;
@@ -9077,7 +9138,7 @@ function vozListen(silent,direct){
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz',VZ_IOS?'Actualiza el iPhone y usa Safari':'Usa Chrome en Android',6000);return}
   if(VZ_IOS&&!VZ.unl){VZ.unl=1;try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '))}catch(e){}}   // desbloquea la voz del iPhone
   try{if(typeof VC!=='undefined'&&VC.rec){vcStop();VZ.vcBack=true;clearTimeout(VZ.vcT);VZ.vcT=setTimeout(vozVcBack,20000)}}catch(e){}
-  vozStop(true);VZ.oneShot=true;VZ.want=VZ.cont;   // v5.46.4
+  vozStop(true);VZ.oneShot=true;VZ.want=VZ.cont;VZ.blk=false;   // v5.46.4
   if(!silent&&!VZ_IOS)vozBeep(880,.12);
   vozPill(VZ.pending?'🎤 Contesta «sí» o «no»':'🎤 Te escucho…','Di la orden',0);
   /* v5.40.5: el iPhone a veces no vuelve a abrir el micrófono tras la primera orden.
@@ -9108,7 +9169,7 @@ function vozHeard(alts,raw){
   VZ.pending=null;
   if(VZ.cont&&!VZ.oneShot){
     const a=alts.find(x=>VOZ_WAKE.test(x));
-    if(a){t=a.replace(/^.*?(oye|hey|ey|oie|hoy|olle)\s+(bici|vici|bicis|biki|bichi)\b|^.*?(ride|raid|rai|ray|right)\s*(safe|seif|sef|seyf|save)\b|^.*?ridesafe\b/,'').trim();
+    if(a){t=a.replace(VOZ_WAKE_CUT,'').trim();
       if(!t){if(Date.now()>=VZ.armedT)vozBeep(988,.12);VZ.armedT=Date.now()+7000;vozPill('🎤 Te escucho…','Di la orden',7000);vozUI();return}}
     else if(Date.now()<VZ.armedT){/* ya dijo «oye bici» antes: esta frase es la orden */}
     else return;   // sin palabra clave: no hace nada
@@ -9466,32 +9527,32 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
 <!-- ===== v5.44.0 — Menú por voz con números («Oye bici, menú») ===== -->
 <style>
 #vmOv{position:fixed;inset:0;z-index:10003;background:rgba(5,12,22,.55);display:flex;align-items:flex-end;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
-.vm-b{width:100%;max-width:460px;max-height:86vh;overflow-y:auto;background:#0E1A2B;border:2px solid #A3E635;border-radius:24px;padding:16px 14px 14px;box-shadow:0 20px 50px rgba(0,0,0,.55);color:#fff;font-family:inherit}
+.vm-b{width:100%;max-width:460px;max-height:86vh;overflow-y:auto;background:#0E1A2B;border:2px solid #0B63CE;border-radius:24px;padding:16px 14px 14px;box-shadow:0 20px 50px rgba(0,0,0,.55);color:#fff;font-family:inherit}
 .vm-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .vm-ic{font-size:28px;line-height:1}
 .vm-top h3{margin:0;font-size:21px;font-weight:900;flex:1;line-height:1.15}
-.vm-top small{display:block;font-size:12.5px;font-weight:700;color:#A3E635;letter-spacing:.3px;text-transform:uppercase}
+.vm-top small{display:block;font-size:12.5px;font-weight:700;color:#0B63CE;letter-spacing:.3px;text-transform:uppercase}
 .vm-x{width:42px;height:42px;border-radius:50%;border:1px solid #2A3B55;background:#1C2F4A;color:#fff;font-size:18px;font-weight:900;flex-shrink:0}
 .vm-hint{display:flex;align-items:center;gap:8px;background:#16263D;border-radius:14px;padding:8px 12px;margin:8px 0 12px;font-size:14.5px;color:#cbd5e1}
-.vm-hint b{color:#A3E635}
+.vm-hint b{color:#0B63CE}
 .vm-l{display:flex;flex-direction:column;gap:8px}
 .vm-o{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:8px 14px 8px 10px;border-radius:18px;border:1px solid #2A3B55;background:#16263D;color:#fff;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent}
-.vm-o:active{background:#1C2F4A;border-color:#A3E635}
-.vm-n{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#A3E635;color:#0E1A2B;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.vm-o:active{background:#1C2F4A;border-color:#0B63CE}
+.vm-n{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#0B63CE;color:#0E1A2B;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .vm-o .vm-e{font-size:22px;width:28px;text-align:center;flex-shrink:0}
 .vm-o b{display:block;font-size:17.5px;font-weight:800;line-height:1.2}
 .vm-o small{display:block;font-size:13px;color:#9AA8BC;margin-top:2px;line-height:1.25}
 .vm-f{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .vm-f button{min-height:48px;border-radius:24px;font-weight:800;font-size:16px;font-family:inherit;border:1px solid #2A3B55;background:#1C2F4A;color:#fff}
-.vm-f button.vm-talk{background:#A3E635;color:#0E1A2B;border-color:#A3E635}
+.vm-f button.vm-talk{background:#0B63CE;color:#0E1A2B;border-color:#0B63CE}
 .vm-q{font-size:22px;font-weight:900;line-height:1.25;margin:10px 2px 4px}
 .vm-ex{font-size:14.5px;color:#9AA8BC;margin:0 2px 12px}
 .vm-in{display:flex;gap:8px}
 .vm-in input{flex:1;min-width:0;min-height:52px;border-radius:16px;border:2px solid #2A3B55;background:#16263D;color:#fff;font-size:18px;padding:0 14px;font-family:inherit}
-.vm-in input:focus{outline:none;border-color:#A3E635}
-.vm-in button{min-width:64px;border-radius:16px;border:0;background:#A3E635;color:#0E1A2B;font-weight:900;font-size:17px;font-family:inherit}
-.vm-done{font-size:14.5px;color:#cbd5e1;margin:10px 2px 0}.vm-done b{color:#A3E635;text-transform:capitalize}
-.vm-steps{display:flex;gap:6px;margin:4px 2px 0}.vm-steps i{flex:1;height:5px;border-radius:3px;background:#2A3B55}.vm-steps i.on{background:#A3E635}
+.vm-in input:focus{outline:none;border-color:#0B63CE}
+.vm-in button{min-width:64px;border-radius:16px;border:0;background:#0B63CE;color:#0E1A2B;font-weight:900;font-size:17px;font-family:inherit}
+.vm-done{font-size:14.5px;color:#cbd5e1;margin:10px 2px 0}.vm-done b{color:#0B63CE;text-transform:capitalize}
+.vm-steps{display:flex;gap:6px;margin:4px 2px 0}.vm-steps i{flex:1;height:5px;border-radius:3px;background:#2A3B55}.vm-steps i.on{background:#0B63CE}
 </style>
 <script>
 /* Menú por voz con números. «Oye bici, menú» → 6 apartados → número → la app pregunta lo que falta.
@@ -9800,6 +9861,7 @@ function vozMenu(t){
   },250);
 })();
 </script>
+<!-- ===== v5.59.0 — ASPECTO GARMIN (antes Garmin beta 0.5): campos de datos, páginas Datos/Ruta/Subidas, ClimbPro, flechas de giro, 🔔 timbre y ⚠️ avisos de peligro ===== -->
 <style id="gmTheme">
 /* ===== GARMIN BETA 0.1 — Aspecto de ciclocomputador Garmin Edge (solo imagen: mismas funciones y mismo orden) ===== */
 html.gmx{--bg:#E6E9ED!important;--card:#FFFFFF!important;--card2:#F2F4F6!important;--line:#BFC6CE!important;--lime:#0B63CE!important;--on-lime:#FFFFFF!important;--txt:#0A0A0A!important;--txt2:#4B5563!important;--gmBlue:#0B63CE;--gmBlack:#111}
@@ -9862,7 +9924,7 @@ html.gmx .planpanel{border-radius:14px 14px 0 0!important}
   // Tema claro solo aquí (no se guarda: la app normal sigue como la tengas)
   function light(){try{document.documentElement.dataset.theme='light';var s=document.getElementById('swLight');if(s)s.checked=true;var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#111111'}catch(e){}}
   window.setTheme=function(){light()};light();
-  var tag=document.createElement('div');tag.className='gmBeta';tag.textContent='GARMIN BETA 0.5';document.body.appendChild(tag);
+  
 
   // ---- Subidas a partir del perfil [{d:km,e:m}] ----
   function smooth(P){var Q=[],step=0.05,tot=P[P.length-1].d,j=1;function at(x){while(j<P.length-1&&P[j].d<x)j++;var a=P[j-1],b=P[j],t=(x-a.d)/Math.max(1e-6,b.d-a.d);return a.e+(b.e-a.e)*Math.max(0,Math.min(1,t))}
@@ -10189,14 +10251,14 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
   function ago(ms){var m=Math.round((Date.now()-ms)/60000);return m<60?'hace '+m+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'}
   async function info(x){
     var mine=x.uid===uid,k=(T[x.t]||T.otro);
-    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms)+(x.n?' por '+x.n:''),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
+    var i=await askChoice(k[0]+' '+k[1]+' · avisado '+ago(x.ms),mine?[['🗑️ Ya no está: quitar mi aviso','red']]:[['👍 Entendido']]);
     if(i===0&&mine){try{await db.collection('peligros').doc(x.id).delete();H.list=H.list.filter(function(y){return y.id!==x.id});draw();toast('Aviso quitado')}catch(e){toast('No se pudo quitar')}}
   }
   async function report(t,silent){
     var p=here();if(!p){toast('Aún no tengo tu posición GPS');return}
     if(!db||!uid){toast('Sin conexión: inténtalo en unos segundos');return}
     var k=T[t]||T.otro;
-    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:String((typeof myName==='function'?myName():'')||'').slice(0,24),ts:FV.serverTimestamp()});
+    try{await db.collection('peligros').add({lat:+p[0].toFixed(6),lng:+p[1].toFixed(6),g:cell(p[0],p[1]),t:T[t]?t:'otro',uid:uid,n:'',   /* v5.68: sin nombre (privacidad) */ts:FV.serverTimestamp()});
       H.list.push({id:'tmp'+Date.now(),lat:p[0],lng:p[1],t:t,uid:uid,ms:Date.now()});draw();H.said['tmp']=1;
       try{vib([60,40,60])}catch(e){}toast(k[0]+' '+k[1]+' marcado. ¡Gracias! Avisaremos a los demás ciclistas',4000);
       if(!silent)try{speak(k[1]+' marcado. Gracias.')}catch(e){}
@@ -10238,9 +10300,457 @@ body:has(#s-rutas.lvmin) .gmFab{display:flex}
     if(/\bpeligro\b/.test(t)){gmHazMenu();return 'menu'}
     return null;
   }
-  var vd=window.vcDo;window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=vozHz(n);if(r){if(r!=='bell'&&r!=='menu')vcSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}}catch(e){}return vd.apply(this,arguments)};
-  var vr=window.vozRun;window.vozRun=function(t){try{var r=vozHz(t);if(r){if(r!=='bell'&&r!=='menu')vozSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}catch(e){}return vr.apply(this,arguments)};
+  var vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=vozHz(n);if(r){if(r!=='bell'&&r!=='menu')vcSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}}catch(e){}return vd.apply(this,arguments)};
+  var vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{var r=vozHz(t);if(r){if(r!=='bell'&&r!=='menu')vozSay((T[r]||T.otro)[1]+' marcado. Gracias.');return true}}catch(e){}return vr.apply(this,arguments)};
 })();
 </script>
+<script>
+/* v5.60.0 — Tarjeta «Empieza por la Simple»: sale a quien tiene pocas salidas y no la ha cerrado */
+function rsToSimple(){try{localStorage.setItem('rs_modo','simple')}catch(e){}location.href='simple.html'}
+function rsSimpleCardClose(){try{localStorage.setItem('rs_simple_card','1')}catch(e){}var c=document.getElementById('rsSimpleCard');if(c)c.style.display='none';try{toast('Vale, seguimos en la Pro')}catch(e){}}
+(function(){try{if(localStorage.getItem('rs_simple_card'))return;if((acts||[]).length>=5)return;var c=document.getElementById('rsSimpleCard');if(c)c.style.display='block'}catch(e){}})();
+</script>
+<style>
+/* v5.61.0 — Otra ruta: borrar y cambiar el nombre de tus rutas */
+#gmRt{position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+#gmRt .bx{background:#F4F5F7;color:#111;width:100%;max-width:520px;max-height:88vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans",sans-serif}
+#gmRt .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px 8px}
+#gmRt .hd b{font-size:19px;line-height:1.2}
+#gmRt .hd small{display:block;font-size:13px;color:#15803D;font-weight:700}
+#gmRt .hd button{flex:none;width:46px;height:46px;border-radius:50%;border:2px solid #111;background:#fff;font-size:20px}
+#gmRt .ls{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 12px calc(14px + env(safe-area-inset-bottom))}
+#gmRt .big{width:100%;min-height:54px;border-radius:10px;border:2px solid #111;background:#fff;font:800 16px "Plus Jakarta Sans",sans-serif;margin:0 0 8px;text-align:left;padding:0 14px;color:#111}
+#gmRt .big.blue{background:#0B63CE;border-color:#0B63CE;color:#fff}
+#gmRt .big.red{color:#B91C1C;border-color:#B91C1C}
+#gmRt .sec{font:800 12px "Plus Jakarta Sans",sans-serif;letter-spacing:.6px;color:#4B5563;margin:10px 2px 6px;text-transform:uppercase}
+#gmRt .rw{display:flex;gap:6px;margin:0 0 8px}
+#gmRt .rw .go{flex:1;min-width:0;min-height:58px;border-radius:10px;border:2px solid #111;background:#fff;text-align:left;padding:6px 12px;font:800 15.5px/1.25 "Plus Jakarta Sans",sans-serif;color:#111}
+#gmRt .rw .go small{display:block;font:700 13px "Barlow Condensed","Plus Jakarta Sans",sans-serif;color:#4B5563;margin-top:2px}
+#gmRt .rw .ic{flex:none;width:54px;min-height:58px;border-radius:10px;border:2px solid #111;background:#fff;font-size:22px}
+#gmRt .rw .ic.del{border-color:#B91C1C;background:#FEF2F2}
+</style>
+<script>
+/* v5.61.0 — «Otra ruta»: cada ruta guardada con ✏️ (cambiar el nombre) y 🗑️ (borrar). Tus km y tu tiempo siguen contando. */
+(function(){
+  if(typeof window.liveChangeRoute!=='function')return;
+  function close(){var d=document.getElementById('gmRt');if(d)d.remove()}
+  function e(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function follow(id){
+    close();var r=store.get('routes',[]).find(function(x){return x.id===id});if(!r||!live.on)return;var u;
+    try{u=unpackRoute(r)}catch(x){toast('No se pudo abrir esa ruta');return}
+    legMark(r.name);navRoute(u,u.nav||u.wps);live.follow=true;live.rideTitle=live.rideTitle||r.name;renderLive();
+    speak('Ruta cambiada. Sigue la línea verde.');toast('🔀 Nueva ruta: '+r.name+'. Tus km y tu tiempo siguen contando',5000);
+  }
+  function ren(id){
+    var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;
+    var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;
+    r.name=n;store.set('routes',L);toast('✏️ Nombre cambiado');paint();
+  }
+  function del(id){
+    var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;
+    if(!confirm('¿Borrar la ruta «'+r.name+'»? No se puede deshacer.'))return;
+    store.set('routes',L.filter(function(x){return x.id!==id}));toast('🗑️ Ruta borrada');paint();
+  }
+  window.gmRtFollow=follow;window.gmRtRen=ren;window.gmRtDel=del;
+  window.gmRtNew=function(){close();liveDesign()};
+  window.gmRtGo=async function(){close();var q=prompt('¿A dónde quieres ir? (pueblo, calle o sitio)');if(q&&q.trim()){toast('Buscando el camino…');await liveGuide(q.trim());renderLive()}};
+  window.gmRtOff=function(){close();legMark('Libre');live.nav=null;live.wps=null;live.fixTrk=null;live.catchTo=null;setLine(map,null,'plan');$('lvBanner').style.display='none';renderLive();speak('Ruta quitada. Sigo grabando.');toast('Ruta quitada. Sigues grabando: km y tiempo intactos')};
+  window.gmRtClose=close;
+  function paint(){
+    var d=document.getElementById('gmRt');if(!d)return;var L=store.get('routes',[]);
+    d.querySelector('.ls').innerHTML=
+      '<button class="big blue" onclick="gmRtNew()">✏️ Diseñar ruta nueva en el mapa</button>'+
+      '<button class="big" onclick="gmRtGo()">📍 Ir a un sitio (escribe el nombre)</button>'+
+      (live.nav?'<button class="big red" onclick="gmRtOff()">🚫 Quitar la ruta y seguir grabando libre</button>':'')+
+      '<div class="sec">📂 Mis rutas · '+L.length+' · ✏️ cambiar nombre · 🗑️ borrar</div>'+
+      (L.length?L.map(function(r){return '<div class="rw"><button class="go" onclick="gmRtFollow(\''+e(r.id)+'\')">🗺️ '+e(r.name)+'<small>'+r.km+' km'+(r.up?' · ↑ '+r.up+' m':'')+'</small></button>'+
+        '<button class="ic" aria-label="Cambiar el nombre" onclick="gmRtRen(\''+e(r.id)+'\')">✏️</button><button class="ic del" aria-label="Borrar" onclick="gmRtDel(\''+e(r.id)+'\')">🗑️</button></div>'}).join('')
+       :'<p style="color:#4B5563;margin:4px 2px">Aún no tienes rutas guardadas.</p>');
+  }
+  window.liveChangeRoute=async function(){
+    if(!live.on)return;
+    try{document.querySelectorAll('.lvside.open,.lvpop.open').forEach(function(x){x.classList.remove('open')})}catch(x){}
+    close();var d=document.createElement('div');d.id='gmRt';
+    d.innerHTML='<div class="bx"><div class="hd"><div><b>🔀 Otra ruta</b><small>Tus km y tu tiempo siguen contando</small></div><button type="button" aria-label="Cerrar" onclick="gmRtClose()">✕</button></div><div class="ls"></div></div>';
+    d.addEventListener('click',function(x){if(x.target===d)close()});document.body.appendChild(d);paint();
+  };
+})();
+</script>
+<style>
+/* v5.62.0 — Ver un GPX aparte antes de guardarlo */
+#gpxV{position:fixed;inset:0;z-index:9700;background:#E6E9ED;display:flex;flex-direction:column;color:#111;font-family:"Plus Jakarta Sans",sans-serif}
+#gpxV .gvmp{position:relative;flex:1 1 52%;min-height:220px}
+#gpxV .gvmp>div{position:absolute;inset:0}
+#gpxV .gvx{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));left:10px;width:50px;height:50px;border-radius:50%;border:2px solid #111;background:#fff;font-size:22px}
+#gpxV .gvly{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));right:10px;display:flex;flex-direction:column;gap:6px}
+#gpxV .gvly{left:auto!important;width:auto!important;align-items:flex-end}
+#gpxV .gvly button{width:auto!important;min-width:96px;height:38px;border-radius:19px;border:2px solid #111;background:#fff;font:800 13px "Plus Jakarta Sans",sans-serif;padding:0 10px}
+#gpxV .gvly button.gvon{background:#0B63CE;border-color:#0B63CE;color:#fff}
+#gpxV .gvme{position:absolute;z-index:3;right:10px;bottom:12px;height:46px;border-radius:23px;border:2px solid #111;background:#fff;font:800 14px "Plus Jakarta Sans",sans-serif;padding:0 14px}
+#gpxV .gvpn{flex:0 0 auto;max-height:52vh;overflow-y:auto;background:#fff;border-top:3px solid #111;border-radius:16px 16px 0 0;margin-top:-14px;position:relative;z-index:4;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+#gpxV h3{margin:0 0 6px;font-size:18px;line-height:1.25}
+#gpxV .gvst{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font:800 23px/1.05 "Barlow Condensed",sans-serif;border:1px solid #111;border-radius:8px;padding:6px 4px;margin:0 0 8px}
+#gpxV .gvst span+span{border-left:1px solid #CBD5E1}
+#gpxV .gvst i{display:block;font-style:normal;font:700 11.5px "Plus Jakarta Sans",sans-serif;color:#4B5563;margin-top:2px}
+#gpxV .gvlg{display:flex;border-radius:8px;overflow:hidden;margin:6px 0 4px;font:800 11.5px "Plus Jakarta Sans",sans-serif;color:#fff;text-align:center}
+#gpxV .gvlg span{flex:1;padding:5px 2px}
+#gpxV .gvwh{font:700 13.5px "Plus Jakarta Sans",sans-serif;color:#0B63CE;margin:4px 0 8px;min-height:18px}
+#gpxV .gvbt{display:grid;gap:8px;margin-top:8px}
+#gpxV .gvbt button{min-height:54px;border-radius:10px;border:2px solid #111;background:#fff;font:800 16px "Plus Jakarta Sans",sans-serif;color:#111}
+#gpxV .gvbt button.gvpri{background:#0B63CE;border-color:#0B63CE;color:#fff;min-height:60px;font-size:17px}
+</style>
+<script>
+/* v5.62.0 — Al abrir un GPX/TCX se ve APARTE antes de guardarlo:
+   · Mapa a pantalla completa con capas (Relieve, Calles, Híbrido, Normal), salida 🟢, llegada 🔴 y tu posición 🔵 para situarte.
+   · Línea y perfil coloreados por pendiente (bajada, llano, >2 %, >4 %, >6 %, >9 %).
+   · Botones: guardar en Rutas, guardar como salida hecha o cerrar sin guardar. */
+(function(){
+  var COL=[[-6,'#A855F7','< −6 %'],[-2,'#60A5FA','bajada'],[2,'#2563EB','llano'],[4,'#F59E0B','> 2 %'],[6,'#F97316','> 4 %'],[9,'#DC2626','> 6 %'],[99,'#7F1D1D','> 9 %']];
+  function col(g){for(var i=0;i<COL.length;i++)if(g<COL[i][0])return COL[i][1];return COL[COL.length-1][1]}
+  function segs(P){ // tramos de ~100 m con su pendiente
+    var S=[],i0=0;for(var i=1;i<P.length;i++){if(P[i].d-P[i0].d>=0.1||i===P.length-1){var g=P[i].ok&&P[i0].ok?(P[i].e-P[i0].e)/Math.max(1,(P[i].d-P[i0].d)*1000)*100:0;S.push({a:i0,b:i,g:g});i0=i}}return S}
+  function prof(P,S,W,H){
+    var tot=P[P.length-1].d||1,mn=1e9,mx=-1e9;P.forEach(function(p){if(p.ok){mn=Math.min(mn,p.e);mx=Math.max(mx,p.e)}});if(mn>mx){mn=0;mx=1}
+    var pad=Math.max(8,(mx-mn)*.12),lo=mn-pad,hi=mx+pad*.6,X=function(d){return 30+d/tot*(W-34)},Y=function(e){return H-16-(e-lo)/(hi-lo)*(H-22)};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:100%;height:auto;border:1px solid #111;border-radius:8px;background:#F8FAFC">';
+    S.forEach(function(sg){var a=P[sg.a],b=P[sg.b];s+='<polygon points="'+X(a.d).toFixed(1)+','+(H-16)+' '+X(a.d).toFixed(1)+','+Y(a.e).toFixed(1)+' '+X(b.d).toFixed(1)+','+Y(b.e).toFixed(1)+' '+X(b.d).toFixed(1)+','+(H-16)+'" fill="'+col(sg.g)+'" stroke="'+col(sg.g)+'" stroke-width=".6"/>'});
+    s+='<polyline fill="none" stroke="#111" stroke-width="1.4" points="'+P.filter(function(_,i){return i%Math.max(1,Math.floor(P.length/300))===0||i===P.length-1}).map(function(p){return X(p.d).toFixed(1)+','+Y(p.e).toFixed(1)}).join(' ')+'"/>';
+    s+='<text x="2" y="'+(Y(mx)+4).toFixed(0)+'" font-size="10" font-weight="700" fill="#111">'+Math.round(mx)+'</text><text x="2" y="'+(Y(mn)+4).toFixed(0)+'" font-size="10" font-weight="700" fill="#111">'+Math.round(mn)+'</text>';
+    for(var k=0;k<=4;k++){var d=tot*k/4;s+='<text x="'+X(d).toFixed(0)+'" y="'+(H-3)+'" font-size="10" font-weight="700" fill="#4B5563" text-anchor="'+(k===0?'start':k===4?'end':'middle')+'">'+Math.round(d)+' km</text>'}
+    return s+'</svg>';
+  }
+  window.gpxView=function(o){return new Promise(function(res){
+    var pts=o.pts,P=[],d=0,dn=0,ok=pts.some(function(p){return !isNaN(p[2])});
+    for(var i=0;i<pts.length;i++){if(i)d+=hav(pts[i-1],pts[i]);var e=pts[i][2];P.push({d:d,e:isNaN(e)?0:e,ok:!isNaN(e)});if(i&&!isNaN(e)&&!isNaN(pts[i-1][2])&&e<pts[i-1][2])dn+=pts[i-1][2]-e}
+    var S=segs(P),min=o.mins||estMins(o.km,o.up||0),tm=Math.floor(min/60)+':'+String(Math.round(min%60)).padStart(2,'0');
+    var v=document.createElement('div');v.id='gpxV';
+    v.innerHTML='<div class="gvmp"><div id="gpxVm"></div><button class="gvx" aria-label="Cerrar">✕</button><div class="gvly"></div><button class="gvme">📍 Dónde estoy</button></div>'+
+      '<div class="gvpn"><h3>📂 '+esc(o.name)+'</h3>'+
+      '<div class="gvst"><span>↔ '+fmtNum(o.km,1)+'<i>km</i></span><span>↑ '+Math.round(o.up||0)+'<i>m</i></span><span>↓ '+Math.round(dn)+'<i>m</i></span><span>⏱ '+tm+'<i>'+(o.mins?'h':'h aprox.')+'</i></span></div>'+
+      '<div class="gvwh" id="gpxWh">Buscando dónde estás…</div>'+
+      (ok?prof(P,S,360,110)+'<div class="gvlg">'+COL.map(function(c){return '<span style="background:'+c[1]+'">'+c[2]+'</span>'}).join('')+'</div>':'<p style="color:#4B5563;margin:4px 0">Este archivo no trae altitud.</p>')+
+      '<div class="gvbt">'+(o.done?'<button class="gvpri" data-k="act">✅ Guardar en Actividades (ya la hice)</button><button data-k="route">🗺️ Guardar en Rutas, para hacerla</button>'
+                               :'<button class="gvpri" data-k="route">🗺️ Guardar en Rutas</button><button data-k="act">✅ Es una salida que ya hice</button>')+
+      '<button data-k="">✕ Cerrar sin guardar</button></div></div>';
+    document.body.appendChild(v);
+    var m=null;function end(k){try{if(m)m.remove()}catch(_){}v.remove();res(k||null)}
+    v.querySelector('.gvx').onclick=function(){end(null)};
+    v.querySelectorAll('.gvbt button').forEach(function(b){b.onclick=function(){end(b.dataset.k)}});
+    if(typeof maplibregl==='undefined'){v.querySelector('.gvmp').innerHTML='<p style="padding:20px">Sin conexión: no se puede mostrar el mapa.</p>';return}
+    m=newMap({container:'gpxVm',center:[pts[0][1],pts[0][0]],zoom:11});
+    var L=[['outdoors','⛰️ Relieve'],['streets','🏘️ Calles'],['satst','🛰️ Híbrido'],['normal','🗺️ Normal']],cur='outdoors',ly=v.querySelector('.gvly');
+    function lay(k){cur=k;try{setLayer(m,k)}catch(_){}ly.innerHTML=L.map(function(l){return '<button data-l="'+l[0]+'" class="'+(l[0]===cur?'gvon':'')+'">'+l[1]+'</button>'}).join('');ly.querySelectorAll('button').forEach(function(b){b.onclick=function(){lay(b.dataset.l)}})}
+    lay(cur);
+    m.on('load',function(){
+      try{lay(cur);
+        var F=S.map(function(sg){var c=[];for(var i=sg.a;i<=sg.b;i++)c.push([pts[i][1],pts[i][0]]);return{type:'Feature',properties:{c:ok?col(sg.g):'#2563EB'},geometry:{type:'LineString',coordinates:c}}});
+        m.addSource('gpxv',{type:'geojson',data:{type:'FeatureCollection',features:F}});
+        m.addLayer({id:'gpxv-c',type:'line',source:'gpxv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':9}});
+        m.addLayer({id:'gpxv',type:'line',source:'gpxv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','c'],'line-width':5.5}});
+      }catch(_){}
+    });
+    var b=new maplibregl.LngLatBounds();pts.forEach(function(p){b.extend([p[1],p[0]])});
+    function fit(extra){var bb=new maplibregl.LngLatBounds(b.getSouthWest(),b.getNorthEast());if(extra)bb.extend(extra);m.fitBounds(bb,{padding:{top:70,bottom:30,left:30,right:110},duration:0,maxZoom:15})}
+    m.once('load',function(){fit()});setTimeout(function(){try{m.resize();fit()}catch(_){}},300);
+    function mk(ll,c,t){var e=document.createElement('div');e.style.cssText='width:30px;height:30px;border-radius:50%;background:'+c+';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:14px';e.textContent=t;return new maplibregl.Marker({element:e}).setLngLat(ll).addTo(m)}
+    mk([pts[0][1],pts[0][0]],'#16A34A','▶');mk([pts[pts.length-1][1],pts[pts.length-1][0]],'#DC2626','🏁');
+    var me=null;
+    function locate(go){var wh=document.getElementById('gpxWh');if(!navigator.geolocation){if(wh)wh.textContent='';return}
+      navigator.geolocation.getCurrentPosition(function(p){var ll=[p.coords.latitude,p.coords.longitude];if(!document.getElementById('gpxV'))return;
+        if(!me){var e=document.createElement('div');e.style.cssText='width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.25)';me=new maplibregl.Marker({element:e}).setLngLat([ll[1],ll[0]]).addTo(m)}else me.setLngLat([ll[1],ll[0]]);
+        var best=1e9;for(var i=0;i<pts.length;i+=Math.max(1,Math.floor(pts.length/800)))best=Math.min(best,hav(ll,pts[i]));
+        var ds=hav(ll,pts[0]);if(wh)wh.textContent=best<0.15?'🔵 Estás encima de la ruta':'🔵 Estás a '+fmtNum(ds,1)+' km de la salida'+(best<ds-0.2?' (a '+fmtNum(best,1)+' km de la ruta)':'');
+        if(go)fit([ll[1],ll[0]]);
+      },function(){var wh=document.getElementById('gpxWh');if(wh)wh.textContent=''},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
+    v.querySelector('.gvme').onclick=function(){locate(true)};locate(false);
+  })};
+})();
+</script>
+<style>
+/* v5.64.0 — Dibujar ruta: botones siempre a mano (Deshacer y Escribir la ruta) */
+#drwFab{position:fixed;left:10px;top:calc(176px + env(safe-area-inset-top));z-index:60;display:none;flex-direction:column;gap:8px}
+#drwFab.on{display:flex}
+#drwFab button{width:auto;min-width:118px;height:52px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3);padding:0 12px;text-align:left}
+#drwFab button:disabled{opacity:.45}
+#drwFab button.w{background:#0B63CE;border-color:#0B63CE;color:#fff}
+</style>
+<script>
+/* v5.64.0 — Al dibujar una ruta:
+   · ↶ Deshacer: quita el último punto (siempre visible, aunque el panel esté recogido).
+   · ⌨️ Escribir la ruta: escribes los pueblos o sitios por orden, separados por comas, y la app los une por caminos. */
+(function(){
+  var f=document.createElement('div');f.id='drwFab';
+  f.innerHTML='<button type="button" id="drwU" onclick="drawUndo()">↶ Deshacer</button><button type="button" class="w" onclick="drawWrite()">⌨️ Escribir la ruta</button>';
+  document.body.appendChild(f);
+  setInterval(function(){try{
+    var on=!!(plan.active&&plan.mode==='draw'&&!plan.view&&!(live&&live.on)&&document.getElementById('app').classList.contains('planning')&&document.getElementById('s-rutas').classList.contains('active'));
+    f.classList.toggle('on',on);if(on)document.getElementById('drwU').disabled=!planWps().length;
+  }catch(e){}},500);
+  window.drawWrite=async function(){
+    if(!plan.active||plan.mode!=='draw'||plan.view)return;
+    var t=prompt('Escribe los sitios POR ORDEN, separados por comas.\nEjemplo: Lleida, Castellnou de Seana, Bellpuig'+(planWps().length?'\n(se añaden después de los puntos que ya tienes)':''));
+    if(!t||!t.trim())return;
+    var names=t.split(/[,;\n]+/).map(function(s){return s.trim()}).filter(Boolean).slice(0,20);if(!names.length)return;
+    toast('Buscando '+names.length+' '+(names.length>1?'sitios':'sitio')+'…');
+    var ok=0,miss=[],B=null;
+    for(var i=0;i<names.length;i++){
+      var g=null;try{g=await geoTo(names[i])}catch(e){}
+      if(!g||g.lat==null){miss.push(names[i]);continue}
+      if(planWps().length>=60){toast('Máximo 60 puntos');break}
+      var p={lat:+g.lat,lng:+g.lng,label:names[i]};try{p.sg=drawSg()}catch(e){}
+      if(!plan.start)plan.start=p;else if(!plan.dest)plan.dest=p;else{plan.stops.push(plan.dest);plan.dest=p}
+      ok++;try{B=B||new maplibregl.LngLatBounds();B.extend([p.lng,p.lat])}catch(e){}
+    }
+    try{redrawPlanMarkers();renderPlan();if(planWps().length>1)computeRoute()}catch(e){}
+    try{if(B){planWps().forEach(function(q){B.extend([q.lng,q.lat])});map.fitBounds(B,{padding:60,duration:600,maxZoom:14})}}catch(e){}
+    if(miss.length)toast('✅ '+ok+' añadidos · ❓ No encuentro: '+miss.join(', ')+'. Escríbelo con la comarca o la provincia',7000);
+    else toast('✅ Ruta escrita: '+ok+' '+(ok>1?'sitios':'sitio')+'. Si te equivocas, ↶ Deshacer',4500);
+  };
+})();
+</script>
+<style>
+/* v5.65.0 — Actividades: apartado «Mis rutas» con una tarjeta por ruta */
+#rtSec{margin:0 0 14px}
+#rtSec .hd{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px}
+#rtSec .hd b{font-size:17px}
+#rtSec .hd button{width:auto;background:none;border:0;color:var(--lime);font:800 14px "Plus Jakarta Sans",sans-serif;padding:6px 4px}
+#rtSec .rl{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;scroll-snap-type:x mandatory}
+#rtSec .rc{flex:0 0 158px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;text-align:left;color:var(--txt)}
+#rtSec .rc svg{display:block;width:100%;height:84px;background:#EEF2F6;border-radius:8px}
+#rtSec .rc b{display:block;font-size:14px;line-height:1.25;margin:6px 0 2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:35px}
+#rtSec .rc small{font:700 13px "Barlow Condensed","Plus Jakarta Sans",sans-serif;color:var(--txt2)}
+#rtSec .rc.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed var(--line);font:800 14px "Plus Jakarta Sans",sans-serif;color:var(--lime);text-align:center}
+#rtSec .rc.add span{font-size:30px}
+.rtBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rtBtns button{min-height:52px;font-size:15px}
+</style>
+<script>
+/* v5.65.0 — En Actividades, apartado «🗺️ Mis rutas»: cada ruta guardada con su tarjeta (dibujo, km, subida).
+   Al tocarla: mapa grande, datos y botones Ver/Seguir, ✏️ Cambiar nombre, ⬇️ GPX, 🌍 Compartir y 🗑️ Borrar. */
+(function(){
+  var rtMap=null;
+  function L(){return store.get('routes',[])}
+  function thumb(r){
+    try{var c=decodePoly(r.poly);if(!c||c.length<2)return '<svg></svg>';var a=1e9,b=-1e9,x=1e9,y=-1e9;
+      c.forEach(function(p){a=Math.min(a,p[0]);b=Math.max(b,p[0]);x=Math.min(x,p[1]);y=Math.max(y,p[1])});
+      var k=Math.cos((a+b)/2*Math.PI/180),w=(y-x)*k||1e-6,h=(b-a)||1e-6,s=Math.min(130/w,70/h),ox=(142-w*s)/2,oy=(84-h*s)/2;
+      var st=Math.max(1,Math.floor(c.length/120)),pts=c.filter(function(_,i){return i%st===0||i===c.length-1}).map(function(p){return (ox+(p[1]-x)*k*s).toFixed(1)+','+(oy+(b-p[0])*s).toFixed(1)}).join(' ');
+      var f=pts.split(' ')[0].split(','),l=pts.split(' ').pop().split(',');
+      return '<svg viewBox="0 0 142 84"><polyline points="'+pts+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><polyline points="'+pts+'" fill="none" stroke="#0B63CE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+f[0]+'" cy="'+f[1]+'" r="4.5" fill="#16A34A" stroke="#fff" stroke-width="1.5"/><circle cx="'+l[0]+'" cy="'+l[1]+'" r="4.5" fill="#DC2626" stroke="#fff" stroke-width="1.5"/></svg>';
+    }catch(e){return '<svg></svg>'}
+  }
+  function paint(){
+    var list=document.getElementById('actList');if(!list)return;var s=document.getElementById('rtSec');
+    if(!s){s=document.createElement('div');s.id='rtSec';var t=document.getElementById('aToday');(t||list).before(s)}
+    var R=L();
+    s.innerHTML='<div class="hd"><b>🗺️ Mis rutas · '+R.length+'</b>'+(R.length?'<button type="button" onclick="rtAdd()">➕ Añadir</button>':'')+'</div><div class="rl">'+
+      R.map(function(r){return '<button type="button" class="rc" onclick="rtOpen(\''+String(r.id).replace(/'/g,'')+'\')">'+thumb(r)+'<b>'+esc(r.name)+'</b><small>↔ '+r.km+' km'+(r.up?' · ↑ '+r.up+' m':'')+'</small></button>'}).join('')+
+      '<button type="button" class="rc add" onclick="rtAdd()"><span>➕</span>Nueva ruta<small style="font-family:inherit">Planificar o subir GPX</small></button></div>';
+  }
+  window.rtPaint=paint;
+  window.rtAdd=async function(){
+    var k=await askChoice('➕ Nueva ruta',[['✏️ Dibujarla en el mapa','','d'],['📂 Subir un GPX','','g'],['🧭 Planificar en GraphHopper (MTB)','','h']]);
+    if(k===0){go('rutas');startPlanner('draw')}else if(k===1)pickFile();else if(k===2)ghPlan();
+  };
+  window.rtOpen=function(id){
+    var r=L().find(function(x){return String(x.id)===String(id)});if(!r)return;
+    var mins=r.mins||estMins(r.km,r.up||0);
+    $('rideBody').innerHTML=sheetHead('🗺️ '+esc(r.name))+
+      '<div class="rmap" id="rtMap"></div>'+
+      '<div class="pstats" style="margin-top:0"><div><b class="num">'+fmtNum(r.km,1)+'</b><span>km</span></div><div><b class="num">+'+(r.up||0)+'</b><span>m subida</span></div><div><b class="num">'+hm(mins)+'</b><span>aprox.</span></div></div>'+
+      '<button class="btn btn-lime" style="width:100%;min-height:58px;font-size:17px;margin-top:10px" onclick="closeSheets();go(\'rutas\');viewSaved(\''+r.id+'\')">▶ Ver en el mapa y seguirla</button>'+
+      '<div class="rtBtns"><button class="btn btn-line" onclick="rtRen(\''+r.id+'\')">✏️ Cambiar nombre</button><button class="btn btn-line" onclick="saveSavedGpx(\''+r.id+'\')">⬇️ GPX</button>'+
+      (typeof publishRoute==='function'?'<button class="btn btn-line" onclick="publishRoute(store.get(\'routes\',[]).find(function(x){return x.id===\''+r.id+'\'}))">🌍 Compartir</button>':'')+
+      '<button class="btn btn-line" style="color:var(--red);border-color:var(--red)" onclick="rtDel(\''+r.id+'\')">🗑️ Borrar</button></div>';
+    try{openRideId=null}catch(e){}openSheet('sh-ride');
+    try{if(rtMap){rtMap.remove();rtMap=null}}catch(e){}
+    if(typeof maplibregl==='undefined')return;
+    var c=decodePoly(r.poly);rtMap=newMap({container:'rtMap',center:[c[0][1],c[0][0]],zoom:11,attributionControl:false});
+    var b=new maplibregl.LngLatBounds();c.forEach(function(p){b.extend([p[1],p[0]])});
+    rtMap.on('load',function(){try{setLine(rtMap,c,'plan')}catch(e){}rtMap.fitBounds(b,{padding:26,duration:0})});
+    setTimeout(function(){try{rtMap.resize();rtMap.fitBounds(b,{padding:26,duration:0})}catch(e){}},350);
+  };
+  window.rtRen=function(id){
+    var R=L(),r=R.find(function(x){return x.id===id});if(!r)return;
+    var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;
+    r.name=n;store.set('routes',R);paint();toast('✏️ Nombre cambiado');rtOpen(id);
+  };
+  window.rtDel=function(id){
+    var R=L(),r=R.find(function(x){return x.id===id});if(!r)return;
+    if(!confirm('¿Borrar la ruta «'+r.name+'»? No se puede deshacer.'))return;
+    store.set('routes',R.filter(function(x){return x.id!==id}));closeSheets();paint();toast('🗑️ Ruta borrada');
+  };
+  // Se repinta al pintar Actividades y cuando cambian las rutas guardadas
+  var rA=window.renderActs;window.renderActs=function(){var o=rA.apply(this,arguments);try{paint()}catch(e){}return o};
+  var ss=store.set;store.set=function(k){var o=ss.apply(this,arguments);if(k==='routes')setTimeout(function(){try{paint()}catch(e){}},50);return o};
+  setTimeout(function(){try{paint()}catch(e){}},1300);
+})();
+</script>
+<style id="gmTheme6">
+/* ===== v5.69.0 — Estilo Garmin unificado en toda la app (revisión visual) ===== */
+/* Esquinas iguales en todas las tarjetas (antes unas 22 px y otras 10 px) */
+html.gmx{--r:12px!important}
+html.gmx .hero,html.gmx .empty,html.gmx .stat,html.gmx .rank,html.gmx .bars,html.gmx .goal,html.gmx .rmap,html.gmx .guiaC,html.gmx #aToday,html.gmx #rtSec .rc{border-radius:12px!important}
+/* Fondos verde lima antiguos → azul claro Garmin */
+html.gmx .guiaC{background:#EFF6FF!important;border:1.5px solid #0B63CE!important}
+html.gmx [style*="200,220,60"]{background-color:#EFF6FF!important;background-image:none!important;border-color:#0B63CE!important}
+html.gmx [style*="background:#0B63CE"],html.gmx [style*="background: #0B63CE"]{background:#0B63CE!important;color:#fff!important}
+html.gmx [style*="border:2px solid #0B63CE"],html.gmx [style*="border-color:#0B63CE"],html.gmx [style*="#0B63CE"]{border-color:#0B63CE!important}
+html.gmx [style*="color:#0B63CE"]:not([style*="background:#0B63CE"]){color:#0B63CE!important}
+html.gmx [style*="200, 220, 60"]{background-color:#EFF6FF!important;background-image:none!important;border-color:#0B63CE!important}
+html.gmx [style*="background: rgb(163, 230, 53)"],html.gmx [style*="background-color: rgb(163, 230, 53)"]{background:#0B63CE!important;color:#fff!important}
+html.gmx [style*="border: 2px solid rgb(163, 230, 53)"],html.gmx [style*="border-color: rgb(163, 230, 53)"]{border-color:#0B63CE!important}
+html.gmx [style*="color: rgb(163, 230, 53)"]:not([style*="background: rgb(163, 230, 53)"]){color:#0B63CE!important}
+/* En Rutas, el micrófono más arriba para no tapar «Planificar» */
+html.gmx body:has(#s-rutas.active):not(:has(#s-rutas.planning)):not(:has(#app.live)) #vozBtn{bottom:calc(var(--nav-h,72px) + 96px + env(safe-area-inset-bottom))!important}
+html.gmx .pc-tag,html.gmx .ptag{background:#DBEAFE!important;color:#0B63CE!important;border-color:#93C5FD!important}
+html.gmx .act .ic{background:#DBEAFE!important;color:#0B63CE!important}
+html.gmx .qa .main{border-color:#0B63CE!important;background:#EFF6FF!important}
+html.gmx .famcard{border:1.5px solid #16A34A!important}
+/* Botón ＋ de abajo: brillo azul en vez de verde */
+html.gmx .plus{box-shadow:0 6px 18px rgba(11,99,206,.45)!important;border-color:#E6E9ED!important}
+/* Rutas: selector Carretera/MTB/A pie y caja «Rec» en blanco con borde negro, como el Garmin */
+html.gmx #s-rutas .seg{background:#fff!important;border:2px solid #111!important}
+html.gmx #s-rutas .seg button{color:#111!important}
+html.gmx .seg button.on{background:#0B63CE!important;color:#fff!important}
+html.gmx #s-rutas .rec{background:#fff!important;border:2px solid #111!important;color:#111!important;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+html.gmx #s-rutas .rec *{color:inherit}
+/* Micrófono de voz: azul Garmin y abajo a la derecha, para que no tape títulos ni tarjetas */
+html.gmx #vozBtn{background:#0B63CE!important;color:#fff!important;border:3px solid #fff!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;opacity:1!important}
+/* v5.70.0 — Micrófono: ROJO cuando te está escuchando (habla ahora), AZUL cuando no escucha */
+html.gmx #vozBtn.on{background:#DC2626!important;box-shadow:0 0 0 6px rgba(220,38,38,.35),0 4px 14px rgba(0,0,0,.35)!important}
+html.gmx #vozBtn.cont:not(.on){background:#0B63CE!important;color:#fff!important}
+/* v5.70.1 — rojo siempre que el micrófono está abierto (también en ruta y con «Oye bici») */
+html.gmx #vozBtn.hear{background:#DC2626!important;color:#fff!important}
+html.gmx body:not(:has(#app.live)) #vozBtn{top:auto!important;left:auto!important;right:12px!important;bottom:calc(var(--nav-h,72px) + 30px + env(safe-area-inset-bottom))!important}
+html.gmx body:has(#s-rutas.planning):not(:has(#app.live)) #vozBtn{bottom:auto!important;right:auto!important;left:12px!important;top:calc(16px + env(safe-area-inset-top))!important}
+html.gmx body:has(.sheet.show):not(:has(#app.live)) #vozBtn{display:none!important}
+/* Globo de la voz y botones en ruta */
+html.gmx #vozPill{background:#111!important;border-color:#0B63CE!important}
+html.gmx .lvaway{border-color:#0B63CE!important;background:#fff!important;color:#0B63CE!important}
+html.gmx .lvside button{background:#fff!important;border:2px solid #111!important;color:#111!important}
+</style>
+<script>
+/* v5.69.0 — Quita los verdes lima que quedan escritos dentro de las tarjetas (también los que se crean al momento) y los pasa al azul Garmin */
+(function(){
+  var RX=[[/#A3E635/gi,'#0B63CE'],[/#C8DC3C/gi,'#0B63CE'],[/rgb\(163, 230, 53\)/g,'rgb(11, 99, 206)'],[/rgb\(200, 220, 60\)/g,'rgb(11, 99, 206)'],[/rgba\(200, ?220, ?60,/g,'rgba(11, 99, 206,'],[/rgba\(163, ?230, ?53,/g,'rgba(11, 99, 206,']];
+  var Q='[style*="A3E635"],[style*="a3e635"],[style*="C8DC3C"],[style*="c8dc3c"],[style*="163, 230, 53"],[style*="200, 220, 60"],[style*="200,220,60"],[style*="163,230,53"]';
+  function fix(root){try{(root.querySelectorAll?root:document).querySelectorAll(Q).forEach(function(e){
+    var s=e.getAttribute('style')||'',bgLime=/background(-color)?:\s*(#A3E635|rgb\(163, 230, 53\))/i.test(s),n=s;
+    RX.forEach(function(r){n=n.replace(r[0],r[1])});
+    if(bgLime)n=n.replace(/(^|;)\s*color:\s*(#0E1A2B|rgb\(14, 26, 43\))/i,'$1color:#fff');
+    if(n!==s)e.setAttribute('style',n)})}catch(x){}}
+  fix(document);setTimeout(function(){fix(document)},1500);
+  var t=null;new MutationObserver(function(){clearTimeout(t);t=setTimeout(function(){fix(document)},250)}).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<script>
+/* v5.69.0 — «Mis rutas» (ventana): botón ✏️ para cambiar el nombre */
+function rtRenList(id,pick){var L=store.get('routes',[]),r=L.find(function(x){return x.id===id});if(!r)return;var n=(prompt('Nuevo nombre de la ruta',r.name)||'').trim().slice(0,40);if(!n)return;r.name=n;store.set('routes',L);toast('✏️ Nombre cambiado');openRoutes(!!pick)}
+</script>
+<script>
+/* v5.70.1 — Micrófono ROJO siempre que el móvil te está escuchando (toque, «Oye bici» o escucha en ruta); AZUL cuando no escucha
+   (apagado, o mientras la app habla y no atiende). */
+(function(){
+  setInterval(function(){try{
+    var b=document.getElementById('vozBtn');if(!b)return;var n=Date.now(),h=false;
+    try{if(VZ.on)h=true}catch(e){}
+    try{if(typeof VC!=='undefined'&&VC.rec&&!(n<VC.quiet)&&!musSpeaking())h=true}catch(e){}
+    try{if(ttsSpeaking()&&!VZ.oneShot)h=false}catch(e){}
+    b.classList.toggle('hear',h);
+    var sm=b.querySelector('small');if(sm){var t=h?'ESCUCHO':(VZ.cont?'OYE BICI':'VOZ');if(sm.textContent!==t)sm.textContent=t}
+  }catch(e){}},300);
+})();
+</script>
+<script>
+/* v5.71.0 — VIGILANTE DE LA VOZ. Cada 3 s comprueba que el micrófono que debería estar escuchando lo está de verdad.
+   Antes, «Oye bici» y la escucha en ruta podían quedarse apagadas sin avisar (al tocar el 🎤 mientras hablaba la app,
+   al volver de la pantalla apagada, o si el móvil no dejaba abrir el micro a la primera) y ya no volvían solas.
+   También reinicia un micrófono que lleva más de 75 s abierto sin oír nada (Chrome a veces se queda colgado). */
+(function(){
+  var idle=0,idleVc=0;
+  setInterval(function(){try{
+    if(typeof VZ==='undefined')return;
+    if(document.visibilityState!=='visible'){idle=0;idleVc=0;return}
+    var n=Date.now(),talk=false;
+    try{talk=ttsSpeaking()||(typeof musSpeaking==='function'&&musSpeaking())}catch(e){}
+    var busy=!!(VZ.oneShot||VZ.pending||talk||n<(VZ.speakUntil||0)+1500||n<(VZ.sayEnd||0));
+    var route=false;try{route=!!(live.on&&vcOn()&&!vcPtt()&&!VC_TAP)}catch(e){}
+    /* «Oye bici» */
+    if(VZ.cont&&!VZ_IOS&&!VZ.blk&&!route&&!VZ.rec&&!busy){if(++idle>=3){idle=0;clearTimeout(VZ.restartTO);VZ.quietT=0;vozStartCont()}}else idle=0;
+    /* micrófono colgado */
+    var r=VZ.rec;if(r&&!VZ.oneShot&&!VZ.pending&&r._t0&&n>=VZ.armedT&&n-Math.max(r._t0,r._ev||0)>75000){try{r.abort()}catch(e){}}
+    /* escucha en ruta */
+    if(route&&!VC.rec&&!busy&&n>VC.quiet){if(++idleVc>=3){idleVc=0;vcStart()}}else idleVc=0;
+  }catch(e){}},3000);
+})();
+</script>
+<style id="gmx2">
+/* ===== Garmin beta 0.6 — Comunidad, Actividades y Perfil con el aspecto Garmin Edge =====
+   Solo cambia la imagen (colores, tipos de letra y marcos). No toca botones, nombres ni funciones. */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.acbg,.pfbg){display:none!important}
+/* 1 · Barra de título negra, como la cabecera de página de un Edge */
+html.gmx :is(#s-comunidad,#s-actividades) .head{background:#111!important;margin:-16px -16px 14px!important;padding:calc(10px + env(safe-area-inset-top)) 14px 10px!important;border-bottom:4px solid var(--gmBlue);position:sticky;top:-16px;z-index:6;gap:10px!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head h1{color:#fff!important;font:800 28px/1 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.6px}
+html.gmx :is(#s-comunidad,#s-actividades) .head .avatar{width:40px!important;height:40px!important;font-size:18px!important;background:var(--gmBlue)!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head .round{width:42px!important;height:42px!important;background:#222!important;border:1px solid #555!important;color:#fff!important;border-radius:10px!important}
+html.gmx :is(#s-comunidad,#s-actividades) .head .round *{color:#fff!important;stroke:#fff}
+html.gmx :is(#s-comunidad,#s-actividades) .head .mini{min-height:42px!important;background:var(--gmBlue)!important;color:#fff!important;border:0!important;border-radius:10px!important}
+/* Perfil: la ficha del ciclista en la barra negra */
+html.gmx #s-perfil .prof{display:grid!important;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;text-align:left!important;background:#111!important;margin:-16px -16px 14px!important;padding:calc(14px + env(safe-area-inset-top)) 16px 14px!important;border-bottom:4px solid var(--gmBlue)}
+html.gmx #s-perfil .prof .avatar{grid-row:1/3;width:60px!important;height:60px!important;font-size:26px!important;margin:0!important;background:var(--gmBlue)!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx #s-perfil .prof h2{color:#fff!important;font:800 30px/1 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.5px;align-self:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.gmx #s-perfil .prof p{color:#FDBA74!important;font:700 12px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.8px;align-self:start;margin-top:3px}
+/* 2 · Títulos de apartado, como los menús del Edge */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec{margin:20px 0 8px!important;border-left:5px solid var(--gmBlue);padding-left:9px}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec h3{font:800 13.5px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.9px;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec a,html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sec>span{font-size:13px!important;font-weight:800!important;color:var(--gmBlue)!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .block{margin-bottom:6px!important}
+/* 3 · Los números, como campos de datos del Garmin */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stats{gap:0!important;background:#fff;border:2px solid #111;border-radius:10px;overflow:hidden}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat{background:#fff!important;border:0!important;border-right:1.5px solid #111!important;border-radius:0!important;padding:7px 9px 9px!important;gap:1px!important;min-width:0}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat:last-child{border-right:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat svg{display:none!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat span{order:-1;font:700 10.5px/1.25 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.6px;color:#4B5563!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat b{font:800 40px/1 "Barlow Condensed",system-ui,sans-serif!important;color:#000!important;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .stat.bronze b{font-size:28px!important;line-height:40px!important;text-transform:uppercase;color:#B45309!important}
+/* 4 · Tarjeta de entrada: panel negro compacto */
+html.gmx :is(#s-comunidad,#s-actividades) .hero{background:#111!important;min-height:0!important;padding:16px 16px 14px!important;border:0!important;box-shadow:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero :is(.deco,.grp),html.gmx :is(#s-comunidad,#s-actividades) .hero::before,html.gmx :is(#s-comunidad,#s-actividades) .hero::after{display:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero h2{font:800 28px/1.05 "Barlow Condensed",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.4px;color:#fff!important;max-width:none!important;text-shadow:none!important;padding-right:44px}
+html.gmx :is(#s-comunidad,#s-actividades) .hero p{color:#D1D5DB!important;font-size:14.5px!important;margin:6px 0 12px!important;max-width:none!important;text-shadow:none!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero .btn-line{background:#111!important;color:#fff!important;border:2px solid #fff!important}
+html.gmx :is(#s-comunidad,#s-actividades) .hero .btn-line *{color:#fff!important}
+/* 5 · Filas y tarjetas: blanco con marco negro, como las listas del Edge */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.li,.set,.act,.goal,.bars,.rank,.guiaC,#novBox,#updCard){background:#fff!important;background-image:none!important;border:1.5px solid #111!important;box-shadow:none!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.li,.set){padding:12px 14px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set{margin-bottom:6px!important;font-weight:800!important;font-size:15.5px}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li b{font-size:16.5px!important;font-weight:800!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li small{font-size:13.5px!important;color:#4B5563!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li .em{font-size:26px!important;width:36px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .li .chev{color:var(--gmBlue)!important;stroke:var(--gmBlue)}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaC,#novBox,#updCard){border-left:7px solid var(--gmBlue)!important;border-radius:10px!important}
+/* listas agrupadas: una sola caja con rayas finas */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list{gap:0!important;border:1.5px solid #111;border-radius:10px;overflow:hidden;background:#fff}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list>.li{border:0!important;border-bottom:1px solid #BFC6CE!important;border-radius:0!important;margin:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .list>.li:last-child{border-bottom:0!important}
+/* historial de salidas */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act{margin-bottom:6px!important;padding:11px 12px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act .ic{background:#111!important;color:#fff!important;border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act .ic *{color:#fff!important;stroke:#fff}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .act b{font-weight:800!important;color:#111!important}
+/* interruptores y campos */
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw span{background:#9CA3AF!important;border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw span:before{border-radius:6px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .sw input:checked+span{background:var(--gmBlue)!important}
+html.gmx #s-perfil .inp{border:1.5px solid #111!important;border-radius:10px!important;background:#fff!important}
+html.gmx #s-perfil .f .mini{background:#111!important;color:#fff!important;border:0!important;border-radius:10px!important}
+html.gmx #s-perfil .l{font:800 12px/1.3 "Plus Jakarta Sans",sans-serif!important;text-transform:uppercase;letter-spacing:.8px;color:#4B5563!important}
+/* todo al mismo ancho y con las mismas esquinas */
+html.gmx #s-perfil :is(#updCard,#guiaCard){width:100%!important;margin-left:0!important;margin-right:0!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) :is(.guiaL,.guiaW,.guiaT,#updCard span[style*="border-radius"]){border-radius:8px!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .guiaW{white-space:nowrap;font-size:14px!important;background:#fff!important;border:1.5px solid #111!important;color:#111!important}
+html.gmx :is(#s-comunidad,#s-actividades,#s-perfil) .set small{font-weight:500!important;font-size:13px!important;color:#4B5563!important}
+</style>
 </body>
 </html>
