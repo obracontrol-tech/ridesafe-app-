@@ -1250,7 +1250,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.35.0 (base 5.39.2)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.35.1 (base 5.39.2)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5697,12 +5697,18 @@ function placeSetMenu(k,then){
   placeDlg(`Guardar ${e} ${esc(n)}`,[
     {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}navigator.geolocation.getCurrentPosition(p=>save(p.coords.latitude,p.coords.longitude),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
     {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);$('scrim').classList.remove('show');openPickerFor(e+' '+n,'#2563EB',null,ll=>save(ll.lat,ll.lng))}}])}
+function placeOne(k){const p=placeGet(k);if(!p)return;
+  placeDlg(`${p.e} ${esc(p.n)}`,[
+    {t:'🧭 Ir aquí',main:1,f:()=>placeGo(k)},
+    {t:'🗑️ Borrar',f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(k);toast('Borrado');setTimeout(placesManage,200)}else setTimeout(()=>placeOne(k),150)}},
+    {t:'↩️ Volver',f:()=>setTimeout(placesManage,150)}])}
 function placesManage(){const A=placesAll();
-  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)} · 🗑️ Borrar`,f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(p.k);toast('Borrado');setTimeout(placesManage,200)}}}));
+  /* v5.74.1 — Tocar un sitio = ir. Borrar va dentro (antes, al tocarlo, preguntaba «¿Borrar…?») */
+  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
   if(!A.some(p=>p.k==='casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',placesManage)});
   if(!A.some(p=>p.k==='trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',placesManage)});
   rows.push({t:'⭐ Guardar otro sitio',f:()=>placeSetMenu('new',placesManage)});
-  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Para ir: Rutas › «Ir a un destino» y toca el sitio. O di «Oye bici, llévame a casa». Toca un sitio para borrarlo.</div>`});
+  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Toca un sitio para ir o borrarlo.</div>`});
   placeDlg('📌 Mis sitios guardados',rows)}
 /* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
 function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;

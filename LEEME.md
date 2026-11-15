@@ -1,3 +1,7 @@
+## Versión 5.74.1 (Simple 1.35.1) — Mis sitios guardados: tocar = ir
+- Antes, al tocar un sitio en «Mis sitios guardados» salía «¿Borrar …?». Ahora se abre el sitio con 🧭 Ir aquí (botón grande), 🗑️ Borrar y ↩️ Volver.
+- Borrar sigue pidiendo confirmación. Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.74.0 (Simple 1.35.0) — «Mis sitios guardados» en Actividades
 - La tarjeta «📌 Mis sitios guardados» (Casa, trabajo y tus sitios) pasa de Perfil a Actividades, encima del Historial.
 - En la Simple no había tarjeta: ahora también está en Actividades.

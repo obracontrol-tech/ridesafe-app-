@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.74.0 — «Mis sitios guardados» pasa de Perfil a Actividades (también en la Simple).
+/* v5.74.1 — Mis sitios guardados: tocar un sitio = 🧭 Ir aquí; 🗑️ Borrar va dentro.
+   v5.74.0 — «Mis sitios guardados» pasa de Perfil a Actividades (también en la Simple).
    v5.73.0 — Comunidad, Actividades y Perfil con el aspecto Garmin (barra negra, campos de datos, tarjetas con marco). Solo imagen.
    v5.72.0 — «Oye bici» contesta siempre, también en ruta (pitido, «Te escucho» y «No te he entendido»); la orden ya no caduca mientras hablas.
    v5.71.0 — Voz más fiable: vigilante que reabre el micrófono si se queda apagado, «Oye bici» más tolerante y sin huecos sordos.
@@ -1378,7 +1379,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.74.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.74.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5821,12 +5822,18 @@ function placeSetMenu(k,then){
   placeDlg(`Guardar ${e} ${esc(n)}`,[
     {t:'📍 Donde estoy ahora',main:1,f:()=>{if(!navigator.geolocation){toast('Ubicación no disponible');return}navigator.geolocation.getCurrentPosition(p=>save(p.coords.latitude,p.coords.longitude),()=>toast('Activa la ubicación del móvil'),{enableHighAccuracy:true,timeout:10000})}},
     {t:'🗺️ Elegir en el mapa',f:()=>{closeSheets(true);$('scrim').classList.remove('show');openPickerFor(e+' '+n,'#2563EB',null,ll=>save(ll.lat,ll.lng))}}])}
+function placeOne(k){const p=placeGet(k);if(!p)return;
+  placeDlg(`${p.e} ${esc(p.n)}`,[
+    {t:'🧭 Ir aquí',main:1,f:()=>placeGo(k)},
+    {t:'🗑️ Borrar',f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(k);toast('Borrado');setTimeout(placesManage,200)}else setTimeout(()=>placeOne(k),150)}},
+    {t:'↩️ Volver',f:()=>setTimeout(placesManage,150)}])}
 function placesManage(){const A=placesAll();
-  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)} · 🗑️ Borrar`,f:()=>{if(confirm('¿Borrar '+p.n+'?')){placeDel(p.k);toast('Borrado');setTimeout(placesManage,200)}}}));
+  /* v5.74.1 — Tocar un sitio = ir. Borrar va dentro (antes, al tocarlo, preguntaba «¿Borrar…?») */
+  const rows=A.map(p=>({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
   if(!A.some(p=>p.k==='casa'))rows.push({t:'🏠 Guardar casa',main:1,f:()=>placeSetMenu('casa',placesManage)});
   if(!A.some(p=>p.k==='trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',placesManage)});
   rows.push({t:'⭐ Guardar otro sitio',f:()=>placeSetMenu('new',placesManage)});
-  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Para ir: Rutas › «Ir a un destino» y toca el sitio. O di «Oye bici, llévame a casa». Toca un sitio para borrarlo.</div>`});
+  if(A.length)rows.unshift({html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">Para ir: Rutas › «Ir a un destino» y toca el sitio. O di «Oye bici, llévame a casa». Toca un sitio para ir o borrarlo.</div>`});
   placeDlg('📌 Mis sitios guardados',rows)}
 /* «llévame a casa», «ruta a casa», «vuelvo a casa», «vamos al trabajo» */
 function placeVoz(t){t=vozNorm(t);if(/(musica|cancion|playlist|spotify)/.test(t))return null;
