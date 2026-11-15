@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.76.4 — En ruta: timbre, peligro y micrófono en una fila bajo el aviso de giro; ya no tapan nada.
+/* v5.77.0 — Parado de verdad: 0 km/h, el tiempo se para y no suma km ni subida por los saltos del GPS (dentro de casa, semáforos).
+   v5.76.4 — En ruta: timbre, peligro y micrófono en una fila bajo el aviso de giro; ya no tapan nada.
    v5.76.3 — Dibujar ruta: fuera el «Deshacer» flotante (se tocaba sin querer al mover el mapa), «Escribir» pequeño; micrófono rojo de verdad al escuchar tu orden.
    v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
    v5.76.1 — «Buscar restaurantes en Google Maps» también en la pantalla de carpetas.
@@ -1385,7 +1386,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.76.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.77.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7259,14 +7260,17 @@ function onFix(pos){
   try{navHdFix(p,c);navMkUpd(ll)}catch(e){}
   if(live.follow&&!lowPow()&&now-(live.camT||0)>=(live.eco?5000:1800)){live.camT=now;const ph=lvPH(),bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),...navCam(),duration:live.eco?600:1200,padding:{top:bh+20,bottom:ph,left:0,right:0}})}
   if(c.speed!=null&&c.speed>=0&&c.speed*3.6<90)live.speed=live.speed?live.speed*0.4+c.speed*3.6*0.6:c.speed*3.6;
+  // v5.77.0: parado = 0 km/h (el GPS «baila» y daba velocidades falsas)
+  const jit=Math.max(0.004,Math.min(0.03,(c.accuracy||5)*0.0004));
   if(c.altitude!=null)live.alt=c.altitude;
   try{apFix(p,now,c)}catch(e){}
+  if(live.astop)live.speed=0;
   if(!live.paused){
     const last=live.pts.at(-1);
     const d=last?hav(last,p):0;
-    if(!last||d>0.004){
+    if(!live.astop&&(!last||d>jit)){   // v5.77.0: parado no suma km ni subida por los saltos del GPS
       if(last&&(d<0.5||(now>last[3]&&d/((now-last[3])/3600000)<55))){live.km+=d;if(c.speed==null&&now-last[3]>1500){const v=d/((now-last[3])/3600000);if(v<90)live.speed=live.speed?live.speed*0.5+v*0.5:v}}
-      if(c.altitude!=null){if(live.lastAlt!=null){const dz=c.altitude-live.lastAlt;if(Math.abs(dz)>=3){if(dz>0)live.up+=dz;live.lastAlt=c.altitude}}else live.lastAlt=c.altitude}
+      if(c.altitude!=null&&(c.accuracy||5)<=25){if(live.lastAlt!=null){const dz=c.altitude-live.lastAlt;if(Math.abs(dz)>=3){if(dz>0)live.up+=dz;live.lastAlt=c.altitude}}else live.lastAlt=c.altitude}
       live.pts.push([p[0],p[1],c.altitude??null,now]);
       if(!lowPow()&&now-(live.lineT||0)>=(live.eco?10000:3000)){live.lineT=now;setLine(map,live.pts,'track','#60A5FA')}
     }
@@ -7617,17 +7621,17 @@ function apOn(){return store.get('autoPause',true)}
 function apFix(p,now,c){
   if(!live.on||live.paused||!apOn()){if(live.astop&&!apOn()){live.pausedMs+=now-live.astopStart;live.astop=false}return}
   const v=c&&c.speed!=null&&c.speed>=0?c.speed*3.6:null,acc=(c&&c.accuracy)||10;
-  if(!live.anc){live.anc={p:p,t:now};live.slowT=null;live.fastN=0;return}
-  const d=hav(live.anc.p,p),need=acc>20?0.025:0.012;
-  live.fastN=v!=null&&v>=4?(live.fastN||0)+1:0;
-  if(live.fastN>=2||d>=need||(!live.astop&&v!=null&&v>=4)){
+  if(!live.anc){live.anc={p:p,t:now,km:live.km,n:live.pts.length};live.slowT=null;live.fastN=0;return}
+  const d=hav(live.anc.p,p),need=Math.max(0.015,Math.min(0.06,acc*0.0015));   // v5.77.0: hay que salir del «círculo de error» del GPS
+  live.fastN=v!=null&&v>=5&&acc<=15?(live.fastN||0)+1:0;   // v5.77.0: la velocidad del GPS solo cuenta con buena señal
+  if(live.fastN>=3||d>=need||(!live.astop&&v!=null&&v>=5&&acc<=15)){
     if(live.astop){live.pausedMs+=Math.max(0,now-live.astopStart);live.astop=false;try{renderLive()}catch(e){}}
-    live.anc={p:p,t:now};live.slowT=null;return}
+    live.anc={p:p,t:now,km:live.km,n:live.pts.length};live.slowT=null;return}
   if(v!=null&&v<2.5){if(!live.slowT)live.slowT=now}else if(v!=null)live.slowT=null;
 }
 setInterval(function(){
   try{if(!live||!live.on||live.paused||live.astop||!live.anc||!apOn())return;const n=Date.now();
-    if((live.slowT&&n-live.slowT>=4000)||n-live.anc.t>=10000){live.astop=true;live.astopStart=live.slowT||live.anc.t;try{renderLive()}catch(e){}}}catch(e){}
+    if((live.slowT&&n-live.slowT>=4000)||n-live.anc.t>=8000){live.astop=true;live.astopStart=live.slowT||live.anc.t;live.speed=0;if(live.anc.km!=null&&live.km>live.anc.km){live.km=live.anc.km;if(live.pts.length>live.anc.n+1)live.pts.length=live.anc.n+1}   /* v5.77.0: fuera los metros falsos del GPS mientras estabas parado */try{renderLive()}catch(e){}}}catch(e){}
 },1000);
 function togglePause(){
   if(!live.on)return;
