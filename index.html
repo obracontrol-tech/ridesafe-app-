@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.79.0 — Voz como Alexa: en ruta solo obedece si dices «Oye bici» delante; el resto de lo que se oye se ignora.
+/* v5.80.0 — 🌦️ Lluvia y niebla en la app (botón en la columna del mapa con 💧/🌫️, avisos en ruta 3 h y por delante en la ruta, «Oye bici, ¿hay niebla?»).
+   v5.79.0 — Voz como Alexa: en ruta solo obedece si dices «Oye bici» delante; el resto de lo que se oye se ignora.
    v5.78.0 — Cortina por voz: «baja la cortina» (solo mapa) y «sube la cortina» o «velocímetro» (vuelven los datos).
    v5.77.1 — Música: al tocar el micrófono la música se para y ahora vuelve sola al acabar la orden (antes a veces no volvía).
    v5.77.0 — Parado de verdad: 0 km/h, el tiempo se para y no suma km ni subida por los saltos del GPS (dentro de casa, semáforos).
@@ -1126,6 +1127,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button aria-label="Mi ubicación" onclick="locateMe()"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button>
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
     <button aria-label="Fuentes, bares y farmacias" onclick="poiMenu()" style="font-size:22px">☕</button>
+    <button id="lnBtn" aria-label="Lluvia y niebla" onclick="lnOpen()">🌦️</button>
     <button aria-label="Guardar esta zona sin conexión" onclick="saveViewOffline()" style="font-size:22px">📥</button>
   </div>
   <div class="rec" id="recBox">
@@ -1389,7 +1391,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.77.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.80.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10884,6 +10886,143 @@ html.gmx body:has(#app.live) #vozBtn small{display:none!important}
     try{var r=cort(t);if(r){doIt(r,vozSay);return true}}catch(e){}
     return vr.apply(this,arguments)};
 })();
+</script>
+<style>
+#lnBtn{font-size:26px!important;background:#0B63CE!important;border-radius:14px!important;box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #0B63CE;position:relative;animation:lnGlow 2.4s ease-in-out infinite}
+#lnBtn::after{content:attr(data-b);display:none;position:absolute;top:-6px;right:-6px;background:#fff;border-radius:12px;padding:1px 4px;font-size:15px;line-height:20px;box-shadow:0 0 0 2px #0B63CE}
+#lnBtn[data-b]:not([data-b=''])::after{display:block}
+@keyframes lnGlow{0%,100%{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #0B63CE}50%{box-shadow:inset 0 0 0 3px #fff,0 0 0 6px #0B63CE66}}
+#lnOv{position:fixed;inset:0;z-index:9500;background:#0009;display:none;align-items:flex-end;justify-content:center}
+#lnOv.show{display:flex}
+#lnBox{background:var(--card);color:var(--txt);width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:0 0 calc(18px + env(safe-area-inset-bottom));font:15px system-ui}
+#lnBox .lnHd{background:#0A0A0A;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;border-radius:20px 20px 0 0}
+#lnBox .lnHd b{flex:1;font-size:18px}
+#lnBox .lnHd small{background:var(--lime);color:var(--on-lime);border-radius:10px;padding:3px 8px;font-weight:700;font-size:12px}
+#lnBox .lnIn{padding:14px 16px 0}
+#lnBox .lnS{color:var(--txt2);font-size:13px;margin:0 0 10px}
+#lnBox .lnBig{font-size:17px;line-height:1.45;background:var(--card2);border-left:5px solid var(--lime);border-radius:12px;padding:12px;margin:0 0 12px}
+#lnBox .lnRow{display:grid;grid-template-columns:56px 1fr 1fr;gap:6px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:14px}
+#lnBox .lnRow b{color:var(--lime)}
+#lnBox .lnBtns{display:flex;gap:8px;margin:14px 0 0}
+#lnBox button{flex:1;padding:14px;border-radius:14px;border:0;font:700 16px system-ui;background:var(--lime);color:var(--on-lime)}
+#lnBox button.sec{background:#0A0A0A;color:#fff}
+#lnBox>.lnBig,#lnBox>.lnBtns{margin:12px 16px}
+#lnBox label{display:flex;gap:10px;align-items:center;margin:12px 0 0;font-size:15px}
+</style>
+<div id="lnOv" onclick="if(event.target===this)lnClose()"><div id="lnBox"></div></div>
+<script>
+/* ===== v5.80.0 — 🌦️ LLUVIA Y NIEBLA (antes beta 1.3) =====
+   · Durante la salida, cada 10 min mira las próximas 3 horas cada 15 minutos (Open‑Meteo, gratis).
+   · Con ruta: mira también 5, 10 y 20 km por delante, a la hora a la que llegarás.
+   · Sin ruta: avisa de cuándo empezará a llover donde estás.
+   · Niebla: por el código de niebla de los modelos, la visibilidad y, como apoyo (la boira de Lleida
+     a veces no la ven los modelos), humedad muy alta con poco viento = «posible niebla».
+   · Botón 🌦️ en la columna del mapa: probarlo en casa sin salir. «Oye bici, ¿hay niebla?» también funciona. */
+const LN={busy:false,last:0,res:null};
+const lnOn=()=>store.get('lnBeta',true);
+const lnHM=d=>d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+const lnKm=k=>k<10?k.toFixed(1).replace('.',',').replace(',0',''):String(Math.round(k));
+const lnInt=mmh=>mmh>=8?'tormenta o lluvia muy fuerte':mmh>=2?'lluvia':mmh>=0.4?'lluvia débil':'llovizna';
+const lnVis=v=>v==null?'':v<1000?Math.round(v/50)*50+' m':lnKm(v/1000)+' km';
+/* Punto de la ruta a «d» km desde el principio */
+function lnAlong(n,d){const C=n.coords,K=n.cum;if(d>=K.at(-1))return C.at(-1);let i=K.findIndex(x=>x>=d);if(i<=0)return C[0];
+  const f=(d-K[i-1])/Math.max(1e-6,K[i]-K[i-1]);return[C[i-1][0]+(C[i][0]-C[i-1][0])*f,C[i-1][1]+(C[i][1]-C[i-1][1])*f]}
+/* Puntos a mirar: aquí + por delante en la ruta (con la hora de llegada) */
+function lnPoints(here){
+  const P=[{ll:here,km:0,eta:0}];const n=live&&live.on&&live.nav;
+  if(n&&n.left!=null&&n.coords&&n.cum){const done=n.total-n.left,v=Math.max(10,live.speed>5?live.speed:18);
+    [5,10,20].forEach(k=>{if(k<n.left-1)P.push({ll:lnAlong(n,done+k),km:k,eta:k/v*60})});
+    if(n.left>2&&n.left<=25)P.push({ll:n.coords.at(-1),km:n.left,eta:n.left/v*60,fin:true})}
+  return P}
+async function lnFetch(P){
+  const la=P.map(p=>(+p.ll[0]).toFixed(3)).join(','),lo=P.map(p=>(+p.ll[1]).toFixed(3)).join(',');
+  const v='precipitation,weather_code,visibility,relative_humidity_2m,wind_speed_10m,temperature_2m';
+  const d=await omJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&minutely_15=${v}&hourly=${v},precipitation_probability&forecast_minutely_15=13&forecast_hours=4&wind_speed_unit=kmh&timezone=auto`);
+  return Array.isArray(d)?d:[d]}
+/* Una franja de 15 min: lluvia (mm/h) y niebla */
+function lnSlot(M,H,j,t){
+  const g=(k)=>{const a=M&&M[k];let x=a?a[j]:null;if(x==null&&H&&H.time){const h=H.time.findIndex(s=>new Date(s).getTime()>t-3600e3+1);if(h>=0&&H[k])x=H[k][h]}return x};
+  const mm=g('precipitation'),wc=g('weather_code'),vis=g('visibility'),rh=g('relative_humidity_2m'),ws=g('wind_speed_10m'),tt=g('temperature_2m');
+  const mmh=(mm||0)*4;
+  let fog=0;   // 0 nada · 1 posible · 2 niebla · 3 niebla espesa
+  if(wc===45||wc===48||(vis!=null&&vis<1000))fog=(vis!=null&&vis<200)?3:2;
+  else if((rh!=null&&rh>=97&&(ws==null||ws<8)&&mmh<0.4)||(vis!=null&&vis<3000))fog=1;
+  return{t,mmh,storm:wc>=95,wc,vis,fog,ice:wc===48||(fog>=2&&tt!=null&&tt<=1),tt}}
+function lnSeries(D){const M=D.minutely_15,H=D.hourly;const out=[];
+  if(M&&M.time)M.time.forEach((s,j)=>{const t=new Date(s).getTime();if(t>Date.now()-15*60000)out.push(lnSlot(M,H,j,t))});
+  return out}
+const lnAt=(S,min)=>{const t=Date.now()+min*60000;let b=S[0];S.forEach(x=>{if(Math.abs(x.t-t)<Math.abs(b.t-t))b=x});return b};
+/* Lo que hay que decir */
+function lnAnalyze(P,D){
+  const S=D.map(lnSeries);if(!S[0]||!S[0].length)throw new Error('sin datos');
+  const now=S[0][0],R={now,S,P,warn:[],say:[]};
+  // Niebla ahora
+  if(now.fog>=2){R.warn.push({k:'lnFog',txt:`🌫️ Niebla${now.vis!=null?': se ve a '+lnVis(now.vis):''}`,v:`Atención, niebla${now.vis!=null?'. Se ve a unos '+lnVis(now.vis).replace(' m',' metros').replace(' km',' kilómetros'):''}. Enciende la luz delantera y la trasera, ponte algo reflectante y no te pegues al centro de la carretera.${now.ice?' Hace mucho frío: puede haber escarcha en el asfalto.':''}`})}
+  else if(now.fog===1)R.say.push('Puede haber niebla en zonas bajas y cerca de ríos. Lleva las luces encendidas.');
+  // Por delante en la ruta
+  for(let i=1;i<P.length;i++){const x=lnAt(S[i],P[i].eta),dnd=P[i].fin?'en la llegada':`a unos ${lnKm(P[i].km)} kilómetros`;
+    if(x.fog>=2&&now.fog<2){R.warn.push({k:'lnFogA',txt:`🌫️ Niebla en tu ruta ${P[i].fin?'en la llegada':'a '+lnKm(P[i].km)+' km'}${x.vis!=null?' (se ve a '+lnVis(x.vis)+')':''}`,v:`Atención. Hay niebla en tu ruta, ${dnd}. Ten las luces encendidas antes de llegar.`});break}}
+  for(let i=1;i<P.length;i++){const x=lnAt(S[i],P[i].eta),dnd=P[i].fin?'en la llegada':`a unos ${lnKm(P[i].km)} kilómetros`;
+    if(x.mmh>=0.4||x.storm){R.warn.push({k:'lnRainA',txt:`${x.storm?'⛈️':'🌧️'} ${x.storm?'Tormenta':'Lluvia'} en tu ruta ${P[i].fin?'en la llegada':'a '+lnKm(P[i].km)+' km'} · sobre las ${lnHM(new Date(x.t))}`,v:`Atención. Cuando llegues ${dnd}, sobre las ${lnHM(new Date(x.t))}, habrá ${x.storm?'tormenta':lnInt(x.mmh)}.${x.storm?' Piensa dónde resguardarte.':' El suelo resbalará: frena antes en las curvas.'}`});break}}
+  // Aquí: cuándo empieza a llover (próximas 3 h)
+  if(now.mmh>=0.4)R.say.push(`Ahora está cayendo ${lnInt(now.mmh)}.`);
+  else{const k=S[0].findIndex(x=>x.mmh>=0.4||x.storm);
+    if(k>0){const x=S[0][k],min=Math.max(5,Math.round((x.t-Date.now())/60000/5)*5);
+      R.warn.push({k:'lnRain',txt:`${x.storm?'⛈️':'🌧️'} ${x.storm?'Tormenta':'Lluvia'} aquí en unos ${min} min (${lnHM(new Date(x.t))})`,v:`Atención. ${x.storm?'Tormenta':'Lluvia'} donde estás en unos ${min} minutos, sobre las ${lnHM(new Date(x.t))}. Será ${x.storm?'fuerte':lnInt(x.mmh)}.`})}
+    else R.say.push('No se espera lluvia aquí en las próximas 3 horas.')}
+  // Cuándo viene o se va la niebla aquí
+  if(now.fog<2){const k=S[0].findIndex(x=>x.fog>=2);if(k>0)R.say.push(`Puede bajar la niebla sobre las ${lnHM(new Date(S[0][k].t))}.`)}
+  else{const k=S[0].findIndex(x=>x.fog<2);R.say.push(k>0?`La niebla podría levantar sobre las ${lnHM(new Date(S[0][k].t))}.`:'La niebla seguirá al menos 3 horas.')}
+  return R}
+async function lnCheck(here){const P=lnPoints(here);const D=await lnFetch(P);return lnAnalyze(P,D)}
+/* Durante la salida: cada 10 minutos */
+async function lnTick(){
+  if(!lnOn()||!live||!live.on||live.paused||LN.busy||!navigator.onLine)return;
+  if(Date.now()-LN.last<10*60000)return;const p=live.pts&&live.pts.at(-1);if(!p)return;
+  LN.busy=true;LN.last=Date.now();
+  try{const R=await lnCheck([p[0],p[1]]);LN.res=R;LN.resT=Date.now();lnBadge(R);if(!live.on)return;const Q=[];
+    R.warn.forEach(w=>lwWarn(w.k,w.txt,w.v,Q));
+    if(Q.length)speak(Q.join(' '));
+  }catch(e){console.warn('lluvia y niebla beta',e)}finally{LN.busy=false}}
+setInterval(lnTick,60000);
+/* Señal en el botón 🌦️: 💧 lluvia · 🌫️ niebla · las dos si vienen las dos (próximas 3 h) */
+function lnBadge(R){const b=$('lnBtn');if(!b||!R)return;const S=R.S.flat();
+  const rain=S.some(x=>x.mmh>=0.4||x.storm),fog=S.some(x=>x.fog>=1);
+  b.dataset.b=(rain?'💧':'')+(fog?'🌫️':'');
+  b.setAttribute('aria-label','Lluvia y niebla'+(rain?' · lluvia prevista':'')+(fog?' · niebla prevista':''))}
+async function lnBgCheck(){if(!navigator.onLine||document.visibilityState!=='visible')return;
+  try{if(LN.res&&Date.now()-(LN.resT||0)<15*60000){lnBadge(LN.res);return}
+    const h=lnPos();if(!h)return;
+    const R=await lnCheck(h);LN.res=R;LN.resT=Date.now();lnBadge(R)}catch(e){console.warn('señal lluvia/niebla',e)}}
+setTimeout(lnBgCheck,6000);setInterval(lnBgCheck,60000);
+/* Panel para probarlo en casa */
+function lnClose(){$('lnOv').classList.remove('show')}
+function lnPos(){try{if(typeof vozHere==='function'){const h=vozHere();if(h)return h}}catch(e){}try{const p=live.on&&live.pts&&live.pts.at(-1);if(p)return[p[0],p[1]]}catch(e){}try{if(meMarker){const l=meMarker.getLngLat();return[l.lat,l.lng]}}catch(e){}return null}
+function lnHere(){return new Promise(ok=>{const h=lnPos();if(h)return ok(h);
+  if(!navigator.geolocation)return ok(null);navigator.geolocation.getCurrentPosition(p=>ok([p.coords.latitude,p.coords.longitude]),()=>ok(null),{timeout:9000,maximumAge:300000})})}
+const lnClean=v=>{v=v.replace(/^Atención[.,]?\s*/,'');return v.charAt(0).toUpperCase()+v.slice(1)};
+function lnText(R){return [...R.warn.map(w=>lnClean(w.v)),...R.say].join(' ')}
+async function lnOpen(speakIt){
+  const B=$('lnBox');$('lnOv').classList.add('show');
+  B.innerHTML='<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>3 HORAS</small></div><div class="lnIn"><p class="lnS">Mirando las próximas 3 horas…</p>';
+  const h=await lnHere();if(!h){B.innerHTML+='<div class="lnBig">No sé dónde estás. Activa la ubicación y vuelve a probar.</div><div class="lnBtns"><button class="sec" onclick="lnClose()">Cerrar</button></div>';return}
+  try{const R=await lnCheck(h);LN.res=R;LN.resT=Date.now();lnBadge(R);const t=lnText(R);
+    const rows=R.S[0].map(x=>`<div class="lnRow"><b>${lnHM(new Date(x.t))}</b><span>${x.storm?'⛈️ tormenta':x.mmh>=0.4?'🌧️ '+lnInt(x.mmh):x.mmh>0?'🌦️ gotas':'☁️ seco'}</span><span>${x.fog>=3?'🌫️ niebla espesa':x.fog===2?'🌫️ niebla':x.fog===1?'🌁 posible niebla':'👁️ buena vista'}${x.vis!=null&&x.fog?' · '+lnVis(x.vis):''}</span></div>`).join('');
+    B.innerHTML=`<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>3 HORAS</small></div><div class="lnIn"><p class="lnS">Donde estás ahora${R.P.length>1?' y en tu ruta':''} · cada 15 minutos · Open‑Meteo</p>
+     <div class="lnBig">${esc(t)}</div>${rows}
+     <label><input type="checkbox" ${lnOn()?'checked':''} onchange="store.set('lnBeta',this.checked)"> Avisarme durante la salida (cada 10 min)</label>
+     <div class="lnBtns"><button onclick="speak(${esc(JSON.stringify(t))})">🔊 Oírlo</button><button class="sec" onclick="lnClose()">Cerrar</button></div>
+     <p class="lnS" style="margin-top:12px">La boira de la zona a veces no la ven bien los modelos: si sale «posible niebla», ve con las luces puestas igualmente.</p></div>`;
+    if(speakIt)speak(t);
+  }catch(e){console.warn(e);B.innerHTML+='<div class="lnBig">No he podido mirar el tiempo. Revisa la conexión y prueba otra vez.</div><div class="lnBtns"><button class="sec" onclick="lnClose()">Cerrar</button></div>'}}
+/* «Oye bici, ¿hay niebla?» */
+(function(){if(typeof vozRun!=='function'||typeof vozSay!=='function')return;const old=vozRun;
+  vozRun=function(t){try{if(t&&/(niebla|boira|neblina|bruma|visibilidad|se ve bien)/.test(t)){
+      (async()=>{const h=await lnHere();if(!h){vozSay('No sé dónde estás.');return}
+        try{const R=await lnCheck(h);const f=[...R.warn.filter(w=>/Fog/.test(w.k)).map(w=>lnClean(w.v)),...R.say.filter(s=>/niebla/.test(s))];
+          vozSay(f.length?f.join(' '):'No se espera niebla en las próximas 3 horas.')}catch(e){vozSay('No he podido mirar la niebla.')}})();
+      return true}}catch(e){console.warn(e)}
+    return old.apply(this,arguments)}})();
 </script>
 </body>
 </html>
