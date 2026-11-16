@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.78.0 — Cortina por voz: «baja la cortina» (solo mapa) y «sube la cortina» o «velocímetro» (vuelven los datos).
+/* v5.79.0 — Voz como Alexa: en ruta solo obedece si dices «Oye bici» delante; el resto de lo que se oye se ignora.
+   v5.78.0 — Cortina por voz: «baja la cortina» (solo mapa) y «sube la cortina» o «velocímetro» (vuelven los datos).
    v5.77.1 — Música: al tocar el micrófono la música se para y ahora vuelve sola al acabar la orden (antes a veces no volvía).
    v5.77.0 — Parado de verdad: 0 km/h, el tiempo se para y no suma km ni subida por los saltos del GPS (dentro de casa, semáforos).
    v5.76.4 — En ruta: timbre, peligro y micrófono en una fila bajo el aviso de giro; ya no tapan nada.
@@ -8042,7 +8043,8 @@ function vcHandle(alts){
     for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c))return}catch(e){}}
     beepPtt(330);try{vozPill('🤔 «'+C[0]+'»','No te he entendido',4500)}catch(e){}
     vcSay('No te he entendido. Di órdenes para oír la lista.');return}
-  for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
+  // v5.79.0: como Alexa — sin «Oye bici» delante no hace nada (solo vale contestar «sí / no» a una pregunta de la app)
+  if(VC.ask&&Date.now()-(VC.askT||0)<12000){for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}}
 }
 function vcOk2(){beepPtt(880);vib(40)}
 function vcDo(n){

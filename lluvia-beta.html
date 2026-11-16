@@ -8041,7 +8041,8 @@ function vcHandle(alts){
     for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c))return}catch(e){}}
     beepPtt(330);try{vozPill('🤔 «'+C[0]+'»','No te he entendido',4500)}catch(e){}
     vcSay('No te he entendido. Di órdenes para oír la lista.');return}
-  for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}
+  // v5.79.0: como Alexa — sin «Oye bici» delante no hace nada (solo vale contestar «sí / no» a una pregunta de la app)
+  if(VC.ask&&Date.now()-(VC.askT||0)<12000){for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}}
 }
 function vcOk2(){beepPtt(880);vib(40)}
 function vcDo(n){
