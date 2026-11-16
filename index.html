@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.77.0 — Parado de verdad: 0 km/h, el tiempo se para y no suma km ni subida por los saltos del GPS (dentro de casa, semáforos).
+/* v5.77.1 — Música: al tocar el micrófono la música se para y ahora vuelve sola al acabar la orden (antes a veces no volvía).
+   v5.77.0 — Parado de verdad: 0 km/h, el tiempo se para y no suma km ni subida por los saltos del GPS (dentro de casa, semáforos).
    v5.76.4 — En ruta: timbre, peligro y micrófono en una fila bajo el aviso de giro; ya no tapan nada.
    v5.76.3 — Dibujar ruta: fuera el «Deshacer» flotante (se tocaba sin querer al mover el mapa), «Escribir» pequeño; micrófono rojo de verdad al escuchar tu orden.
    v5.76.2 — Google Maps abre directamente la lista de restaurantes cerca.
@@ -9937,12 +9938,20 @@ function vozMenu(t){
     try{var r=musCmd(t);if(r){if(r==='none')none(vozSay);else vozSay(r);return true}}catch(e){}
     return vr.apply(this,arguments)};
   // Mientras das una orden, la música calla un momento y luego vuelve
-  var was=false;
+  // v5.77.1: antes, si el micrófono del móvil paraba la música antes que la app, ya no volvía.
+  // Ahora: si querías música (no la has parado tú), vuelve sola al acabar la orden, lo intenta durante 15 s.
+  var was=false,retryT=null;
   function busy(){var n=Date.now();try{if(VZ.oneShot||(VZ.pending&&n<VZ.pending.until)||n<VZ.armedT)return true;if(typeof VC!=='undefined'&&VC.ask&&n-(VC.askT||0)<15000)return true}catch(e){}return false}
+  function resume(){clearInterval(retryT);var t0=Date.now();
+    retryT=setInterval(function(){try{
+      if(!mus.want||!mus.a||!mus.a.paused||Date.now()-t0>15000){clearInterval(retryT);return}
+      if(busy()||musSpeaking()||Date.now()-t0<1200)return;
+      mus.a.volume=mus.ducked?musLow():mus.vol;mus.a.play().then(function(){clearInterval(retryT);try{musUI()}catch(e){}}).catch(function(){})
+    }catch(e){clearInterval(retryT)}},600)}
   setInterval(function(){
     try{
-      if(busy()){if(playing()&&mus.want){mus.a.pause();was=true}}
-      else if(was){was=false;if(mus.want&&mus.a&&mus.a.paused)setTimeout(function(){try{if(!busy()&&mus.want&&mus.a.paused)mus.a.play().catch(function(){})}catch(e){}},1500)}
+      if(busy()){if(mus.want&&mus.a){was=true;clearInterval(retryT);if(!mus.a.paused)mus.a.pause()}}
+      else if(was){was=false;resume()}
     }catch(e){}
   },250);
 })();
