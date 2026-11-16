@@ -1,3 +1,9 @@
+## Versión 5.81.1 (Simple 1.39.1) — Parar el seguimiento estable también para la familia
+- Antes: al tocar «⏹ Parar el seguimiento estable», Traccar dejaba de enviar pero el mapa de la familia seguía diciendo «En directo» y luego «puede estar sin cobertura».
+- Ahora: al parar, la app guarda la hora de parada y el mapa de la familia pasa a «✅ Ya no está compartiendo · última posición hace…» y «⏹ Ha parado el seguimiento». Si el ciclista vuelve a empezar, vuelve solo a «En directo».
+- Solo funciona si se para desde la app (📡 › Parar). Si se apaga el interruptor dentro de Traccar, la familia no recibe el aviso.
+- Archivos: index.html, simple.html, familia.html y sw.js. El Worker de Cloudflare no cambia.
+
 ## Versión 5.76.2 (Simple 1.37.2)
 - «Buscar restaurantes en Google Maps» abre directamente la lista de restaurantes cerca de ti (antes abría el mapa y había que tocar «Restaurantes»). Usa el enlace oficial de búsqueda de Google Maps; la posición la pone Google Maps.
 

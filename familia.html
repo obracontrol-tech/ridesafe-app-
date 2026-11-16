@@ -178,13 +178,23 @@ else{
   try{if(localStorage.getItem('rsSnd')==='1'){const u=()=>{window.sndOn();document.removeEventListener('pointerdown',u)};document.addEventListener('pointerdown',u)}}catch(e){}
   makeMap(STYLE);
   setInterval(()=>{paint(cur);if(cur)showAlert(cur)},20000);
+  /* v5.81.1 — Si el ciclista pulsa «Parar» en la app, aquí se ve «Ya no está compartiendo» (antes seguía «En directo»).
+     La app guarda la hora de parada; si después llegan posiciones nuevas (ha vuelto a empezar), vuelve a «En directo». */
+  let trkRaw=null,trkStopT=0;
+  function trkApply(){const d=trkRaw;if(!d)return;const off=trkStopT>0&&(d.t||0)<=trkStopT+60000;
+    cur=Object.assign({},d,{name:TNAME||'Tu familiar',km:null});if(off)cur.active=false;paint(cur);
+    $('sub').textContent=off?'⏹ Ha parado el seguimiento':'📡 Seguimiento estable'+(d.speed?' · '+Math.round(d.speed)+' km/h':'')+(d.batt!=null?' · 🔋 '+d.batt+' %':'')}
+  function trkStopWatch(f){if(!/^f[a-z2-7]{15}$/.test(f||''))return;
+    try{Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{firebase.firestore().collection('share').doc(f).onSnapshot(s=>{const x=s.exists?s.data():null;trkStopT=x&&x.active===false&&+x.t>0?+x.t:0;trkApply()},()=>{})}).catch(()=>{})}catch(e){}}
   function trkPoll(){
     fetch(TRK+'/v/'+TID,{cache:'no-store'}).then(r=>r.status===404?null:r.json()).then(d=>{
       if(!d){if(!cur)fail('Esperando la primera posición','Abre Traccar Client en el móvil del ciclista y pulsa «Iniciar». En cuanto envíe la primera posición, aparecerá aquí.');return}
-      cur=Object.assign({},d,{name:TNAME||'Tu familiar',km:null});paint(cur);$('sub').textContent='📡 Seguimiento estable'+(d.speed?' · '+Math.round(d.speed)+' km/h':'')+(d.batt!=null?' · 🔋 '+d.batt+' %':'');
+      trkRaw=d;trkApply();
     }).catch(()=>{if(!cur)fail('No se pudo conectar','Revisa tu conexión a internet. Se vuelve a intentar solo.')});
   }
-  if(TID){trkPoll();setInterval(trkPoll,15000)}
+  if(TID){trkPoll();setInterval(trkPoll,15000);
+    if(/^f[a-z2-7]{15}$/.test(TID))trkStopWatch(TID);
+    else fetch(TRK+'/f/'+TID,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d)trkStopWatch(d.fam)}).catch(()=>{})}
   else Promise.resolve(firebase.auth().signInAnonymously()).then(()=>{
     firebase.firestore().collection('share').doc(id).onSnapshot(s=>{
       if(!s.exists){fail('Este enlace ya no está activo','Puede que tu familiar haya dejado de compartir su ubicación.');return}

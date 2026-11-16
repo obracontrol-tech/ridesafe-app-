@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.39.0 — 🌦️ Lluvia y niebla (botón en la columna del mapa con 💧/🌫️ y avisos en ruta), como en la Pro 5.80.0.
+/* v1.39.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo» (como en la Pro 5.81.1).
+   v1.39.0 — 🌦️ Lluvia y niebla (botón en la columna del mapa con 💧/🌫️ y avisos en ruta), como en la Pro 5.80.0.
    v1.16.4 — Quien ya se pasó a Pro va siempre a Pro. El icono instalado desde la Simple abre simple.html
    (y al actualizar también recargaba la Simple): si el móvil ya eligió Pro, se va directo a la Pro. */
 (function(){try{if(localStorage.getItem('rs_modo')==='pro')location.replace('index.html'+location.search+location.hash)}catch(e){}})();
@@ -1252,7 +1253,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.39.0 (base 5.80.0)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.39.1 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3371,6 +3372,11 @@ function trkId(){let id='';try{id=localStorage.getItem('rsTrkId')||''}catch(e){}
 function trkFam(){const id=trkId();if(!id)return'';let v='';try{v=localStorage.getItem('rsTrkFam')||''}catch(e){}const p=v.split(':');return p[0]===id&&/^f[a-z2-7]{15}$/.test(p[1]||'')?p[1]:''}
 function trkFamFetch(){const id=trkId();if(!id||trkFam())return;try{fetch(TRK_SRV+'/f/'+id,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d&&/^f[a-z2-7]{15}$/.test(d.fam||''))try{localStorage.setItem('rsTrkFam',id+':'+d.fam)}catch(e){}}).catch(()=>{})}catch(e){}}
 setTimeout(()=>{try{trkFamFetch()}catch(e){}},6000);
+/* v5.81.1 — Al pulsar «Parar», se avisa al mapa de la familia: pasa a «Ya no está compartiendo» (antes seguía «En directo»).
+   Solo se guarda la hora de parada con el código de la familia (el que sirve para VER), nunca el código secreto. */
+function trkStopMark(){try{const id=trkId(),t=Date.now();if(!id||!db||!uid)return;
+  const put=f=>{if(/^f[a-z2-7]{15}$/.test(f||''))db.collection('share').doc(f).set({uid,name:myName(),active:false,t}).catch(()=>{})};
+  const f=trkFam();if(f)put(f);else fetch(TRK_SRV+'/f/'+id,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d)put(d.fam)}).catch(()=>{})}catch(e){}}
 function trkShareMenu(){try{
   const old=document.getElementById('trkMenu');if(old)old.remove();
   const id=trkId();const n=(typeof me!=='undefined'&&me&&me.name)?String(me.name).slice(0,40):'';trkFamFetch();
@@ -3398,7 +3404,7 @@ function trkShareMenu(){try{
       window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
       setTimeout(()=>{location.href='org.traccar.client://action/start'},400);
       try{toast('🛰️ Seguimiento estable en marcha')}catch(e){}};
-    document.getElementById('tmStop').onclick=()=>{close();location.href='org.traccar.client://action/stop';try{toast('⏹ Seguimiento estable parado')}catch(e){}};
+    document.getElementById('tmStop').onclick=()=>{close();trkStopMark();setTimeout(()=>{location.href='org.traccar.client://action/stop'},350);try{toast('⏹ Seguimiento parado: tu familia ya no te ve en directo')}catch(e){}};
     /* v5.47.4 — borrar la línea y la última posición guardadas (la familia deja de verlas) */
     document.getElementById('tmDel').onclick=()=>{if(!confirm('¿Borrar tu recorrido y tu última ubicación? Tu familia dejará de verla hasta que vuelvas a empezar.'))return;close();
       fetch(TRK_SRV+'/b/'+id,{method:'POST'}).then(r=>r.ok?r.json():null).then(d=>{try{toast(d&&d.ok?'🗑️ Recorrido borrado':'No se ha podido borrar. Inténtalo luego')}catch(e){}}).catch(()=>{try{toast('Sin conexión: inténtalo luego')}catch(e){}})};
