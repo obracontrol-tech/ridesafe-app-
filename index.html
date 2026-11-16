@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.81.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo».
+/* v5.81.2 — Menú por voz: la app ya no abre el micro mientras sigue leyendo las opciones, y tras una pregunta tienes 12 s para contestar (antes se cortaba al llegar a la última).
+   v5.81.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo».
    v5.81.0 — 📞 Llamadas por voz: «Oye bici, llama a Casa» con los contactos que guardes (de la agenda o a mano).
    v5.80.0 — 🌦️ Lluvia y niebla en la app (botón en la columna del mapa con 💧/🌫️, avisos en ruta 3 h y por delante en la ruta, «Oye bici, ¿hay niebla?»).
    v5.79.0 — Voz como Alexa: en ruta solo obedece si dices «Oye bici» delante; el resto de lo que se oye se ignora.
@@ -1393,7 +1394,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.81.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.81.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9124,7 +9125,10 @@ function vozSay(t,thenListen){
   if(!thenListen){VZ.restartTO=setTimeout(()=>{vozVcBack();if(VZ.cont)vozStartCont()},ms);return}
   /* v5.44.1: con pregunta, abre el micro en cuanto acaba de hablar (máximo el tiempo de antes) */
   let done=false;const tok=(VZ.sayTok=(VZ.sayTok||0)+1);
-  const fin=()=>{if(done||tok!==VZ.sayTok)return;done=true;clearTimeout(VZ.restartTO);vozListen(true)};
+  /* v5.81.2: nunca abre el micro mientras la app sigue hablando (en menús largos se cortaba la escucha antes de poder contestar) */
+  const talking=()=>{try{if(speechSynthesis.speaking)return true}catch(e){}try{if(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused&&!ttsAudio.ended)return true}catch(e){}return false};
+  const fin=(n)=>{if(done||tok!==VZ.sayTok)return;n=n||0;if(talking()&&n<150){clearTimeout(VZ.restartTO);VZ.restartTO=setTimeout(()=>fin(n+1),200);return}
+    done=true;clearTimeout(VZ.restartTO);VZ.ansT=Date.now();vozListen(true)};
   VZ.restartTO=setTimeout(fin,ms);
   Promise.resolve(sp).catch(()=>{}).then(()=>{
     const chk=()=>{if(done||tok!==VZ.sayTok)return;
@@ -9250,7 +9254,7 @@ function vozListen(silent,direct){
   const go=(n)=>{let r;try{r=vozMake(false);VZ.rec=r;r.start()}catch(e){console.warn('voz',e);VZ.rec=null;if(!n){setTimeout(()=>go(1),350);return}fail();return}
     if(VZ_IOS)VZ.wd=setTimeout(()=>{if(VZ.rec===r&&!r._started){try{r.abort()}catch(e){}VZ.rec=null;if(!n)go(1);else fail()}},4000);   // v5.41.6: solo iPhone
     VZ.wd2=setTimeout(()=>{if(VZ.rec===r){try{r.stop()}catch(e){}setTimeout(()=>{if(VZ.rec===r){try{r.abort()}catch(e){}r.onend()}},1500)}},15000);
-    clearTimeout(VZ.wd3);VZ.wd3=setTimeout(()=>{if(VZ.rec===r&&!r._acc&&!r._last){try{r.stop()}catch(e){}if(VZ.oneShot)vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}},7000);   // v5.54.0: nadie habla
+    clearTimeout(VZ.wd3);VZ.wd3=setTimeout(()=>{if(VZ.rec===r&&!r._acc&&!r._last){try{r.stop()}catch(e){}if(VZ.oneShot)vozPill('🎤 No te he oído','Toca y vuelve a hablar',2500)}},(Date.now()-(VZ.ansT||0)<2000)?12000:7000);   // v5.54.0: nadie habla
   };
   if(VZ_IOS&&VZ.unl>1){try{speechSynthesis.cancel()}catch(e){}}
   if(VZ_IOS)VZ.unl=2;
