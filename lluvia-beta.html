@@ -91,7 +91,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>RideSafe IA · Lluvia y niebla beta 1.1</title>
+<title>RideSafe IA · Lluvia y niebla beta 1.2</title>
 <meta name="description" content="RideSafe IA — organiza salidas en bici con tu comunidad: día, hora, punto de salida y punto de encuentro.">
 <meta name="theme-color" content="#0E1A2B">
 <link rel="manifest" href="manifest.json">
@@ -1123,7 +1123,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button aria-label="Mi ubicación" onclick="locateMe()"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button>
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
     <button aria-label="Fuentes, bares y farmacias" onclick="poiMenu()" style="font-size:22px">☕</button>
-    <button aria-label="Lluvia y niebla (beta)" onclick="lnOpen()" style="font-size:22px">🌦️</button>
+    <button id="lnBtn" aria-label="Lluvia y niebla (beta)" onclick="lnOpen()">🌦️</button>
     <button aria-label="Guardar esta zona sin conexión" onclick="saveViewOffline()" style="font-size:22px">📥</button>
   </div>
   <div class="rec" id="recBox">
@@ -10856,6 +10856,9 @@ html.gmx body:has(#app.live) #vozBtn small{display:none!important}
 }catch(e){}},400)})();
 </script>
 <style>
+#lnBtn{font-size:26px!important;background:#0B63CE!important;border-radius:14px!important;box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #0B63CE;position:relative;animation:lnGlow 2.4s ease-in-out infinite}
+#lnBtn::after{content:'';position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff}
+@keyframes lnGlow{0%,100%{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #0B63CE}50%{box-shadow:inset 0 0 0 3px #fff,0 0 0 6px #0B63CE66}}
 #lnOv{position:fixed;inset:0;z-index:9500;background:#0009;display:none;align-items:flex-end;justify-content:center}
 #lnOv.show{display:flex}
 #lnBox{background:var(--card);color:var(--txt);width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:0 0 calc(18px + env(safe-area-inset-bottom));font:15px system-ui}
@@ -10875,7 +10878,7 @@ html.gmx body:has(#app.live) #vozBtn small{display:none!important}
 </style>
 <div id="lnOv" onclick="if(event.target===this)lnClose()"><div id="lnBox"></div></div>
 <script>
-/* ===== Lluvia y niebla — beta 1.1 (copia de RideSafe IA Pro 5.77.0) =====
+/* ===== Lluvia y niebla — beta 1.2 (copia de RideSafe IA Pro 5.77.0) =====
    · Durante la salida, cada 10 min mira las próximas 3 horas cada 15 minutos (Open‑Meteo, gratis).
    · Con ruta: mira también 5, 10 y 20 km por delante, a la hora a la que llegarás.
    · Sin ruta: avisa de cuándo empezará a llover donde estás.
@@ -10957,11 +10960,11 @@ const lnClean=v=>{v=v.replace(/^Atención[.,]?\s*/,'');return v.charAt(0).toUppe
 function lnText(R){return [...R.warn.map(w=>lnClean(w.v)),...R.say].join(' ')}
 async function lnOpen(speakIt){
   const B=$('lnBox');$('lnOv').classList.add('show');
-  B.innerHTML='<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>BETA 1.1</small></div><div class="lnIn"><p class="lnS">Mirando las próximas 3 horas…</p>';
+  B.innerHTML='<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>BETA 1.2</small></div><div class="lnIn"><p class="lnS">Mirando las próximas 3 horas…</p>';
   const h=await lnHere();if(!h){B.innerHTML+='<div class="lnBig">No sé dónde estás. Activa la ubicación y vuelve a probar.</div><div class="lnBtns"><button class="sec" onclick="lnClose()">Cerrar</button></div>';return}
   try{const R=await lnCheck(h);LN.res=R;const t=lnText(R);
     const rows=R.S[0].map(x=>`<div class="lnRow"><b>${lnHM(new Date(x.t))}</b><span>${x.storm?'⛈️ tormenta':x.mmh>=0.4?'🌧️ '+lnInt(x.mmh):x.mmh>0?'🌦️ gotas':'☁️ seco'}</span><span>${x.fog>=3?'🌫️ niebla espesa':x.fog===2?'🌫️ niebla':x.fog===1?'🌁 posible niebla':'👁️ buena vista'}${x.vis!=null&&x.fog?' · '+lnVis(x.vis):''}</span></div>`).join('');
-    B.innerHTML=`<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>BETA 1.1</small></div><div class="lnIn"><p class="lnS">Donde estás ahora${R.P.length>1?' y en tu ruta':''} · cada 15 minutos · Open‑Meteo</p>
+    B.innerHTML=`<div class="lnHd"><b>🌦️ Lluvia y niebla</b><small>BETA 1.2</small></div><div class="lnIn"><p class="lnS">Donde estás ahora${R.P.length>1?' y en tu ruta':''} · cada 15 minutos · Open‑Meteo</p>
      <div class="lnBig">${esc(t)}</div>${rows}
      <label><input type="checkbox" ${lnOn()?'checked':''} onchange="store.set('lnBeta',this.checked)"> Avisarme durante la salida (cada 10 min)</label>
      <div class="lnBtns"><button onclick="speak(${esc(JSON.stringify(t))})">🔊 Oírlo</button><button class="sec" onclick="lnClose()">Cerrar</button></div>
