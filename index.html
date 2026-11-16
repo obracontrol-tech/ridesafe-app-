@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.80.0 — 🌦️ Lluvia y niebla en la app (botón en la columna del mapa con 💧/🌫️, avisos en ruta 3 h y por delante en la ruta, «Oye bici, ¿hay niebla?»).
+/* v5.81.0 — 📞 Llamadas por voz: «Oye bici, llama a Casa» con los contactos que guardes (de la agenda o a mano).
+   v5.80.0 — 🌦️ Lluvia y niebla en la app (botón en la columna del mapa con 💧/🌫️, avisos en ruta 3 h y por delante en la ruta, «Oye bici, ¿hay niebla?»).
    v5.79.0 — Voz como Alexa: en ruta solo obedece si dices «Oye bici» delante; el resto de lo que se oye se ignora.
    v5.78.0 — Cortina por voz: «baja la cortina» (solo mapa) y «sube la cortina» o «velocímetro» (vuelven los datos).
    v5.77.1 — Música: al tocar el micrófono la música se para y ahora vuelve sola al acabar la orden (antes a veces no volvía).
@@ -1391,7 +1392,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.80.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.81.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8107,6 +8108,7 @@ function renderVoz(){
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
    <button class="btn btn-lime" style="width:100%;margin:10px 0 6px" onclick="try{closeSheets()}catch(e){}vmOpen(null,true)">📋 Menú por números: dices el número</button>
    <button class="btn btn-line" style="width:100%;margin:0 0 4px" onclick="try{closeSheets()}catch(e){}vozPanelOpen()">⚙️ «Oye bici», casco y lista completa</button>
+   <button class="btn btn-lime" style="width:100%;margin:6px 0 4px" onclick="try{closeSheets()}catch(e){}telOpen()">📞 Llamadas por voz (Casa, Nachi…)</button>
    <b style="display:block;margin:14px 0 2px">Di «Oye bici, menú» y elige</b>
    <small style="display:block;color:var(--txt2);font-size:13px;margin-bottom:4px">La app te lee las opciones y te pregunta lo que falta. «Atrás» vuelve · «Cancela» cierra.</small>
    ${[['1','🗺️ Rutas','De un pueblo a otro · desde donde estás · circular · varios pueblos'],['2','🥾 Rutas marcadas','Las más cercanas · BTT · ciclistas · senderos · buscar «GR 171»'],['3','🚴 En marcha','Empezar · pausa · seguir · terminar · cuánto falta · cómo voy…'],['4','🌦️ El tiempo','¿Va a llover? · esta tarde · mañana · temperatura y viento'],['5','🛡️ Seguridad','Ayuda o SOS · pinchazo · esperad · fuente de agua'],['6','📱 Moverse por la app','Rutas · comunidad · actividades · perfil · crear · hora · bajar · subir · volver a la grabación']].map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)"><span style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--lime);color:var(--on-lime);font-weight:900;display:flex;align-items:center;justify-content:center">${x[0]}</span><div><b style="display:block">${x[1]}</b><span style="color:var(--txt2);font-size:13.5px">${x[2]}</span></div></div>`).join('')}
@@ -8952,7 +8954,8 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
   <tr><td>«Dónde estoy»</td><td>Calle o lugar donde estás</td></tr>
   <tr><td>«Repite»</td><td>Repite la última indicación</td></tr>
   <tr><td>«Va a llover»</td><td>Si llueve ahora, a qué hora empieza o para, hora de más riesgo, litros, tormenta y lo fiable que es (3 modelos)</td></tr>
-  <tr><td>«Baja la cortina» / «Solo el mapa»<br>«Sube la cortina» / «Velocímetro»</td><td>Esconde los datos para ver el mapa entero, o los vuelve a subir</td></tr>
+  <tr><td>«Llama a Casa»<br>«Llama a Nachi»</td><td>Llama a los contactos que guardes en Perfil › Órdenes por voz › 📞 Llamadas</td></tr>
+<tr><td>«Baja la cortina» / «Solo el mapa»<br>«Sube la cortina» / «Velocímetro»</td><td>Esconde los datos para ver el mapa entero, o los vuelve a subir</td></tr>
 <tr><td>«Lloverá esta tarde / esta noche»<br>«Lloverá mañana»</td><td>Lluvia de ese tramo o de mañana (mañana y tarde por separado)</td></tr>
   <tr><td>«Tiempo» / «Viento»</td><td>Temperatura y viento ahora</td></tr>
   <tr><td>«Agua»</td><td>La fuente más cercana</td></tr>
@@ -11024,5 +11027,86 @@ async function lnOpen(speakIt){
       return true}}catch(e){console.warn(e)}
     return old.apply(this,arguments)}})();
 </script>
+<style>
+#telOv{position:fixed;inset:0;z-index:9600;background:#0009;display:none;align-items:flex-end;justify-content:center}
+#telOv.show{display:flex}
+#telBox{background:var(--card);color:var(--txt);width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:0 0 calc(18px + env(safe-area-inset-bottom));font:15px system-ui}
+#telBox .tHd{background:#0A0A0A;color:#fff;padding:14px 16px;border-radius:20px 20px 0 0;font-weight:800;font-size:18px}
+#telBox .tIn{padding:14px 16px 0}
+#telBox .tS{color:var(--txt2);font-size:13px;margin:0 0 12px;line-height:1.4}
+#telBox .tRow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+#telBox .tRow div{flex:1;min-width:0}#telBox .tRow b{display:block;font-size:17px}#telBox .tRow small{color:var(--txt2)}
+#telBox .tRow button{flex:none;width:48px;height:48px;border-radius:12px;border:0;font-size:22px;background:var(--lime);color:var(--on-lime)}
+#telBox .tRow button.del{background:var(--card2);color:var(--txt)}
+#telBox input{width:100%;box-sizing:border-box;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font:16px system-ui;margin:0 0 8px}
+#telBox .tB{width:100%;padding:14px;border-radius:14px;border:0;font:700 16px system-ui;background:var(--lime);color:var(--on-lime);margin:0 0 8px}
+#telBox .tB.sec{background:#0A0A0A;color:#fff}
+</style>
+<div id="telOv" onclick="if(event.target===this)telClose()"><div id="telBox"></div></div>
+<script>
+/* ===== v5.81.0 — 📞 LLAMADAS POR VOZ =====
+   · Guardas los contactos que quieras (de la agenda del móvil o a mano): «Casa», «Nachi»…
+   · «Oye bici, llama a Nachi» → la app lo dice y abre la llamada con su número.
+   · La app no puede leer toda la agenda: solo los contactos que tú eliges. Nada sale del móvil. */
+const telList=()=>store.get('telList',[]);
+const telSave=l=>store.set('telList',l);
+const telN=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim();
+const telNum=s=>String(s||'').replace(/[^\d+]/g,'');
+function telLev(a,b){const m=a.length,n=b.length;if(Math.abs(m-n)>2)return 9;let p=[...Array(n+1).keys()];
+  for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+/* ¿Es una orden de llamar? Devuelve el contacto, 'none' (no lo tiene) o null (no es para mí) */
+function telMatch(t){
+  t=telN(t).replace(/^(oye bici|bici)\s+/,'');
+  const m=t.match(/^(?:llama|llamar|llamame|llamale|llama me|telefonea|marca|truca|trucar|trucal|truqui)\s+(?:a |al |a la |a el )?(.{2,30})$/);
+  if(!m)return null;let q=m[1].replace(/^(mi |mis )/,'').trim();
+  if(/^(112|emergencias?|socorro|ambulancia|policia|bomberos)$/.test(q))return null;   // eso lo lleva SOS
+  const L=telList();if(!L.length)return 'none';
+  const cands=L.map(c=>({c,n:telN(c.name)}));
+  let f=cands.find(x=>x.n===q)||cands.find(x=>x.n.split(' ')[0]===q||q.split(' ')[0]===x.n)||cands.find(x=>x.n.startsWith(q)||q.startsWith(x.n));
+  if(!f){let best=null,bd=9;cands.forEach(x=>{const d=Math.min(telLev(q,x.n),telLev(q,x.n.split(' ')[0]));if(d<bd){bd=d;best=x}});if(best&&bd<=(q.length>=5?2:1))f=best}
+  return f?f.c:{miss:q}}
+function telCall(c,say){try{say('Llamando a '+c.name+'.')}catch(e){}setTimeout(()=>{location.href='tel:'+telNum(c.tel)},1300)}
+function telDo(r,say){
+  if(r==='none'){say('Aún no tienes contactos para llamar. Añádelos en Perfil, órdenes por voz, llamadas.');return}
+  if(r.miss){say('No tengo a '+r.miss+' en tus contactos de llamada.');return}
+  telCall(r,say)}
+/* Voz: en ruta y con «Oye bici» / 🎤 */
+(function(){
+  var vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){
+    try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=telMatch(n);if(r){try{vcOk2()}catch(e){}telDo(r,vcSay);return true}}}catch(e){}
+    return vd.apply(this,arguments)};
+  var vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){
+    try{var r=telMatch(t);if(r){telDo(r,vozSay);return true}}catch(e){}
+    return vr.apply(this,arguments)};
+})();
+/* Pantalla para guardar los contactos */
+function telClose(){$('telOv').classList.remove('show')}
+function telOpen(){
+  const L=telList(),pick=('contacts' in navigator)&&('select' in navigator.contacts);
+  $('telBox').innerHTML=`<div class="tHd">📞 Llamadas por voz</div><div class="tIn">
+   <p class="tS">Di <b>«Oye bici, llama a …»</b> y el nombre tal como lo guardes aquí. Pon nombres cortos y fáciles de decir: «Casa», «Nachi», «Taller».</p>
+   ${L.length?L.map((c,i)=>`<div class="tRow"><div><b>${esc(c.name)}</b><small>${esc(c.tel)}</small></div><button onclick="location.href='tel:'+telNum(telList()[${i}].tel)" aria-label="Llamar">📞</button><button class="del" onclick="telDel(${i})" aria-label="Borrar">🗑️</button></div>`).join(''):'<p class="tS">Aún no tienes ninguno.</p>'}
+   <div style="margin-top:14px">
+   ${pick?'<button class="tB" onclick="telPick()">📇 Elegir de la agenda del móvil</button>':''}
+   <input id="telNm" placeholder="Nombre para decir (ej. Casa)" autocomplete="off">
+   <input id="telNo" type="tel" placeholder="Teléfono (ej. 600 123 456)" autocomplete="off">
+   <button class="tB" onclick="telAdd()">➕ Añadir a mano</button>
+   <button class="tB sec" onclick="telClose()">Cerrar</button>
+   <p class="tS">Solo se guardan en este móvil los contactos que tú añades. La app no lee el resto de tu agenda. Al decir la orden se abre la llamada; en algunos móviles hay que tocar el botón verde para llamar.</p></div></div>`;
+  $('telOv').classList.add('show')}
+function telAdd(){const n=($('telNm').value||'').trim(),t=telNum($('telNo').value);
+  if(!n){toast('Escribe el nombre');return}if(t.replace('+','').length<3){toast('Escribe el teléfono');return}
+  const L=telList().filter(c=>telN(c.name)!==telN(n));L.push({name:n.slice(0,30),tel:t});telSave(L);toast('📞 '+n+' guardado');telOpen()}
+function telDel(i){const L=telList();const c=L[i];if(!c)return;L.splice(i,1);telSave(L);toast('🗑️ '+c.name+' borrado');telOpen()}
+async function telPick(){
+  try{const R=await navigator.contacts.select(['name','tel'],{multiple:true});if(!R||!R.length)return;
+    const L=telList();let n=0;
+    R.forEach(r=>{const tel=telNum((r.tel||[])[0]);const name=String((r.name||[])[0]||'').trim().slice(0,30);if(!tel||!name)return;
+      const i=L.findIndex(c=>telN(c.name)===telN(name));if(i>=0)L[i].tel=tel;else L.push({name,tel});n++});
+    telSave(L);toast(n?'📞 '+n+' contacto'+(n>1?'s':'')+' guardado'+(n>1?'s':''):'Ese contacto no tiene teléfono');telOpen();
+    if(n)setTimeout(()=>toast('Si el nombre es largo, bórralo y añádelo a mano con un nombre corto',5000),2800)
+  }catch(e){console.warn('agenda',e);toast('No se ha podido abrir la agenda. Añádelo a mano.')}}
+</script>
+
 </body>
 </html>
