@@ -8947,7 +8947,8 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
   <tr><td>«Dónde estoy»</td><td>Calle o lugar donde estás</td></tr>
   <tr><td>«Repite»</td><td>Repite la última indicación</td></tr>
   <tr><td>«Va a llover»</td><td>Si llueve ahora, a qué hora empieza o para, hora de más riesgo, litros, tormenta y lo fiable que es (3 modelos)</td></tr>
-  <tr><td>«Lloverá esta tarde / esta noche»<br>«Lloverá mañana»</td><td>Lluvia de ese tramo o de mañana (mañana y tarde por separado)</td></tr>
+  <tr><td>«Baja la cortina» / «Solo el mapa»<br>«Sube la cortina» / «Velocímetro»</td><td>Esconde los datos para ver el mapa entero, o los vuelve a subir</td></tr>
+<tr><td>«Lloverá esta tarde / esta noche»<br>«Lloverá mañana»</td><td>Lluvia de ese tramo o de mañana (mañana y tarde por separado)</td></tr>
   <tr><td>«Tiempo» / «Viento»</td><td>Temperatura y viento ahora</td></tr>
   <tr><td>«Agua»</td><td>La fuente más cercana</td></tr>
   <tr><td>«Pinchazo» / «Esperad»</td><td>Avisa a tu grupo (en salida en grupo)</td></tr>
@@ -11000,5 +11001,23 @@ async function lnOpen(speakIt){
     return old.apply(this,arguments)}})();
 </script>
 
+<script>
+/* v5.78.0 — 🗣️ Cortina por voz: «baja la cortina» = solo el mapa (con la velocidad abajo) · «sube la cortina» = vuelven los datos */
+(function(){
+  function cort(t){
+    if(!t)return null;t=String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/^(oye bici|bici)\s+/,'').trim();
+    if(/\b(musica|cancion|radio|volumen)\b/.test(t))return null;
+    if(/\b(baja|bajar|bajame|bajala|abaixa|abaixar|cierra|cerrar)\b.*\b(cortina|persiana|datos|panel)\b/.test(t)||/^(cortina|persiana) (abajo|baja)$/.test(t)||/\b(solo|ver|ensename|muestra|mostrar) (el )?mapa\b/.test(t)||/\b(esconde|esconder|oculta|ocultar|quita|quitar) (los )?datos\b/.test(t)||/^mapa$/.test(t))return 'down';
+    if(/\b(sube|subir|subeme|subela|puja|pujar|abre|abrir)\b.*\b(cortina|persiana|datos|panel)\b/.test(t)||/^(cortina|persiana) (arriba|sube)$/.test(t)||/\b(ver|ensename|ensena|muestra|mostrar|pon|poner) (los )?datos\b/.test(t)||/\bvelocimetro\b/.test(t)||/^datos$/.test(t))return 'up';
+    return null}
+  function doIt(r,say){try{lvMin(r==='down')}catch(e){}try{say(r==='down'?'Mapa.':'Datos.')}catch(e){}}
+  var vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){
+    try{if(!(VC.ask&&Date.now()-VC.askT<12000)){var r=cort(n);if(r){try{vcOk2()}catch(e){}doIt(r,vcSay);return true}}}catch(e){}
+    return vd.apply(this,arguments)};
+  var vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){
+    try{var r=cort(t);if(r){doIt(r,vozSay);return true}}catch(e){}
+    return vr.apply(this,arguments)};
+})();
+</script>
 </body>
 </html>
