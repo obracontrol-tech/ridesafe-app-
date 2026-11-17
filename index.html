@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.85.0 — ⚡ Autonomía por modo (Eco · Trail · Boost) aprendida en ruta, cadencia en los datos; botón ⤢ junto a 🔔 ⚠️ (ya no tapa «Ver la app»).
+/* v5.86.0 — ⚡ Panel e-bike en ruta (batería con barra, modo en color, ayuda del motor, cadencia, km por modo) y reconexión que no se rinde.
+   v5.85.0 — ⚡ Autonomía por modo (Eco · Trail · Boost) aprendida en ruta, cadencia en los datos; botón ⤢ junto a 🔔 ⚠️ (ya no tapa «Ver la app»).
    v5.84.0 — ⚡ Mi e-bike (Shimano STEPS por Bluetooth, Android): batería, modo y autonomía en los datos de ruta, avisos por voz y «Oye bici, batería». Conectar en Perfil › Mi bici.
    v5.83.1 — ⤢ Mapa en horizontal: barra de abajo fina, columna de botones con scroll; ya no se tapan los botones.
    v5.83.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?» (desde donde estés, 3 caminos y empieza a guiar).
@@ -1401,7 +1402,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.85.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.86.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10254,7 +10255,6 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
     var F=fields(),f=document.getElementById('gmF');
     if(f){var nav=live.nav&&live.nav.left!=null,list=F.slice();
       if(nav&&list.indexOf('left')<0&&list.indexOf('eta')<0)list=list.concat(['left','eta']);
-      if(window.EB&&EB.on&&list.indexOf('ebat')<0)list=list.concat(['ebat','emode','ecad']);
       var html=list.map(function(k,i){var v=M[k][1]();return '<div class="f'+(i>5?' fn':'')+'" data-i="'+Math.min(i,5)+'"><small>'+M[k][0]+'</small><b>'+v[0]+(v[1]?'<i>'+v[1]+'</i>':'')+'</b></div>'}).join('');
       if(f._h!==html){f.innerHTML=html;f._h=html}}
     if(nm==='Subidas'){var p2=document.getElementById('gmP2'),P=live.gmP,C=live.gmC||[],d=done();
@@ -11199,9 +11199,30 @@ async function homeCard(){
 
 <style>
 /* ===== v5.84.0 — ⚡ MI E-BIKE (Shimano STEPS por Bluetooth) ===== */
-#ebRow{font:700 16px system-ui;padding:9px 12px;border-bottom:2px solid #111;background:#EFF6FF;color:#111;text-align:center}
-#ebRow b{font:900 20px 'Barlow Condensed',system-ui;color:#0B63CE}
-.lvpanel.gmPage2 #ebRow,.lvpanel.gmPage3 #ebRow{display:none!important}
+#ebPan{border-bottom:2px solid #111;background:#fff;color:#111;padding:8px 10px 10px}
+.lvpanel.gmPage2 #ebPan,.lvpanel.gmPage3 #ebPan{display:none!important}
+#ebPan small{display:block;font:800 12px system-ui;letter-spacing:.05em;color:#555}
+#ebPan i{font-style:normal;font:700 15px system-ui;color:#555;margin-left:3px}
+#ebPan .ebTop{display:flex;gap:10px;align-items:stretch}
+#ebPan .ebBat{flex:1}
+#ebPan .ebBat b{font:900 44px/1 'Barlow Condensed',system-ui}
+#ebPan .ebBar{height:12px;border-radius:6px;background:#E5E7EB;overflow:hidden;margin-top:4px;border:1px solid #111}
+#ebPan .ebBar div{height:100%;transition:width .5s}
+#ebPan .ebMode{flex:1;border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;font:900 34px 'Barlow Condensed',system-ui;letter-spacing:.04em;border:2px solid #111}
+#ebPan .ebMid{display:flex;gap:10px;margin-top:8px;border-top:1px solid #111;padding-top:6px}
+#ebPan .ebMid>div{flex:1;position:relative}
+#ebPan .ebMid b{font:900 32px/1.1 'Barlow Condensed',system-ui}
+#ebPan .ebAs{display:flex;gap:3px;margin-top:6px;align-items:flex-end;height:26px}
+#ebPan .ebAs span{flex:1;background:#E5E7EB;border-radius:3px;border:1px solid #9CA3AF}
+#ebPan .ebAs span:nth-child(1){height:30%}#ebPan .ebAs span:nth-child(2){height:37%}#ebPan .ebAs span:nth-child(3){height:44%}#ebPan .ebAs span:nth-child(4){height:51%}#ebPan .ebAs span:nth-child(5){height:58%}
+#ebPan .ebAs span:nth-child(6){height:65%}#ebPan .ebAs span:nth-child(7){height:72%}#ebPan .ebAs span:nth-child(8){height:79%}#ebPan .ebAs span:nth-child(9){height:86%}#ebPan .ebAs span:nth-child(10){height:100%}
+#ebPan .ebMid em{position:absolute;right:0;top:0;font:800 13px system-ui;color:#555;font-style:normal}
+#ebPan .ebKm{margin-top:8px;font:700 15px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+#ebPan .ebKm span{border:1px solid #111;border-radius:10px;padding:2px 8px}
+#ebPan .ebKm span.on{color:#fff;border-color:#111}
+#ebPan .ebKm b{font:900 20px 'Barlow Condensed',system-ui}
+#ebPan .ebLost{font:800 18px system-ui;text-align:center;padding:8px;color:#B45309}
+#ebPan .ebLost small{font:600 13px system-ui;color:#555;margin-top:2px}
 html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:auto!important;left:172px!important;width:46px!important;height:46px!important;font-size:21px!important;border-width:3px!important}
 #ebBox .ebC{background:var(--card,#fff);border:2px solid #111;border-radius:16px;padding:12px}
 #ebBox .ebT{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
@@ -11256,7 +11277,7 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   window.ebRender=render;
   /* --- Conexión --- */
   window.ebFind=async function(){if(!ok()||EB.busy)return;
-    try{EB.busy=true;render();
+    try{manualOff=false;EB.busy=true;render();
       dev=await navigator.bluetooth.requestDevice({filters:[{services:[U.adv]},{services:[U.modeS]},{namePrefix:'SC'},{namePrefix:'EW-'},{namePrefix:'EP'},{namePrefix:'SHIMANO'}],optionalServices:[U.modeS,U.adv,'battery_service']});
       await conn()}catch(e){console.warn('ebike',e);EB.busy=false;render();if(e&&e.name!=='NotFoundError')toast('⚡ No se ha podido conectar. ¿Está E‑TUBE abierto? Ciérralo y prueba otra vez.',5000)}};
   async function conn(){
@@ -11268,16 +11289,27 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
       clearInterval(batT);batT=setInterval(rd,20000);n++}catch(e){}
     try{const c=await (await g.getPrimaryService(U.modeS)).getCharacteristic(U.modeC);await c.startNotifications();
       c.addEventListener('characteristicvaluechanged',e=>pkt(e.target.value));n++}catch(e){}
-    EB.busy=false;if(!n){toast('⚡ Conectada, pero este motor no da datos que la app entienda');try{g.disconnect()}catch(e){}render();return}
+    EB.busy=false;if(!n){if(!EB.lost)toast('⚡ Conectada, pero este motor no da datos que la app entienda');try{g.disconnect()}catch(e){}render();return}
     EB.on=true;EB.name=dev.name||'mi e-bike';store.set('ebName',EB.name);retry=0;render();
-    toast('⚡ '+EB.name+' conectada'+(EB.bat!=null?' · batería '+EB.bat+'%':''));
+    if(!EB.lost)toast('⚡ '+EB.name+' conectada'+(EB.bat!=null?' · batería '+EB.bat+'%':''));
     try{if(live&&live.on&&EB.b0==null){EB.b0=EB.bat;EB.k0=live.km}}catch(e){}}
-  function lost(){EB.on=false;clearInterval(batT);render();
-    if(retry<4&&dev){retry++;setTimeout(async()=>{try{if(!dev.gatt.connected){EB.busy=true;await conn()}}catch(e){EB.busy=false;render();if(retry>=4)toast('⚡ Se ha perdido la conexión con la bici')}},2500*retry)}}
-  window.ebOff=function(){retry=99;try{dev&&dev.gatt.disconnect()}catch(e){}EB.on=false;clearInterval(batT);render()};
+  /* v5.86.0 — Reconexión que no se rinde: si se pierde la bici (apagada en una parada, lejos…) la sigo buscando
+     sin parar mientras grabas o tienes la app abierta: a los 3 s, 6 s, 10 s y luego cada 15 s. Solo paro si tocas «Desconectar». */
+  let manualOff=false,nextTry=0,tries=0;
+  function lost(){const was=EB.on;EB.on=false;clearInterval(batT);if(manualOff)return render();
+    EB.lost=Date.now();tries=0;nextTry=Date.now()+3000;render();
+    try{if(was&&live&&live.on)speak('Bici desconectada. La sigo buscando.')}catch(e){}}
+  async function retryTick(){
+    if(manualOff||EB.on||EB.busy||!dev||!EB.lost||Date.now()<nextTry)return;
+    if(document.visibilityState!=='visible'&&!(live&&live.on))return;
+    tries++;nextTry=Date.now()+(tries<2?6000:tries<3?10000:15000);EB.busy=true;render();
+    try{await conn();if(EB.on){const ago=Date.now()-EB.lost;EB.lost=0;try{if(live&&live.on&&ago>8000)speak('Bici conectada otra vez. Batería al '+(EB.bat??'')+' por ciento.')}catch(e){}}}
+    catch(e){EB.busy=false;render()}}
+  setInterval(retryTick,1000);
+  window.ebOff=function(){manualOff=true;EB.lost=0;try{dev&&dev.gatt.disconnect()}catch(e){}EB.on=false;clearInterval(batT);render()};
   /* Intento de reconexión sin tocar nada (si Chrome recuerda la bici) */
   async function auto(){try{if(!ok()||EB.on||EB.busy||!navigator.bluetooth.getDevices)return;const name=store.get('ebName','');if(!name)return;
-    const L=await navigator.bluetooth.getDevices();const d=L.find(x=>x.name===name);if(!d)return;dev=d;EB.busy=true;render();await conn()}catch(e){EB.busy=false;render()}}
+    const L=await navigator.bluetooth.getDevices();const d=L.find(x=>x.name===name);if(!d)return;dev=d;EB.busy=true;render();await conn()}catch(e){EB.busy=false;if(dev&&!manualOff&&!EB.lost){EB.lost=Date.now();tries=1;nextTry=Date.now()+6000}render()}}
   /* --- Datos --- */
   function bat(v){if(!(v>=0&&v<=100))return;EB.bat=v;learn(v);
     try{if(live&&live.on){if(EB.b0==null){EB.b0=v;EB.k0=live.km}
@@ -11288,7 +11320,7 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   function pkt(dv){const n=dv.byteLength;
     if(n===10){const m=dv.getUint8(1),nm=MODES[m]||('modo '+m);
       if(EB.mode&&EB.mode!==nm){try{if(live&&live.on&&store.get('ebSayMode',true))speak('Modo '+nm)}catch(e){}}
-      const ch=EB.mode!==nm;EB.mode=nm;if(ch)render();EB.spd=(dv.getUint8(2)|(dv.getUint8(3)<<8))/10;EB.asst=dv.getUint8(4);EB.cad=dv.getUint8(5)}
+      const ch=EB.mode!==nm;EB.mode=nm;if(ch)render();EB.spd=(dv.getUint8(2)|(dv.getUint8(3)<<8))/10;EB.asst=dv.getUint8(4);EB.asstMax=Math.max(EB.asstMax||0,EB.asst);EB.cad=dv.getUint8(5)}
     else if(n===17)EB.gear=dv.getUint8(5)}
   /* ¿Llego a casa con esta batería? (línea recta x1,3 hasta la casa guardada) */
   function homeCheck(){try{const R=EB.range();if(!R||Date.now()-EB.homeSaid<20*60000)return;const H=homeTarget(),h=live.pts&&live.pts.at(-1);
@@ -11304,10 +11336,22 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   (function(){const vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)&&isEb(n)){try{vcOk2()}catch(e){}vcSay(ebAns());return true}}catch(e){}return vd.apply(this,arguments)};
     const vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{if(isEb(t)){vozSay(ebAns());return true}}catch(e){}return vr.apply(this,arguments)}})();
   /* Fila «⚡ Te quedan: Eco · Trail · Boost» debajo de las casillas de datos */
-  setInterval(()=>{try{const f=$('gmF');let r=$('ebRow');
-    if(!(live&&live.on&&EB.on&&f)){if(r)r.remove();return}
-    if(!r){r=document.createElement('div');r.id='ebRow';f.after(r)}
-    const h='⚡ Te quedan <b>'+threeTxt('</b> · <b>')+'</b> km';if(r._h!==h){r.innerHTML=h;r._h=h}}catch(e){}},2000);
+  /* v5.86.0 — Panel e-bike en ruta: batería con barra, modo en color, ayuda del motor, cadencia y km por modo */
+  const MC={Eco:'#16A34A',Trail:'#0B63CE',Boost:'#EA580C',Andar:'#7C3AED',Apagado:'#6B7280'};
+  setInterval(()=>{try{const f=$('gmF');let r=$('ebPan');
+    if(!(live&&live.on&&f&&(EB.on||EB.lost||EB.busy))){if(r)r.remove();return}
+    if(!r){r=document.createElement('div');r.id='ebPan';f.after(r)}
+    let h;
+    if(!EB.on){h='<div class="ebLost">🔄 Buscando la bici…<small>'+(EB.bat!=null?'Última batería: '+EB.bat+' %':'')+' · enciéndela y acércate</small></div>'}
+    else{const b=EB.bat??0,bc=b<=15?'#DC2626':b<=30?'#F59E0B':'#16A34A',mc=MC[EB.mode]||'#111',
+        sc=Math.max(100,EB.asstMax||0),a=EB.asst??0,ap=Math.min(100,Math.round(a/sc*100));
+      h='<div class="ebTop">'+
+        '<div class="ebBat"><small>BICI ⚡</small><b style="color:'+bc+'">'+(EB.bat??'—')+'<i>%</i></b><div class="ebBar"><div style="width:'+b+'%;background:'+bc+'"></div></div></div>'+
+        '<div class="ebMode" style="background:'+mc+'">'+esc((EB.mode||'—').toUpperCase())+'</div></div>'+
+        '<div class="ebMid"><div><small>MOTOR AYUDA</small><div class="ebAs">'+[1,2,3,4,5,6,7,8,9,10].map(i=>'<span'+(ap>=i*10-5?' style="background:'+mc+'"':'')+'></span>').join('')+'</div><em>'+a+'</em></div>'+
+        '<div><small>CADENCIA</small><b>'+(EB.cad??'—')+'<i>rpm</i></b></div></div>'+
+        '<div class="ebKm">⚡ Te quedan '+['Eco','Trail','Boost'].map(m=>{const x=EB.rangeM(m);return '<span'+(m===EB.mode?' class="on" style="background:'+MC[m]+'"':'')+'>'+m+' <b>'+(x?(x.est?'≈':'')+Math.round(x.km):'—')+'</b></span>'}).join('')+' km</div>'}
+    if(r._h!==h){r.innerHTML=h;r._h=h}}catch(e){}},1000);
   window.addEventListener('load',()=>{render();setTimeout(auto,2500)});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(auto,800)});
 })();
