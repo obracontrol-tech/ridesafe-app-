@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.89.0 — 🎧 Interruptor «Escucho música con Spotify u otra app» (Perfil): ya no se pone el audio en silencio del casco que paraba Spotify.
+/* v5.89.1 — Horizontal en ruta: los datos empiezan siempre arriba (no se cortan) y la velocidad ocupa menos.
+   v5.89.0 — 🎧 Interruptor «Escucho música con Spotify u otra app» (Perfil): ya no se pone el audio en silencio del casco que paraba Spotify.
    v5.88.0 — 🔗 «Enviar ruta» con enlace: el amigo lo toca en WhatsApp y se guarda en su «Mis rutas» (o archivo GPX para Garmin…).
    v5.87.0 — 📤 «Enviar GPX» con el menú Compartir del móvil (ya no lo abre solo Bikemap) y 💾 «Guardar en Mis rutas» desde cada actividad.
    v5.86.1 — Icono nuevo para girar la pantalla (móvil vertical → horizontal con flecha), más claro que ⤢.
@@ -1407,7 +1408,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.89.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.89.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11191,6 +11192,9 @@ html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#ff
   html.gmx body:not(:has(#app.live)):not(:has(#s-rutas.planning)) #vozBtn{right:60px!important;left:auto!important;bottom:calc(var(--nav-h) + 62px + env(safe-area-inset-bottom))!important;width:48px!important;height:48px!important;font-size:22px!important}
   #s-rutas.live .lvpanel{left:auto!important;right:0!important;top:0!important;bottom:0!important;width:min(46%,430px)!important;max-height:100%!important;border-radius:0!important;border-top:0!important;border-left:3px solid #111!important;overflow-y:auto!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
   #s-rutas.live.lvmin .lvpanel{transform:translateX(calc(100% + 30px))!important}
+  #s-rutas.live .lvhandle{display:none!important}
+  html.gmx #s-rutas.live .lvbig b{font-size:46px!important}
+  html.gmx #s-rutas.live .lvstats .lvbig{padding:2px 12px 0!important}
   #s-rutas.live .lvaway1{position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;right:auto!important;left:12px!important;z-index:30!important}
   body:has(#s-rutas.live:not(.lvmin)) #landFab{right:calc(min(46%,430px) + 12px)}
   #s-rutas.live.lvmin .lvshow{left:auto!important;width:min(60%,460px)}
@@ -11203,6 +11207,7 @@ html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#ff
 const landIs=()=>matchMedia('(orientation:landscape) and (max-height:620px)').matches;
 function lvPW(){try{const s=$('s-rutas');if(!landIs()||!s||!s.classList.contains('live')||s.classList.contains('lvmin'))return 0;const p=document.querySelector('.lvpanel');return (p&&p.offsetWidth)||0}catch(e){return 0}}
 function landUI(){const on=!!document.fullscreenElement&&landIs();document.documentElement.classList.toggle('landOn',on);
+  setTimeout(()=>{try{const pn=document.querySelector('.lvpanel');if(pn&&landIs())pn.scrollTop=0}catch(e){}},450);
   try{if(typeof map!=='undefined'&&map&&map.resize)setTimeout(()=>{map.resize();try{live.camT=0}catch(e){}},350)}catch(e){}}
 async function landToggle(){
   const de=document.documentElement;
