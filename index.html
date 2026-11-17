@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.82.0 — ⤢ Botón «Horizontal»: la app gira y se pone a pantalla completa; en ruta, mapa a la izquierda y datos a la derecha.
+/* v5.83.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?» (desde donde estés, 3 caminos y empieza a guiar).
+   v5.82.0 — ⤢ Botón «Horizontal»: la app gira y se pone a pantalla completa; en ruta, mapa a la izquierda y datos a la derecha.
    v5.81.2 — Menú por voz: la app ya no abre el micro mientras sigue leyendo las opciones, y tras una pregunta tienes 12 s para contestar (antes se cortaba al llegar a la última).
    v5.81.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo».
    v5.81.0 — 📞 Llamadas por voz: «Oye bici, llama a Casa» con los contactos que guardes (de la agenda o a mano).
@@ -1396,7 +1397,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.82.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.83.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1417,6 +1418,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="qa">
     <button class="main" onclick="openCreate()"><span class="em">📅</span><div><b>Crear salida</b><small>Día, hora, punto de salida y encuentro</small></div></button>
     <button onclick="closeSheets();go('rutas');setTimeout(()=>openSheet('sh-plan'),250)"><span class="em">🗺️</span><div><b>Nueva ruta</b><small>De A a B, por etapas o circular</small></div></button>
+    <button onclick="closeSheets();homeCard()"><span class="em">🏠</span><div><b>Volver a casa</b><small>Desde donde estés · eliges entre 3 caminos y te guía</small></div></button>
     <button onclick="closeSheets();mkNear()"><span class="em">🥾</span><div><b>Rutas marcadas</b><small>GR, PR, Caminos y BTT ya hechos, cerca de ti · o di «Oye bici, rutas marcadas»</small></div></button>
     <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
@@ -11153,6 +11155,24 @@ async function landToggle(){
 document.addEventListener('fullscreenchange',landUI);
 try{screen.orientation&&screen.orientation.addEventListener('change',landUI)}catch(e){}
 window.addEventListener('resize',()=>{clearTimeout(window._landT);window._landT=setTimeout(landUI,300)});
+</script>
+
+<script>
+/* v5.83.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?»: desde donde estés, 3 caminos a casa y empieza a guiarte */
+async function homeCard(){
+  try{if(live&&live.on){homeMenu();return}}catch(e){}
+  if(homeBusy)return;try{go('rutas')}catch(e){}
+  homeBusy=true;homeDlg('🏠 Volver a casa','Buscando caminos…',[]);
+  let R=null;try{R=await homeOpts()}catch(e){console.warn('casa',e)}homeBusy=false;
+  if(!R||!R.H||!R.H.casa){homeDlg('🏠 Volver a casa','Aún no has guardado tu casa. Ve a «Ir a un destino» › «🏠 Guardar casa» y luego vuelve aquí.',[]);return}
+  if(R.near){homeDlg('🏠 Volver a casa','Ya estás en casa. 🏠',[]);return}
+  const O=R.opts.filter(o=>o.k!=='same');   // sin salida en marcha no hay «mismo camino»
+  if(!O.length){homeDlg('🏠 Volver a casa','No se ha podido calcular el camino. Revisa la conexión.',[]);return}
+  O.forEach((o,i)=>{try{setLine(map,o.coords,'home'+i,o.col)}catch(e){}});
+  homeDlg('🏠 Volver a casa','Elige por dónde quieres volver. Empezará a grabar y te guiará:',O,async i=>{
+    const o=O[i];try{homeClr()}catch(e){}
+    try{await startLive({route:{coords:o.coords},title:'Vuelta a casa'})}catch(e){console.warn(e)}
+    if(live.on)homeGo(R.H,o)})}
 </script>
 
 </body>

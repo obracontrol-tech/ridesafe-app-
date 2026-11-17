@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.41.0 — 🌙 Vuelve el modo ahorro (pantalla negra) en ruta, como en la Pro.
+/* v1.42.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?», como en la Pro 5.83.0.
+   v1.41.0 — 🌙 Vuelve el modo ahorro (pantalla negra) en ruta, como en la Pro.
    v1.40.0 — ⤢ Botón «Horizontal» (pantalla completa, mapa + datos al lado), como en la Pro 5.82.0.
    v1.39.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo» (como en la Pro 5.81.1).
    v1.39.0 — 🌦️ Lluvia y niebla (botón en la columna del mapa con 💧/🌫️ y avisos en ruta), como en la Pro 5.80.0.
@@ -1256,7 +1257,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.41.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.42.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1289,6 +1290,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="qa">
     <button class="main" onclick="openCreate()"><span class="em">📅</span><div><b>Crear salida</b><small>Día, hora, punto de salida y encuentro</small></div></button>
     <button onclick="closeSheets();go('rutas');setTimeout(()=>openSheet('sh-plan'),250)"><span class="em">🗺️</span><div><b>Nueva ruta</b><small>De A a B, por etapas o circular</small></div></button>
+    <button onclick="closeSheets();homeCard()"><span class="em">🏠</span><div><b>Volver a casa</b><small>Desde donde estés · eliges entre 3 caminos y te guía</small></div></button>
     <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
   </div>
@@ -9562,6 +9564,24 @@ async function landToggle(){
 document.addEventListener('fullscreenchange',landUI);
 try{screen.orientation&&screen.orientation.addEventListener('change',landUI)}catch(e){}
 window.addEventListener('resize',()=>{clearTimeout(window._landT);window._landT=setTimeout(landUI,300)});
+</script>
+
+<script>
+/* v5.83.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?»: desde donde estés, 3 caminos a casa y empieza a guiarte */
+async function homeCard(){
+  try{if(live&&live.on){homeMenu();return}}catch(e){}
+  if(homeBusy)return;try{go('rutas')}catch(e){}
+  homeBusy=true;homeDlg('🏠 Volver a casa','Buscando caminos…',[]);
+  let R=null;try{R=await homeOpts()}catch(e){console.warn('casa',e)}homeBusy=false;
+  if(!R||!R.H||!R.H.casa){homeDlg('🏠 Volver a casa','Aún no has guardado tu casa. Ve a «Ir a un destino» › «🏠 Guardar casa» y luego vuelve aquí.',[]);return}
+  if(R.near){homeDlg('🏠 Volver a casa','Ya estás en casa. 🏠',[]);return}
+  const O=R.opts.filter(o=>o.k!=='same');   // sin salida en marcha no hay «mismo camino»
+  if(!O.length){homeDlg('🏠 Volver a casa','No se ha podido calcular el camino. Revisa la conexión.',[]);return}
+  O.forEach((o,i)=>{try{setLine(map,o.coords,'home'+i,o.col)}catch(e){}});
+  homeDlg('🏠 Volver a casa','Elige por dónde quieres volver. Empezará a grabar y te guiará:',O,async i=>{
+    const o=O[i];try{homeClr()}catch(e){}
+    try{await startLive({route:{coords:o.coords},title:'Vuelta a casa'})}catch(e){console.warn(e)}
+    if(live.on)homeGo(R.H,o)})}
 </script>
 
 </body>
