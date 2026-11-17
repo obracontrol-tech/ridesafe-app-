@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.86.1 — Icono nuevo para girar la pantalla (móvil vertical → horizontal con flecha), más claro que ⤢.
+/* v5.87.0 — 📤 «Enviar GPX» con el menú Compartir del móvil (ya no lo abre solo Bikemap) y 💾 «Guardar en Mis rutas» desde cada actividad.
+   v5.86.1 — Icono nuevo para girar la pantalla (móvil vertical → horizontal con flecha), más claro que ⤢.
    v5.86.0 — ⚡ Panel e-bike en ruta (batería con barra, modo en color, ayuda del motor, cadencia, km por modo) y reconexión que no se rinde.
    v5.85.0 — ⚡ Autonomía por modo (Eco · Trail · Boost) aprendida en ruta, cadencia en los datos; botón ⤢ junto a 🔔 ⚠️ (ya no tapa «Ver la app»).
    v5.84.0 — ⚡ Mi e-bike (Shimano STEPS por Bluetooth, Android): batería, modo y autonomía en los datos de ruta, avisos por voz y «Oye bici, batería». Conectar en Perfil › Mi bici.
@@ -1403,7 +1404,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.86.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.87.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3133,7 +3134,34 @@ async function saveSavedGpx(id){
     try{await navigator.share({files:[new File([gpx],fn,{type:'application/gpx+xml'})],title:r.name});toast('Elige «Guardar en Archivos» → En mi iPhone → Rutas',5000);return}
     catch(e){if(e&&e.name==='AbortError')return}
   }
-  downloadGPX(u.coords,r.name,u.prof);
+  shareGpx(u.coords,r.name,u.prof);
+}
+/* v5.87.0 — 📤 Enviar GPX: abre «Compartir» del móvil (WhatsApp, correo, Garmin…) en vez de descargar y que el
+   móvil lo abra solo con otra app. Si el móvil no deja compartir el archivo, se guarda en Descargas. */
+async function shareGpx(coords,name,prof){
+  if(!coords||coords.length<2){toast('No hay ruta para exportar');return}
+  const fn=(String(name||'ruta').replace(/[^\wáéíóúñÁÉÍÓÚÑàèìòùÀÈÌÒÙçÇïüÏÜ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
+  const gpx=rsGpxText(coords,name,prof);
+  for(const ty of ['application/gpx+xml','text/xml','application/octet-stream']){
+    try{const f=new File([gpx],fn,{type:ty});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:String(name||'Ruta')});return}}
+    catch(e){if(e&&e.name==='AbortError')return}}
+  downloadGPX(coords,name,prof,true);
+  toast('📥 '+fn+' guardado en Descargas. Para enviarlo: WhatsApp › 📎 › Documento',6000);
+}
+/* v5.87.0 — 💾 De una actividad a «Mis rutas»: queda como tarjeta para repetirla, compartirla o seguirla */
+function actToRoutes(id){
+  const a=acts.find(x=>x.id===id);if(!a||!a.poly){toast('Esta actividad no tiene recorrido');return}
+  const pts=decodePoly(a.poly);if(pts.length<2)return;
+  const coords=pts.map(p=>[p[0],p[1],0]);let km=0;for(let i=1;i<coords.length;i++)km+=hav(coords[i-1],coords[i]);
+  const L=store.get('routes',[]);
+  if(L.some(r=>r.fromAct===id)){toast('Ya está en «Mis rutas»');return}
+  const up=Math.round(a.up||a.elev||0);
+  const r={coords,km:+(a.km||km).toFixed(2),up,down:up,mins:estMins(a.km||km,up),mode:'track',legs:[],prof:null,
+    wps:[{lat:coords[0][0],lng:coords[0][1],label:'Salida'},{lat:coords.at(-1)[0],lng:coords.at(-1)[1],label:'Llegada'}]};
+  const it={id:'rt'+Date.now().toString(36),name:String(a.name||'Mi salida').slice(0,40),date:iso(new Date()),fromAct:id,...packRoute(r)};
+  L.unshift(it);store.set('routes',L.slice(0,50));
+  toast('💾 Guardada en «Mis rutas» · Actividades › Mis rutas',4500);
 }
 function rsGpxText(coords,name,prof){
   const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));const E=gpxEles(coords,prof);
@@ -4197,7 +4225,7 @@ function openActDetail(id){
     <button class="btn btn-lime" style="grid-column:1/-1" onclick="openPhoto(${a.id})">📸 Foto con tus datos</button>
     <button class="btn btn-line" id="actMedia" style="grid-column:1/-1;display:none" onclick="actMediaOpen(${a.id})"></button>
     ${a.poly?`<button class="btn btn-line" style="grid-column:1/-1;border-color:var(--lime)" onclick="open3D(${a.id})">▶ Ver recorrido en 3D</button><button class="btn btn-line" style="grid-column:1/-1" onclick="open3D(${a.id},true)">🎬 Vídeo 3D para WhatsApp y redes</button>`:''}
-    ${a.poly?`<button class="btn btn-line" style="font-size:15px" onclick="closeSheets();openAct(${a.id})">🗺️ Mapa grande</button><button class="btn btn-line" style="font-size:15px" onclick="downloadGPX(decodePoly(acts.find(x=>x.id===${a.id}).poly),acts.find(x=>x.id===${a.id}).name)">⬇️ GPX</button>`:''}
+    ${a.poly?`<button class="btn btn-line" style="font-size:15px" onclick="closeSheets();openAct(${a.id})">🗺️ Mapa grande</button><button class="btn btn-line" style="font-size:15px" onclick="shareGpx(decodePoly(acts.find(x=>x.id===${a.id}).poly),acts.find(x=>x.id===${a.id}).name)">📤 Enviar GPX</button><button class="btn btn-line" style="grid-column:1/-1;border-color:var(--lime)" onclick="actToRoutes(${a.id})">💾 Guardar en Mis rutas (para repetirla)</button>`:''}
     ${a.src==='strava'?`<a class="btn btn-line" style="font-size:15px;grid-column:1/-1;color:#FC4C02;border-color:#FC4C02;text-decoration:none" href="https://www.strava.com/activities/${Number(a.id)}" target="_blank" rel="noopener">Ver en Strava</a>`:''}
     <button class="btn btn-line" style="font-size:15px" onclick="renameAct(${a.id})">✏️ Cambiar nombre</button>
     <button class="btn btn-line" style="font-size:15px;color:var(--red)" onclick="deleteAct(${a.id})">🗑️ Borrar</button>
@@ -10687,7 +10715,7 @@ function rsSimpleCardClose(){try{localStorage.setItem('rs_simple_card','1')}catc
       '<div class="rmap" id="rtMap"></div>'+
       '<div class="pstats" style="margin-top:0"><div><b class="num">'+fmtNum(r.km,1)+'</b><span>km</span></div><div><b class="num">+'+(r.up||0)+'</b><span>m subida</span></div><div><b class="num">'+hm(mins)+'</b><span>aprox.</span></div></div>'+
       '<button class="btn btn-lime" style="width:100%;min-height:58px;font-size:17px;margin-top:10px" onclick="closeSheets();go(\'rutas\');viewSaved(\''+r.id+'\')">▶ Ver en el mapa y seguirla</button>'+
-      '<div class="rtBtns"><button class="btn btn-line" onclick="rtRen(\''+r.id+'\')">✏️ Cambiar nombre</button><button class="btn btn-line" onclick="saveSavedGpx(\''+r.id+'\')">⬇️ GPX</button>'+
+      '<div class="rtBtns"><button class="btn btn-line" onclick="rtRen(\''+r.id+'\')">✏️ Cambiar nombre</button><button class="btn btn-line" onclick="saveSavedGpx(\''+r.id+'\')">📤 Enviar GPX</button>'+
       (typeof publishRoute==='function'?'<button class="btn btn-line" onclick="publishRoute(store.get(\'routes\',[]).find(function(x){return x.id===\''+r.id+'\'}))">🌍 Compartir</button>':'')+
       '<button class="btn btn-line" style="color:var(--red);border-color:var(--red)" onclick="rtDel(\''+r.id+'\')">🗑️ Borrar</button></div>';
     try{openRideId=null}catch(e){}openSheet('sh-ride');
