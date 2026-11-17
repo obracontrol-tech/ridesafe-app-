@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.42.1 — ⤢ Mapa en horizontal sin botones tapados (como la Pro 5.83.1).
+/* v1.42.2 — Icono nuevo para girar la pantalla (móvil vertical → horizontal).
+   v1.42.1 — ⤢ Mapa en horizontal sin botones tapados (como la Pro 5.83.1).
    v1.42.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?», como en la Pro 5.83.0.
    v1.41.0 — 🌙 Vuelve el modo ahorro (pantalla negra) en ruta, como en la Pro.
    v1.40.0 — ⤢ Botón «Horizontal» (pantalla completa, mapa + datos al lado), como en la Pro 5.82.0.
@@ -1035,7 +1036,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
     <button aria-label="Fuentes, bares y farmacias" onclick="poiMenu()" style="font-size:22px">☕</button>
     <button id="lnBtn" aria-label="Lluvia y niebla" onclick="lnOpen()">🌦️</button>
-    <button id="landBtn" aria-label="Pantalla horizontal" onclick="landToggle()">⤢</button>
+    <button id="landBtn" aria-label="Girar pantalla (horizontal / vertical)" onclick="landToggle()"><svg class="rotIco" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="4" width="17" height="27" rx="3" fill="none" stroke="currentColor" stroke-width="3.2"/><circle cx="13.5" cy="8" r="1.4" fill="currentColor"/><rect x="18" y="25" width="26" height="18" rx="3" fill="currentColor"/><rect x="21.5" y="28" width="19" height="12" rx="1.2" fill="#fff"/><path d="M27 9.5a13 13 0 0 1 12 11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M34.5 19.5l4.8 3.4 2.6-5.3" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button aria-label="Guardar esta zona sin conexión" onclick="saveViewOffline()" style="font-size:22px">📥</button>
   </div>
   <div class="rec" id="recBox">
@@ -1258,7 +1259,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.42.1 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.42.2 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9535,6 +9536,11 @@ async function lnOpen(speakIt){
 <style>
 /* ===== v5.82.0 — ⤢ PANTALLA HORIZONTAL ===== */
 #landBtn{font-size:24px!important}
+.rotIco{width:36px;height:36px;display:block;margin:auto;color:#111}
+#landFab .rotIco{width:32px;height:32px}
+html.landOn .rotIco{color:#fff}
+html.landOn .rotIco rect[fill="#fff"]{fill:#0B63CE}
+
 #landFab{display:none;position:fixed;top:calc(24px + env(safe-area-inset-top));right:12px;z-index:30;width:58px;height:58px;border-radius:50%;background:#fff;border:3px solid #111;font-size:26px;box-shadow:0 4px 12px #0005;align-items:center;justify-content:center;padding:0}
 body:has(#s-rutas.live) #landFab{display:flex}
 html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#fff}
@@ -9560,7 +9566,7 @@ html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#ff
   #s-rutas.live.lvmin .lvshow{left:auto!important;width:min(60%,460px)}
 }
 </style>
-<button id="landFab" onclick="landToggle()" aria-label="Pantalla horizontal">⤢</button>
+<button id="landFab" onclick="landToggle()" aria-label="Girar pantalla (horizontal / vertical)"><svg class="rotIco" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="4" width="17" height="27" rx="3" fill="none" stroke="currentColor" stroke-width="3.2"/><circle cx="13.5" cy="8" r="1.4" fill="currentColor"/><rect x="18" y="25" width="26" height="18" rx="3" fill="currentColor"/><rect x="21.5" y="28" width="19" height="12" rx="1.2" fill="#fff"/><path d="M27 9.5a13 13 0 0 1 12 11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M34.5 19.5l4.8 3.4 2.6-5.3" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <script>
 /* v5.82.0 — ⤢ Botón para poner la app en horizontal y a pantalla completa (mapa a la izquierda, datos a la derecha en ruta).
    Android: gira solo. iPhone: no deja girar desde una web → hay que girar el móvil con el bloqueo de rotación quitado. */
@@ -9573,7 +9579,7 @@ async function landToggle(){
   if(document.fullscreenElement){try{screen.orientation.unlock()}catch(e){}try{await document.exitFullscreen()}catch(e){}toast('📱 Vertical');landUI();return}
   if(!de.requestFullscreen||!(screen.orientation&&screen.orientation.lock)){toast('📱 En este móvil gira la pantalla a mano (quita el bloqueo de rotación)',5000);return}
   try{await de.requestFullscreen({navigationUI:'hide'})}catch(e){}
-  try{await screen.orientation.lock('landscape');toast('⤢ Horizontal · toca ⤢ otra vez para volver')}catch(e){toast('📱 Gira el móvil para verla en horizontal',4000)}
+  try{await screen.orientation.lock('landscape');toast('📱 Horizontal · toca el mismo botón para volver')}catch(e){toast('📱 Gira el móvil para verla en horizontal',4000)}
   landUI()}
 document.addEventListener('fullscreenchange',landUI);
 try{screen.orientation&&screen.orientation.addEventListener('change',landUI)}catch(e){}
