@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.44.0 — 🔗 «Enviar ruta» con enlace que se guarda solo en «Mis rutas» (como la Pro 5.88.0).
+/* v1.45.0 — 🎧 «Escucho música con Spotify u otra app»: ya no se para Spotify en ruta (como la Pro 5.89.0).
+   v1.44.0 — 🔗 «Enviar ruta» con enlace que se guarda solo en «Mis rutas» (como la Pro 5.88.0).
    v1.43.0 — 📤 «Enviar GPX» con Compartir y 💾 «Guardar en Mis rutas» desde cada actividad (como la Pro 5.87.0).
    v1.42.2 — Icono nuevo para girar la pantalla (móvil vertical → horizontal).
    v1.42.1 — ⤢ Mapa en horizontal sin botones tapados (como la Pro 5.83.1).
@@ -1239,6 +1240,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="bikeBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
+  <div class="set" style="flex-wrap:wrap">🎧 Escucho música con Spotify u otra app <label class="sw"><input type="checkbox" id="swExtMus" onchange="extMusSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Actívalo si en ruta escuchas Spotify, YouTube Music… La app no usará los botones del casco ni el audio que los mantiene, que es lo que paraba tu música. Los avisos de voz siguen sonando por encima.</small></div>
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
   <div class="set" style="flex-wrap:wrap">🧭 Si me salgo de la ruta<select class="inp" id="selNav" style="width:100%;margin-top:8px" onchange="store.set('navMode',this.value);toast({smart:'🤖 Automático: recalcula en carretera y te lleva de vuelta en montaña',auto:'🔄 Recalculará la ruta sola, como Google Maps',volver:'↩️ Te llevará de vuelta por donde has venido'}[this.value],4000)"><option value="smart">🤖 Automático (recomendado)</option><option value="auto">🔄 Recalcular siempre, como Google Maps</option><option value="volver">↩️ Volver por donde he venido</option></select><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Déjalo en <b>Automático</b>: la app elige sola lo más seguro.</small></div>
@@ -1261,7 +1263,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.44.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.45.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6820,7 +6822,7 @@ function cascoSilence(){const sr=8000,n=sr*10,b=new ArrayBuffer(44+n*2),v=new Da
   v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
   return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
 function cascoMusic(){return !!(mus.list.length&&mus.want)}
-function cascoKeep(){try{if(CASCO.a&&CASCO.a.paused)CASCO.a.play().catch(()=>{});navigator.mediaSession.playbackState='playing'}catch(e){}}
+function cascoKeep(){if(extMus())return;try{if(CASCO.a&&CASCO.a.paused)CASCO.a.play().catch(()=>{});navigator.mediaSession.playbackState='playing'}catch(e){}}
 function cascoRepeat(){cascoSay(CASCO.last||'Todavía no hay indicaciones.')}
 function cascoHandlers(){
   if(!('mediaSession' in navigator))return;const ms=navigator.mediaSession;
@@ -6858,7 +6860,7 @@ function cascoLightTick(){
 function cascoStart(){
   if(!cascoOn())return;
   CASCO.on=true;CASCO.sunSaid=false;
-  if(store.get('cascoBtn',true)&&'mediaSession' in navigator){
+  if(store.get('cascoBtn',true)&&!extMus()&&'mediaSession' in navigator){
     try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
       CASCO.a.play().then(()=>{cascoHandlers();
         if(!mus.a)try{navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Modo casco',artist:live.rideTitle||'En ruta'})}catch(e){}
@@ -7864,7 +7866,7 @@ function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else 
 /* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
 const vcPtt=()=>vcOn()&&!!store.get('vcPtt',false);
 function vcPttArm(){
-  if(!vcPtt()||!live.on||!('mediaSession' in navigator))return;
+  if(!vcPtt()||!live.on||extMus()||!('mediaSession' in navigator))return;
   try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
     CASCO.a.play().then(()=>{cascoHandlers();try{navigator.mediaSession.playbackState='playing';if(!mus.a)navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Pulsa para hablar',artist:live.rideTitle||'En ruta'})}catch(e){}}).catch(e=>console.warn('ptt casco',e))}catch(e){}
   vcChip();
@@ -9676,5 +9678,17 @@ async function homeCard(){
 })();
 </script>
 
+<script>
+/* v5.89.0 — 🎧 Música de otra app (Spotify…): el «Modo casco» y «pulsar para hablar» ponían en marcha un audio
+   en silencio que se repite (para recibir los botones del casco). Android lo trata como música y PARA Spotify
+   durante toda la ruta. Con este interruptor no se pone ese audio: Spotify sigue sonando y los botones del
+   casco vuelven a controlar tu música. */
+function extMus(){return !!store.get('extMusic',false)}
+function extMusSet(on){store.set('extMusic',!!on);
+  if(on){try{if(CASCO.a)CASCO.a.pause()}catch(e){}try{navigator.mediaSession.playbackState='none'}catch(e){}
+    toast('🎧 Spotify u otra app: la app ya no parará tu música',4500)}
+  else toast('🎧 Desactivado: los botones del casco vuelven a ser para la app')}
+window.addEventListener('load',()=>{try{const c=document.getElementById('swExtMus');if(c)c.checked=extMus()}catch(e){}});
+</script>
 </body>
 </html>
