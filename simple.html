@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.42.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?», como en la Pro 5.83.0.
+/* v1.42.1 — ⤢ Mapa en horizontal sin botones tapados (como la Pro 5.83.1).
+   v1.42.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?», como en la Pro 5.83.0.
    v1.41.0 — 🌙 Vuelve el modo ahorro (pantalla negra) en ruta, como en la Pro.
    v1.40.0 — ⤢ Botón «Horizontal» (pantalla completa, mapa + datos al lado), como en la Pro 5.82.0.
    v1.39.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo» (como en la Pro 5.81.1).
@@ -1257,7 +1258,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.42.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.42.1 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9539,6 +9540,19 @@ body:has(#s-rutas.live) #landFab{display:flex}
 html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#fff}
 @media (orientation:landscape) and (max-height:620px){
   #app{max-width:none!important}
+  /* v5.83.1 — Mapa en horizontal: barra de abajo baja y fina, columna de botones con scroll, nada tapado */
+  html{--nav-h:48px!important}
+  .nav{bottom:calc(6px + env(safe-area-inset-bottom))!important;height:48px!important;border-radius:18px!important}
+  .nav .tab{flex-direction:row!important;gap:6px!important}
+  .nav .tab .i{width:20px!important;height:20px!important}
+  .nav .tl{font-size:12px!important}
+  .plus{width:46px!important;height:46px!important;margin-top:-14px!important;border-width:3px!important}
+  .plus svg{width:22px!important;height:22px!important}
+  #s-rutas .mtop{right:64px!important}
+  #s-rutas .mside{top:calc(6px + env(safe-area-inset-top))!important;max-height:calc(100% - var(--nav-h) - 22px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto!important;overscroll-behavior:contain}
+  #s-rutas .mbottom{right:64px!important;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom))!important}
+  #s-rutas .rec{bottom:calc(var(--nav-h) + 64px + env(safe-area-inset-bottom))!important}
+  html.gmx body:not(:has(#app.live)):not(:has(#s-rutas.planning)) #vozBtn{right:60px!important;left:auto!important;bottom:calc(var(--nav-h) + 62px + env(safe-area-inset-bottom))!important;width:48px!important;height:48px!important;font-size:22px!important}
   #s-rutas.live .lvpanel{left:auto!important;right:0!important;top:0!important;bottom:0!important;width:min(46%,430px)!important;max-height:100%!important;border-radius:0!important;border-top:0!important;border-left:3px solid #111!important;overflow-y:auto!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
   #s-rutas.live.lvmin .lvpanel{transform:translateX(calc(100% + 30px))!important}
   #s-rutas.live .lvaway1{position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;right:auto!important;left:12px!important;z-index:30!important}
