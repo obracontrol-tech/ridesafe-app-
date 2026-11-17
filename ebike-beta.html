@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>RideSafe IA · Mi e-bike beta 1.0</title>
+<style>
+:root{--blue:#0B63CE;--bg:#F3F4F6;--card:#fff;--txt:#111;--txt2:#555;--line:#D1D5DB}
+*{box-sizing:border-box}
+body{margin:0;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt)}
+header{background:#0A0A0A;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;gap:10px}
+header b{flex:1;font-size:20px}
+header small{background:var(--blue);border-radius:10px;padding:3px 8px;font-weight:800;font-size:12px}
+header a{color:#fff;text-decoration:none;font-weight:700;border:2px solid #fff;border-radius:14px;padding:6px 10px;font-size:14px}
+main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:620px;margin:0 auto}
+.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:14px;margin:0 0 12px}
+.st{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.dot{width:14px;height:14px;border-radius:50%;background:#9CA3AF;flex:none}
+.dot.on{background:#16A34A}.dot.wait{background:#F59E0B}.dot.err{background:#DC2626}
+.sub{color:var(--txt2);font-size:14px;margin:6px 0 0;line-height:1.4}
+button{font:800 17px system-ui;border:0;border-radius:14px;padding:15px;width:100%;margin:8px 0 0;background:var(--blue);color:#fff}
+button.sec{background:#0A0A0A}
+button.lite{background:#fff;color:#111;border:2px solid #111}
+button:disabled{opacity:.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #111;border-radius:16px;overflow:hidden;background:#fff;margin:0 0 12px}
+.f{padding:10px 12px;border-right:1px solid #111;border-bottom:1px solid #111}
+.f:nth-child(2n){border-right:0}
+.f.big{grid-column:1 / -1;border-right:0;text-align:center}
+.f label{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--txt2);text-transform:uppercase}
+.f b{font-size:34px;font-weight:900;line-height:1.15;font-variant-numeric:tabular-nums}
+.f.big b{font-size:64px}
+.f i{font-style:normal;font-size:15px;font-weight:700;color:var(--txt2);margin-left:4px}
+.bat{height:12px;border-radius:6px;background:#E5E7EB;overflow:hidden;margin:6px 0 2px}
+.bat div{height:100%;width:0;background:#16A34A;transition:width .4s}
+#mode{color:var(--blue)}
+details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 12px}
+summary{font-weight:800;cursor:pointer}
+pre{white-space:pre-wrap;word-break:break-all;font-size:12px;background:#111;color:#A3E635;border-radius:10px;padding:10px;max-height:260px;overflow:auto;margin:10px 0 0}
+.warn{background:#FEF3C7;border:2px solid #F59E0B;border-radius:14px;padding:12px;font-size:14px;line-height:1.45;margin:0 0 12px}
+</style>
+</head>
+<body>
+<header><b>⚡ Mi e-bike</b><small>BETA 1.0</small><a href="./">‹ App</a></header>
+<main>
+  <div class="warn" id="noBt" style="display:none">⚠️ Este móvil o navegador no puede usar Bluetooth desde una web. Hace falta <b>Android con Chrome</b>. En iPhone no funciona.</div>
+
+  <div class="card">
+    <div class="st"><span class="dot" id="dot"></span><span id="stTxt">Sin conectar</span></div>
+    <p class="sub" id="stSub">Enciende la bici. <b>Cierra E‑TUBE</b> (la bici solo habla con una app a la vez) y toca «Buscar mi e‑bike».</p>
+    <button id="bFind" onclick="findBike(false)">🔍 Buscar mi e‑bike (Shimano)</button>
+    <button id="bAll" class="lite" onclick="findBike(true)">📡 No sale · ver todos los aparatos Bluetooth</button>
+    <button id="bOff" class="sec" onclick="disc()" style="display:none">Desconectar</button>
+  </div>
+
+  <div class="grid">
+    <div class="f big"><label>Batería</label><b id="bat">--</b><i>%</i><div class="bat"><div id="batBar"></div></div><span class="sub" id="batKm"></span></div>
+    <div class="f"><label>Asistencia</label><b id="mode">--</b></div>
+    <div class="f"><label>Motor ayuda</label><b id="asst">--</b><i>nivel</i></div>
+    <div class="f"><label>Cadencia</label><b id="cad">--</b><i>rpm</i></div>
+    <div class="f"><label>Velocidad</label><b id="spd">--</b><i>km/h</i></div>
+    <div class="f"><label>Marcha</label><b id="gear">--</b></div>
+    <div class="f"><label>Datos recibidos</label><b id="pk">0</b></div>
+  </div>
+
+  <button onclick="sayAll()">🔊 Decírmelo en voz alta</button>
+  <button class="lite" onclick="copyLog()">📋 Copiar el informe para enviárselo a Claude</button>
+
+  <details open style="margin-top:12px"><summary>🔧 Qué envía tu motor (informe)</summary><pre id="log"></pre></details>
+  <p class="sub">Beta para probar qué datos da el motor Shimano STEPS (EP8, EP801, E7000…) por Bluetooth. La forma de leer el modo, la cadencia y la marcha viene del proyecto libre «emtb» de Mark Edmonds (licencia MIT). Solo lee datos: no cambia nada de la bici.</p>
+</main>
+<script>
+/* ===== RideSafe IA · Mi e-bike beta 1.0 =====
+   Lectura Bluetooth (Web Bluetooth, Android + Chrome) de motores Shimano STEPS.
+   Formato de datos según https://github.com/markdotai/emtb (MIT License, © 2019 Mark Edmonds):
+   · Batería: servicio estándar 0x180F, característica 0x2A19 (1 byte = %)
+   · Modo/cadencia/velocidad: servicio 000018ef-5348-494d-414e-4f5f424c4500, car. 00002ac1-… (notificaciones)
+       paquete de 10 bytes: [1]=modo (0 Off,1 Eco,2 Trail,3 Boost,4 Walk) · [2..3]=velocidad/10 · [4]=asistencia · [5]=cadencia
+       paquete de 17 bytes: [5]=marcha
+   · Anuncia el servicio 000018ff-5348-494d-414e-4f5f424c4500 */
+const SH='-5348-494d-414e-4f5f424c4500';
+const U={adv:'000018ff'+SH,modeS:'000018ef'+SH,modeC:'00002ac1'+SH,bat:'battery_service',batC:'battery_level',
+  info:'device_information',csc:'cycling_speed_and_cadence',pow:'cycling_power',uart:'6e400001-b5a3-f393-e0a9-e50e24dcca9e',mac:'000018fe-1212-efde-1523-785feabcd123'};
+const MODES=['Apagado','Eco','Trail','Boost','Andar'];
+const $=id=>document.getElementById(id);
+let dev=null,gatt=null,batT=null,pk=0,V={},seen={},logL=[];
+function log(t){const d=new Date();logL.push(d.toTimeString().slice(0,8)+' '+t);if(logL.length>300)logL.shift();$('log').textContent=logL.join('\n');}
+function st(c,t,s){$('dot').className='dot '+c;$('stTxt').textContent=t;if(s!=null)$('stSub').innerHTML=s}
+const hex=dv=>[...new Uint8Array(dv.buffer,dv.byteOffset,dv.byteLength)].map(b=>b.toString(16).padStart(2,'0')).join(' ');
+if(!navigator.bluetooth){$('noBt').style.display='block';$('bFind').disabled=$('bAll').disabled=true;st('err','Bluetooth no disponible','')}
+log('Navegador: '+navigator.userAgent.replace(/\s+/g,' ').slice(0,160));
+
+async function findBike(all){
+  try{
+    st('wait','Buscando…','Elige tu bici en la lista que abre el móvil (suele llamarse EW‑EN100, SC‑EM800, EP8 o el nombre de la bici).');
+    const opt={optionalServices:[U.modeS,U.adv,U.bat,U.info,U.csc,U.pow,U.uart,U.mac]};
+    if(all)opt.acceptAllDevices=true;
+    else opt.filters=[{services:[U.adv]},{services:[U.modeS]},{namePrefix:'EW-'},{namePrefix:'SC-'},{namePrefix:'EP'},{namePrefix:'SHIMANO'},{namePrefix:'STEPS'}];
+    dev=await navigator.bluetooth.requestDevice(opt);
+    log('Elegido: «'+(dev.name||'sin nombre')+'» id '+dev.id);
+    dev.addEventListener('gattserverdisconnected',onLost);
+    await connect();
+  }catch(e){log('Buscar: '+e.name+' · '+e.message);
+    if(e.name==='NotFoundError')st('','Sin conectar','No has elegido ninguna bici, o no aparece. Prueba «ver todos los aparatos Bluetooth».');
+    else st('err','No se ha podido conectar',esc(e.message)+'<br>¿Está E‑TUBE abierto? Ciérralo del todo y prueba otra vez.')}
+}
+async function connect(){
+  st('wait','Conectando con «'+esc(dev.name||'tu bici')+'»…','');
+  gatt=await dev.gatt.connect();log('Conectado');
+  let svcs=[];try{svcs=await gatt.getPrimaryServices()}catch(e){log('Servicios: '+e.message)}
+  log('Servicios que deja ver: '+(svcs.length?'':'ninguno'));
+  for(const s of svcs){let cs=[];try{cs=await s.getCharacteristics()}catch(e){}
+    log(' · '+s.uuid+' → '+cs.map(c=>c.uuid.slice(0,8)+'['+props(c)+']').join(', '))}
+  let ok=0;
+  // Batería
+  try{const s=await gatt.getPrimaryService(U.bat);const c=await s.getCharacteristic(U.batC);
+    const rd=async()=>{try{const v=await c.readValue();setBat(v.getUint8(0))}catch(e){}};await rd();
+    try{await c.startNotifications();c.addEventListener('characteristicvaluechanged',e=>setBat(e.target.value.getUint8(0)))}catch(e){}
+    clearInterval(batT);batT=setInterval(rd,15000);ok++;log('Batería: OK')}catch(e){log('Batería: no ('+e.message+')')}
+  // Modo, cadencia, velocidad, marcha (Shimano)
+  try{const s=await gatt.getPrimaryService(U.modeS);const c=await s.getCharacteristic(U.modeC);
+    await c.startNotifications();c.addEventListener('characteristicvaluechanged',e=>onMode(e.target.value));ok++;log('Modo/cadencia Shimano: OK')}catch(e){log('Modo/cadencia Shimano: no ('+e.message+')')}
+  // Cadencia estándar (otros motores)
+  try{const s=await gatt.getPrimaryService(U.csc);const c=await s.getCharacteristic('csc_measurement');
+    await c.startNotifications();c.addEventListener('characteristicvaluechanged',e=>onRaw('CSC',e.target.value));ok++;log('Cadencia estándar: OK')}catch(e){}
+  try{const s=await gatt.getPrimaryService(U.pow);const c=await s.getCharacteristic('cycling_power_measurement');
+    await c.startNotifications();c.addEventListener('characteristicvaluechanged',e=>onPower(e.target.value));ok++;log('Potencia estándar: OK')}catch(e){}
+  if(ok){st('on','Conectado a «'+esc(dev.name||'tu bici')+'»','Pedalea o cambia el modo de asistencia: los datos se actualizan solos.');}
+  else st('err','Conectado, pero no da datos','Tu motor no deja leer nada conocido. Copia el informe y mándamelo.');
+  $('bOff').style.display='block';$('bFind').style.display=$('bAll').style.display='none';
+}
+function props(c){const p=c.properties;return[p.read?'R':'',p.write||p.writeWithoutResponse?'W':'',p.notify?'N':'',p.indicate?'I':''].join('')}
+function setBat(v){if(!(v>=0&&v<=100))return;V.bat=v;$('bat').textContent=v;$('batBar').style.width=v+'%';
+  $('batBar').style.background=v<=15?'#DC2626':v<=30?'#F59E0B':'#16A34A';
+  if(V.lastBat!==v){log('Batería '+v+'%');V.lastBat=v}
+  if(v<=15&&!V.lowSaid){V.lowSaid=true;say('Atención: batería de la bici al '+v+' por ciento.')}}
+function onMode(dv){pk++;$('pk').textContent=pk;const n=dv.byteLength;
+  if(!seen[n]){seen[n]=1;log('Paquete '+n+' bytes: '+hex(dv))}
+  if(n===10){const m=dv.getUint8(1);V.mode=MODES[m]||('modo '+m);$('mode').textContent=V.mode;
+    V.spd=(dv.getUint8(2)|(dv.getUint8(3)<<8))/10;$('spd').textContent=V.spd.toFixed(1).replace('.',',');
+    V.asst=dv.getUint8(4);$('asst').textContent=V.asst;V.cad=dv.getUint8(5);$('cad').textContent=V.cad;
+    if(V.lastMode!==m){if(V.lastMode!=null)say('Modo '+V.mode);V.lastMode=m;log('Modo: '+V.mode)}}
+  else if(n===17){V.gear=dv.getUint8(5);$('gear').textContent=V.gear}}
+function onRaw(k,dv){pk++;$('pk').textContent=pk;if(!seen[k]){seen[k]=1;log(k+': '+hex(dv))}}
+function onPower(dv){onRaw('Potencia',dv);try{const w=dv.getInt16(2,true);log('Potencia '+w+' W')}catch(e){}}
+function onLost(){st('err','Se ha perdido la conexión','Reintentando…');log('Desconectado');clearInterval(batT);
+  setTimeout(async()=>{try{if(dev&&!dev.gatt.connected)await connect()}catch(e){st('err','Sin conexión','Acércate a la bici y toca «Buscar mi e‑bike».');showFind()}},2000)}
+function showFind(){$('bOff').style.display='none';$('bFind').style.display=$('bAll').style.display='block'}
+function disc(){try{dev&&dev.removeEventListener('gattserverdisconnected',onLost);dev&&dev.gatt.disconnect()}catch(e){}clearInterval(batT);st('','Sin conectar','Desconectado.');showFind();log('Desconectado a mano')}
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.speak(u)}catch(e){}}
+function sayAll(){const p=[];if(V.bat!=null)p.push('Batería al '+V.bat+' por ciento');if(V.mode)p.push('modo '+V.mode);if(V.cad!=null)p.push('cadencia '+V.cad);
+  say(p.length?p.join(', ')+'.':'Aún no tengo datos de la bici.')}
+function copyLog(){const t='Mi e-bike beta 1.0\n'+logL.join('\n');try{navigator.clipboard.writeText(t).then(()=>alertBox('Copiado. Pégalo en el chat con Claude.'))}catch(e){alertBox('No se ha podido copiar: haz una captura del informe.')}}
+function alertBox(t){st($('dot').className.replace('dot','').trim(),$('stTxt').textContent,t)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+</script>
+</body>
+</html>
