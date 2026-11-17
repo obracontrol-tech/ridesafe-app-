@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.45.1 — Horizontal en ruta: los datos empiezan arriba sin cortarse.
+/* v1.45.2 — Horizontal: el menú ⋯ se abre hacia abajo.
+   v1.45.1 — Horizontal en ruta: los datos empiezan arriba sin cortarse.
    v1.45.0 — 🎧 «Escucho música con Spotify u otra app»: ya no se para Spotify en ruta (como la Pro 5.89.0).
    v1.44.0 — 🔗 «Enviar ruta» con enlace que se guarda solo en «Mis rutas» (como la Pro 5.88.0).
    v1.43.0 — 📤 «Enviar GPX» con Compartir y 💾 «Guardar en Mis rutas» desde cada actividad (como la Pro 5.87.0).
@@ -1264,7 +1265,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.45.1 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.45.2 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9594,6 +9595,7 @@ html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#ff
   #s-rutas.live .lvpanel{left:auto!important;right:0!important;top:0!important;bottom:0!important;width:min(46%,430px)!important;max-height:100%!important;border-radius:0!important;border-top:0!important;border-left:3px solid #111!important;overflow-y:auto!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
   #s-rutas.live.lvmin .lvpanel{transform:translateX(calc(100% + 30px))!important}
   #s-rutas.live .lvhandle{display:none!important}
+  #s-rutas.live .lvside .lvpop{bottom:auto!important;top:52px!important;right:0!important;z-index:30!important;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px);background:rgba(255,255,255,.96);border:2px solid #111;border-radius:16px;padding:8px}
   html.gmx #s-rutas.live .lvbig b{font-size:46px!important}
   html.gmx #s-rutas.live .lvstats .lvbig{padding:2px 12px 0!important}
   #s-rutas.live .lvaway1{position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;right:auto!important;left:12px!important;z-index:30!important}
