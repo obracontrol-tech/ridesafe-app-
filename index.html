@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.83.1 — ⤢ Mapa en horizontal: barra de abajo fina, columna de botones con scroll; ya no se tapan los botones.
+/* v5.84.0 — ⚡ Mi e-bike (Shimano STEPS por Bluetooth, Android): batería, modo y autonomía en los datos de ruta, avisos por voz y «Oye bici, batería». Conectar en Perfil › Mi bici.
+   v5.83.1 — ⤢ Mapa en horizontal: barra de abajo fina, columna de botones con scroll; ya no se tapan los botones.
    v5.83.0 — 🏠 Tarjeta «Volver a casa» en «¿Qué quieres hacer?» (desde donde estés, 3 caminos y empieza a guiar).
    v5.82.0 — ⤢ Botón «Horizontal»: la app gira y se pone a pantalla completa; en ruta, mapa a la izquierda y datos a la derecha.
    v5.81.2 — Menú por voz: la app ya no abre el micro mientras sigue leyendo las opciones, y tras una pregunta tienes 12 s para contestar (antes se cortaba al llegar a la última).
@@ -1372,6 +1373,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="offBox" style="margin-bottom:16px"></div>
   <div class="sec"><h3 style="font-size:18px">🚲 Mi bici</h3></div>
   <div id="bikeBox" style="margin-bottom:16px"></div>
+  <div id="ebBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
@@ -1398,7 +1400,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.83.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.84.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -10167,7 +10169,11 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
     left:['Falta',function(){var n=live.nav;return [n&&n.left!=null?n.left.toFixed(1):'—','km']}],
     eta:['Llegada',function(){var n=live.nav;if(!n||n.left==null)return ['—',''];var v=Math.max(10,live.speed>5?live.speed:18),e=new Date(Date.now()+n.left/v*3600000);return [e.getHours()+':'+String(e.getMinutes()).padStart(2,'0'),'']}],
     climb:['Falta subida',function(){var c=curClimb();return c?[c.left.toFixed(1),'km']:['—','']}],
-    batt:['Batería',function(){return [BAT!=null?Math.round(BAT*100):'—','%']}]
+    batt:['Batería',function(){return [BAT!=null?Math.round(BAT*100):'—','%']}],
+    ebat:['Bici ⚡',function(){var E=window.EB;return [E&&E.bat!=null?E.bat:'—','%']}],
+    emode:['Asistencia',function(){var E=window.EB;return [E&&E.mode?E.mode:'—','']}],
+    erng:['Autonomía',function(){var E=window.EB,r=E&&E.range&&E.range();return [r?Math.round(r):'—','km']}],
+    ecad:['Cadencia',function(){var E=window.EB;return [E&&E.cad!=null?E.cad:'—','rpm']}]
   };
   var BAT=null;try{navigator.getBattery&&navigator.getBattery().then(function(b){BAT=b.level;b.addEventListener('levelchange',function(){BAT=b.level})})}catch(e){}
   function fields(){try{var f=JSON.parse(localStorage.getItem('gm_fields')||'null');if(Array.isArray(f)&&f.length===6&&f.every(function(k){return M[k]}))return f}catch(e){}return DEF.slice()}
@@ -10247,6 +10253,7 @@ html.gmx .lvbanner .tx{font-size:17px!important;font-weight:700}
     var F=fields(),f=document.getElementById('gmF');
     if(f){var nav=live.nav&&live.nav.left!=null,list=F.slice();
       if(nav&&list.indexOf('left')<0&&list.indexOf('eta')<0)list=list.concat(['left','eta']);
+      if(window.EB&&EB.on&&list.indexOf('ebat')<0)list=list.concat(['ebat','emode']);
       var html=list.map(function(k,i){var v=M[k][1]();return '<div class="f'+(i>5?' fn':'')+'" data-i="'+Math.min(i,5)+'"><small>'+M[k][0]+'</small><b>'+v[0]+(v[1]?'<i>'+v[1]+'</i>':'')+'</b></div>'}).join('');
       if(f._h!==html){f.innerHTML=html;f._h=html}}
     if(nm==='Subidas'){var p2=document.getElementById('gmP2'),P=live.gmP,C=live.gmC||[],d=done();
@@ -11187,6 +11194,101 @@ async function homeCard(){
     const o=O[i];try{homeClr()}catch(e){}
     try{await startLive({route:{coords:o.coords},title:'Vuelta a casa'})}catch(e){console.warn(e)}
     if(live.on)homeGo(R.H,o)})}
+</script>
+
+<style>
+/* ===== v5.84.0 — ⚡ MI E-BIKE (Shimano STEPS por Bluetooth) ===== */
+#ebBox .ebC{background:var(--card,#fff);border:2px solid #111;border-radius:16px;padding:12px}
+#ebBox .ebT{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+#ebBox .ebT i{width:12px;height:12px;border-radius:50%;background:#9CA3AF;flex:none}
+#ebBox .ebT i.on{background:#16A34A}#ebBox .ebT i.wait{background:#F59E0B}
+#ebBox small{display:block;color:var(--txt2);font-size:13px;margin:6px 0 0;line-height:1.4}
+#ebBox .ebV{display:flex;gap:8px;margin:10px 0 0}
+#ebBox .ebV div{flex:1;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+#ebBox .ebV b{display:block;font-size:24px;font-weight:900}
+#ebBox .ebV span{font-size:11px;font-weight:800;color:var(--txt2);text-transform:uppercase}
+#ebBox button{width:100%;margin:10px 0 0;padding:13px;border-radius:14px;border:0;font:800 16px system-ui;background:#0B63CE;color:#fff}
+#ebBox button.sec{background:#0A0A0A}
+</style>
+<script>
+/* v5.84.0 — ⚡ Mi e-bike: lee por Bluetooth el motor Shimano STEPS (probado con EP8 + pantalla SC-EM800).
+   Batería %, modo (Eco/Trail/Boost), cadencia, velocidad del motor y marcha. Solo Android + Chrome.
+   Formato de datos según el proyecto libre github.com/markdotai/emtb (MIT License, © 2019 Mark Edmonds).
+   En ruta: casillas «Bici ⚡», «Asistencia» y «Autonomía»; avisos por voz al 30 %, 15 % y 5 %, y si no llegas a casa;
+   «Oye bici, batería» / «Oye bici, ¿qué modo llevo?». */
+(function(){
+  const SH='-5348-494d-414e-4f5f424c4500',U={adv:'000018ff'+SH,modeS:'000018ef'+SH,modeC:'00002ac1'+SH};
+  const MODES=['Apagado','Eco','Trail','Boost','Andar'];
+  const EB=window.EB={on:false,busy:false,name:null,bat:null,mode:null,cad:null,spd:null,asst:null,gear:null,b0:null,k0:null,said:{},homeSaid:0};
+  let dev=null,batT=null,retry=0;
+  const ok=()=>!!navigator.bluetooth;
+  /* --- Autonomía: km por cada 1 % de batería en esta salida (o la media guardada) --- */
+  function kmPct(){try{if(live&&live.on&&EB.b0!=null&&EB.bat!=null){const used=EB.b0-EB.bat,km=live.km-(EB.k0||0);
+      if(used>=3&&km>1){const r=km/used;store.set('ebKmPct',Math.round((store.get('ebKmPct',r)*0.7+r*0.3)*100)/100);return r}}}catch(e){}
+    return store.get('ebKmPct',null)}
+  EB.range=function(){const r=kmPct();return(EB.bat!=null&&r)?EB.bat*r:null};
+  /* --- Pantalla en Perfil › Mi bici --- */
+  function render(){const b=$('ebBox');if(!b)return;
+    if(!ok()){b.innerHTML='<div class="ebC"><div class="ebT">⚡ Mi e-bike</div><small>Para conectar una bici eléctrica hace falta un móvil Android con Chrome. En iPhone no se puede.</small></div>';return}
+    const st=EB.on?'on':EB.busy?'wait':'',R=EB.range();
+    b.innerHTML='<div class="ebC"><div class="ebT"><i class="'+st+'"></i>⚡ Mi e-bike'+(EB.on?' · '+esc(EB.name||'conectada'):'')+'</div>'+
+      (EB.on?'<div class="ebV"><div><span>Batería</span><b>'+(EB.bat??'—')+'%</b></div><div><span>Modo</span><b>'+esc(EB.mode||'—')+'</b></div><div><span>Autonomía</span><b>'+(R?Math.round(R)+' km':'—')+'</b></div></div>'+
+        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small><button class="sec" onclick="ebOff()">Desconectar</button>'
+      :'<small>Motores <b>Shimano STEPS</b> (EP8, EP801, EP6…). Enciende la bici y <b>cierra E‑TUBE</b>: la bici solo habla con una app a la vez.</small>'+
+        '<button onclick="ebFind()">'+(EB.busy?'Conectando…':(store.get('ebName','')?'🔄 Conectar «'+esc(store.get('ebName',''))+'»':'🔍 Conectar mi e-bike'))+'</button>')+'</div>'}
+  window.ebRender=render;
+  /* --- Conexión --- */
+  window.ebFind=async function(){if(!ok()||EB.busy)return;
+    try{EB.busy=true;render();
+      dev=await navigator.bluetooth.requestDevice({filters:[{services:[U.adv]},{services:[U.modeS]},{namePrefix:'SC'},{namePrefix:'EW-'},{namePrefix:'EP'},{namePrefix:'SHIMANO'}],optionalServices:[U.modeS,U.adv,'battery_service']});
+      await conn()}catch(e){console.warn('ebike',e);EB.busy=false;render();if(e&&e.name!=='NotFoundError')toast('⚡ No se ha podido conectar. ¿Está E‑TUBE abierto? Ciérralo y prueba otra vez.',5000)}};
+  async function conn(){
+    dev.removeEventListener('gattserverdisconnected',lost);dev.addEventListener('gattserverdisconnected',lost);
+    const g=await dev.gatt.connect();let n=0;
+    try{const c=await (await g.getPrimaryService('battery_service')).getCharacteristic('battery_level');
+      const rd=async()=>{try{bat((await c.readValue()).getUint8(0))}catch(e){}};await rd();
+      try{await c.startNotifications();c.addEventListener('characteristicvaluechanged',e=>bat(e.target.value.getUint8(0)))}catch(e){}
+      clearInterval(batT);batT=setInterval(rd,20000);n++}catch(e){}
+    try{const c=await (await g.getPrimaryService(U.modeS)).getCharacteristic(U.modeC);await c.startNotifications();
+      c.addEventListener('characteristicvaluechanged',e=>pkt(e.target.value));n++}catch(e){}
+    EB.busy=false;if(!n){toast('⚡ Conectada, pero este motor no da datos que la app entienda');try{g.disconnect()}catch(e){}render();return}
+    EB.on=true;EB.name=dev.name||'mi e-bike';store.set('ebName',EB.name);retry=0;render();
+    toast('⚡ '+EB.name+' conectada'+(EB.bat!=null?' · batería '+EB.bat+'%':''));
+    try{if(live&&live.on&&EB.b0==null){EB.b0=EB.bat;EB.k0=live.km}}catch(e){}}
+  function lost(){EB.on=false;clearInterval(batT);render();
+    if(retry<4&&dev){retry++;setTimeout(async()=>{try{if(!dev.gatt.connected){EB.busy=true;await conn()}}catch(e){EB.busy=false;render();if(retry>=4)toast('⚡ Se ha perdido la conexión con la bici')}},2500*retry)}}
+  window.ebOff=function(){retry=99;try{dev&&dev.gatt.disconnect()}catch(e){}EB.on=false;clearInterval(batT);render()};
+  /* Intento de reconexión sin tocar nada (si Chrome recuerda la bici) */
+  async function auto(){try{if(!ok()||EB.on||EB.busy||!navigator.bluetooth.getDevices)return;const name=store.get('ebName','');if(!name)return;
+    const L=await navigator.bluetooth.getDevices();const d=L.find(x=>x.name===name);if(!d)return;dev=d;EB.busy=true;render();await conn()}catch(e){EB.busy=false;render()}}
+  /* --- Datos --- */
+  function bat(v){if(!(v>=0&&v<=100))return;EB.bat=v;
+    try{if(live&&live.on){if(EB.b0==null){EB.b0=v;EB.k0=live.km}
+      [30,15,5].forEach(t=>{if(v<=t&&!EB.said[t]){EB.said[t]=1;const R=EB.range();
+        speak('Atención: batería de la bici al '+v+' por ciento'+(R?'. Te quedan unos '+Math.round(R)+' kilómetros':'')+(t<=15?'. Pasa a modo Eco para llegar.':'.'))}});
+      homeCheck()}}catch(e){}
+    render()}
+  function pkt(dv){const n=dv.byteLength;
+    if(n===10){const m=dv.getUint8(1),nm=MODES[m]||('modo '+m);
+      if(EB.mode&&EB.mode!==nm){try{if(live&&live.on&&store.get('ebSayMode',true))speak('Modo '+nm)}catch(e){}}
+      const ch=EB.mode!==nm;EB.mode=nm;if(ch)render();EB.spd=(dv.getUint8(2)|(dv.getUint8(3)<<8))/10;EB.asst=dv.getUint8(4);EB.cad=dv.getUint8(5)}
+    else if(n===17)EB.gear=dv.getUint8(5)}
+  /* ¿Llego a casa con esta batería? (línea recta x1,3 hasta la casa guardada) */
+  function homeCheck(){try{const R=EB.range();if(!R||Date.now()-EB.homeSaid<20*60000)return;const H=homeTarget(),h=live.pts&&live.pts.at(-1);
+    if(!H||!H.casa||!h)return;const d=hav(h,[H.lat,H.lng])*1.3;
+    if(d>2&&R<d*1.1){EB.homeSaid=Date.now();speak('Cuidado: con la batería que queda harías unos '+Math.round(R)+' kilómetros y a casa hay unos '+Math.round(d)+'. Pasa a Eco o vuelve ya.')}}catch(e){}}
+  /* Nueva salida: empieza a contar el gasto */
+  setInterval(()=>{try{if(live&&live.on){if(EB.on&&EB.b0==null&&EB.bat!=null){EB.b0=EB.bat;EB.k0=live.km}}else if(EB.b0!=null){EB.b0=null;EB.said={};EB.homeSaid=0}}catch(e){}},5000);
+  /* --- Voz: «Oye bici, batería» / «¿qué modo llevo?» --- */
+  function ebAns(){if(!EB.on)return 'La bici eléctrica no está conectada. Conéctala en Perfil, Mi bici.';
+    const R=EB.range();return 'Batería de la bici al '+(EB.bat??'—')+' por ciento'+(EB.mode?', modo '+EB.mode:'')+(R?'. Te quedan unos '+Math.round(R)+' kilómetros.':'.')}
+  const isEb=t=>{t=String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return /\b(bateria|autonomia|carga)\b.*\b(bici|ebike|e bike|motor)\b|\b(bici|ebike|motor)\b.*\b(bateria|autonomia)\b|^(oye bici )?(bateria|autonomia|que modo llevo|modo de asistencia|asistencia)$/.test(t.trim())};
+  (function(){const vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)&&isEb(n)){try{vcOk2()}catch(e){}vcSay(ebAns());return true}}catch(e){}return vd.apply(this,arguments)};
+    const vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{if(isEb(t)){vozSay(ebAns());return true}}catch(e){}return vr.apply(this,arguments)}})();
+  window.addEventListener('load',()=>{render();setTimeout(auto,2500)});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(auto,800)});
+})();
 </script>
 
 </body>
