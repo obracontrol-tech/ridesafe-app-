@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.39.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo» (como en la Pro 5.81.1).
+/* v1.40.0 — ⤢ Botón «Horizontal» (pantalla completa, mapa + datos al lado), como en la Pro 5.82.0.
+   v1.39.1 — ⏹ Al parar el seguimiento estable, el mapa de la familia deja de decir «En directo» (como en la Pro 5.81.1).
    v1.39.0 — 🌦️ Lluvia y niebla (botón en la columna del mapa con 💧/🌫️ y avisos en ruta), como en la Pro 5.80.0.
    v1.16.4 — Quien ya se pasó a Pro va siempre a Pro. El icono instalado desde la Simple abre simple.html
    (y al actualizar también recargaba la Simple): si el móvil ya eligió Pro, se va directo a la Pro. */
@@ -1031,6 +1032,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button aria-label="Mis rutas" onclick="openRoutes(false)"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg></button>
     <button aria-label="Fuentes, bares y farmacias" onclick="poiMenu()" style="font-size:22px">☕</button>
     <button id="lnBtn" aria-label="Lluvia y niebla" onclick="lnOpen()">🌦️</button>
+    <button id="landBtn" aria-label="Pantalla horizontal" onclick="landToggle()">⤢</button>
     <button aria-label="Guardar esta zona sin conexión" onclick="saveViewOffline()" style="font-size:22px">📥</button>
   </div>
   <div class="rec" id="recBox">
@@ -1253,7 +1255,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.39.1 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.40.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7098,7 +7100,7 @@ function onFix(pos){
   const ll=[c.longitude,c.latitude];
   if(!meMarker){const el=document.createElement('div');el.style.cssText='width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 8px rgba(37,99,235,.25)';meMarker=new maplibregl.Marker({element:el}).setLngLat(ll).addTo(map)}else meMarker.setLngLat(ll);
   try{navHdFix(p,c);navMkUpd(ll)}catch(e){}
-  if(live.follow&&!lowPow()&&now-(live.camT||0)>=(live.eco?5000:1800)){live.camT=now;const ph=lvPH(),bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),...navCam(),duration:live.eco?600:1200,padding:{top:bh+20,bottom:ph,left:0,right:0}})}
+  if(live.follow&&!lowPow()&&now-(live.camT||0)>=(live.eco?5000:1800)){live.camT=now;const ph=lvPH(),bh=$('lvBanner').offsetHeight||0;map.easeTo({center:ll,zoom:Math.max(map.getZoom(),16),...navCam(),duration:live.eco?600:1200,padding:{top:bh+20,bottom:ph,left:0,right:lvPW()}})}
   if(c.speed!=null&&c.speed>=0&&c.speed*3.6<90)live.speed=live.speed?live.speed*0.4+c.speed*3.6*0.6:c.speed*3.6;
   // v5.77.0: parado = 0 km/h (el GPS «baila» y daba velocidades falsas)
   const jit=Math.max(0.004,Math.min(0.03,(c.accuracy||5)*0.0004));
@@ -7480,7 +7482,7 @@ function togglePause(){
   live.anc=null;renderLive();
 }
 function toggleVoice(){live.voice=!live.voice;store.set('voice',live.voice);$('lvVoice').textContent=live.voice?'🔊':'🔇';if(live.voice)speak('Voz activada')}
-function toggleFollow(){live.follow=true;const m=live.pts.at(-1);if(m){const ph=lvPH(),bh=($('lvBanner')&&$('lvBanner').offsetHeight)||0;map.easeTo({center:[m[1],m[0]],zoom:16,...navCam(),padding:{top:bh+20,bottom:ph,left:0,right:0}})}toast('Siguiendo tu posición')}
+function toggleFollow(){live.follow=true;const m=live.pts.at(-1);if(m){const ph=lvPH(),bh=($('lvBanner')&&$('lvBanner').offsetHeight)||0;map.easeTo({center:[m[1],m[0]],zoom:16,...navCam(),padding:{top:bh+20,bottom:ph,left:0,right:lvPW()}})}toast('Siguiendo tu posición')}
 /* v5.48.0 — MAPA COMO UN GARMIN: flecha en el centro y el mapa gira hacia donde vas.
    El rumbo sale del GPS (dirección de la marcha), no de la brújula: no tiembla y funciona con el móvil en el manillar. */
 const navUpOn=()=>{const v=store.get('navUp',1);return v!==0&&v!==false};
@@ -8393,7 +8395,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
 function lvMin(on){var s=document.getElementById('s-rutas');if(!s)return;s.classList.toggle('lvmin',!!on);
   try{var sp=document.getElementById('lvSpeed'),m=document.getElementById('lvMinSp');if(sp&&m)m.textContent=sp.textContent}catch(e){}
   try{if(typeof live!=='undefined'&&live){live.camT=0}}catch(e){}}
-function lvPH(){var s=document.getElementById('s-rutas');if(s&&s.classList.contains('lvmin'))return 100;var p=document.querySelector('.lvpanel');return (p&&p.offsetHeight)||300}
+function lvPH(){var s=document.getElementById('s-rutas');if(s&&s.classList.contains('lvmin'))return 100;try{if(landIs())return 40}catch(e){}var p=document.querySelector('.lvpanel');return (p&&p.offsetHeight)||300}
 (function(){
   function swipe(el,dir,fn){if(!el)return;var y0=null,x0=0;
     el.addEventListener('touchstart',function(e){var t=e.touches[0];y0=t.clientY;x0=t.clientX},{passive:true});
@@ -9526,5 +9528,40 @@ async function lnOpen(speakIt){
       return true}}catch(e){console.warn(e)}
     return old.apply(this,arguments)}})();
 </script>
+<style>
+/* ===== v5.82.0 — ⤢ PANTALLA HORIZONTAL ===== */
+#landBtn{font-size:24px!important}
+#landFab{display:none;position:fixed;top:calc(24px + env(safe-area-inset-top));right:12px;z-index:30;width:58px;height:58px;border-radius:50%;background:#fff;border:3px solid #111;font-size:26px;box-shadow:0 4px 12px #0005;align-items:center;justify-content:center;padding:0}
+body:has(#s-rutas.live) #landFab{display:flex}
+html.landOn #landFab,html.landOn #landBtn{background:#0B63CE!important;color:#fff}
+@media (orientation:landscape) and (max-height:620px){
+  #app{max-width:none!important}
+  #s-rutas.live .lvpanel{left:auto!important;right:0!important;top:0!important;bottom:0!important;width:min(46%,430px)!important;max-height:100%!important;border-radius:0!important;border-top:0!important;border-left:3px solid #111!important;overflow-y:auto!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
+  #s-rutas.live.lvmin .lvpanel{transform:translateX(calc(100% + 30px))!important}
+  #s-rutas.live .lvaway1{position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;right:auto!important;left:12px!important;z-index:30!important}
+  body:has(#s-rutas.live:not(.lvmin)) #landFab{right:calc(min(46%,430px) + 12px)}
+  #s-rutas.live.lvmin .lvshow{left:auto!important;width:min(60%,460px)}
+}
+</style>
+<button id="landFab" onclick="landToggle()" aria-label="Pantalla horizontal">⤢</button>
+<script>
+/* v5.82.0 — ⤢ Botón para poner la app en horizontal y a pantalla completa (mapa a la izquierda, datos a la derecha en ruta).
+   Android: gira solo. iPhone: no deja girar desde una web → hay que girar el móvil con el bloqueo de rotación quitado. */
+const landIs=()=>matchMedia('(orientation:landscape) and (max-height:620px)').matches;
+function lvPW(){try{const s=$('s-rutas');if(!landIs()||!s||!s.classList.contains('live')||s.classList.contains('lvmin'))return 0;const p=document.querySelector('.lvpanel');return (p&&p.offsetWidth)||0}catch(e){return 0}}
+function landUI(){const on=!!document.fullscreenElement&&landIs();document.documentElement.classList.toggle('landOn',on);
+  try{if(typeof map!=='undefined'&&map&&map.resize)setTimeout(()=>{map.resize();try{live.camT=0}catch(e){}},350)}catch(e){}}
+async function landToggle(){
+  const de=document.documentElement;
+  if(document.fullscreenElement){try{screen.orientation.unlock()}catch(e){}try{await document.exitFullscreen()}catch(e){}toast('📱 Vertical');landUI();return}
+  if(!de.requestFullscreen||!(screen.orientation&&screen.orientation.lock)){toast('📱 En este móvil gira la pantalla a mano (quita el bloqueo de rotación)',5000);return}
+  try{await de.requestFullscreen({navigationUI:'hide'})}catch(e){}
+  try{await screen.orientation.lock('landscape');toast('⤢ Horizontal · toca ⤢ otra vez para volver')}catch(e){toast('📱 Gira el móvil para verla en horizontal',4000)}
+  landUI()}
+document.addEventListener('fullscreenchange',landUI);
+try{screen.orientation&&screen.orientation.addEventListener('change',landUI)}catch(e){}
+window.addEventListener('resize',()=>{clearTimeout(window._landT);window._landT=setTimeout(landUI,300)});
+</script>
+
 </body>
 </html>
