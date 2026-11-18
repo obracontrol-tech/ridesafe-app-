@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.90.2 — En ruta, los botones y etiquetas sobre el mapa (🔔 ⚠️ 🎤 girar, «Ver la app», velocidad) son translúcidos.
+/* v5.90.3 — 🧪 Modo pruebas (?pruebas=1): Pro y Simple instaladas en el mismo móvil sin saltar una a la otra.
+   v5.90.2 — En ruta, los botones y etiquetas sobre el mapa (🔔 ⚠️ 🎤 girar, «Ver la app», velocidad) son translúcidos.
    v5.90.1 — Velocidad del mapa en recuadro pequeño y translúcido; la batería y el modo de la e-bike vuelven al panel de datos (más compactos).
    v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
    v5.89.2 — Horizontal en ruta: el menú ⋯ (música, familia, capas) se abre hacia abajo y ya no queda fuera de la pantalla.
@@ -105,6 +106,7 @@
    v5.19.5 — Los usuarios nuevos empiezan en RideSafe IA Simple. Los de siempre siguen en Pro.
    No se desvía si el enlace trae datos (invitación a club, salida, familia, Strava…). */
 (function(){try{
+  var q=location.search;if(/[?&]pruebas=1/.test(q))localStorage.setItem('rs_test','1');if(/[?&]pruebas=0/.test(q))localStorage.removeItem('rs_test');if(localStorage.getItem('rs_test')==='1')return;
   if(location.hash||location.search)return;
   var m=localStorage.getItem('rs_modo');
   if(m==='pro')return;
@@ -1412,7 +1414,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11513,5 +11515,13 @@ html.landOn body:has(#s-rutas.live) #landFab{background:rgba(11,99,206,.6)!impor
 #s-rutas.live .lvaway1{background:rgba(255,255,255,.55)!important;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,.15)!important}
 #s-rutas.live #spdOv{background:rgba(255,255,255,.4)!important;border-color:rgba(17,17,17,.45)!important}
 </style>
+<script>
+/* 🧪 Modo pruebas (?pruebas=1 para activar, ?pruebas=0 para quitar): la Pro y la Simple no saltan una a la otra,
+   para tener las dos instaladas en el mismo móvil. */
+(function(){try{if(localStorage.getItem('rs_test')!=='1')return;
+  window.addEventListener('load',()=>{const b=document.createElement('div');b.id='rsTest';b.textContent='🧪 PRUEBAS · '+(/simple/.test(location.pathname)?'SIMPLE':'PRO');
+    b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(2px + env(safe-area-inset-top));z-index:99999;background:#7C3AED;color:#fff;font:800 11px system-ui;padding:2px 9px;border-radius:9px;opacity:.85;pointer-events:none';
+    document.body.appendChild(b)})}catch(e){}})();
+</script>
 </body>
 </html>
