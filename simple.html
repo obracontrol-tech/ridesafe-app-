@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.46.4 — 🎙️ Walkie estable entre Android e iPhone (como la Pro 5.90.4).
+/* v1.46.5 — 🎙️ Walkie Android → iPhone arreglado (como la Pro 5.90.5).
+   v1.46.4 — 🎙️ Walkie estable entre Android e iPhone (como la Pro 5.90.4).
    v1.46.3 — 🧪 Modo pruebas (?pruebas=1), como la Pro 5.90.3.
    v1.46.2 — Botones y etiquetas sobre el mapa translúcidos en ruta (como la Pro 5.90.2).
    v1.46.1 — Velocidad del mapa en recuadro pequeño y translúcido (como la Pro 5.90.1).
@@ -1270,7 +1271,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.46.4 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.46.5 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7338,11 +7339,15 @@ async function pttToWav(blob){
   dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);W(36,'data');dv.setUint32(40,d.length*2,true);
   for(let i=0;i<d.length;i++){const x=Math.max(-1,Math.min(1,d[i]*gain));dv.setInt16(44+i*2,x<0?x*0x8000:x*0x7FFF,true)}
   return new Blob([dv.buffer],{type:'audio/wav'})}
+/* El iPhone solo deja sonar audio después de un toque: cualquier toque en la app lo deja desbloqueado */
+['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{try{alarmUnlock();if(AC&&AC.state!=='running')AC.resume()}catch(e){}},{capture:true,passive:true}));
 function pttPlayAC(v){return new Promise(async(ok,ko)=>{try{alarmUnlock();if(!AC)return ko(new Error('sin AC'));
+  if(AC.state!=='running'){try{await Promise.race([AC.resume(),new Promise(r=>setTimeout(r,400))])}catch(e){}}
+  if(AC.state!=='running')return ko(new Error('audio bloqueado'));
   const bin=atob(v.audio),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
   const buf=await new Promise((a,b)=>{const p=AC.decodeAudioData(u.buffer,a,b);if(p&&p.then)p.then(a,b)});
-  const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=1;s.buffer=buf;s.connect(g);g.connect(AC.destination);s.onended=()=>ok();s.start(0);ptt.src=s}catch(e){ko(e)}})}
-function pttMime(){const L=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
+  const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=1;s.buffer=buf;s.connect(g);g.connect(AC.destination);let fin=0;const end=()=>{if(!fin){fin=1;ok()}};s.onended=end;setTimeout(end,(buf.duration+2)*1000);s.start(0);ptt.src=s}catch(e){ko(e)}})}
+function pttMime(){const L=PTT_IOS?['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm']:['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
 function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||'🎙️ Mantén pulsado y habla al grupo'}
 async function pttStart(){try{vcStop()}catch(e){}
   if(ptt.rec)return;ptt.cancel=0;
@@ -7369,7 +7374,7 @@ async function pttSend(){
   if(dur<700){toast('Mantén pulsado mientras hablas');return}
   let blob=new Blob(chunks,{type}),mt=type;
   pttBtn('busy','📤 Enviando…');beepPtt(660);
-  if(!pttSafe(type)){try{blob=await pttToWav(blob);mt='audio/wav'}catch(e){console.warn('walkie wav',e)}}
+  if(!pttSafe(type)){try{blob=await pttToWav(blob);mt='audio/wav'}catch(e){console.warn('walkie wav',e);toast('⚠️ Este audio puede no sonar en iPhone')}}
   if(blob.size>(mt==='audio/wav'?420000:190000)){pttBtn();toast('Mensaje demasiado largo');return}
   const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]||'');fr.onerror=()=>r('');fr.readAsDataURL(blob)});
   if(!b64){pttBtn();toast('No se pudo preparar el audio');return}
