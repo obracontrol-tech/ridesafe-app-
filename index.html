@@ -1385,7 +1385,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div id="ebBox" style="margin-bottom:16px"></div>
   <div id="adminBox" style="display:none;margin-bottom:16px"><button class="li" style="border-color:var(--bronze)" onclick="openAdmin()"><span class="em">🛡️</span><div><b>Panel de administración</b><small>Reportes, números y moderación</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
   <div class="set" style="display:none">Modo claro <label class="sw"><input type="checkbox" id="swLight" onchange="setTheme(this.checked)"><span></span></label></div><!-- v5.68: oculto, la app es siempre clara (aspecto Garmin) -->
-  <div class="set" style="flex-wrap:wrap">🎧 Escucho música con Spotify u otra app <label class="sw"><input type="checkbox" id="swExtMus" onchange="extMusSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Actívalo si en ruta escuchas Spotify, YouTube Music… La app no usará los botones del casco ni el audio que los mantiene, que es lo que paraba tu música. Los avisos de voz siguen sonando por encima.</small></div>
+  <div class="set" style="flex-wrap:wrap">🎧 Uso Spotify u otra app <label class="sw"><input type="checkbox" id="swExtMus" onchange="extMusSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Actívalo si en ruta escuchas Spotify, YouTube Music… La app no usará los botones del casco ni el audio que los mantiene, que es lo que paraba tu música. Los avisos de voz siguen sonando por encima.</small></div>
   <div class="set" style="flex-wrap:wrap">🔆 Pantalla siempre encendida <label class="sw"><input type="checkbox" id="swAwake" onchange="awSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:13px;margin-top:4px">Con la app abierta, el móvil no se bloquea solo y tu ubicación se sigue enviando. Se apaga cuando tú lo bloqueas.</small></div>
   <div class="set" style="flex-wrap:wrap">⏸️ Pausa automática <label class="sw"><input type="checkbox" id="swAP" onchange="store.set('autoPause',this.checked);toast(this.checked?'Al pararte, el tiempo deja de contar al momento':'Pausa automática desactivada')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En cuanto <b>te paras</b> (semáforo, café, pinchazo…) el tiempo deja de contar y la media de km/h no baja. Al volver a pedalear sigue sola.</small></div>
   <div class="set" style="flex-wrap:wrap">🗣️ Resumen por voz cada 30 min <label class="sw"><input type="checkbox" id="swRes" onchange="store.set('resumen',this.checked);toast(this.checked?'Te diré km, tiempo, desnivel y viento cada media hora':'Resumen por voz desactivado')"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">En ruta: kilómetros, tiempo, media, metros subidos, altitud y viento. Se oye junto a los avisos de viento.</small></div>
@@ -11279,7 +11279,8 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
 #ebBox .ebV b{display:block;font-size:24px;font-weight:900}
 #ebBox .ebV span{font-size:11px;font-weight:800;color:var(--txt2);text-transform:uppercase}
 #ebBox button{width:100%;margin:10px 0 0;padding:13px;border-radius:14px;border:0;font:800 16px system-ui;background:#0B63CE;color:#fff}
-#ebBox button.sec{background:#0A0A0A}
+#ebBox button.sec{background:#0A0A0A!important;color:#fff!important;border:0!important}
+#ebBox button{text-align:center!important;justify-content:center!important}
 </style>
 <script>
 /* v5.84.0 — ⚡ Mi e-bike: lee por Bluetooth el motor Shimano STEPS (probado con EP8 + pantalla SC-EM800).
