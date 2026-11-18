@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.90.3 — 🧪 Modo pruebas (?pruebas=1): Pro y Simple instaladas en el mismo móvil sin saltar una a la otra.
+/* v5.90.4 — 🎙️ Walkie estable entre Android e iPhone (audio que entienden los dos, y reproducción más fiable en iPhone).
+   v5.90.3 — 🧪 Modo pruebas (?pruebas=1): Pro y Simple instaladas en el mismo móvil sin saltar una a la otra.
    v5.90.2 — En ruta, los botones y etiquetas sobre el mapa (🔔 ⚠️ 🎤 girar, «Ver la app», velocidad) son translúcidos.
    v5.90.1 — Velocidad del mapa en recuadro pequeño y translúcido; la batería y el modo de la e-bike vuelven al panel de datos (más compactos).
    v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
@@ -1414,7 +1415,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7498,7 +7499,27 @@ function pushPos(p,now){
 /* ===== v5.14 — 🎙️ WALKIE DEL PELOTÓN: mensajes de voz que suenan solos a todo el grupo ===== */
 const PTT_MAX=15000;
 const ptt={rec:null,chunks:[],t0:0,stream:null,toggle:false,played:{},queue:[],playing:false,unsub:null,since:0};
-function pttMime(){const L=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
+/* v5.90.4 — Walkie entre Android e iPhone: Android graba en WebM/Opus, que el iPhone no sabe reproducir.
+   Ahora: si el audio no es AAC (el que entienden todos), se convierte a WAV de voz (8 kHz) antes de enviarlo,
+   y al recibir se reproduce con el motor de audio de la app (más fiable en iPhone que <audio>). */
+const PTT_IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function pttSafe(m){m=String(m||'');return /mp4a|aac/i.test(m)||(PTT_IOS&&/mp4/i.test(m))||/wav/i.test(m)}
+async function pttToWav(blob){
+  const ab=await blob.arrayBuffer();alarmUnlock();const ac=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const buf=await new Promise((ok,ko)=>{const p=ac.decodeAudioData(ab.slice(0),ok,ko);if(p&&p.then)p.then(ok,ko)});
+  const sr=8000,n=Math.max(1,Math.ceil(buf.duration*sr));const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,n,sr);
+  const src=off.createBufferSource();src.buffer=buf;src.connect(off.destination);src.start(0);const r=await off.startRendering();const d=r.getChannelData(0);
+  let pk=0;for(let i=0;i<d.length;i++)pk=Math.max(pk,Math.abs(d[i]));const gain=pk>0.02&&pk<0.7?0.85/pk:1;   // sube la voz si llega flojita
+  const dv=new DataView(new ArrayBuffer(44+d.length*2));const W=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+  W(0,'RIFF');dv.setUint32(4,36+d.length*2,true);W(8,'WAVE');W(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+  dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);W(36,'data');dv.setUint32(40,d.length*2,true);
+  for(let i=0;i<d.length;i++){const x=Math.max(-1,Math.min(1,d[i]*gain));dv.setInt16(44+i*2,x<0?x*0x8000:x*0x7FFF,true)}
+  return new Blob([dv.buffer],{type:'audio/wav'})}
+function pttPlayAC(v){return new Promise(async(ok,ko)=>{try{alarmUnlock();if(!AC)return ko(new Error('sin AC'));
+  const bin=atob(v.audio),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  const buf=await new Promise((a,b)=>{const p=AC.decodeAudioData(u.buffer,a,b);if(p&&p.then)p.then(a,b)});
+  const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=1;s.buffer=buf;s.connect(g);g.connect(AC.destination);s.onended=()=>ok();s.start(0);ptt.src=s}catch(e){ko(e)}})}
+function pttMime(){const L=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
 function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||'🎙️ Mantén pulsado y habla al grupo'}
 async function pttStart(){try{vcStop()}catch(e){}
   if(ptt.rec)return;ptt.cancel=0;
@@ -7523,13 +7544,14 @@ function pttKill(){try{if(live.on&&vcOn())setTimeout(vcStart,800)}catch(e){}try{
 async function pttSend(){
   const dur=Date.now()-ptt.t0;const type=(ptt.rec&&ptt.rec.mimeType)||pttMime()||'audio/webm';const chunks=ptt.chunks;pttKill();
   if(dur<700){toast('Mantén pulsado mientras hablas');return}
-  const blob=new Blob(chunks,{type});
-  if(blob.size>190000){toast('Mensaje demasiado largo');return}
+  let blob=new Blob(chunks,{type}),mt=type;
   pttBtn('busy','📤 Enviando…');beepPtt(660);
+  if(!pttSafe(type)){try{blob=await pttToWav(blob);mt='audio/wav'}catch(e){console.warn('walkie wav',e)}}
+  if(blob.size>(mt==='audio/wav'?420000:190000)){pttBtn();toast('Mensaje demasiado largo');return}
   const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]||'');fr.onerror=()=>r('');fr.readAsDataURL(blob)});
   if(!b64){pttBtn();toast('No se pudo preparar el audio');return}
   try{
-    await db.collection('rides').doc(live.rideId).collection('voice').add({uid,name:myName(),t:Date.now(),dur:Math.round(dur/100)/10,mime:type.slice(0,60),audio:b64});
+    await db.collection('rides').doc(live.rideId).collection('voice').add({uid,name:myName(),t:Date.now(),dur:Math.round(dur/100)/10,mime:mt.slice(0,60),audio:b64});
     pttBtn();toast('🎙️ Mensaje enviado al grupo');vib([40,60,40]);
   }catch(e){console.warn('walkie',e);pttBtn();toast(e&&e.code==='permission-denied'?'El walkie aún no está activado en el servidor':'Sin conexión: no se pudo enviar')}
 }
@@ -7571,13 +7593,15 @@ function pttPlayNext(){
   if(document.visibilityState!=='visible')bgNotify('🎙️ '+name+' te habla',(live.rideTitle||'Salida en grupo')+' · mensaje de voz',false);
   musDuck((v.dur||5)*1000+2500);beepPtt(990);vib([80,60,80]);
   setTimeout(()=>{
-    const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.volume=1;
     const done=()=>{ptt.playing=false;setTimeout(()=>{if(!ptt.playing)m.classList.remove('show')},2500);setTimeout(pttPlayNext,600)};
+    pttPlayAC(v).then(()=>{musAfterVoice();done()}).catch(()=>{
+    const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.volume=1;
     a.onended=()=>{musAfterVoice();done()};a.onerror=()=>{musAfterVoice();toast('🎙️ '+name+' ha enviado un audio que este móvil no puede reproducir');done()};
     a.play().catch(()=>{m.innerHTML=`<span>🎙️ ${esc(name)} te ha hablado</span><button onclick="pttReplay()">▶ Escuchar</button>`;ptt.playing=false;setTimeout(pttPlayNext,600)});
+    });
   },350);
 }
-function pttReplay(){const v=ptt.last;if(!v)return;try{const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);musDuck((v.dur||5)*1000+1500);a.play().catch(()=>{})}catch(e){}}
+function pttReplay(){const v=ptt.last;if(!v)return;musDuck((v.dur||5)*1000+1500);pttPlayAC(v).catch(()=>{try{const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);a.play().catch(()=>{})}catch(e){}});return;try{const a=new Audio('data:'+(v.mime||'audio/webm')+';base64,'+v.audio);musDuck((v.dur||5)*1000+1500);a.play().catch(()=>{})}catch(e){}}
 function listenGroup(){
   live.unsub=db.collection('rides').doc(live.rideId).collection('live').onSnapshot(s=>{
     const m={};s.docs.forEach(d=>{if(d.id!==uid)m[d.id]=d.data()});live.members=m;drawMembers();checkStragglers();renderLive();checkAlerts();
