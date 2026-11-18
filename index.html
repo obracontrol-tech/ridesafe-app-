@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.91.1 — En vertical el panel ocupa como mucho el 60 % (siempre queda mapa); los botones de abajo y el walkie siempre a la vista.
+/* v5.91.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar (el iPhone cortaba el «mantener pulsado»).
+   v5.91.1 — En vertical el panel ocupa como mucho el 60 % (siempre queda mapa); los botones de abajo y el walkie siempre a la vista.
    v5.91.0 — 🎙️ Walkie con botón cuadrado grande; si el panel es muy alto, la velocidad vuelve al panel para no tapar los botones del mapa.
    v5.90.6 — Botón «Empezar salida» en rojo para que resalte.
    v5.90.5 — 🎙️ Walkie Android → iPhone: el sonido del iPhone se desbloquea con cualquier toque y ya no se queda colgado esperando.
@@ -1421,7 +1422,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.91.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.91.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7530,7 +7531,7 @@ function pttPlayAC(v){return new Promise(async(ok,ko)=>{try{alarmUnlock();if(!AC
   const buf=await new Promise((a,b)=>{const p=AC.decodeAudioData(u.buffer,a,b);if(p&&p.then)p.then(a,b)});
   const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=1;s.buffer=buf;s.connect(g);g.connect(AC.destination);let fin=0;const end=()=>{if(!fin){fin=1;ok()}};s.onended=end;setTimeout(end,(buf.duration+2)*1000);s.start(0);ptt.src=s}catch(e){ko(e)}})}
 function pttMime(){const L=PTT_IOS?['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm']:['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];try{return window.MediaRecorder&&L.find(m=>MediaRecorder.isTypeSupported(m))||''}catch(e){return ''}}
-function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||'🎙️\nHABLAR\nal grupo'}
+function pttBtn(st,txt){const b=$('lvPtt');if(!b)return;b.classList.toggle('talk',st==='rec');b.classList.toggle('busy',st==='busy');b.textContent=txt||(PTT_IOS?'🎙️\nTOCA\npara hablar':'🎙️\nHABLAR\nal grupo')}
 async function pttStart(){try{vcStop()}catch(e){}
   if(ptt.rec)return;ptt.cancel=0;
   if(!live.on||!live.rideId){toast('El walkie funciona en una salida en grupo');return}
@@ -7543,7 +7544,7 @@ async function pttStart(){try{vcStop()}catch(e){}
   ptt.chunks=[];ptt.t0=Date.now();
   ptt.rec.ondataavailable=e=>{if(e.data&&e.data.size)ptt.chunks.push(e.data)};
   ptt.rec.onstop=pttSend;
-  if(ptt.cancel){ptt.cancel=0;ptt.rec=null;pttKill();toast('🎙️ Micrófono listo: mantén pulsado el botón mientras hablas');return}
+  if(ptt.cancel&&!PTT_IOS){ptt.cancel=0;ptt.rec=null;pttKill();toast('🎙️ Micrófono listo: mantén pulsado el botón mientras hablas');return}
   ptt.rec.start();vib(60);beepPtt(880);
   pttBtn('rec',ptt.toggle?'🔴\nHablando…\ntoca para enviar':'🔴\nHablando…\nsuelta para enviar');
   clearTimeout(ptt.maxT);ptt.maxT=setTimeout(pttStop,PTT_MAX);
@@ -7571,10 +7572,15 @@ function pttBind(){
   let down=0;
   b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}
     if(ptt.toggle){ptt.toggle=false;pttStop();down=0;return}down=Date.now();pttStart()});
+  /* v5.91.2 — En iPhone el sistema corta el «mantener pulsado» (pide el micrófono, desliza la pantalla…):
+     allí funciona siempre como «toca para hablar y toca otra vez para enviar». */
   const up=e=>{if(!down)return;const held=Date.now()-down;down=0;
-    if(held<450){ptt.toggle=true;if(ptt.rec)pttBtn('rec','🔴\nHablando…\ntoca para enviar');return}
+    if(held<450||PTT_IOS){ptt.toggle=true;ptt.cancel=0;if(ptt.rec)pttBtn('rec','🔴\nHablando…\ntoca para enviar');return}
     if(ptt.rec)pttStop();else ptt.cancel=1};
-  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);document.addEventListener('pointerup',up);
+  const cancel=()=>{if(!down)return;down=0;ptt.toggle=true;ptt.cancel=0;if(ptt.rec)pttBtn('rec','🔴\nHablando…\ntoca para enviar')};
+  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',cancel);document.addEventListener('pointerup',up);
+  b.addEventListener('touchstart',e=>{if(e.cancelable)e.preventDefault()},{passive:false});
+  if(PTT_IOS)pttBtn();
   b.addEventListener('contextmenu',e=>e.preventDefault());
 }
 function beepPtt(f){try{alarmUnlock();if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(.35,AC.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.16);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.18)}catch(e){}}
