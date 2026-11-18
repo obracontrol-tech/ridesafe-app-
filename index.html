@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.90.5 — 🎙️ Walkie Android → iPhone: el sonido del iPhone se desbloquea con cualquier toque y ya no se queda colgado esperando.
+/* v5.90.6 — Botón «Empezar salida» en rojo para que resalte.
+   v5.90.5 — 🎙️ Walkie Android → iPhone: el sonido del iPhone se desbloquea con cualquier toque y ya no se queda colgado esperando.
    v5.90.4 — 🎙️ Walkie estable entre Android e iPhone (audio que entienden los dos, y reproducción más fiable en iPhone).
    v5.90.3 — 🧪 Modo pruebas (?pruebas=1): Pro y Simple instaladas en el mismo móvil sin saltar una a la otra.
    v5.90.2 — En ruta, los botones y etiquetas sobre el mapa (🔔 ⚠️ 🎤 girar, «Ver la app», velocidad) son translúcidos.
@@ -1416,7 +1417,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -2062,7 +2063,7 @@ async function openRide(id,keep){
      <div class="chips qr">${QUICK.map(q=>`<button class="chip" onclick="sendMsg('${q.replace(/'/g,'')}')">${q}</button>`).join('')}</div>
      <div class="chatin"><input class="inp" id="chatIn" maxlength="300" placeholder="Escribe un comentario…" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn btn-lime" style="width:auto;min-height:52px;padding:0 18px" onclick="sendMsg()" aria-label="Enviar">➤</button></div></div>
    <div style="display:flex;flex-direction:column;gap:10px">
-     ${inR?(isToday?`<button class="btn btn-lime" onclick="startRide(${jsq(r.id)})">🛰️ Empezar salida</button>`:`<button class="btn btn-line" onclick="startRideEarly(${jsq(r.id)})">🛰️ Empezar salida <small style="display:block;font-size:12px;opacity:.75">Es el ${fmtDate(r.date)} · puedes probar ya</small></button>`):''}
+     ${inR?(isToday?`<button class="btn btn-lime" style="background:#DC2626!important;color:#fff!important;border:3px solid #991B1B!important;font-weight:900!important;font-size:19px!important;box-shadow:0 6px 18px rgba(220,38,38,.45)!important" onclick="startRide(${jsq(r.id)})">🛰️ Empezar salida</button>`:`<button class="btn btn-line" style="background:#DC2626!important;color:#fff!important;border:3px solid #991B1B!important;font-weight:900!important;font-size:19px!important;box-shadow:0 6px 18px rgba(220,38,38,.45)!important" onclick="startRideEarly(${jsq(r.id)})">🛰️ Empezar salida <small style="display:block;font-size:12px;opacity:.9">Es el ${fmtDate(r.date)} · puedes probar ya</small></button>`):''}
      ${isOwner(r)?'<div class="joinnote">👑 Organizas esta salida</div>':inR?`<button class="btn joinbig on" onclick="toggleJoin(${jsq(r.id)})">Apuntado ✓<small>Toca para cancelar tu asistencia</small></button>`:`<button class="btn btn-lime" onclick="toggleJoin(${jsq(r.id)})">✋ Voy a esta salida</button>`}
      <button class="btn btn-line" onclick="openCard(${jsq(r.id)})">📲 Compartir en WhatsApp</button>
      ${inR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-line" style="font-size:15px" onclick="addToCalendar(${jsq(r.id)})">📅 Calendario</button><button class="btn btn-line" style="font-size:15px" onclick="addToGoogleCal(${jsq(r.id)})">📆 Google Calendar</button></div>`:''}
