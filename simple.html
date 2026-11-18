@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.45.2 — Horizontal: el menú ⋯ se abre hacia abajo.
+/* v1.46.0 — Velocidad en el mapa (abajo a la izquierda): más mapa en ruta (como la Pro 5.90.0).
+   v1.45.2 — Horizontal: el menú ⋯ se abre hacia abajo.
    v1.45.1 — Horizontal en ruta: los datos empiezan arriba sin cortarse.
    v1.45.0 — 🎧 «Escucho música con Spotify u otra app»: ya no se para Spotify en ruta (como la Pro 5.89.0).
    v1.44.0 — 🔗 «Enviar ruta» con enlace que se guarda solo en «Mis rutas» (como la Pro 5.88.0).
@@ -1265,7 +1266,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.45.2 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.46.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9697,5 +9698,44 @@ function extMusSet(on){store.set('extMusic',!!on);
   else toast('🎧 Desactivado: los botones del casco vuelven a ser para la app')}
 window.addEventListener('load',()=>{try{const c=document.getElementById('swExtMus');if(c)c.checked=extMus()}catch(e){}});
 </script>
+<style>
+/* ===== v5.90.0 — Velocidad en el mapa (propuesta B): más mapa, el bloque blanco de VELOCIDAD desaparece ===== */
+html.gmx #s-rutas.live.spdMap .lvstats .lvbig{display:none!important}
+#spdOv{display:none;position:absolute;left:12px;z-index:8;background:#fff;border:3px solid #111;border-radius:18px;padding:4px 14px 6px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3);min-width:100px;pointer-events:auto}
+#s-rutas.live.spdMap #spdOv{display:block}
+#spdOv b{display:block;font:800 54px/1 'Barlow Condensed',system-ui,sans-serif;color:#000}
+#spdOv small{font:700 14px system-ui;color:#4B5563}
+#spdOv .eb{display:none;border-top:2px solid #111;margin-top:4px;padding-top:4px;font:900 22px 'Barlow Condensed',system-ui,sans-serif;gap:8px;align-items:center;justify-content:center;white-space:nowrap}
+#s-rutas.spdEb #spdOv .eb{display:flex}
+#spdOv .eb em{font-style:normal;color:#fff;border-radius:8px;padding:0 8px}
+#s-rutas.spdEb #ebPan .ebTop{display:none!important}
+#s-rutas.spdEb #ebPan .ebMid{margin-top:0!important;border-top:0!important;padding-top:0!important}
+</style>
+<script>
+/* v5.90.0 — La velocidad pasa al mapa (abajo a la izquierda, estilo Garmin). Con la e-bike conectada, en el mismo
+   recuadro van la batería y el modo; en el panel quedan motor ayuda, cadencia y km por modo. */
+(function(){
+  const MC={Eco:'#16A34A',Trail:'#0B63CE',Boost:'#EA580C',Andar:'#7C3AED',Apagado:'#6B7280'};
+  let o=null;
+  setInterval(()=>{try{
+    const s=document.getElementById('s-rutas');if(!s)return;
+    const on=!!(typeof live!=='undefined'&&live&&live.on&&document.documentElement.classList.contains('gmx'));
+    s.classList.toggle('spdMap',on);
+    if(!on){s.classList.remove('spdEb');return}
+    if(!o){o=document.createElement('div');o.id='spdOv';o.innerHTML='<b id="spdOvV">0</b><small>km/h</small><div class="eb"><span id="spdOvB"></span><em id="spdOvM"></em></div>';s.appendChild(o)}
+    const v=(document.getElementById('lvSpeed')||{}).textContent||'0';const V=document.getElementById('spdOvV');if(V.textContent!==v)V.textContent=v;
+    const E=window.EB,eb=!!(E&&E.on);s.classList.toggle('spdEb',eb);
+    if(eb){const b=E.bat,bc=b==null?'#111':b<=15?'#DC2626':b<=30?'#F59E0B':'#16A34A';const B=document.getElementById('spdOvB'),M=document.getElementById('spdOvM');
+      const bt='⚡'+(b??'—')+'%';if(B.textContent!==bt){B.textContent=bt}B.style.color=bc;
+      const mt=(E.mode||'—').toUpperCase();if(M.textContent!==mt)M.textContent=mt;M.style.background=MC[E.mode]||'#111'}
+    let bot;const land=typeof landIs==='function'&&landIs();
+    if(land)bot=70;
+    else if(s.classList.contains('lvmin'))bot=96;
+    else{const pn=document.querySelector('.lvpanel');bot=(pn?pn.getBoundingClientRect().height:300)+12}
+    if(o._b!==bot){o.style.bottom=bot+'px';o._b=bot}
+  }catch(e){}},400);
+})();
+</script>
+
 </body>
 </html>

@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.89.2 — Horizontal en ruta: el menú ⋯ (música, familia, capas) se abre hacia abajo y ya no queda fuera de la pantalla.
+/* v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
+   v5.89.2 — Horizontal en ruta: el menú ⋯ (música, familia, capas) se abre hacia abajo y ya no queda fuera de la pantalla.
    v5.89.1 — Horizontal en ruta: los datos empiezan siempre arriba (no se cortan) y la velocidad ocupa menos.
    v5.89.0 — 🎧 Interruptor «Escucho música con Spotify u otra app» (Perfil): ya no se pone el audio en silencio del casco que paraba Spotify.
    v5.88.0 — 🔗 «Enviar ruta» con enlace: el amigo lo toca en WhatsApp y se guarda en su «Mis rutas» (o archivo GPX para Garmin…).
@@ -1409,7 +1410,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.89.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11261,8 +11262,8 @@ async function homeCard(){
 #ebPan .ebAs span:nth-child(1){height:30%}#ebPan .ebAs span:nth-child(2){height:37%}#ebPan .ebAs span:nth-child(3){height:44%}#ebPan .ebAs span:nth-child(4){height:51%}#ebPan .ebAs span:nth-child(5){height:58%}
 #ebPan .ebAs span:nth-child(6){height:65%}#ebPan .ebAs span:nth-child(7){height:72%}#ebPan .ebAs span:nth-child(8){height:79%}#ebPan .ebAs span:nth-child(9){height:86%}#ebPan .ebAs span:nth-child(10){height:100%}
 #ebPan .ebMid em{position:absolute;right:0;top:0;font:800 13px system-ui;color:#555;font-style:normal}
-#ebPan .ebKm{margin-top:8px;font:700 15px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
-#ebPan .ebKm span{border:1px solid #111;border-radius:10px;padding:2px 8px}
+#ebPan .ebKm{margin-top:8px;font:700 14px system-ui;display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:center}
+#ebPan .ebKm span{border:1px solid #111;border-radius:10px;padding:1px 6px;white-space:nowrap}
 #ebPan .ebKm span.on{color:#fff;border-color:#111}
 #ebPan .ebKm b{font:900 20px 'Barlow Condensed',system-ui}
 #ebPan .ebLost{font:800 18px system-ui;text-align:center;padding:8px;color:#B45309}
@@ -11394,7 +11395,7 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
         '<div class="ebMode" style="background:'+mc+'">'+esc((EB.mode||'—').toUpperCase())+'</div></div>'+
         '<div class="ebMid"><div><small>MOTOR AYUDA</small><div class="ebAs">'+[1,2,3,4,5,6,7,8,9,10].map(i=>'<span'+(ap>=i*10-5?' style="background:'+mc+'"':'')+'></span>').join('')+'</div><em>'+a+'</em></div>'+
         '<div><small>CADENCIA</small><b>'+(EB.cad??'—')+'<i>rpm</i></b></div></div>'+
-        '<div class="ebKm">⚡ Te quedan '+['Eco','Trail','Boost'].map(m=>{const x=EB.rangeM(m);return '<span'+(m===EB.mode?' class="on" style="background:'+MC[m]+'"':'')+'>'+m+' <b>'+(x?(x.est?'≈':'')+Math.round(x.km):'—')+'</b></span>'}).join('')+' km</div>'}
+        '<div class="ebKm">⚡ Quedan (km) '+['Eco','Trail','Boost'].map(m=>{const x=EB.rangeM(m);return '<span'+(m===EB.mode?' class="on" style="background:'+MC[m]+'"':'')+'>'+m+' <b>'+(x?(x.est?'≈':'')+Math.round(x.km):'—')+'</b></span>'}).join('')+'</div>'}
     if(r._h!==h){r.innerHTML=h;r._h=h}}catch(e){}},1000);
   window.addEventListener('load',()=>{render();setTimeout(auto,2500)});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(auto,800)});
@@ -11456,5 +11457,44 @@ function extMusSet(on){store.set('extMusic',!!on);
   else toast('🎧 Desactivado: los botones del casco vuelven a ser para la app')}
 window.addEventListener('load',()=>{try{const c=document.getElementById('swExtMus');if(c)c.checked=extMus()}catch(e){}});
 </script>
+<style>
+/* ===== v5.90.0 — Velocidad en el mapa (propuesta B): más mapa, el bloque blanco de VELOCIDAD desaparece ===== */
+html.gmx #s-rutas.live.spdMap .lvstats .lvbig{display:none!important}
+#spdOv{display:none;position:absolute;left:12px;z-index:8;background:#fff;border:3px solid #111;border-radius:18px;padding:4px 14px 6px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3);min-width:100px;pointer-events:auto}
+#s-rutas.live.spdMap #spdOv{display:block}
+#spdOv b{display:block;font:800 54px/1 'Barlow Condensed',system-ui,sans-serif;color:#000}
+#spdOv small{font:700 14px system-ui;color:#4B5563}
+#spdOv .eb{display:none;border-top:2px solid #111;margin-top:4px;padding-top:4px;font:900 22px 'Barlow Condensed',system-ui,sans-serif;gap:8px;align-items:center;justify-content:center;white-space:nowrap}
+#s-rutas.spdEb #spdOv .eb{display:flex}
+#spdOv .eb em{font-style:normal;color:#fff;border-radius:8px;padding:0 8px}
+#s-rutas.spdEb #ebPan .ebTop{display:none!important}
+#s-rutas.spdEb #ebPan .ebMid{margin-top:0!important;border-top:0!important;padding-top:0!important}
+</style>
+<script>
+/* v5.90.0 — La velocidad pasa al mapa (abajo a la izquierda, estilo Garmin). Con la e-bike conectada, en el mismo
+   recuadro van la batería y el modo; en el panel quedan motor ayuda, cadencia y km por modo. */
+(function(){
+  const MC={Eco:'#16A34A',Trail:'#0B63CE',Boost:'#EA580C',Andar:'#7C3AED',Apagado:'#6B7280'};
+  let o=null;
+  setInterval(()=>{try{
+    const s=document.getElementById('s-rutas');if(!s)return;
+    const on=!!(typeof live!=='undefined'&&live&&live.on&&document.documentElement.classList.contains('gmx'));
+    s.classList.toggle('spdMap',on);
+    if(!on){s.classList.remove('spdEb');return}
+    if(!o){o=document.createElement('div');o.id='spdOv';o.innerHTML='<b id="spdOvV">0</b><small>km/h</small><div class="eb"><span id="spdOvB"></span><em id="spdOvM"></em></div>';s.appendChild(o)}
+    const v=(document.getElementById('lvSpeed')||{}).textContent||'0';const V=document.getElementById('spdOvV');if(V.textContent!==v)V.textContent=v;
+    const E=window.EB,eb=!!(E&&E.on);s.classList.toggle('spdEb',eb);
+    if(eb){const b=E.bat,bc=b==null?'#111':b<=15?'#DC2626':b<=30?'#F59E0B':'#16A34A';const B=document.getElementById('spdOvB'),M=document.getElementById('spdOvM');
+      const bt='⚡'+(b??'—')+'%';if(B.textContent!==bt){B.textContent=bt}B.style.color=bc;
+      const mt=(E.mode||'—').toUpperCase();if(M.textContent!==mt)M.textContent=mt;M.style.background=MC[E.mode]||'#111'}
+    let bot;const land=typeof landIs==='function'&&landIs();
+    if(land)bot=70;
+    else if(s.classList.contains('lvmin'))bot=96;
+    else{const pn=document.querySelector('.lvpanel');bot=(pn?pn.getBoundingClientRect().height:300)+12}
+    if(o._b!==bot){o.style.bottom=bot+'px';o._b=bot}
+  }catch(e){}},400);
+})();
+</script>
+
 </body>
 </html>
