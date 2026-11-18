@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
+/* v5.90.1 — Velocidad del mapa en recuadro pequeño y translúcido; la batería y el modo de la e-bike vuelven al panel de datos (más compactos).
+   v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
    v5.89.2 — Horizontal en ruta: el menú ⋯ (música, familia, capas) se abre hacia abajo y ya no queda fuera de la pantalla.
    v5.89.1 — Horizontal en ruta: los datos empiezan siempre arriba (no se cortan) y la velocidad ocupa menos.
    v5.89.0 — 🎧 Interruptor «Escucho música con Spotify u otra app» (Perfil): ya no se pone el audio en silencio del casco que paraba Spotify.
@@ -1410,7 +1411,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11461,15 +11462,19 @@ window.addEventListener('load',()=>{try{const c=document.getElementById('swExtMu
 <style>
 /* ===== v5.90.0 — Velocidad en el mapa (propuesta B): más mapa, el bloque blanco de VELOCIDAD desaparece ===== */
 html.gmx #s-rutas.live.spdMap .lvstats .lvbig{display:none!important}
-#spdOv{display:none;position:absolute;left:12px;z-index:8;background:#fff;border:3px solid #111;border-radius:18px;padding:4px 14px 6px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3);min-width:100px;pointer-events:auto}
+#spdOv{display:none;position:absolute;left:10px;z-index:8;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:2px solid rgba(17,17,17,.55);border-radius:14px;padding:2px 10px 4px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.18);min-width:70px;pointer-events:none}
 #s-rutas.live.spdMap #spdOv{display:block}
-#spdOv b{display:block;font:800 54px/1 'Barlow Condensed',system-ui,sans-serif;color:#000}
-#spdOv small{font:700 14px system-ui;color:#4B5563}
+#spdOv b{display:block;font:800 40px/1 'Barlow Condensed',system-ui,sans-serif;color:#000;text-shadow:0 0 6px rgba(255,255,255,.9)}
+#spdOv small{font:800 12px system-ui;color:#111}
 #spdOv .eb{display:none;border-top:2px solid #111;margin-top:4px;padding-top:4px;font:900 22px 'Barlow Condensed',system-ui,sans-serif;gap:8px;align-items:center;justify-content:center;white-space:nowrap}
-#s-rutas.spdEb #spdOv .eb{display:flex}
 #spdOv .eb em{font-style:normal;color:#fff;border-radius:8px;padding:0 8px}
-#s-rutas.spdEb #ebPan .ebTop{display:none!important}
-#s-rutas.spdEb #ebPan .ebMid{margin-top:0!important;border-top:0!important;padding-top:0!important}
+#ebPan .ebBat b{font-size:30px!important}
+#ebPan .ebBar{height:9px!important;margin-top:2px!important}
+#ebPan .ebMode{font-size:26px!important;border-radius:12px!important}
+#ebPan .ebMid{margin-top:6px!important;padding-top:4px!important}
+#ebPan .ebMid b{font-size:28px!important}
+#ebPan .ebAs{height:20px!important;margin-top:4px!important}
+#ebPan{padding:6px 10px 8px!important}
 </style>
 <script>
 /* v5.90.0 — La velocidad pasa al mapa (abajo a la izquierda, estilo Garmin). Con la e-bike conectada, en el mismo
