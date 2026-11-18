@@ -2,7 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
-/* v5.90.1 — Velocidad del mapa en recuadro pequeño y translúcido; la batería y el modo de la e-bike vuelven al panel de datos (más compactos).
+/* v5.90.2 — En ruta, los botones y etiquetas sobre el mapa (🔔 ⚠️ 🎤 girar, «Ver la app», velocidad) son translúcidos.
+   v5.90.1 — Velocidad del mapa en recuadro pequeño y translúcido; la batería y el modo de la e-bike vuelven al panel de datos (más compactos).
    v5.90.0 — Velocidad en el mapa (abajo a la izquierda); con e-bike, batería y modo en el mismo recuadro. Más mapa en ruta.
    v5.89.2 — Horizontal en ruta: el menú ⋯ (música, familia, capas) se abre hacia abajo y ya no queda fuera de la pantalla.
    v5.89.1 — Horizontal en ruta: los datos empiezan siempre arriba (no se cortan) y la velocidad ocupa menos.
@@ -1411,7 +1412,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.90.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11502,5 +11503,15 @@ html.gmx #s-rutas.live.spdMap .lvstats .lvbig{display:none!important}
 })();
 </script>
 
+<style>
+/* v5.90.2 — En ruta, todo lo que va sobre el mapa es translúcido: se ve más mapa */
+body:has(#s-rutas.live) .gmFab{background:rgba(255,255,255,.45)!important;border-color:rgba(17,17,17,.5)!important;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,.15)!important}
+body:has(#s-rutas.live) #gmHaz{background:rgba(250,204,21,.55)!important}
+html.gmx body:has(#s-rutas.live) #vozBtn:not(.hear):not(.on){background:rgba(11,99,206,.55)!important;border-color:rgba(255,255,255,.6)!important;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,.15)!important}
+body:has(#s-rutas.live) #landFab{background:rgba(255,255,255,.45)!important;border-color:rgba(17,17,17,.5)!important;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,.15)!important}
+html.landOn body:has(#s-rutas.live) #landFab{background:rgba(11,99,206,.6)!important}
+#s-rutas.live .lvaway1{background:rgba(255,255,255,.55)!important;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,.15)!important}
+#s-rutas.live #spdOv{background:rgba(255,255,255,.4)!important;border-color:rgba(17,17,17,.45)!important}
+</style>
 </body>
 </html>
