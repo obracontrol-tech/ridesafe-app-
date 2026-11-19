@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.94.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (Google Earth, My Maps, Wikiloc…). */
 /* v5.93.9 — 🎙️ Menú por números en ruta: con el menú abierto, «uno», «dos»… se aceptan sin repetir «Oye bici»
    (con el modo Alexa se ignoraban y parecía que el micro no respondía). */
 /* v5.93.8 — 🔎 La prueba del micrófono ya no sale «Error: aborted»: pausa la escucha de «Oye bici» de fondo mientras dura. */
@@ -1358,7 +1359,7 @@ al grupo</button></div>
     <button class="x" aria-label="Cerrar" onclick="hideActHero(true)" style="position:absolute;top:12px;right:12px;z-index:3;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <svg class="deco" viewBox="0 0 200 140" aria-hidden="true"><g fill="none" stroke="#C8DC3C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><path d="M20 120 60 60l30 30 40-60 50 90"/><circle cx="130" cy="30" r="8"/></g></svg>
     <h2>Sube tu salida</h2>
-    <p>Importa el archivo GPX o TCX de tu reloj o ciclocomputador.</p>
+    <p>Importa el archivo GPX, KML o TCX de tu reloj, ciclocomputador, Google Earth o Wikiloc.</p>
     <button class="btn btn-lime" onclick="pickFile()"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Subir archivo</button>
   </div>
   <div id="stravaBox" style="margin-top:12px"></div>
@@ -1441,7 +1442,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.9</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1464,7 +1465,7 @@ al grupo</button></div>
     <button onclick="closeSheets();go('rutas');setTimeout(()=>openSheet('sh-plan'),250)"><span class="em">🗺️</span><div><b>Nueva ruta</b><small>De A a B, por etapas o circular</small></div></button>
     <button onclick="closeSheets();homeCard()"><span class="em">🏠</span><div><b>Volver a casa</b><small>Desde donde estés · eliges entre 3 caminos y te guía</small></div></button>
     <button onclick="closeSheets();mkNear()"><span class="em">🥾</span><div><b>Rutas marcadas</b><small>GR, PR, Caminos y BTT ya hechos, cerca de ti · o di «Oye bici, rutas marcadas»</small></div></button>
-    <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
+    <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX, KML o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
   </div>
 </div>
@@ -6737,7 +6738,7 @@ async function useRoute(){
 /* Mis rutas */
 function openRoutes(pick){
   const list=store.get('routes',[]);
-  $('routesList').innerHTML=(pick?'':'<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="closeSheets();pickFile()">📂 Subir una ruta GPX</button><button class="btn btn-line" style="width:100%;margin:-4px 0 12px" onclick="closeSheets();ghPlan()">🧭 Planificar en GraphHopper (MTB)</button>')+(list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
+  $('routesList').innerHTML=(pick?'':'<button class="btn btn-line" style="width:100%;margin-bottom:12px" onclick="closeSheets();pickFile()">📂 Subir una ruta (GPX o KML)</button><button class="btn btn-line" style="width:100%;margin:-4px 0 12px" onclick="closeSheets();ghPlan()">🧭 Planificar en GraphHopper (MTB)</button>')+(list.length?list.map(r=>`<div class="li" style="cursor:default;margin-bottom:10px"><span class="em">${r.mode==='loop'?'⟲':r.mode==='stages'?'🧭':'🗺️'}</span><div><b>${esc(r.name)}</b><small>${r.km} km · +${r.up} m · ${hm(r.mins)}</small></div>
     <div style="display:flex;flex-direction:column;gap:6px">${pick?`<button class="mini ok" onclick="pickSaved(${jsq(r.id)})">Elegir</button>`:`<button class="mini" onclick="viewSaved(${jsq(r.id)})">Ver</button><button class="mini" onclick="publishRoute(store.get('routes',[]).find(x=>x.id===${jsq(r.id)}))">🌍</button><button class="mini" onclick="saveSavedGpx(${jsq(r.id)})">💾 GPX</button>`}<button class="mini" onclick="rtRenList(${jsq(r.id)},${pick?1:0})">✏️ Nombre</button><button class="mini" style="color:var(--red)" onclick="delSaved(${jsq(r.id)},${pick?1:0})">Borrar</button></div></div>`).join('')
     :`<div class="empty">Aún no tienes rutas guardadas.<br>Planifica una y pulsa "Guardar".</div>`);
   openSheet('sh-routes');
@@ -8425,7 +8426,7 @@ $('fileIn').onchange=async e=>{
     acts.unshift(a);store.set('acts',acts);saveActRemote(a);addRank(a);
     const gain=Math.min(300,Math.round(km))+10;addPoints(gain);
     renderActs();publishAct(a);checkBadges();addKmToBike(km);toast(`Actividad guardada · +${gain} puntos`);
-  }catch(_){toast('No pudimos leer este archivo. Comprueba que sea GPX o TCX.')}
+  }catch(_){toast('No pudimos leer este archivo. Comprueba que sea GPX, KML o TCX.')}
 };
 function renderActs(){
   const m=iso(new Date()).slice(0,7);const mm=acts.filter(a=>a.date.startsWith(m));
@@ -8995,7 +8996,7 @@ setInterval(function(){
         toast('📂 Abriendo '+name+'…');importFile(new File([b],name,{type:'application/gpx+xml'}));
       }catch(e){toast('No pudimos abrir el archivo compartido')}
     },1500);
-  }else if(q==='error'){clean();setTimeout(function(){toast('No pudimos recibir el archivo. Prueba con un GPX o TCX')},1500)}
+  }else if(q==='error'){clean();setTimeout(function(){toast('No pudimos recibir el archivo. Prueba con un GPX, KML o TCX')},1500)}
   if('launchQueue' in window){
     window.launchQueue.setConsumer(async function(p){
       if(!p||!p.files||!p.files.length)return;clean();
@@ -11777,6 +11778,64 @@ window.vcMicTest=function(){
   window.micLogShow=function(){const b=document.getElementById('micDiag');if(!b)return;
     const rows=L.slice(-40).reverse().map(x=>'<div><small style="color:var(--txt2)">'+x.t+'</small> '+String(x.m).replace(/</g,'')+(x.n>1?' <small>×'+x.n+'</small>':'')+'</div>').join('')||'<div>Todavía no hay nada apuntado. Haz una salida con «Oye bici» y vuelve aquí.</div>';
     b.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;line-height:1.5;max-height:340px;overflow:auto"><b>📋 Lo que pasó con el micro (lo último arriba)</b>'+rows+'</div>'};
+})();
+</script>
+<script>
+/* v5.94.0 — 🗺️ Subir rutas también en KML y KMZ (Google Earth, Google My Maps, Wikiloc, Komoot…).
+   El archivo se convierte a GPX dentro del móvil y sigue el mismo camino que un GPX: verlo en el mapa, guardarlo, crear una salida… */
+(function(){
+  const inp=document.getElementById('fileIn');if(!inp)return;
+  try{inp.setAttribute('accept','.gpx,.tcx,.kml,.kmz,application/gpx+xml,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz,application/xml,text/xml')}catch(e){}
+  const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  async function unzipKml(buf){
+    const v=new DataView(buf),u8=new Uint8Array(buf);let eo=-1;
+    for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-66000);i--){if(v.getUint32(i,true)===0x06054b50){eo=i;break}}
+    if(eo<0)throw new Error('zip');
+    const n=v.getUint16(eo+10,true);let p=v.getUint32(eo+16,true);const dec=new TextDecoder();let best=null;
+    for(let k=0;k<n;k++){if(v.getUint32(p,true)!==0x02014b50)break;
+      const meth=v.getUint16(p+10,true),csz=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),lo=v.getUint32(p+42,true);
+      const name=dec.decode(u8.subarray(p+46,p+46+nl));
+      if(/\.kml$/i.test(name)&&(!best||/^doc\.kml$/i.test(name)))best={meth,csz,lo};
+      p+=46+nl+xl+cl}
+    if(!best)throw new Error('nokml');
+    const ln=v.getUint16(best.lo+26,true),lx=v.getUint16(best.lo+28,true),st=best.lo+30+ln+lx,data=u8.subarray(st,st+best.csz);
+    if(best.meth===0)return dec.decode(data);
+    if(best.meth!==8||typeof DecompressionStream==='undefined')throw new Error('meth');
+    const ds=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(ds).text()}
+  function kmlToGpx(txt,fname){
+    const d=new DOMParser().parseFromString(txt,'application/xml');if(d.querySelector('parsererror'))throw new Error('xml');
+    const segs=[];
+    // gx:Track (con hora: salidas ya hechas)
+    const tr=[...d.getElementsByTagNameNS('*','Track')];
+    for(const t of tr){const w=[...t.getElementsByTagNameNS('*','when')].map(e=>e.textContent.trim()),c=[...t.getElementsByTagNameNS('*','coord')].map(e=>e.textContent.trim().split(/\s+/).map(Number));
+      const s=c.map((q,i)=>({lat:q[1],lon:q[0],ele:q[2],t:w[i]})).filter(q=>isFinite(q.lat)&&isFinite(q.lon));if(s.length>1)segs.push(s)}
+    // LineString (rutas dibujadas)
+    if(!segs.length)for(const ls of [...d.getElementsByTagNameNS('*','LineString')]){const ce=ls.getElementsByTagNameNS('*','coordinates')[0];if(!ce)continue;
+      const s=ce.textContent.trim().split(/\s+/).map(q=>q.split(',').map(Number)).map(q=>({lat:q[1],lon:q[0],ele:q[2]})).filter(q=>isFinite(q.lat)&&isFinite(q.lon));if(s.length>1)segs.push(s)}
+    if(!segs.length)throw new Error('nopts');
+    // une los tramos en orden (si el siguiente empieza más cerca del final, se enlaza)
+    let pts=segs[0];for(let i=1;i<segs.length;i++)pts=pts.concat(segs[i]);
+    const nm=(d.getElementsByTagNameNS('*','Document')[0]?.getElementsByTagNameNS('*','name')[0]?.textContent||d.getElementsByTagNameNS('*','name')[0]?.textContent||fname.replace(/\.(kml|kmz)$/i,'')).trim();
+    const body=pts.map(q=>'<trkpt lat="'+q.lat+'" lon="'+q.lon+'">'+(isFinite(q.ele)?'<ele>'+q.ele+'</ele>':'')+(q.t?'<time>'+x(q.t)+'</time>':'')+'</trkpt>').join('');
+    return '<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="RideSafe IA (desde KML)" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>'+x(nm)+'</name></metadata><trk><name>'+x(nm)+'</name><trkseg>'+body+'</trkseg></trk></gpx>'}
+  window.kmlToGpx=kmlToGpx;
+  const orig=inp.onchange;if(typeof orig!=='function')return;
+  inp.onchange=async function(e){
+    const f=e&&e.target&&e.target.files&&e.target.files[0];
+    if(f){let isK=/\.(kml|kmz)$/i.test(f.name||'')||/google-earth/.test(f.type||'');
+      let buf=null;
+      if(!isK){try{buf=await f.slice(0,4).arrayBuffer();const b=new Uint8Array(buf);if(b[0]===0x50&&b[1]===0x4b)isK=true;else{const head=await f.slice(0,600).text();if(/<kml[\s>]/i.test(head))isK=true}}catch(_){}}
+      if(isK){try{
+          const all=await f.arrayBuffer(),b=new Uint8Array(all);
+          const txt=(b[0]===0x50&&b[1]===0x4b)?await unzipKml(all):new TextDecoder().decode(all);
+          const g=kmlToGpx(txt,f.name||'ruta.kml');
+          const nf=new File([g],(f.name||'ruta').replace(/\.(kml|kmz)$/i,'')+'.gpx',{type:'application/gpx+xml'});
+          try{e.target.value=''}catch(_){}
+          return orig.call(this,{target:{files:[nf],value:''}});
+        }catch(err){try{e.target.value=''}catch(_){}toast('No pudimos leer este KML. Si es de Google My Maps, descárgalo como KML (no como enlace).',5000);return}}
+    }
+    return orig.apply(this,arguments)};
 })();
 </script>
 </body>
