@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.94.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño. */
 /* v5.94.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (Google Earth, My Maps, Wikiloc…). */
 /* v5.93.9 — 🎙️ Menú por números en ruta: con el menú abierto, «uno», «dos»… se aceptan sin repetir «Oye bici»
    (con el modo Alexa se ignoraban y parecía que el micro no respondía). */
@@ -1442,7 +1443,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11836,6 +11837,23 @@ window.vcMicTest=function(){
         }catch(err){try{e.target.value=''}catch(_){}toast('No pudimos leer este KML. Si es de Google My Maps, descárgalo como KML (no como enlace).',5000);return}}
     }
     return orig.apply(this,arguments)};
+})();
+</script>
+<script>
+/* v5.94.1 — 🗺️ El letrero de créditos del mapa (MapLibre · Radar de lluvia · OpenFreeMap · OpenStreetMap) ya no se abre solo
+   tapando el mapa: queda como un ⓘ pequeño en la esquina. Si lo tocas, se abre (los créditos siguen ahí, como piden las licencias). */
+(function(){
+  let userT=0;
+  document.addEventListener('pointerdown',e=>{try{if(e.target.closest&&e.target.closest('.maplibregl-ctrl-attrib'))userT=Date.now()}catch(_){}},true);
+  const shut=el=>{if(Date.now()-userT>1500)el.classList.remove('maplibregl-compact-show')};
+  const mo=new MutationObserver(ms=>{for(const m of ms){const t=m.target;if(t.classList&&t.classList.contains('maplibregl-compact-show')&&t.classList.contains('maplibregl-ctrl-attrib'))shut(t)}});
+  const scan=()=>{document.querySelectorAll('.maplibregl-ctrl-attrib.maplibregl-compact-show').forEach(shut)};
+  try{mo.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class'],childList:false})}catch(e){}
+  try{new MutationObserver(scan).observe(document.body,{subtree:true,childList:true})}catch(e){}
+  setTimeout(scan,500);
+  const st=document.createElement('style');
+  st.textContent='.maplibregl-ctrl-attrib.maplibregl-compact{opacity:.75;margin:0 0 6px 6px!important}.maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-inner{font-size:11px;line-height:1.3}';
+  document.head.appendChild(st);
 })();
 </script>
 </body>
