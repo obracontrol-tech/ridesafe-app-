@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.5 — 📋 Registro del micro en ruta (Perfil › Órdenes por voz › «Ver qué pasó con el micro en la salida»). */
 /* v5.93.4 — 🎙️ «Oye bici» en ruta: si el micro se queda parado (la voz del móvil se queda «colgada» o el micro ocupado),
    la app lo detecta a los 8 s y lo vuelve a abrir. Arriba del panel se ve siempre el estado del micro; tocándolo se reabre. */
 /* v5.93.3 — 🔎 Perfil › Órdenes por voz: botón «Probar el micrófono». Escucha 12 s y escribe en pantalla lo que oye y si hay error,
@@ -1433,7 +1434,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.4</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.5</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8209,7 +8210,7 @@ function renderVoz(){
   b.innerHTML=`<p style="color:var(--txt2);margin-bottom:12px">Con guantes de invierno no hace falta tocar la pantalla: <b>habla</b> y la app lo hace. Funciona mientras grabas una salida.</p>
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
-   <button class="sec" style="width:100%;margin:6px 0 10px" onclick="vcMicTest()">🔎 Probar el micrófono (dime qué oye)</button><div id="micDiag"></div>
+   <button class="sec" style="width:100%;margin:6px 0 10px" onclick="vcMicTest()">🔎 Probar el micrófono (dime qué oye)</button><button class="sec" style="width:100%;margin:0 0 10px" onclick="micLogShow()">📋 Ver qué pasó con el micro en la salida</button><div id="micDiag"></div>
    <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
    <div class="set" style="flex-wrap:wrap${VZ_IOS?';opacity:.5':''}">🗣️ «Oye bici» como Alexa <label class="sw"><input type="checkbox" ${VZ.cont?'checked':''} ${VZ_IOS?'disabled':''} onchange="vozSetCont(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${VZ_IOS?'En iPhone no se puede: el iPhone no deja escuchar todo el rato. Toca 🎤 y habla.':'La app escucha siempre y solo hace caso cuando dices <b>«Oye bici»</b>. Ej.: «Oye bici, va a llover». Funciona con la app abierta en pantalla (Android). Gasta algo más de batería.'}</small></div>
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
@@ -11727,6 +11728,36 @@ window.vcMicTest=function(){
     if(!sp&&now-idle0>8000){idle0=now;vcForce();return}
     vcChip();
   }catch(e){}},2000);
+})();
+</script>
+<script>
+/* v5.93.5 — 📋 Registro del micro en ruta: apunta qué hace el reconocimiento de voz (abre, cierra, errores, lo que oye)
+   y por qué no se abre. Se ve en Perfil › Órdenes por voz › «Ver qué pasó con el micro». */
+(function(){
+  const KEY='velogo_micLog';let L=[];try{L=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+  const hm=()=>{const d=new Date();return d.toTimeString().slice(0,8)};
+  let lastMsg='',saveT=null;
+  window.micLog=function(m){if(m===lastMsg&&L.length&&L[L.length-1].m===m){L[L.length-1].n=(L[L.length-1].n||1)+1}else{L.push({t:hm(),m});lastMsg=m}
+    while(L.length>60)L.shift();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(L))}catch(e){}},500)};
+  const R0=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(R0){const W=function(){const r=new R0();if(typeof r.addEventListener!=='function')return r;const tag=()=>(r.continuous?'continuo':'una vez')+(typeof live!=='undefined'&&live.on?' · en ruta':'');
+      try{r.addEventListener('start',()=>micLog('▶️ micro abierto ('+tag()+')'));
+      r.addEventListener('end',()=>micLog('⏹ micro cerrado ('+tag()+')'));
+      r.addEventListener('error',e=>micLog('❌ error: '+e.error));
+      r.addEventListener('result',e=>{try{const x=e.results[e.results.length-1];if(x.isFinal)micLog('👂 «'+x[0].transcript+'»')}catch(_){}})}catch(e){}
+      return r};
+    W.prototype=R0.prototype;window.SpeechRecognition=W;window.webkitSpeechRecognition=W;}
+  // por qué no se abre en ruta
+  const s1=window.vcStart;if(typeof s1==='function')window.vcStart=function(){try{if(live.on&&vcOn()&&!VC.rec){const why=[];
+      if(typeof musQ==='function'&&musQ())why.push('música/Spotify');if(vcPtt())why.push('botón del casco');if(!vcOk())why.push('sin reconocimiento de voz');
+      if(Date.now()<VC.quiet)why.push('la app habla');try{if(musSpeaking())why.push('voz sonando')}catch(e){}
+      try{if(VZ.oneShot||VZ.pending)why.push('micro de pantalla ocupado')}catch(e){}
+      if(document.visibilityState!=='visible')why.push('pantalla oculta');
+      if(why.length)micLog('⏸ no abre: '+why.join(', '))}}catch(e){}return s1.apply(this,arguments)};
+  const f1=window.vcForce;if(typeof f1==='function')window.vcForce=function(){micLog('🔁 reabriendo el micro');return f1.apply(this,arguments)};
+  window.micLogShow=function(){const b=document.getElementById('micDiag');if(!b)return;
+    const rows=L.slice(-40).reverse().map(x=>'<div><small style="color:var(--txt2)">'+x.t+'</small> '+String(x.m).replace(/</g,'')+(x.n>1?' <small>×'+x.n+'</small>':'')+'</div>').join('')||'<div>Todavía no hay nada apuntado. Haz una salida con «Oye bici» y vuelve aquí.</div>';
+    b.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;line-height:1.5;max-height:340px;overflow:auto"><b>📋 Lo que pasó con el micro (lo último arriba)</b>'+rows+'</div>'};
 })();
 </script>
 </body>
