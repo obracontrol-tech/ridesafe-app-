@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.92.1 — ⚡ Conexión Shimano marcada como BETA, con aviso de responsabilidad que hay que aceptar la primera vez. */
 /* v5.92.0 — ⚡ Autonomía e-bike igual que la pantalla Shimano: proporciones reales Eco/Trail/Boost (3,1 / 1,5 / 1),
    nunca Boost por encima de Trail, y botón «Igualar con la pantalla» en Perfil › Mi e-bike (escribes los km del RESTO). */
 /* v5.91.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar (el iPhone cortaba el «mantener pulsado»).
@@ -1424,7 +1425,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.92.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.92.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11325,6 +11326,8 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
 #ebBox .ebV b{display:block;font-size:24px;font-weight:900}
 #ebBox .ebV span{font-size:11px;font-weight:800;color:var(--txt2);text-transform:uppercase}
 #ebBox button{width:100%;margin:10px 0 0;padding:13px;border-radius:14px;border:0;font:800 16px system-ui;background:#0B63CE;color:#fff}
+#ebBox .ebBeta{display:inline-block;background:#F59E0B;color:#111;font:900 11px system-ui;letter-spacing:.06em;padding:2px 7px;border-radius:6px;vertical-align:middle;margin-left:4px}
+#ebBox small.ebDis{background:#FEF3C7;color:#78350F;border-radius:10px;padding:8px 10px;margin-top:8px}
 #ebBox button.sec{background:#0A0A0A!important;color:#fff!important;border:0!important}
 #ebBox button{text-align:center!important;justify-content:center!important}
 </style>
@@ -11372,14 +11375,15 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   function render(){const b=$('ebBox');if(!b)return;
     if(!ok()){b.innerHTML='<div class="ebC"><div class="ebT">⚡ Mi e-bike</div><small>Para conectar una bici eléctrica hace falta un móvil Android con Chrome. En iPhone no se puede.</small></div>';return}
     const st=EB.on?'on':EB.busy?'wait':'',R=EB.range();
-    b.innerHTML='<div class="ebC"><div class="ebT"><i class="'+st+'"></i>⚡ Mi e-bike'+(EB.on?' · '+esc(EB.name||'conectada'):'')+'</div>'+
+    b.innerHTML='<div class="ebC"><div class="ebT"><i class="'+st+'"></i>⚡ Mi e-bike'+(EB.on?' · '+esc(EB.name||'conectada'):'')+' <span class="ebBeta">BETA</span></div>'+
       (EB.on?'<div class="ebV"><div><span>Batería</span><b>'+(EB.bat??'—')+'%</b></div><div><span>Modo</span><b>'+esc(EB.mode||'—')+'</b></div><div><span>Autonomía</span><b>'+(R?Math.round(R)+' km':'—')+'</b></div></div><small>⚡ Te quedan: <b>'+threeTxt()+' km</b>'+(CAL()?' · igualado con la pantalla':Object.keys(KM()).length?'':' · se calcula al bajar la batería en ruta')+'</small>'+
-        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small><button onclick="ebCal()">📏 Igualar con la pantalla de la bici</button><button class="sec" onclick="ebOff()">Desconectar</button>'
-      :'<small>Motores <b>Shimano STEPS</b> (EP8, EP801, EP6…). Enciende la bici y <b>cierra E‑TUBE</b>: la bici solo habla con una app a la vez.</small>'+
+        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small>'+'<small class="ebDis">⚠️ <b>Función en BETA.</b> La conexión solo lee datos de la bici. RideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici. La usas bajo tu responsabilidad.</small>'+'<button onclick="ebCal()">📏 Igualar con la pantalla de la bici</button><button class="sec" onclick="ebOff()">Desconectar</button>'
+      :'<small>Motores <b>Shimano STEPS</b> (EP8, EP801, EP6…). Enciende la bici y <b>cierra E‑TUBE</b>: la bici solo habla con una app a la vez.</small>'+'<small class="ebDis">⚠️ <b>Función en BETA.</b> La conexión solo lee datos de la bici. RideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici. La usas bajo tu responsabilidad.</small>'+
         '<button onclick="ebFind()">'+(EB.busy?'Conectando…':(store.get('ebName','')?'🔄 Conectar «'+esc(store.get('ebName',''))+'»':'🔍 Conectar mi e-bike'))+'</button>')+'</div>'}
   window.ebRender=render;
   /* --- Conexión --- */
   window.ebFind=async function(){if(!ok()||EB.busy)return;
+    if(!store.get('ebOk',false)){if(!confirm('⚡ Conexión con la e-bike (BETA)\n\nEs una función en pruebas que solo lee datos de la bici (batería, modo, cadencia).\n\nRideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici.\n\n¿Aceptas y quieres continuar?'))return;store.set('ebOk',true)}
     try{manualOff=false;EB.busy=true;render();
       dev=await navigator.bluetooth.requestDevice({filters:[{services:[U.adv]},{services:[U.modeS]},{namePrefix:'SC'},{namePrefix:'EW-'},{namePrefix:'EP'},{namePrefix:'SHIMANO'}],optionalServices:[U.modeS,U.adv,'battery_service']});
       await conn()}catch(e){console.warn('ebike',e);EB.busy=false;render();if(e&&e.name!=='NotFoundError')toast('⚡ No se ha podido conectar. ¿Está E‑TUBE abierto? Ciérralo y prueba otra vez.',5000)}};
