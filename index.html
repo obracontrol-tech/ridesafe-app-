@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.3 — 🔎 Perfil › Órdenes por voz: botón «Probar el micrófono». Escucha 12 s y escribe en pantalla lo que oye y si hay error,
+   para saber por qué «Oye bici» no responde en un móvil concreto. */
 /* v5.93.2 — 🎧 Perfil › Música en ruta: «Podcasts de ciclismo» (Spotify) sustituido por el podcast propio de RideSafe IA («Convierte tu móvil en ciclocomputador gratis», 18 min), se escucha dentro de la app. */
 /* v5.93.1 — 🎵 Música y voz en Android: con Spotify o música de la app, el micro ya no escucha todo el rato (pitaba y paraba la música). Botón «🎤 Toca y habla». */
 /* v5.93.0 — 🩺 Chequeo del motor e-bike: «Oye bici, diagnóstico del motor» / «chequeo del motor» o botón en Perfil › Mi e-bike.
@@ -1429,7 +1431,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8205,6 +8207,7 @@ function renderVoz(){
   b.innerHTML=`<p style="color:var(--txt2);margin-bottom:12px">Con guantes de invierno no hace falta tocar la pantalla: <b>habla</b> y la app lo hace. Funciona mientras grabas una salida.</p>
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
+   <button class="sec" style="width:100%;margin:6px 0 10px" onclick="vcMicTest()">🔎 Probar el micrófono (dime qué oye)</button><div id="micDiag"></div>
    <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
    <div class="set" style="flex-wrap:wrap${VZ_IOS?';opacity:.5':''}">🗣️ «Oye bici» como Alexa <label class="sw"><input type="checkbox" ${VZ.cont?'checked':''} ${VZ_IOS?'disabled':''} onchange="vozSetCont(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${VZ_IOS?'En iPhone no se puede: el iPhone no deja escuchar todo el rato. Toca 🎤 y habla.':'La app escucha siempre y solo hace caso cuando dices <b>«Oye bici»</b>. Ej.: «Oye bici, va a llover». Funciona con la app abierta en pantalla (Android). Gasta algo más de batería.'}</small></div>
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
@@ -11666,6 +11669,29 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
     if(q&&VC.rec&&VC.rec.continuous)vcStop();
     if(q!==was){was=q;vcChip();if(!q&&vcOn()&&!VC.rec&&!(typeof vcPtt==='function'&&vcPtt()))setTimeout(()=>{try{vcStart()}catch(e){}},800)}}catch(e){}},2000);
 })();
+</script>
+<script>
+/* v5.93.3 — 🔎 Prueba del micrófono para «Oye bici» */
+window.vcMicTest=function(){
+  const box=document.getElementById('micDiag');if(!box)return;
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const out=(h)=>{box.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:15px;line-height:1.45">'+h+'</div>'};
+  if(!R){out('❌ Este navegador no tiene reconocimiento de voz. Usa <b>Chrome</b> en Android.');return}
+  try{if(typeof VC!=='undefined'&&VC.rec)vcStop()}catch(e){}
+  try{speechSynthesis.cancel()}catch(e){}
+  const L=[];let st='🎙️ <b>Escuchando 12 segundos…</b> Di: «Oye bici, qué hora es».';
+  const paint=()=>{const w=L.map(x=>'<div>'+x+'</div>').join('');out(st+(w?'<div style="margin-top:8px">'+w+'</div>':''))};paint();
+  const r=new R();r.lang='es-ES';r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
+  let heard=false,wake=false;
+  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(!e.results[i].isFinal)continue;heard=true;
+    let w=false;try{w=VOZ_WAKE.test(vozNorm(t))}catch(_){};if(w)wake=true;L.push((w?'✅ ':'👂 ')+'«'+t.replace(/</g,'')+'»'+(w?' <small>(reconoce «Oye bici»)</small>':''));paint()}};
+  const ERR={'not-allowed':'❌ <b>El micrófono está bloqueado.</b> Toca el candado de la barra de direcciones (o Ajustes › Apps › Chrome › Permisos) y permite el micrófono.','service-not-allowed':'❌ <b>El micrófono está bloqueado</b> para esta web.','audio-capture':'❌ <b>No llega sonido del micrófono.</b> ¿Lo está usando otra app (llamada, grabadora, casco)?','network':'❌ <b>Sin conexión con el servicio de voz de Google.</b> Mira si tienes datos o WiFi.','no-speech':'⚠️ No ha oído nada.','aborted':''};
+  r.onerror=e=>{const m=ERR[e.error];if(m)L.push(m);else if(e.error)L.push('❌ Error: '+e.error);paint()};
+  r.onend=()=>{clearTimeout(r._t);
+    st=wake?'✅ <b>El micrófono funciona y reconoce «Oye bici».</b>':heard?'⚠️ <b>Oye, pero no ha entendido «Oye bici».</b> Dilo más despacio y cerca del móvil.':(L.length?'<b>Resultado:</b>':'⚠️ <b>No ha llegado nada del micrófono.</b>');
+    paint();try{if(live.on&&vcOn())setTimeout(vcStart,800)}catch(e){}};
+  try{r.start();r._t=setTimeout(()=>{try{r.stop()}catch(_){}},12000)}catch(e){L.push('❌ No se pudo abrir el micrófono: '+e.message);paint()}
+};
 </script>
 </body>
 </html>
