@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.8 — 🔎 La prueba del micrófono ya no sale «Error: aborted»: pausa la escucha de «Oye bici» de fondo mientras dura. */
 /* v5.93.7 — 🎙️ «Oye bici» tras la primera orden: después de cada orden se abre un micro nuevo (en algunos Android el micro
    seguía en rojo pero ya no oía), y si la voz del móvil se queda «colgada» el micro vuelve a los pocos segundos. */
 /* v5.93.6 — 🎙️ «Oye bici»: la música de la app solo cuenta como «sonando» si tú la has puesto (antes un reproductor parado
@@ -1438,7 +1439,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.7</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.8</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9297,7 +9298,8 @@ function vozMake(continuous){
 }
 function vozStop(keepCont){clearTimeout(VZ.restartTO);if(!keepCont)VZ.want=false;try{VZ.rec&&VZ.rec.abort()}catch(e){}VZ.rec=null;VZ.on=false;vozUI()}
 function vozStartCont(){
-  if(VZ_IOS)return;   // v5.41.1
+  if(VZ_IOS)return;
+  if(Date.now()<(window.__micTest||0))return;   // v5.93.8: prueba del micrófono en marcha   // v5.41.1
   try{if(live.on&&vcOn()&&!vcPtt()&&!VC_TAP)return}catch(e){}   // v5.41.6: en ruta ya escucha la voz de ruta
   if(!VSR||!VZ.cont||VZ.rec||document.visibilityState!=='visible'||Date.now()<VZ.quietT)return;
   VZ.want=true;VZ.oneShot=false;
@@ -11685,6 +11687,8 @@ window.vcMicTest=function(){
   const out=(h)=>{box.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:15px;line-height:1.45">'+h+'</div>'};
   if(!R){out('❌ Este navegador no tiene reconocimiento de voz. Usa <b>Chrome</b> en Android.');return}
   try{if(typeof VC!=='undefined'&&VC.rec)vcStop()}catch(e){}
+  try{if(typeof VZ!=='undefined'){VZ.quietT=Date.now()+16000;if(VZ.rec)vozStop(true)}}catch(e){}   // v5.93.8: que «Oye bici» de fondo no corte la prueba
+  window.__micTest=Date.now()+14000;
   try{speechSynthesis.cancel()}catch(e){}
   const L=[];let st='🎙️ <b>Escuchando 12 segundos…</b> Di: «Oye bici, qué hora es».';
   const paint=()=>{const w=L.map(x=>'<div>'+x+'</div>').join('');out(st+(w?'<div style="margin-top:8px">'+w+'</div>':''))};paint();
@@ -11693,10 +11697,10 @@ window.vcMicTest=function(){
   r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(!e.results[i].isFinal)continue;heard=true;
     let w=false;try{w=VOZ_WAKE.test(vozNorm(t))}catch(_){};if(w)wake=true;L.push((w?'✅ ':'👂 ')+'«'+t.replace(/</g,'')+'»'+(w?' <small>(reconoce «Oye bici»)</small>':''));paint()}};
   const ERR={'not-allowed':'❌ <b>El micrófono está bloqueado.</b> Toca el candado de la barra de direcciones (o Ajustes › Apps › Chrome › Permisos) y permite el micrófono.','service-not-allowed':'❌ <b>El micrófono está bloqueado</b> para esta web.','audio-capture':'❌ <b>No llega sonido del micrófono.</b> ¿Lo está usando otra app (llamada, grabadora, casco)?','network':'❌ <b>Sin conexión con el servicio de voz de Google.</b> Mira si tienes datos o WiFi.','no-speech':'⚠️ No ha oído nada.','aborted':''};
-  r.onerror=e=>{const m=ERR[e.error];if(m)L.push(m);else if(e.error)L.push('❌ Error: '+e.error);paint()};
+  r.onerror=e=>{if(e.error==='aborted')return;const m=ERR[e.error];if(m)L.push(m);else if(e.error)L.push('❌ Error: '+e.error);paint()};
   r.onend=()=>{clearTimeout(r._t);
     st=wake?'✅ <b>El micrófono funciona y reconoce «Oye bici».</b>':heard?'⚠️ <b>Oye, pero no ha entendido «Oye bici».</b> Dilo más despacio y cerca del móvil.':(L.length?'<b>Resultado:</b>':'⚠️ <b>No ha llegado nada del micrófono.</b>');
-    paint();try{if(live.on&&vcOn())setTimeout(vcStart,800)}catch(e){}};
+    window.__micTest=0;paint();try{if(live.on&&vcOn())setTimeout(vcStart,800);else if(typeof VZ!=='undefined'&&VZ.cont){VZ.quietT=0;setTimeout(()=>{try{vozStartCont()}catch(e){}},800)}}catch(e){}};
   try{r.start();r._t=setTimeout(()=>{try{r.stop()}catch(_){}},12000)}catch(e){L.push('❌ No se pudo abrir el micrófono: '+e.message);paint()}
 };
 </script>
