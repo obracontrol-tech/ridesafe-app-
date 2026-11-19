@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.7 — 🎙️ «Oye bici» tras la primera orden: después de cada orden se abre un micro nuevo (en algunos Android el micro
+   seguía en rojo pero ya no oía), y si la voz del móvil se queda «colgada» el micro vuelve a los pocos segundos. */
 /* v5.93.6 — 🎙️ «Oye bici»: la música de la app solo cuenta como «sonando» si tú la has puesto (antes un reproductor parado
    podía bloquear el micro). El registro dice si es el interruptor de Spotify o la música de la app. */
 /* v5.93.5 — 📋 Registro del micro en ruta (Perfil › Órdenes por voz › «Ver qué pasó con el micro en la salida»). */
@@ -1436,7 +1438,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.6</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.7</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11709,7 +11711,12 @@ window.vcMicTest=function(){
     try{VC.quiet=0}catch(e){}
     try{if(typeof VZ!=='undefined'){if(VZ.rec){try{VZ.rec.abort()}catch(e){}VZ.rec=null}VZ.oneShot=false;VZ.pending=false}}catch(e){}
   }
-  window.vcForce=function(){unstick();try{if(VC.rec)vcStop()}catch(e){}setTimeout(()=>{try{vcStart()}catch(e){}vcChip()},300)};
+  const ms0=window.musSpeaking;if(typeof ms0==='function')window.musSpeaking=function(){if(Date.now()<(window.__vcIgn||0))return false;return ms0.apply(this,arguments)};
+  // tras cada orden, micro nuevo: en algunos Android el micro sigue «abierto» pero ya no oye nada después de la primera frase
+  const h0=window.vcHandle;if(typeof h0==='function')window.vcHandle=function(){const r=h0.apply(this,arguments);
+    setTimeout(()=>{try{if(!live.on||!want())return;let sp=false;try{sp=Date.now()<VC.quiet||musSpeaking()}catch(e){}
+      if(VC.rec&&!sp){try{micLog('🔄 micro nuevo tras la orden')}catch(e){}vcStop();setTimeout(()=>{try{vcStart()}catch(e){}},400)}}catch(e){}},1800);return r};
+  window.vcForce=function(){unstick();window.__vcIgn=Date.now()+4000;try{if(VC.rec)vcStop()}catch(e){}setTimeout(()=>{try{vcStart()}catch(e){}vcChip()},300)};
   const c0=window.vcChip;
   window.vcChip=function(){c0.apply(this,arguments);try{
     if(!want())return;const c=document.getElementById('vcChip');if(!c)return;
@@ -11725,9 +11732,10 @@ window.vcMicTest=function(){
     let sp=false;try{sp=musSpeaking()}catch(e){}
     if(sp){if(!spk0)spk0=now;
       try{if(ttsAudio&&!ttsAudio.paused){if(ttsAudio.currentTime===lastT){if(!stall0)stall0=now}else{stall0=0;lastT=ttsAudio.currentTime}}}catch(e){}
-      if(now-spk0>20000||(stall0&&now-stall0>5000)){spk0=0;stall0=0;vcForce();return}}
+      let q=0;try{q=VC.quiet||0}catch(e){}
+      if(now-spk0>12000||(stall0&&now-stall0>4000)||(q&&now>q+3500)){try{micLog('🔇 la voz del móvil se quedó colgada')}catch(e){}spk0=0;stall0=0;vcForce();return}}
     else spk0=0;
-    if(!sp&&now-idle0>8000){idle0=now;vcForce();return}
+    if(!sp&&now-idle0>5000){idle0=now;vcForce();return}
     vcChip();
   }catch(e){}},2000);
 })();
