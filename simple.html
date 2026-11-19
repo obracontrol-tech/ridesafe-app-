@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.47.3 — 🎵 Música y voz en Android: con Spotify o música de la app, el micro ya no escucha todo el rato (como la Pro 5.93.1).
+/* v1.47.4 — 🎧 Música en ruta: el podcast propio de RideSafe IA sustituye a «Podcasts de ciclismo» (como la Pro 5.93.2).
+   v1.47.3 — 🎵 Música y voz en Android: con Spotify o música de la app, el micro ya no escucha todo el rato (como la Pro 5.93.1).
    v1.47.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar.
    v1.47.1 — Panel como mucho al 60 % en vertical: siempre queda mapa (como la Pro 5.91.1).
    v1.47.0 — 🎙️ Walkie con botón cuadrado grande (como la Pro 5.91.0).
@@ -1278,7 +1279,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.47.3 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.47.4 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3303,7 +3304,7 @@ function renderMusic(){
      <div id="ttsDiag" style="flex-basis:100%;font-size:13px;line-height:1.45"></div></div>
    <label class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px;cursor:pointer">📁 Mi música del móvil<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" multiple style="display:none" onchange="musPick(this)"></label>
    <small style="display:block;color:var(--txt2);margin:6px 2px 14px;line-height:1.4">Elige canciones o podcasts guardados en el móvil (carpeta Música o Descargas). Suenan dentro de RideSafe y la voz de la app los baja sola. 0 datos.</small>
-   <button class="li" style="margin-bottom:14px" onclick="window.open('https://open.spotify.com/search/ciclismo/podcasts','_blank')"><span class="em">🎙️</span><div><b>Podcasts de ciclismo</b><small>Entrenamiento, rutas y carreras. Ábrelos en Spotify y pulsa ⬇️ para descargarlos con WiFi.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+   <div class="li" style="margin-bottom:14px;display:block;cursor:default"><div style="display:flex;gap:12px;align-items:center"><span class="em">🎧</span><div><b>Podcast de RideSafe IA</b><small>«Convierte tu móvil en ciclocomputador gratis» · 18 min. Escúchalo en casa o en ruta.</small></div></div><audio controls preload="none" src="podcast/ridesafe-podcast-1.m4a" style="width:100%;margin-top:10px;height:40px" onplay="try{if(window.mus&&mus.a&&mus.a!==this&&!mus.a.paused)mus.a.pause()}catch(e){}"></audio></div>
    <h3 style="font-size:16px;margin:4px 2px 8px">🎧 Tu música de Spotify</h3>
    <small style="display:block;color:var(--txt2);margin:-2px 2px 8px;line-height:1.4">Con Spotify gratis puedes descargar podcasts; las listas de música descargadas necesitan Premium.</small>
    <button class="btn btn-lime" style="width:100%;justify-content:center;min-height:56px;font-size:17px" onclick="musResume()">🟢 Abrir Spotify</button>

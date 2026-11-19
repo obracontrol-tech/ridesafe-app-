@@ -1,5 +1,5 @@
 // RideSafe IA — Service Worker (v3.0)
-const CACHE = 'velogo-v5931';                 // la app (se renueva con cada versión)
+const CACHE = 'velogo-v5932';                 // la app (se renueva con cada versión)
 const MAPS = 'velogo-offline-map';           // zonas guardadas por el ciclista (no se borran al actualizar)
 const VIEW = 'velogo-map-view';              // mapa ya visto (se recorta solo)
 const LIBS = 'velogo-libs';                  // librerías externas (mapa, Firebase, letras)
@@ -74,6 +74,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(libFirst(req)); return;
   }
   if (u.origin !== location.origin) return;
+  // v5.93.2: audio del podcast directo de la red (las peticiones por trozos no se guardan en caché)
+  if (/\.(m4a|mp3)$/.test(u.pathname)) return;
   // La app: red primero (siempre la última versión); caché si no hay conexión
   e.respondWith(
     // v442: 'no-cache' obliga a pedir siempre la última versión (evita que el móvil muestre una versión vieja)
