@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.6 — 🎙️ «Oye bici»: la música de la app solo cuenta como «sonando» si tú la has puesto (antes un reproductor parado
+   podía bloquear el micro). El registro dice si es el interruptor de Spotify o la música de la app. */
 /* v5.93.5 — 📋 Registro del micro en ruta (Perfil › Órdenes por voz › «Ver qué pasó con el micro en la salida»). */
 /* v5.93.4 — 🎙️ «Oye bici» en ruta: si el micro se queda parado (la voz del móvil se queda «colgada» o el micro ocupado),
    la app lo detecta a los 8 s y lo vuelve a abrir. Arriba del panel se ve siempre el estado del micro; tocándolo se reabre. */
@@ -1434,7 +1436,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.5</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.6</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11662,7 +11664,7 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
    y aparece el botón «🎤 Toca y habla»: el micro solo se abre cuando tú lo tocas. Así la música no se corta. */
 (function(){
   const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  window.musQ=function(){if(IOS)return false;try{if(extMus())return true}catch(e){}try{if(mus&&mus.a&&!mus.a.paused)return true}catch(e){}return false};
+  window.musQ=function(){if(IOS)return false;try{if(extMus())return true}catch(e){}try{if(mus&&mus.want&&mus.a&&!mus.a.paused&&!mus.a.ended)return true}catch(e){}return false};
   const s0=window.vcStart;if(typeof s0==='function')window.vcStart=function(){if(musQ()){try{if(VC.rec&&VC.rec.continuous)vcStop()}catch(e){}try{vcChip()}catch(e){}return}return s0.apply(this,arguments)};
   const c0=window.vcChip;if(typeof c0==='function')window.vcChip=function(){c0.apply(this,arguments);try{if(!musQ())return;const c=document.getElementById('vcChip');if(!c)return;
     c.style.display=(live.on&&vcOn())?'inline-flex':'none';c.innerHTML=VC.rec?'🎙️ Te escucho':'🎤 Toca y habla';c.style.background=VC.rec?'#16A34A':'#0E1A2B';c.onclick=()=>{try{vcListenOnce()}catch(e){}}}catch(e){}};
@@ -11749,7 +11751,7 @@ window.vcMicTest=function(){
     W.prototype=R0.prototype;window.SpeechRecognition=W;window.webkitSpeechRecognition=W;}
   // por qué no se abre en ruta
   const s1=window.vcStart;if(typeof s1==='function')window.vcStart=function(){try{if(live.on&&vcOn()&&!VC.rec){const why=[];
-      if(typeof musQ==='function'&&musQ())why.push('música/Spotify');if(vcPtt())why.push('botón del casco');if(!vcOk())why.push('sin reconocimiento de voz');
+      if(typeof musQ==='function'&&musQ())why.push(extMus()?'interruptor «Uso Spotify» encendido':'música de la app sonando');if(vcPtt())why.push('botón del casco');if(!vcOk())why.push('sin reconocimiento de voz');
       if(Date.now()<VC.quiet)why.push('la app habla');try{if(musSpeaking())why.push('voz sonando')}catch(e){}
       try{if(VZ.oneShot||VZ.pending)why.push('micro de pantalla ocupado')}catch(e){}
       if(document.visibilityState!=='visible')why.push('pantalla oculta');
