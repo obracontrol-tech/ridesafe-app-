@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.47.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar.
+/* v1.47.3 — 🎵 Música y voz en Android: con Spotify o música de la app, el micro ya no escucha todo el rato (como la Pro 5.93.1).
+   v1.47.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar.
    v1.47.1 — Panel como mucho al 60 % en vertical: siempre queda mapa (como la Pro 5.91.1).
    v1.47.0 — 🎙️ Walkie con botón cuadrado grande (como la Pro 5.91.0).
    v1.46.6 — Botón «Empezar salida» en rojo.
@@ -1277,7 +1278,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.47.2 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.47.3 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9829,5 +9830,23 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
   html.gmx #s-rutas.live .lvaway1{position:fixed!important;top:var(--gmFabTop,12px)!important;right:10px!important;bottom:auto!important;left:auto!important;z-index:66!important}
 }
 </style>
+<script>
+/* v5.93.1 / Simple 1.47.3 — 🎵 MÚSICA + VOZ EN ANDROID: escuchar «Oye bici» todo el rato abre y cierra el micrófono
+   cada pocos segundos; Android pita y PARA la música cada vez (Spotify o la música de la app).
+   Si usas Spotify (Perfil › «Uso Spotify u otra app») o suena música de la app, la escucha continua se apaga
+   y aparece el botón «🎤 Toca y habla»: el micro solo se abre cuando tú lo tocas. Así la música no se corta. */
+(function(){
+  const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  window.musQ=function(){if(IOS)return false;try{if(extMus())return true}catch(e){}try{if(mus&&mus.a&&!mus.a.paused)return true}catch(e){}return false};
+  const s0=window.vcStart;if(typeof s0==='function')window.vcStart=function(){if(musQ()){try{if(VC.rec&&VC.rec.continuous)vcStop()}catch(e){}try{vcChip()}catch(e){}return}return s0.apply(this,arguments)};
+  const c0=window.vcChip;if(typeof c0==='function')window.vcChip=function(){c0.apply(this,arguments);try{if(!musQ())return;const c=document.getElementById('vcChip');if(!c)return;
+    c.style.display=(live.on&&vcOn())?'inline-flex':'none';c.innerHTML=VC.rec?'🎙️ Te escucho':'🎤 Toca y habla';c.style.background=VC.rec?'#16A34A':'#0E1A2B';c.onclick=()=>{try{vcListenOnce()}catch(e){}}}catch(e){}};
+  const v0=window.vozStartCont;if(typeof v0==='function')window.vozStartCont=function(){if(musQ())return;return v0.apply(this,arguments)};
+  let was=null;
+  setInterval(()=>{try{if(!live.on){was=null;return}const q=musQ();
+    if(q&&VC.rec&&VC.rec.continuous)vcStop();
+    if(q!==was){was=q;vcChip();if(!q&&vcOn()&&!VC.rec&&!(typeof vcPtt==='function'&&vcPtt()))setTimeout(()=>{try{vcStart()}catch(e){}},800)}}catch(e){}},2000);
+})();
+</script>
 </body>
 </html>
