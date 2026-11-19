@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.92.0 — ⚡ Autonomía e-bike igual que la pantalla Shimano: proporciones reales Eco/Trail/Boost (3,1 / 1,5 / 1),
+   nunca Boost por encima de Trail, y botón «Igualar con la pantalla» en Perfil › Mi e-bike (escribes los km del RESTO). */
 /* v5.91.2 — 🎙️ Walkie en iPhone: toca para hablar y toca para enviar (el iPhone cortaba el «mantener pulsado»).
    v5.91.1 — En vertical el panel ocupa como mucho el 60 % (siempre queda mapa); los botones de abajo y el walkie siempre a la vista.
    v5.91.0 — 🎙️ Walkie con botón cuadrado grande; si el panel es muy alto, la velocidad vuelve al panel para no tapar los botones del mapa.
@@ -1422,7 +1424,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.91.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.92.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11340,7 +11342,8 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   const ok=()=>!!navigator.bluetooth;
   /* --- Autonomía POR MODO (v5.85.0): cada vez que baja un 1 % miro cuántos km has hecho y en qué modo.
      Se guarda km por cada 1 % para Eco, Trail y Boost; si un modo aún no se ha medido, se estima con los otros. --- */
-  const RAT={Eco:2.2,Trail:1.5,Boost:1};
+  const RAT={Eco:3.1,Trail:1.5,Boost:1}; /* v5.92.0: medido en pantalla Shimano EP8 (Eco 114 · Trail 56 · Boost 37 km al 84 %) */
+  const CAL=()=>store.get('ebCal',null); /* km por cada 1 % que copió el ciclista de la pantalla de la bici */
   const KM=()=>store.get('ebKmPctM',{});
   let seg={},segBat=null,lastKm=null;
   setInterval(()=>{try{if(!(live&&live.on)){lastKm=null;segBat=null;seg={};return}
@@ -11349,8 +11352,18 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
     const drop=segBat-v;if(drop<1)return;let tot=0,m=null,mx=0;for(const k in seg){tot+=seg[k];if(seg[k]>mx){mx=seg[k];m=k}}
     if(m&&tot>0.05&&mx/tot>=0.6){const r=tot/drop;if(r>0.05&&r<15){const K=KM();K[m]=K[m]?Math.round((K[m]*0.7+r*0.3)*100)/100:Math.round(r*100)/100;store.set('ebKmPctM',K)}}
     segBat=v;seg={}}catch(e){}}
-  function rFor(m){const K=KM();if(K[m])return{r:K[m],est:false};const ks=Object.keys(K).filter(k=>RAT[k]);if(!ks.length)return null;
-    const base=ks.reduce((a,k)=>a+K[k]/RAT[k],0)/ks.length;return{r:base*RAT[m],est:true}}
+  function rFor(m){const C=CAL();if(C&&C[m])return{r:C[m],est:false};
+    const K=KM(),ks=Object.keys(K).filter(k=>RAT[k]);if(!ks.length)return null;
+    const base=ks.reduce((a,k)=>a+K[k]/RAT[k],0)/ks.length;
+    /* si lo aprendido sale al revés (Boost más que Trail, o Trail más que Eco) no me fío: uso las proporciones */
+    const g=k=>K[k]||base*RAT[k];if(!(g('Eco')>=g('Trail')&&g('Trail')>=g('Boost')))return{r:base*RAT[m],est:true};
+    return K[m]?{r:K[m],est:false}:{r:base*RAT[m],est:true}}
+  window.ebCal=function(){if(EB.bat==null){toast('⚡ Conecta antes la bici para saber la batería');return}
+    const a=prompt('Mira la pantalla de la bici (RESTO km) en cada modo y escribe los 3 números:\nEco  Trail (Pista)  Boost\nEjemplo: 114 56 37',''),n=(a||'').match(/\d+([.,]\d+)?/g);
+    if(!a)return;if(!n||n.length<3){toast('Escribe los 3 números, por ejemplo: 114 56 37',4000);return}
+    const v=n.slice(0,3).map(x=>parseFloat(x.replace(',','.'))/Math.max(1,EB.bat));
+    store.set('ebCal',{Eco:v[0],Trail:v[1],Boost:v[2]});render();try{EB.paint&&EB.paint()}catch(e){}
+    toast('✅ Autonomía igualada con la pantalla de la bici',3500)};
   EB.rangeM=function(m){const x=rFor(m);return(EB.bat!=null&&x)?{km:EB.bat*x.r,est:x.est}:null};
   EB.range=function(){const x=EB.rangeM(RAT[EB.mode]?EB.mode:'Trail');return x?x.km:null};
   function threeTxt(sep){return['Eco','Trail','Boost'].map(m=>{const x=EB.rangeM(m);return m+' '+(x?(x.est?'≈':'')+Math.round(x.km):'—')}).join(sep||' · ')}
@@ -11360,8 +11373,8 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
     if(!ok()){b.innerHTML='<div class="ebC"><div class="ebT">⚡ Mi e-bike</div><small>Para conectar una bici eléctrica hace falta un móvil Android con Chrome. En iPhone no se puede.</small></div>';return}
     const st=EB.on?'on':EB.busy?'wait':'',R=EB.range();
     b.innerHTML='<div class="ebC"><div class="ebT"><i class="'+st+'"></i>⚡ Mi e-bike'+(EB.on?' · '+esc(EB.name||'conectada'):'')+'</div>'+
-      (EB.on?'<div class="ebV"><div><span>Batería</span><b>'+(EB.bat??'—')+'%</b></div><div><span>Modo</span><b>'+esc(EB.mode||'—')+'</b></div><div><span>Autonomía</span><b>'+(R?Math.round(R)+' km':'—')+'</b></div></div><small>⚡ Te quedan: <b>'+threeTxt()+' km</b>'+(Object.keys(KM()).length?'':' · se calcula al bajar la batería en ruta')+'</small>'+
-        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small><button class="sec" onclick="ebOff()">Desconectar</button>'
+      (EB.on?'<div class="ebV"><div><span>Batería</span><b>'+(EB.bat??'—')+'%</b></div><div><span>Modo</span><b>'+esc(EB.mode||'—')+'</b></div><div><span>Autonomía</span><b>'+(R?Math.round(R)+' km':'—')+'</b></div></div><small>⚡ Te quedan: <b>'+threeTxt()+' km</b>'+(CAL()?' · igualado con la pantalla':Object.keys(KM()).length?'':' · se calcula al bajar la batería en ruta')+'</small>'+
+        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small><button onclick="ebCal()">📏 Igualar con la pantalla de la bici</button><button class="sec" onclick="ebOff()">Desconectar</button>'
       :'<small>Motores <b>Shimano STEPS</b> (EP8, EP801, EP6…). Enciende la bici y <b>cierra E‑TUBE</b>: la bici solo habla con una app a la vez.</small>'+
         '<button onclick="ebFind()">'+(EB.busy?'Conectando…':(store.get('ebName','')?'🔄 Conectar «'+esc(store.get('ebName',''))+'»':'🔍 Conectar mi e-bike'))+'</button>')+'</div>'}
   window.ebRender=render;
