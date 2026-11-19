@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.9 — 🎙️ Menú por números en ruta: con el menú abierto, «uno», «dos»… se aceptan sin repetir «Oye bici»
+   (con el modo Alexa se ignoraban y parecía que el micro no respondía). */
 /* v5.93.8 — 🔎 La prueba del micrófono ya no sale «Error: aborted»: pausa la escucha de «Oye bici» de fondo mientras dura. */
 /* v5.93.7 — 🎙️ «Oye bici» tras la primera orden: después de cada orden se abre un micro nuevo (en algunos Android el micro
    seguía en rojo pero ya no oía), y si la voz del móvil se queda «colgada» el micro vuelve a los pocos segundos. */
@@ -1439,7 +1441,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.8</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.9</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11717,8 +11719,11 @@ window.vcMicTest=function(){
   }
   const ms0=window.musSpeaking;if(typeof ms0==='function')window.musSpeaking=function(){if(Date.now()<(window.__vcIgn||0))return false;return ms0.apply(this,arguments)};
   // tras cada orden, micro nuevo: en algunos Android el micro sigue «abierto» pero ya no oye nada después de la primera frase
-  const h0=window.vcHandle;if(typeof h0==='function')window.vcHandle=function(){const r=h0.apply(this,arguments);
-    setTimeout(()=>{try{if(!live.on||!want())return;let sp=false;try{sp=Date.now()<VC.quiet||musSpeaking()}catch(e){}
+  const h0=window.vcHandle;if(typeof h0==='function')window.vcHandle=function(){
+    // con el menú por números abierto, «uno», «dos»… valen sin decir «Oye bici» delante
+    try{if(typeof vmIsOpen==='function'&&vmIsOpen())VC.armT=Math.max(VC.armT||0,Date.now()+3000)}catch(e){}
+    const r=h0.apply(this,arguments);
+    setTimeout(()=>{try{if(!live.on||!want())return;try{if(vmIsOpen()||VZ.oneShot||VZ.pending)return}catch(e){}let sp=false;try{sp=Date.now()<VC.quiet||musSpeaking()}catch(e){}
       if(VC.rec&&!sp){try{micLog('🔄 micro nuevo tras la orden')}catch(e){}vcStop();setTimeout(()=>{try{vcStart()}catch(e){}},400)}}catch(e){}},1800);return r};
   window.vcForce=function(){unstick();window.__vcIgn=Date.now()+4000;try{if(VC.rec)vcStop()}catch(e){}setTimeout(()=>{try{vcStart()}catch(e){}vcChip()},300)};
   const c0=window.vcChip;
