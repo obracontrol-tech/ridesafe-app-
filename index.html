@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.0 — 🩺 Chequeo del motor e-bike: «Oye bici, diagnóstico del motor» / «chequeo del motor» o botón en Perfil › Mi e-bike.
+   Revisa conexión, batería y consumo, sensor de cadencia, ayuda del motor y sensor de velocidad (imán) comparando con el GPS. */
 /* v5.92.1 — ⚡ Conexión Shimano marcada como BETA, con aviso de responsabilidad que hay que aceptar la primera vez. */
 /* v5.92.0 — ⚡ Autonomía e-bike igual que la pantalla Shimano: proporciones reales Eco/Trail/Boost (3,1 / 1,5 / 1),
    nunca Boost por encima de Trail, y botón «Igualar con la pantalla» en Perfil › Mi e-bike (escribes los km del RESTO). */
@@ -1425,7 +1427,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.92.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9052,6 +9054,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
   <tr><td>«Dónde estoy»</td><td>Calle o lugar donde estás</td></tr>
   <tr><td>«Repite»</td><td>Repite la última indicación</td></tr>
   <tr><td>«Va a llover»</td><td>Si llueve ahora, a qué hora empieza o para, hora de más riesgo, litros, tormenta y lo fiable que es (3 modelos)</td></tr>
+  <tr><td>«Diagnóstico del motor»<br>«Chequeo del motor»</td><td>Revisa la e-bike conectada: batería, sensores y ayuda del motor (BETA)</td></tr>
   <tr><td>«Llama a Casa»<br>«Llama a Nachi»</td><td>Llama a los contactos que guardes en Perfil › Órdenes por voz › 📞 Llamadas</td></tr>
 <tr><td>«Baja la cortina» / «Solo el mapa»<br>«Sube la cortina» / «Velocímetro»</td><td>Esconde los datos para ver el mapa entero, o los vuelve a subir</td></tr>
 <tr><td>«Lloverá esta tarde / esta noche»<br>«Lloverá mañana»</td><td>Lluvia de ese tramo o de mañana (mañana y tarde por separado)</td></tr>
@@ -11326,6 +11329,8 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
 #ebBox .ebV b{display:block;font-size:24px;font-weight:900}
 #ebBox .ebV span{font-size:11px;font-weight:800;color:var(--txt2);text-transform:uppercase}
 #ebBox button{width:100%;margin:10px 0 0;padding:13px;border-radius:14px;border:0;font:800 16px system-ui;background:#0B63CE;color:#fff}
+#ebBox .ebDg{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:14px;line-height:1.4}
+#ebBox .ebDg div{padding:3px 0}
 #ebBox .ebBeta{display:inline-block;background:#F59E0B;color:#111;font:900 11px system-ui;letter-spacing:.06em;padding:2px 7px;border-radius:6px;vertical-align:middle;margin-left:4px}
 #ebBox small.ebDis{background:#FEF3C7;color:#78350F;border-radius:10px;padding:8px 10px;margin-top:8px}
 #ebBox button.sec{background:#0A0A0A!important;color:#fff!important;border:0!important}
@@ -11377,7 +11382,7 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
     const st=EB.on?'on':EB.busy?'wait':'',R=EB.range();
     b.innerHTML='<div class="ebC"><div class="ebT"><i class="'+st+'"></i>⚡ Mi e-bike'+(EB.on?' · '+esc(EB.name||'conectada'):'')+' <span class="ebBeta">BETA</span></div>'+
       (EB.on?'<div class="ebV"><div><span>Batería</span><b>'+(EB.bat??'—')+'%</b></div><div><span>Modo</span><b>'+esc(EB.mode||'—')+'</b></div><div><span>Autonomía</span><b>'+(R?Math.round(R)+' km':'—')+'</b></div></div><small>⚡ Te quedan: <b>'+threeTxt()+' km</b>'+(CAL()?' · igualado con la pantalla':Object.keys(KM()).length?'':' · se calcula al bajar la batería en ruta')+'</small>'+
-        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small>'+'<small class="ebDis">⚠️ <b>Función en BETA.</b> La conexión solo lee datos de la bici. RideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici. La usas bajo tu responsabilidad.</small>'+'<button onclick="ebCal()">📏 Igualar con la pantalla de la bici</button><button class="sec" onclick="ebOff()">Desconectar</button>'
+        '<small>En ruta verás la batería y el modo en los datos. Te aviso por voz al 30 %, 15 % y 5 %.</small>'+'<small class="ebDis">⚠️ <b>Función en BETA.</b> La conexión solo lee datos de la bici. RideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici. La usas bajo tu responsabilidad.</small>'+(EB.lastDiag&&Date.now()-EB.lastDiag.t<30*60000?'<div class="ebDg">'+EB.lastDiag.txt.map(t=>'<div>'+esc(t)+'</div>').join('')+'</div>':'')+'<button onclick="ebDiag()">🩺 Chequeo del motor</button><button onclick="ebCal()">📏 Igualar con la pantalla de la bici</button><button class="sec" onclick="ebOff()">Desconectar</button>'
       :'<small>Motores <b>Shimano STEPS</b> (EP8, EP801, EP6…). Enciende la bici y <b>cierra E‑TUBE</b>: la bici solo habla con una app a la vez.</small>'+'<small class="ebDis">⚠️ <b>Función en BETA.</b> La conexión solo lee datos de la bici. RideSafe IA no se hace responsable de la instalación, del mal uso ni de posibles daños al motor, la batería o la bici. La usas bajo tu responsabilidad.</small>'+
         '<button onclick="ebFind()">'+(EB.busy?'Conectando…':(store.get('ebName','')?'🔄 Conectar «'+esc(store.get('ebName',''))+'»':'🔍 Conectar mi e-bike'))+'</button>')+'</div>'}
   window.ebRender=render;
@@ -11424,7 +11429,7 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
         speak('Atención: batería de la bici al '+v+' por ciento'+(R?'. Te quedan unos '+Math.round(R)+' kilómetros':'')+(t<=15?'. Pasa a modo Eco para llegar.':'.'))}});
       homeCheck()}}catch(e){}
     render()}
-  function pkt(dv){const n=dv.byteLength;
+  function pkt(dv){const n=dv.byteLength;EB.pT=Date.now();EB.pN=(EB.pN||0)+1;
     if(n===10){const m=dv.getUint8(1),nm=MODES[m]||('modo '+m);
       if(EB.mode&&EB.mode!==nm){try{if(live&&live.on&&store.get('ebSayMode',true))speak('Modo '+nm)}catch(e){}}
       const ch=EB.mode!==nm;EB.mode=nm;if(ch)render();EB.spd=(dv.getUint8(2)|(dv.getUint8(3)<<8))/10;EB.asst=dv.getUint8(4);EB.asstMax=Math.max(EB.asstMax||0,EB.asst);EB.cad=dv.getUint8(5)}
@@ -11438,6 +11443,41 @@ html.gmx body:has(#app.live) #landFab{top:var(--gmFabTop,12px)!important;right:a
   /* --- Voz: «Oye bici, batería» / «¿qué modo llevo?» --- */
   function ebAns(){if(!EB.on)return 'La bici eléctrica no está conectada. Conéctala en Perfil, Mi bici.';
     const R=EB.range(),t=['Eco','Trail','Boost'].map(m=>{const x=EB.rangeM(m);return x?'en '+m+' unos '+Math.round(x.km):''}).filter(Boolean);return 'Batería de la bici al '+(EB.bat??'—')+' por ciento'+(EB.mode?', modo '+EB.mode:'')+(t.length?'. Te quedan '+t.join(', ')+' kilómetros.':(R?'. Te quedan unos '+Math.round(R)+' kilómetros.':'.'))}
+  /* --- v5.93.0 🩺 Chequeo del motor: muestras cada 2 s (últimos 10 min) --- */
+  const SMP=[];
+  setInterval(()=>{try{if(!EB.on)return;const g=(live&&live.on)?(live.speed||0):null;
+    SMP.push({t:Date.now(),g,m:EB.spd,c:EB.cad,a:EB.asst,md:EB.mode});while(SMP.length&&Date.now()-SMP[0].t>600000)SMP.shift()}catch(e){}},2000);
+  EB.diag=function(){const R=[],W=[];let bad=0;
+    if(!EB.on){return{ok:false,txt:['La bici no está conectada. Conéctala en Perfil, Mi bici, y vuelve a pedir el chequeo.'],sum:'La bici eléctrica no está conectada. Conéctala en Perfil, Mi bici, y vuelve a pedir el chequeo.'}}
+    const age=EB.pT?(Date.now()-EB.pT)/1000:999;
+    if(age<6)R.push('✅ Conexión: la bici envía datos bien.');else{bad++;R.push('⚠️ Conexión: hace '+Math.round(age)+' segundos que el motor no envía datos. Apaga y enciende la bici.')}
+    const b=EB.bat;if(b==null){bad++;R.push('⚠️ Batería: no llega el dato.')}
+    else R.push((b<15?'🔴':b<30?'🟠':'✅')+' Batería: '+b+' %'+(b<15?', muy baja: pasa a Eco.':b<30?', baja.':', bien.'));
+    try{if(live&&live.on&&EB.b0!=null&&b!=null){const km=live.km-EB.k0,dp=EB.b0-b;if(km>=3&&dp>=2){const r=km/dp,C=CAL(),ref=(C&&C[EB.mode])||(rFor(EB.mode)||{}).r;
+      if(ref&&r<ref*0.6){bad++;R.push('🟠 Consumo: esta salida gastas más de lo normal ('+r.toFixed(1)+' km por cada 1 %). Revisa presión de ruedas, frenos que rocen o mucho Boost.')}
+      else R.push('✅ Consumo: normal ('+r.toFixed(1)+' km por cada 1 %).')}}}catch(e){}
+    const mv=SMP.filter(x=>x.g!=null&&x.g>8);
+    if(mv.length<20){R.push('ℹ️ Sensores: para revisarlos pide el chequeo después de pedalear 1 o 2 minutos grabando la salida.')}
+    else{
+      const cadOk=mv.filter(x=>x.c>0).length;
+      if(cadOk>0)R.push('✅ Sensor de cadencia: detecta el pedaleo.');else{bad++;R.push('⚠️ Sensor de cadencia: vas en marcha pero el motor no detecta pedaleo. Si estabas pedaleando, revísalo en el taller.')}
+      const ped=mv.filter(x=>x.c>30&&x.m!=null&&x.m<24&&(x.md==='Eco'||x.md==='Trail'||x.md==='Boost'));
+      if(ped.length>=10){const help=ped.filter(x=>x.a>0).length/ped.length;
+        if(help>0.3)R.push('✅ Ayuda del motor: el motor empuja cuando pedaleas.');else{bad++;R.push('⚠️ Ayuda del motor: pedaleas por debajo de 25 km/h y el motor casi no ayuda. Revisa el modo y, si sigue, llévala al taller.')}}
+      const sp=mv.filter(x=>x.g>12&&x.m!=null).map(x=>x.m/x.g).sort((a,b)=>a-b);
+      if(sp.length>=10){const med=sp[sp.length>>1];
+        if(med<0.2){bad++;R.push('🔴 Sensor de velocidad: el GPS marca que vas en marcha y el motor marca casi cero. Mira el imán de los radios: puede estar movido o lejos del sensor.')}
+        else if(med<0.85||med>1.15){bad++;R.push('🟠 Sensor de velocidad: el motor marca un '+Math.round(Math.abs(med-1)*100)+' % '+(med<1?'menos':'más')+' que el GPS. Revisa el imán y el tamaño de rueda en E‑TUBE.')}
+        else R.push('✅ Sensor de velocidad: coincide con el GPS.')}}
+    R.push('ℹ️ Esta revisión no lee los códigos de error de Shimano (E0…, W0…). Si la pantalla de la bici muestra uno, usa E‑TUBE o tu taller.');
+    const clean=t=>t.replace(/^[^A-Za-zÁÉÍÓÚáéíóúÑñ]+/,'');
+    const sum=(bad?'Chequeo del motor: hay '+bad+(bad>1?' cosas':' cosa')+' a revisar. ':'Chequeo del motor: todo correcto. ')+R.filter(t=>!/^ℹ️ Esta revisión/.test(t)).map(clean).join(' ');
+    EB.lastDiag={t:Date.now(),txt:R,bad};return{ok:!bad,txt:R,sum}};
+  window.ebDiag=function(){const d=EB.diag();try{speak(d.sum)}catch(e){}render();if(!EB.on)toast('⚡ Conecta antes la bici',3500)};
+  const isDiag=t=>{t=String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+    return /\b(diagnostic\w*|dianostic\w*|chequeo|chequea\w*|xequeo|check\w*)\b/.test(t)||/\b(revis\w*|comprueb\w*)\b.*\b(motor|ebike|e bike|bici electrica)\b/.test(t)};
+  (function(){const vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)&&isDiag(n)){try{vcOk2()}catch(e){}vcSay(EB.diag().sum);render();return true}}catch(e){}return vd.apply(this,arguments)};
+    const vr=window.vozRun;if(typeof vr==='function')window.vozRun=function(t){try{if(isDiag(t)){vozSay(EB.diag().sum);render();return true}}catch(e){}return vr.apply(this,arguments)}})();
   const isEb=t=>{t=String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
     return /\b(bateria|autonomia|carga)\b.*\b(bici|ebike|e bike|motor)\b|\b(bici|ebike|motor)\b.*\b(bateria|autonomia)\b|^(oye bici )?(bateria|autonomia|que modo llevo|modo de asistencia|asistencia)$/.test(t.trim())};
   (function(){const vd=window.vcDo;if(typeof vd==='function')window.vcDo=function(n){try{if(!(VC.ask&&Date.now()-VC.askT<12000)&&isEb(n)){try{vcOk2()}catch(e){}vcSay(ebAns());return true}}catch(e){}return vd.apply(this,arguments)};
