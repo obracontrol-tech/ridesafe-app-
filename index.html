@@ -2,6 +2,8 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.93.4 — 🎙️ «Oye bici» en ruta: si el micro se queda parado (la voz del móvil se queda «colgada» o el micro ocupado),
+   la app lo detecta a los 8 s y lo vuelve a abrir. Arriba del panel se ve siempre el estado del micro; tocándolo se reabre. */
 /* v5.93.3 — 🔎 Perfil › Órdenes por voz: botón «Probar el micrófono». Escucha 12 s y escribe en pantalla lo que oye y si hay error,
    para saber por qué «Oye bici» no responde en un móvil concreto. */
 /* v5.93.2 — 🎧 Perfil › Música en ruta: «Podcasts de ciclismo» (Spotify) sustituido por el podcast propio de RideSafe IA («Convierte tu móvil en ciclocomputador gratis», 18 min), se escucha dentro de la app. */
@@ -1431,7 +1433,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.93.4</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11692,6 +11694,40 @@ window.vcMicTest=function(){
     paint();try{if(live.on&&vcOn())setTimeout(vcStart,800)}catch(e){}};
   try{r.start();r._t=setTimeout(()=>{try{r.stop()}catch(_){}},12000)}catch(e){L.push('❌ No se pudo abrir el micrófono: '+e.message);paint()}
 };
+</script>
+<script>
+/* v5.93.4 — 🎙️ Vigilante del micro de ruta */
+(function(){
+  let idle0=0,spk0=0,lastT=-1,stall0=0;
+  const want=()=>{try{return live.on&&vcOn()&&!vcPtt()&&!VC_TAP&&!musQ()&&vcOk()}catch(e){return false}};
+  function unstick(){
+    try{if('speechSynthesis' in window&&speechSynthesis.speaking)speechSynthesis.cancel()}catch(e){}
+    try{if(typeof ttsAudio!=='undefined'&&ttsAudio&&!ttsAudio.paused)ttsAudio.pause()}catch(e){}
+    try{VC.quiet=0}catch(e){}
+    try{if(typeof VZ!=='undefined'){if(VZ.rec){try{VZ.rec.abort()}catch(e){}VZ.rec=null}VZ.oneShot=false;VZ.pending=false}}catch(e){}
+  }
+  window.vcForce=function(){unstick();try{if(VC.rec)vcStop()}catch(e){}setTimeout(()=>{try{vcStart()}catch(e){}vcChip()},300)};
+  const c0=window.vcChip;
+  window.vcChip=function(){c0.apply(this,arguments);try{
+    if(!want())return;const c=document.getElementById('vcChip');if(!c)return;
+    c.style.display='inline-flex';
+    if(VC.rec){c.innerHTML='🎙️ Te escucho';c.style.background='#16A34A';c.onclick=()=>vozSet(false)}
+    else{let sp=false;try{sp=Date.now()<VC.quiet||musSpeaking()}catch(e){}
+      c.innerHTML=sp?'🔊 Hablando…':'🎙️ Micro parado · toca';c.style.background=sp?'#334155':'#B45309';c.onclick=()=>vcForce()}
+  }catch(e){}};
+  setInterval(()=>{try{
+    if(!want()){idle0=0;spk0=0;return}
+    if(VC.rec){idle0=0;spk0=0;return}
+    const now=Date.now();if(!idle0)idle0=now;
+    let sp=false;try{sp=musSpeaking()}catch(e){}
+    if(sp){if(!spk0)spk0=now;
+      try{if(ttsAudio&&!ttsAudio.paused){if(ttsAudio.currentTime===lastT){if(!stall0)stall0=now}else{stall0=0;lastT=ttsAudio.currentTime}}}catch(e){}
+      if(now-spk0>20000||(stall0&&now-stall0>5000)){spk0=0;stall0=0;vcForce();return}}
+    else spk0=0;
+    if(!sp&&now-idle0>8000){idle0=now;vcForce();return}
+    vcChip();
+  }catch(e){}},2000);
+})();
 </script>
 </body>
 </html>
