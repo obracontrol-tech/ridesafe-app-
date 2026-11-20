@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.48.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño.
+/* v1.48.2 — 🎧 El podcast de RideSafe IA se ve directamente en Perfil (en la Simple «Música en ruta» está oculta).
+   v1.48.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño.
    v1.48.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (como la Pro 5.94.0).
    v1.47.4 — 🎧 Música en ruta: el podcast propio de RideSafe IA sustituye a «Podcasts de ciclismo» (como la Pro 5.93.2).
    v1.47.3 — 🎵 Música y voz en Android: con Spotify o música de la app, el micro ya no escucha todo el rato (como la Pro 5.93.1).
@@ -1264,6 +1265,7 @@ al grupo</button></div>
   <div class="set" style="flex-wrap:wrap">🧭 Si me salgo de la ruta<select class="inp" id="selNav" style="width:100%;margin-top:8px" onchange="store.set('navMode',this.value);toast({smart:'🤖 Automático: recalcula en carretera y te lleva de vuelta en montaña',auto:'🔄 Recalculará la ruta sola, como Google Maps',volver:'↩️ Te llevará de vuelta por donde has venido'}[this.value],4000)"><option value="smart">🤖 Automático (recomendado)</option><option value="auto">🔄 Recalcular siempre, como Google Maps</option><option value="volver">↩️ Volver por donde he venido</option></select><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Déjalo en <b>Automático</b>: la app elige sola lo más seguro.</small></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
   <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <div class="li" id="podSimple" style="margin-bottom:10px;display:block;cursor:default"><div style="display:flex;gap:12px;align-items:center"><span class="em">🎧</span><div><b>Podcast de RideSafe IA</b><small>«Convierte tu móvil en ciclocomputador gratis» · 18 min. Escúchalo en casa o en ruta.</small></div></div><audio controls preload="none" src="podcast/ridesafe-podcast-1.m4a" style="width:100%;margin-top:10px;height:40px"></audio></div>
   <button class="li" id="vozCard" style="margin-bottom:10px;border:2px solid var(--lime)!important" onclick="openVoz()"><span class="em" style="font-size:26px">🎙️</span><div><b>Órdenes por voz <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small id="vozSub">Manos libres: sin quitarte los guantes</small></div></button>
   <button class="li" style="margin-bottom:10px" onclick="openCasco()"><span class="em casco-ic"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></span><div><b>Mi casco con altavoces</b><small id="cascoSub">Voz por el casco, botones y aviso de luz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -1281,7 +1283,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.48.1 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.48.2 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
