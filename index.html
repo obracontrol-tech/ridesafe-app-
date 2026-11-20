@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.94.2 — 🔁 Ruta circular por voz: entiende los km dichos con letras («cuarenta», «sesenta y cinco», «quaranta»…). */
 /* v5.94.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño. */
 /* v5.94.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (Google Earth, My Maps, Wikiloc…). */
 /* v5.93.9 — 🎙️ Menú por números en ruta: con el menú abierto, «uno», «dos»… se aceptan sin repetir «Oye bici»
@@ -1443,7 +1444,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.2</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -9096,8 +9097,26 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
    · Escucha continua: «Oye bici» + orden.
    · Mantener pulsado el botón: ventana con opciones y lista de órdenes. */
 const VOZ_VER='5.54.0';
+/* v5.94.2 — Números dichos con letras → cifras («cuarenta» → 40, «sesenta y cinco» → 65, «ciento veinte» → 120, catalán «quaranta»). */
+const VZ_N={dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiun:21,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,
+  dues:2,quatre:4,cinc:5,deu:10,onze:11,dotze:12,tretze:13,catorze:14,setze:16,disset:17,divuit:18,dinou:19,vint:20,trenta:30,quaranta:40,cinquanta:50,seixanta:60,setanta:70,vuitanta:80,noranta:90,cent:100,doscents:200};
+const VZ_U={un:1,uno:1,una:1,u:1,dos:2,dues:2,tres:3,cuatro:4,quatre:4,cinco:5,cinc:5,seis:6,sis:6,siete:7,set:7,ocho:8,vuit:8,nueve:9,nou:9};
+function vozTxtNum(t){
+  const w=String(t||'').replace(/-/g,' ').split(/\s+/),o=[];
+  for(let i=0;i<w.length;i++){
+    if(VZ_N[w[i]]==null){o.push(w[i]);continue}
+    let n=VZ_N[w[i]];
+    while(i+1<w.length){
+      const a=w[i+1],b=w[i+2];
+      if((a==='y'||a==='i')&&b!=null&&n%10===0&&n>=20&&VZ_U[b]!=null){n+=VZ_U[b];i+=2;continue}
+      if(n%100===0&&VZ_N[a]!=null&&VZ_N[a]<100){n+=VZ_N[a];i++;continue}
+      if(n>=20&&n%10===0&&n<100&&VZ_U[a]!=null&&a!=='un'&&a!=='una'&&a!=='u'){n+=VZ_U[a];i++;continue}
+      break}
+    o.push(String(n))}
+  return o.join(' ')}
 /* v1.1 — Preparar rutas por voz: «prepárame una ruta de Mollerussa a Cervera», «ruta a Cervera», «ruta circular de 40 kilómetros» */
 function vozIsRoute(t){
+  t=vozTxtNum(t);   /* v5.94.2 */
   if(/\bruta circular\b|\bcircular de \d+|\bvuelta de \d+\s*(km|kilometros)/.test(t))return 'loop';
   /* frases que son otras órdenes aunque digan «ruta» */
   if(/(empez|inici|arranc|comenz|segui|sigue|continu|pausa|termin|acab|finaliz|guard|falta|queda|centr|repit|vuelve|volver|salido|salirme|fuera de|recalcul)/.test(t))return '';
@@ -9151,7 +9170,7 @@ async function vozRoute(t,kind){
   }
   if(dest){/* ya tenemos los pueblos */}
   else if(kind==='loop'){
-    const m=t.match(/(\d+)\s*(km|kilometro|kilometros)?/);km=m?Math.max(5,Math.min(200,+m[1])):40;
+    const t2=vozTxtNum(t),m=t2.match(/(\d+)\s*(km|kilometro|kilometros)/)||t2.match(/(?:circular|vuelta)\s+de\s+(\d+)/)||t2.match(/(\d+)/);km=   /* v5.94.2: también «cuarenta» */m?Math.max(5,Math.min(200,+m[1])):40;
     vozPill('🔁 Ruta circular de '+km+' km','Buscando tu posición…',0);
     start=await vozHereLL();if(!start){vozSay('No tengo tu posición. Activa la ubicación.');return}
   }else{
@@ -9880,7 +9899,7 @@ function vmDo(I,a){try{if(I.p){if(!vozRun(I.p))vozSay('No he podido hacerlo.')}e
 function vmAnswer(v,voice){
   v=vozNorm(v);const I=VM_S[VM.sec].items[VM.item],st=I.ask[VM.ans.length];
   if(!v){vozSay(st.q,true);return}
-  if(st.num){const m=v.match(/\d+/);if(!m){vozSay('Dime un número. Por ejemplo, cuarenta.',true);return}v=m[0]}
+  if(st.num){const m=vozTxtNum(v).match(/\d+/);if(!m){vozSay('Dime un número. Por ejemplo, cuarenta.',true);return}v=m[0]}
   VM.ans.push(v);
   if(VM.ans.length<I.ask.length){vmRender();vozSay(I.ask[VM.ans.length].q,true);return}
   const a=VM.ans.slice();vmClose();vmDo(I,a);
