@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.94.3 — 🗑️ Actividades: papelera en cada salida para borrarla (pide confirmación). */
 /* v5.94.2 — 🔁 Ruta circular por voz: entiende los km dichos con letras («cuarenta», «sesenta y cinco», «quaranta»…). */
 /* v5.94.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño. */
 /* v5.94.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (Google Earth, My Maps, Wikiloc…). */
@@ -1444,7 +1445,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.2</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.3</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8437,7 +8438,7 @@ function renderActs(){
    if(!el){el=document.createElement('div');el.id='aToday';el.style.cssText='background:var(--card);border:1px solid var(--lime);border-radius:16px;padding:12px 14px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px';$('actList').before(el)}
    el.style.display=td.length?'flex':'none';
    if(td.length)el.innerHTML=`<span>📅 <b>Hoy</b> · ${td.length} ${td.length>1?'salidas':'salida'}${td.some(a=>(a.tramos||[]).length>1)?' · '+td.reduce((s,a)=>s+((a.tramos||[]).length||1),0)+' tramos':''}</span><b class="num" style="color:var(--lime);font-size:20px">${fmtNum(td.reduce((s,a)=>s+a.km,0),1)} km</b>`}$('aN').textContent=mm.length;$('aUp').textContent=mm.reduce((s,a)=>s+a.up,0);
-  $('actList').innerHTML=acts.length?acts.map(a=>`<div class="act" onclick="openActDetail(${a.id})" style="cursor:pointer"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-8"/></svg></div><div><b>${a.sport==='hike'?'🥾 ':''}${a.group?'🛰️ ':''}${esc(a.name)}</b><small>${fmtDate(a.date)} · ${a.km} km · ${a.up} m${a.mins?` · ${Math.floor(a.mins/60)}h ${a.mins%60}min`:''}</small></div><button class="round" style="width:46px;height:46px;flex-shrink:0" aria-label="Foto con tus datos" onclick="event.stopPropagation();openPhoto(${a.id})">📸</button></div>`).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Aún no has subido ninguna actividad</div>`;
+  $('actList').innerHTML=acts.length?acts.map(a=>`<div class="act" onclick="openActDetail(${a.id})" style="cursor:pointer"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-8"/></svg></div><div><b>${a.sport==='hike'?'🥾 ':''}${a.group?'🛰️ ':''}${esc(a.name)}</b><small>${fmtDate(a.date)} · ${a.km} km · ${a.up} m${a.mins?` · ${Math.floor(a.mins/60)}h ${a.mins%60}min`:''}</small></div><button class="round" style="width:46px;height:46px;flex-shrink:0" aria-label="Foto con tus datos" onclick="event.stopPropagation();openPhoto(${a.id})">📸</button><button class="round" style="width:46px;height:46px;flex-shrink:0;margin-left:6px" aria-label="Borrar esta salida" onclick="event.stopPropagation();deleteAct(${a.id})">🗑️</button></div>`).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Aún no has subido ninguna actividad</div>`;
   renderGoal();
 }
 

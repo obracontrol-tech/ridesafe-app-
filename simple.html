@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* v1.48.2 — 🎧 El podcast de RideSafe IA se ve directamente en Perfil (en la Simple «Música en ruta» está oculta).
+/* v1.48.3 — 🗑️ Actividades: papelera en cada salida para borrarla (pide confirmación).
+   v1.48.2 — 🎧 El podcast de RideSafe IA se ve directamente en Perfil (en la Simple «Música en ruta» está oculta).
    v1.48.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño.
    v1.48.0 — 🗺️ Subir rutas en KML y KMZ además de GPX y TCX (como la Pro 5.94.0).
    v1.47.4 — 🎧 Música en ruta: el podcast propio de RideSafe IA sustituye a «Podcasts de ciclismo» (como la Pro 5.93.2).
@@ -1283,7 +1284,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.48.2 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.48.3 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8199,7 +8200,7 @@ $('fileIn').onchange=async e=>{
 function renderActs(){
   const m=iso(new Date()).slice(0,7);const mm=acts.filter(a=>a.date.startsWith(m));
   $('aKm').textContent=Math.round(mm.reduce((s,a)=>s+a.km,0));$('aN').textContent=mm.length;$('aUp').textContent=mm.reduce((s,a)=>s+a.up,0);
-  $('actList').innerHTML=acts.length?acts.map(a=>`<div class="act" onclick="openActDetail(${a.id})" style="cursor:pointer"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-8"/></svg></div><div><b>${a.sport==='hike'?'🥾 ':''}${a.group?'🛰️ ':''}${esc(a.name)}</b><small>${fmtDate(a.date)} · ${a.km} km · ${a.up} m${a.mins?` · ${Math.floor(a.mins/60)}h ${a.mins%60}min`:''}</small></div><button class="round" style="width:46px;height:46px;flex-shrink:0" aria-label="Foto con tus datos" onclick="event.stopPropagation();openPhoto(${a.id})">📸</button></div>`).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Aún no has subido ninguna actividad</div>`;
+  $('actList').innerHTML=acts.length?acts.map(a=>`<div class="act" onclick="openActDetail(${a.id})" style="cursor:pointer"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-8"/></svg></div><div><b>${a.sport==='hike'?'🥾 ':''}${a.group?'🛰️ ':''}${esc(a.name)}</b><small>${fmtDate(a.date)} · ${a.km} km · ${a.up} m${a.mins?` · ${Math.floor(a.mins/60)}h ${a.mins%60}min`:''}</small></div><button class="round" style="width:46px;height:46px;flex-shrink:0" aria-label="Foto con tus datos" onclick="event.stopPropagation();openPhoto(${a.id})">📸</button><button class="round" style="width:46px;height:46px;flex-shrink:0;margin-left:6px" aria-label="Borrar esta salida" onclick="event.stopPropagation();deleteAct(${a.id})">🗑️</button></div>`).join(''):`<div class="empty"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 20h16"/></svg>Aún no has subido ninguna actividad</div>`;
   renderGoal();
 }
 
