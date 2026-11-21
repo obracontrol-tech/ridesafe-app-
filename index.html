@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.98.1 — 🎙️ Voz encendida más estable: escucha continua de verdad aunque tengas marcado «Uso Spotify» (antes quedaba en «Toca y habla» y no transcribía), y la app mantiene el sonido del móvil mientras la voz está encendida para que Spotify no siga sonando. */
 /* v5.98.0 — 🎙️/🎵 Interruptor único en ruta: VOZ ENCENDIDA = la música se para (también Spotify) y la app escucha; VOZ APAGADA = micrófono apagado del todo, ni «Oye bici» ni 🎤, y vuelve la música. Si pones música, la voz se apaga sola. */
 /* v5.97.1 — 🎙️ «Voz apagada» en ruta apaga el micrófono del todo: tampoco escucha la «Oye bici» continua (su clic paraba la música cada pocos segundos). */
 /* v5.97.0 — 🎙️ En el menú ⋯ de la ruta, el micro pasa a ser un interruptor grande «Voz encendida / Voz apagada · música»: apagada, la app no escucha y puedes oír tu música. */
@@ -1451,7 +1452,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.98.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.98.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8152,7 +8153,7 @@ function vcStart(){
 /* v5.41.7 — Reabre el micrófono de ruta cuando la app ha terminado de hablar (v5.41.8: +2,5 s) */
 function vcLater(){clearTimeout(VC.waitT);VC.waitT=setTimeout(()=>{if(!live.on||!vcOn()||VC.rec)return;if(Date.now()<VC.quiet||musSpeaking()){vcLater();return}VC.waitT=setTimeout(()=>{if(musSpeaking()){vcLater();return}vcStart()},2000)},Math.max(400,Math.min(VC.quiet-Date.now(),1500)))}
 function vcStop(){const r=VC.rec;VC.rec=null;if(r){try{r.abort()}catch(e){}}vcChip()}
-function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
+function vcAuto(){vcChip();if(vcOn()){try{vozFocus()}catch(e){}}if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
 /* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
 const vcPtt=()=>CASCO_BOTONES&&vcOn()&&!!store.get('vcPtt',false);
 function vcPttArm(){
@@ -8233,7 +8234,10 @@ function vcDo(n){
 function vozFocus(){try{if(!window.__vzSil){const sr=8000,n=sr*6,buf=new ArrayBuffer(44+n*2),v=new DataView(buf),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
   w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
   for(let i=0;i<n;i++)v.setInt16(44+i*2,(i&1)?1:-1,true);window.__vzSil=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}
-  const a=new Audio(window.__vzSil);a.play().then(()=>setTimeout(()=>{try{a.pause();a.src=''}catch(e){}},1500)).catch(()=>{})}catch(e){}}
+  let a=window.__vzA;if(!a){a=window.__vzA=new Audio(window.__vzSil);a.loop=true}
+  a.play().catch(()=>{});try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:'Voz encendida',artist:'RideSafe IA'})}catch(e){}}catch(e){}}
+function vozFocusOff(){try{const a=window.__vzA;if(a){a.pause();a.currentTime=0}}catch(e){}}
+setInterval(()=>{try{if(window.__vzA&&!window.__vzA.paused&&!(live.on&&vcOn()))vozFocusOff()}catch(e){}},3000);
 /* en ruta con la voz apagada no se escucha nada: el 🎤 enciende la voz (y para la música) */
 function vozMasterOff(){try{return !!(live.on&&!vcOn())}catch(e){return false}}
 function vozSet(on,noMus){
@@ -8241,7 +8245,7 @@ function vozSet(on,noMus){
   store.set('vcOn',!!on);
   if(on){try{navigator.mediaDevices&&navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());toast('🎙️ Órdenes por voz activadas. Funcionan durante la salida',5000)}).catch(()=>{toast('🎙️ Permite el micrófono para usar la voz',5000);store.set('vcOn',false);renderVoz()})}catch(e){}
     if(live.on){try{mus.__vz=musOn()||!!mus.want;musPause()}catch(e){}vozFocus();toast('🎙️ Voz encendida: la música se para y la app te escucha. Di «Oye bici»',5000);setTimeout(vcStart,700)}}
-  else{vcStop();try{if(live.on){clearTimeout(VZ.restartTO);vozStop(true);VZ.oneShot=false;VZ.pending=null}}catch(e){}
+  else{vcStop();vozFocusOff();try{if(live.on){clearTimeout(VZ.restartTO);vozStop(true);VZ.oneShot=false;VZ.pending=null}}catch(e){}
     if(live.on&&!noMus){try{if(mus.__vz&&mus.list&&mus.list.length){mus.__vz=false;musPlay()}else if(extMus())musResume()}catch(e){}}
     toast(live.on?'🎵 Voz apagada: micrófono apagado del todo, ya puedes oír tu música':'Órdenes por voz desactivadas',live.on?5000:undefined)}
   if(!on)vcPttDisarm();else if(live.on&&vcPtt())vcPttArm();
@@ -11755,7 +11759,7 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
    y aparece el botón «🎤 Toca y habla»: el micro solo se abre cuando tú lo tocas. Así la música no se corta. */
 (function(){
   const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  window.musQ=function(){if(IOS)return false;try{if(extMus())return true}catch(e){}try{if(mus&&mus.want&&mus.a&&!mus.a.paused&&!mus.a.ended)return true}catch(e){}return false};
+  window.musQ=function(){if(IOS)return false;try{if(live.on&&vcOn())return false}catch(e){}try{if(extMus())return true}catch(e){}try{if(mus&&mus.want&&mus.a&&!mus.a.paused&&!mus.a.ended)return true}catch(e){}return false};
   const s0=window.vcStart;if(typeof s0==='function')window.vcStart=function(){if(musQ()){try{if(VC.rec&&VC.rec.continuous)vcStop()}catch(e){}try{vcChip()}catch(e){}return}return s0.apply(this,arguments)};
   const c0=window.vcChip;if(typeof c0==='function')window.vcChip=function(){c0.apply(this,arguments);try{if(!musQ())return;const c=document.getElementById('vcChip');if(!c)return;
     c.style.display=(live.on&&vcOn())?'inline-flex':'none';c.innerHTML=VC.rec?'🎙️ Te escucho':'🎤 Toca y habla';c.style.background=VC.rec?'#16A34A':'#0E1A2B';c.onclick=()=>{try{vcListenOnce()}catch(e){}}}catch(e){}};
