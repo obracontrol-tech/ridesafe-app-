@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.97.1 — 🎙️ «Voz apagada» en ruta apaga el micrófono del todo: tampoco escucha la «Oye bici» continua (su clic paraba la música cada pocos segundos). */
 /* v5.97.0 — 🎙️ En el menú ⋯ de la ruta, el micro pasa a ser un interruptor grande «Voz encendida / Voz apagada · música»: apagada, la app no escucha y puedes oír tu música. */
 /* v5.96.0 — ⚡ Mi e-bike pasa al panel de DATOS de la ruta: ahí se conecta, se ven los datos y se desconecta (chequeo e igualar también). En Perfil solo quedan los avisos y el botón Poner / Quitar del panel de datos. */
 /* v5.95.0 — 🎧 Mi casco: un solo botón «Conectar casco por Bluetooth»; el casco solo sirve para oír y dar órdenes («Oye bici»). Botones del casco y aviso de luz desactivados (no eran estables). */
@@ -1449,7 +1450,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.97.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.97.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8232,7 +8233,7 @@ function vozSet(on){
   store.set('vcOn',!!on);
   if(on){try{navigator.mediaDevices&&navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());toast('🎙️ Órdenes por voz activadas. Funcionan durante la salida',5000)}).catch(()=>{toast('🎙️ Permite el micrófono para usar la voz',5000);store.set('vcOn',false);renderVoz()})}catch(e){}
     if(live.on)vcStart()}
-  else{vcStop();toast(live.on?'🎵 Voz apagada: la app ya no escucha, puedes oír tu música. Para volver a hablarle, enciéndela en ⋯':'Órdenes por voz desactivadas',live.on?5000:undefined)}
+  else{vcStop();try{if(live.on){clearTimeout(VZ.restartTO);vozStop(true)}}catch(e){}toast(live.on?'🎵 Voz apagada: la app ya no escucha, puedes oír tu música. Para volver a hablarle, enciéndela en ⋯':'Órdenes por voz desactivadas',live.on?5000:undefined)}
   if(!on)vcPttDisarm();else if(live.on&&vcPtt())vcPttArm();
   renderVoz();vcChip();
 }
@@ -9350,6 +9351,7 @@ function vozStartCont(){
   if(VZ_IOS)return;
   if(Date.now()<(window.__micTest||0))return;   // v5.93.8: prueba del micrófono en marcha   // v5.41.1
   try{if(live.on&&vcOn()&&!vcPtt()&&!VC_TAP)return}catch(e){}   // v5.41.6: en ruta ya escucha la voz de ruta
+  try{if(live.on&&!vcOn())return}catch(e){}   // v5.97.1: «Voz apagada» en ruta = micrófono apagado del todo (para oír música)
   if(!VSR||!VZ.cont||VZ.rec||document.visibilityState!=='visible'||Date.now()<VZ.quietT)return;
   VZ.want=true;VZ.oneShot=false;
   try{VZ.rec=vozMake(true);VZ.rec.start()}catch(e){VZ.rec=null}
