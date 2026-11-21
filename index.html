@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.98.0 — 🎙️/🎵 Interruptor único en ruta: VOZ ENCENDIDA = la música se para (también Spotify) y la app escucha; VOZ APAGADA = micrófono apagado del todo, ni «Oye bici» ni 🎤, y vuelve la música. Si pones música, la voz se apaga sola. */
 /* v5.97.1 — 🎙️ «Voz apagada» en ruta apaga el micrófono del todo: tampoco escucha la «Oye bici» continua (su clic paraba la música cada pocos segundos). */
 /* v5.97.0 — 🎙️ En el menú ⋯ de la ruta, el micro pasa a ser un interruptor grande «Voz encendida / Voz apagada · música»: apagada, la app no escucha y puedes oír tu música. */
 /* v5.96.0 — ⚡ Mi e-bike pasa al panel de DATOS de la ruta: ahí se conecta, se ven los datos y se desconecta (chequeo e igualar también). En Perfil solo quedan los avisos y el botón Poner / Quitar del panel de datos. */
@@ -1450,7 +1451,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.97.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.98.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3356,7 +3357,7 @@ function musPick(inp){const fs=[...(inp.files||[])].filter(f=>/^audio\//.test(f.
 function musLoad(i,play){if(!mus.list.length)return;mus.i=(i+mus.list.length)%mus.list.length;const a=musAudio();a.src=mus.list[mus.i].url;
   try{if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:mus.list[mus.i].n,artist:'RideSafe IA · Música en ruta'})}catch(e){}
   if(play)musPlay();else musUI()}
-function musPlay(){if(!mus.list.length){openMusic();return}mus.want=true;const a=musAudio();a.volume=mus.ducked?musLow():mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
+function musPlay(){if(!mus.list.length){openMusic();return}try{if(live.on&&vcOn())vozSet(false,true)}catch(e){}mus.want=true;const a=musAudio();a.volume=mus.ducked?musLow():mus.vol;a.play().catch(()=>toast('Toca ▶️ otra vez para empezar'));musUI()}
 function musPause(){mus.want=false;clearInterval(mus.resT);if(mus.a)mus.a.pause();musUI()}
 function musToggle(){(musOn()||mus.want&&mus.a&&mus.a.paused&&musSpeaking())?musPause():musPlay()}
 function musNext(auto){if(mus.list[mus.i]&&mus.list[mus.i].radio){if(auto!==true)radioStep(1);return}if(!mus.list.length)return;let n=mus.shuf&&mus.list.length>2?Math.floor(Math.random()*mus.list.length):mus.i+1;if(mus.shuf&&n===mus.i)n++;musLoad(n,auto===true?true:musOn()||true)}
@@ -3399,7 +3400,7 @@ const musVozOn=()=>false;   // v5.21: siempre voz de Google (en frases cortas)
 function musWimbi(){const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   window.open(ios?'https://apps.apple.com/es/app/id6792338535':'https://play.google.com/store/apps/details?id=com.wimbi.music','_blank');
   try{toast('🎶 Pon tu música en Wimbi y vuelve a RideSafe')}catch(e){}}
-function musResume(){window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
+function musResume(){try{if(live.on&&vcOn())vozSet(false,true)}catch(e){}window.open(SPOT_URL,'_blank');toast('🎵 Pulsa ▶️ en Spotify y vuelve a RideSafe')}
 function musVozSet(on){store.set('musVoz',!!on);toast(on?'🗣️ Voz del móvil: no parará la música':'🗣️ Voz de Google (más natural)')}
 /* ===== v5.17 — 📻 Radio en directo (gratis, sin registro) =====
    Las direcciones de cada emisora se buscan en Radio Browser (directorio libre y abierto de radios).
@@ -8228,12 +8229,21 @@ function vcDo(n){
   try{if(typeof vozRun==='function'&&!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(n)&&vozRun(n))return true}catch(e){}
   return false;
 }
-function vozSet(on){
+/* v5.98.0 — quitar el sonido a otras apps (Spotify…): un audio inaudible de 6 s toma el control del sonido del móvil y Spotify se pausa */
+function vozFocus(){try{if(!window.__vzSil){const sr=8000,n=sr*6,buf=new ArrayBuffer(44+n*2),v=new DataView(buf),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)v.setInt16(44+i*2,(i&1)?1:-1,true);window.__vzSil=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}
+  const a=new Audio(window.__vzSil);a.play().then(()=>setTimeout(()=>{try{a.pause();a.src=''}catch(e){}},1500)).catch(()=>{})}catch(e){}}
+/* en ruta con la voz apagada no se escucha nada: el 🎤 enciende la voz (y para la música) */
+function vozMasterOff(){try{return !!(live.on&&!vcOn())}catch(e){return false}}
+function vozSet(on,noMus){
   if(on&&!vcOk()){toast('Este móvil no permite órdenes por voz. Prueba con Chrome',5000);renderVoz();return}
   store.set('vcOn',!!on);
   if(on){try{navigator.mediaDevices&&navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());toast('🎙️ Órdenes por voz activadas. Funcionan durante la salida',5000)}).catch(()=>{toast('🎙️ Permite el micrófono para usar la voz',5000);store.set('vcOn',false);renderVoz()})}catch(e){}
-    if(live.on)vcStart()}
-  else{vcStop();try{if(live.on){clearTimeout(VZ.restartTO);vozStop(true)}}catch(e){}toast(live.on?'🎵 Voz apagada: la app ya no escucha, puedes oír tu música. Para volver a hablarle, enciéndela en ⋯':'Órdenes por voz desactivadas',live.on?5000:undefined)}
+    if(live.on){try{mus.__vz=musOn()||!!mus.want;musPause()}catch(e){}vozFocus();toast('🎙️ Voz encendida: la música se para y la app te escucha. Di «Oye bici»',5000);setTimeout(vcStart,700)}}
+  else{vcStop();try{if(live.on){clearTimeout(VZ.restartTO);vozStop(true);VZ.oneShot=false;VZ.pending=null}}catch(e){}
+    if(live.on&&!noMus){try{if(mus.__vz&&mus.list&&mus.list.length){mus.__vz=false;musPlay()}else if(extMus())musResume()}catch(e){}}
+    toast(live.on?'🎵 Voz apagada: micrófono apagado del todo, ya puedes oír tu música':'Órdenes por voz desactivadas',live.on?5000:undefined)}
   if(!on)vcPttDisarm();else if(live.on&&vcPtt())vcPttArm();
   renderVoz();vcChip();
 }
@@ -9398,7 +9408,8 @@ function vozDictOpen(){
 }
 function vozDictClose(){const d=document.getElementById('vozDict');if(!d)return;d.style.display='none';try{document.getElementById('vozDictIn').blur()}catch(e){}}
 /* Escuchar una vez (toque en el botón, botón del casco o respuesta a una pregunta) */
-function vozListen(silent,direct){
+function vozListen(silent,direct){if(vozMasterOff())return;   // v5.98.0: voz apagada en ruta = micrófono apagado
+
   if(VZ_IOS&&!direct){vozDictOpen();return}   // v5.41.2 (direct = botón 🎙️ Hablar de la caja)
   if(!VSR){vozPill('🎤 Este navegador no entiende la voz',VZ_IOS?'Actualiza el iPhone y usa Safari':'Usa Chrome en Android',6000);return}
   if(VZ_IOS&&!VZ.unl){VZ.unl=1;try{speechSynthesis.speak(new SpeechSynthesisUtterance(' '))}catch(e){}}   // desbloquea la voz del iPhone
@@ -9756,8 +9767,9 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
 (function(){
   const b=document.getElementById('vozBtn');let t0=0,lp=null,done=false;
   b.addEventListener('pointerdown',e=>{e.preventDefault();t0=Date.now();done=false;lp=setTimeout(()=>{done=true;vib(40);vozPanelOpen()},700)});
-  if(VZ_IOS)b.addEventListener('touchend',e=>{e.preventDefault();clearTimeout(lp);if(done)return;vozDictOpen()},{passive:false});   // v5.41.3
+  if(VZ_IOS)b.addEventListener('touchend',e=>{e.preventDefault();clearTimeout(lp);if(done)return;if(vozMasterOff()){vozSet(true);return}vozDictOpen()},{passive:false});   // v5.41.3
   b.addEventListener('pointerup',e=>{e.preventDefault();clearTimeout(lp);if(done)return;if(VZ_IOS&&e.pointerType!=='mouse')return;
+    if(vozMasterOff()){vozSet(true);return}
     if(VZ.rec&&VZ.on&&(VZ.oneShot||VZ.pending)){vozStop(true);VZ.oneShot=false;vozPill('🎤 Cancelado','',1500);if(VZ.cont)VZ.restartTO=setTimeout(vozStartCont,800);return}
     vozListen()});
   b.addEventListener('pointercancel',()=>clearTimeout(lp));
