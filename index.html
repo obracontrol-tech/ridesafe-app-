@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.99.0 — 📝 Ver lo que oye la app: al hablar en ruta aparece arriba lo que va entendiendo (en directo), y luego ✅ hecho / 🤔 no entendido. Lista «Lo que ha oído la app» en Órdenes por voz, para mejorar las órdenes (se puede enviar por WhatsApp). */
 /* v5.98.1 — 🎙️ Voz encendida más estable: escucha continua de verdad aunque tengas marcado «Uso Spotify» (antes quedaba en «Toca y habla» y no transcribía), y la app mantiene el sonido del móvil mientras la voz está encendida para que Spotify no siga sonando. */
 /* v5.98.0 — 🎙️/🎵 Interruptor único en ruta: VOZ ENCENDIDA = la música se para (también Spotify) y la app escucha; VOZ APAGADA = micrófono apagado del todo, ni «Oye bici» ni 🎤, y vuelve la música. Si pones música, la voz se apaga sola. */
 /* v5.97.1 — 🎙️ «Voz apagada» en ruta apaga el micrófono del todo: tampoco escucha la «Oye bici» continua (su clic paraba la música cada pocos segundos). */
@@ -1452,7 +1453,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.98.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.99.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -8133,8 +8134,9 @@ function vcStart(){
   try{if(VZ.oneShot||VZ.pending){clearTimeout(VC.waitT);VC.waitT=setTimeout(vcStart,1500);return}   // v5.41.6: el 🎤 está escuchando
     if(VZ.rec)vozStop(true)}catch(e){}                                                              // «Oye bici» se calla: en ruta escucha esta
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new R();
-  r.lang='es-ES';r.continuous=true;r.interimResults=false;r.maxAlternatives=3;
-  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;
+  r.lang='es-ES';r.continuous=true;r.interimResults=true;r.maxAlternatives=3;
+  r.onresult=e=>{try{let it='';for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)it+=e.results[i][0].transcript}if(it.trim()&&!(Date.now()<VC.quiet||musSpeaking()))vcTxShow('🎙️ <i>'+esc(it.trim())+'…</i>',3000,'live')}catch(x){}
+    for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;
     if(Date.now()<VC.quiet||musSpeaking())continue;
     const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
     VC.buf=VC.buf||[];VC.buf.push(alts);clearTimeout(VC.bt);   // v5.54.0: espera 1,5 s por si la frase sigue
@@ -8168,9 +8170,12 @@ function vcListenOnce(){
   if(VC.rec){beepPtt(990);vib(40);return}   // ya está escuchando
   try{speechSynthesis.cancel()}catch(e){}try{ttsAudio&&ttsAudio.pause()}catch(e){}
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new R();
-  r.lang='es-ES';r.continuous=false;r.interimResults=false;r.maxAlternatives=3;let got=false;
-  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
-    got=true;let ok=false;for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n)){ok=true;break}}if(!ok)vcSay('No te he entendido. Pulsa otra vez.')}};
+  r.lang='es-ES';r.continuous=false;r.interimResults=true;r.maxAlternatives=3;let got=false;
+  r.onresult=e=>{try{let it='';for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)it+=e.results[i][0].transcript}if(it.trim())vcTxShow('🎙️ <i>'+esc(it.trim())+'…</i>',3000,'live')}catch(x){}
+    for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const alts=[];for(let j=0;j<e.results[i].length;j++)alts.push(e.results[i][j].transcript);
+    got=true;let ok=false;for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n)){ok=true;break}}
+    try{if(ok){vcTxShow('✅ «'+esc(alts[0])+'»',4000,'ok');vozLogAdd(alts[0],'Hecho',1)}else{vcTxShow('🤔 «'+esc(alts[0])+'»<small>No te he entendido</small>',5000,'no');vozLogAdd(alts[0],'No entendida',0)}}catch(x){}
+    if(!ok)vcSay('No te he entendido. Pulsa otra vez.')}};
   r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed')toast('🎙️ Permite el micrófono para las órdenes por voz',5000);else if(e.error==='network')vcSay('Sin cobertura, no puedo escucharte.')};
   r.onend=()=>{if(VC.rec===r)VC.rec=null;vcChip();if(!got&&live.on)beepPtt(440);try{cascoKeep()}catch(e){}
     if(got&&live.on&&VC.ask&&Date.now()-VC.askT<4000)setTimeout(()=>{if(VC.ask&&live.on)vcListenOnce()},Math.max(600,VC.quiet-Date.now()+300))};   // pregunta «sí / no»: vuelve a escuchar sola
@@ -8184,16 +8189,18 @@ function vcHandle(alts){
   let N=[];try{N=alts.map(a=>vozNorm(a)).filter(Boolean)}catch(e){}
   let wk=null;try{wk=N.find(x=>VOZ_WAKE.test(x))}catch(e){}
   const armed=Date.now()<(VC.armT||0);
-  if(wk&&!wk.replace(VOZ_WAKE_CUT,'').trim()){VC.armT=Date.now()+10000;beepPtt(990);vib(40);try{vozPill('🎤 Te escucho…','Di la orden',8000)}catch(e){}return}
+  if(wk&&!wk.replace(VOZ_WAKE_CUT,'').trim()){VC.armT=Date.now()+10000;beepPtt(990);vib(40);try{vcTxShow('🎤 «'+esc(alts[0])+'»<small>Te escucho: di la orden</small>',8000,'wake');vozLogAdd(alts[0],'Oye bici: esperando la orden',1)}catch(e){}return}
   if(wk||armed){VC.armT=0;
     const C=N.map(x=>x.replace(VOZ_WAKE_CUT,'').trim()).filter(Boolean);if(!C.length)return;
-    try{vozPill('🎤 «'+C[0]+'»','',4000)}catch(e){}
-    for(const c of C){const n=vcNorm(c);if(n&&vcDo(n))return}
-    for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c))return}catch(e){}}
-    beepPtt(330);try{vozPill('🤔 «'+C[0]+'»','No te he entendido',4500)}catch(e){}
+    const okTx=c=>{try{vcTxShow('✅ «'+esc(c)+'»',4000,'ok');vozLogAdd(c,'Hecho',1)}catch(e){}};
+    for(const c of C){const n=vcNorm(c);if(n&&vcDo(n)){okTx(c);return}}
+    for(const c of C){try{if(!/\b(sos|socorro|emergencia|auxilio|ayuda|terminar|termina|guardar)\b/.test(c)&&vozRun(c)){okTx(c);return}}catch(e){}}
+    beepPtt(330);
+    try{vcTxShow('🤔 «'+esc(C[0])+'»<small>No te he entendido</small>',5000,'no');vozLogAdd(C[0],'No entendida',0)}catch(e){}
     vcSay('No te he entendido. Di órdenes para oír la lista.');return}
   // v5.79.0: como Alexa — sin «Oye bici» delante no hace nada (solo vale contestar «sí / no» a una pregunta de la app)
-  if(VC.ask&&Date.now()-(VC.askT||0)<12000){for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n))return}}
+  if(VC.ask&&Date.now()-(VC.askT||0)<12000){for(const a of alts){const n=vcNorm(a);if(n&&vcDo(n)){try{vcTxShow('✅ «'+esc(a)+'»',4000,'ok');vozLogAdd(a,'Respuesta',1)}catch(e){}return}}}
+  try{if(alts[0]){vcTxShow('<i>'+esc(alts[0])+'</i><small>Falta decir «Oye bici» delante</small>',2500,'ign');vozLogAdd(alts[0],'Sin «Oye bici»: no hace nada',2)}}catch(e){}
 }
 function vcOk2(){beepPtt(880);vib(40)}
 function vcDo(n){
@@ -11941,6 +11948,39 @@ window.vcMicTest=function(){
   const st=document.createElement('style');
   st.textContent='.maplibregl-ctrl-attrib.maplibregl-compact{opacity:.75;margin:0 0 6px 6px!important}.maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-inner{font-size:11px;line-height:1.3}';
   document.head.appendChild(st);
+})();
+</script>
+<style>
+/* v5.99.0 — lo que oye la app, en directo */
+#vcTx{display:none;position:fixed;left:50%;top:calc(215px + env(safe-area-inset-top));transform:translateX(-50%);z-index:10001;max-width:min(92vw,520px);min-width:180px;text-align:center;background:rgba(14,26,43,.94);color:#fff;border:2px solid #64748B;border-radius:16px;padding:8px 14px;font:800 18px/1.25 system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none}
+#vcTx i{font-style:normal;font-weight:600}
+#vcTx small{display:block;font:700 13px system-ui;color:#CBD5E1;margin-top:2px}
+#vcTx.live{border-color:#3B82F6}#vcTx.wake{border-color:#A3E635}#vcTx.ok{border-color:#22C55E;background:rgba(20,83,45,.95)}#vcTx.no{border-color:#F59E0B;background:rgba(120,53,15,.95)}#vcTx.ign{opacity:.8}
+.vzLog{margin-top:14px;border-top:2px solid var(--line);padding-top:10px}
+.vzLog .it{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.35}
+.vzLog .it b{flex:none;width:22px}.vzLog .it small{display:block;color:var(--txt2);font-size:12px}
+.vzLog .bt{display:flex;gap:8px;margin-top:10px}.vzLog .bt button{flex:1;padding:11px;border-radius:12px;border:1.5px solid var(--line);background:var(--card,#fff);color:var(--txt,#111);font:800 14px system-ui}
+</style>
+<script>
+/* v5.99.0 — 📝 Ver lo que oye la app (para saber que funciona y mejorar las órdenes) */
+(function(){
+  let hideT=null;
+  window.vcTxShow=function(html,ms,cls){let d=document.getElementById('vcTx');if(!d){d=document.createElement('div');d.id='vcTx';document.body.appendChild(d)}
+    d.className=cls||'';d.innerHTML=html;d.style.display='block';clearTimeout(hideT);hideT=setTimeout(()=>{d.style.display='none'},ms||4000)};
+  const L=()=>store.get('vozLog',[]);
+  window.vozLogAdd=function(txt,res,k){try{txt=String(txt||'').trim();if(!txt)return;const a=L();a.unshift({t:Date.now(),x:txt.slice(0,140),r:String(res||'').slice(0,60),k});store.set('vozLog',a.slice(0,60))}catch(e){}};
+  const ic={1:'✅',0:'🤔',2:'⚪'};
+  const hh=t=>{const d=new Date(t);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
+  window.vozLogClear=function(){if(!confirm('¿Borrar la lista de lo que ha oído la app?'))return;store.set('vozLog',[]);renderVoz()};
+  window.vozLogSend=async function(){const a=L();if(!a.length){toast('La lista está vacía');return}
+    const t='📝 RideSafe IA · lo que ha oído la app\n'+a.map(x=>ic[x.k]+' '+hh(x.t)+' «'+x.x+'» → '+x.r).join('\n');
+    try{if(navigator.share){await navigator.share({title:'Órdenes de voz',text:t});return}}catch(e){if(e&&e.name==='AbortError')return}
+    window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')};
+  const r0=window.renderVoz;
+  window.renderVoz=renderVoz=function(){r0.apply(this,arguments);try{const b=document.getElementById('vozBody');if(!b)return;const a=L();
+    b.insertAdjacentHTML('beforeend','<div class="vzLog"><b>📝 Lo que ha oído la app</b><small style="display:block;color:var(--txt2);margin:4px 0 6px">✅ hecho · 🤔 no entendido · ⚪ sin «Oye bici». Sirve para ver qué palabras entiende y mejorar las órdenes.</small>'+
+      (a.length?a.slice(0,30).map(x=>'<div class="it"><b>'+ic[x.k]+'</b><div>«'+esc(x.x)+'»<small>'+hh(x.t)+' · '+esc(x.r)+'</small></div></div>').join(''):'<small style="color:var(--txt2)">Todavía nada. Enciende la voz en una salida y habla.</small>')+
+      '<div class="bt"><button onclick="vozLogSend()">📤 Enviar la lista</button><button onclick="vozLogClear()">🗑️ Borrar</button></div></div>')}catch(e){}};
 })();
 </script>
 </body>
