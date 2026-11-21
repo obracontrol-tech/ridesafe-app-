@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.95.0 — 🎧 Mi casco: un solo botón «Conectar casco por Bluetooth»; el casco solo sirve para oír y dar órdenes («Oye bici»). Botones del casco y aviso de luz desactivados (no eran estables). */
 /* v5.94.3 — 🗑️ Actividades: papelera en cada salida para borrarla (pide confirmación). */
 /* v5.94.2 — 🔁 Ruta circular por voz: entiende los km dichos con letras («cuarenta», «sesenta y cinco», «quaranta»…). */
 /* v5.94.1 — 🗺️ El letrero de créditos del mapa ya no tapa el mapa: queda como ⓘ pequeño. */
@@ -602,6 +603,7 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .casco-law{background:rgba(253,186,116,.12);border:1px solid #FDBA74;border-radius:14px;padding:12px;font-size:14px;margin-bottom:12px}
 .casco-steps{margin:6px 0 12px;padding-left:20px;font-size:15px}
 .casco-steps li{margin:4px 0}
+.casco-ok{background:rgba(163,230,53,.12);border:1px solid var(--lime,#A3E635);border-radius:14px;padding:12px;font-size:15px;margin-bottom:10px;text-align:center}
 .casco-note{color:var(--txt2);font-size:13px;margin:6px 0 12px}
 /* Perfil */
 .prof{text-align:center;padding:10px 0 20px}
@@ -1430,7 +1432,7 @@ al grupo</button></div>
   <div class="set" style="flex-wrap:wrap">🔔 Avisos con la app cerrada <label class="sw"><input type="checkbox" id="swPush" onchange="setPush(this.checked)"><span></span></label><small id="pushInfo" style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Salidas nuevas de tu club, cambios, cancelaciones y recordatorio (la víspera y 1 hora antes). En ruta: pinchazo, esperad, ayuda, caída… Aunque tengas el móvil bloqueado. También en tu Garmin, iGPSPORT o reloj (ver abajo)</small></div>
   <button class="li" style="margin-bottom:10px" onclick="openMusic()"><span class="em">🎵</span><div><b>Música en ruta</b><small>Con Spotify, por el altavoz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" id="vozCard" style="margin-bottom:10px;border:2px solid var(--lime)!important" onclick="openVoz()"><span class="em" style="font-size:26px">🎙️</span><div><b>Órdenes por voz <span style="font-size:11px;background:#C8DC3C;color:#0E1A2B;padding:2px 7px;border-radius:8px;vertical-align:middle">NUEVO</span></b><small id="vozSub">Manos libres: sin quitarte los guantes</small></div></button>
-  <button class="li" style="margin-bottom:10px" onclick="openCasco()"><span class="em casco-ic"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></span><div><b>Mi casco con altavoces</b><small id="cascoSub">Voz por el casco, botones y aviso de luz</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+  <button class="li" style="margin-bottom:10px" onclick="openCasco()"><span class="em casco-ic"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></span><div><b>Mi casco con altavoces</b><small id="cascoSub">Oír y dar órdenes por el casco Bluetooth</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-bottom:10px" onclick="openGarmin()"><span class="em">⌚</span><div><b>Avisos en mi Garmin, iGPSPORT o reloj</b><small>Modelos compatibles y botón de prueba</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <div class="set">Aparecer en "Ciclistas cercanos" <label class="sw"><input type="checkbox" id="swNear" checked onchange="setNear(this.checked)"><span></span></label></div>
   <div class="set">Publicar mis salidas en mi club <label class="sw"><input type="checkbox" id="swPub" checked onchange="store.set('pubActs',this.checked);toast(this.checked?'Tus salidas se verán en la comunidad':'Tus salidas serán privadas')"><span></span></label></div>
@@ -1445,7 +1447,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.94.3</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.95.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -7015,6 +7017,8 @@ function ttsChunks(t){
    Si suena la Música en ruta, los botones controlan la música.
    La luz del casco solo la enciende el casco: aquí solo se recuerda.
    =================================================================== */
+/* v5.95.0 — botones del casco y recordatorio de luz desactivados (no eran estables). Poner true para recuperarlos. */
+const CASCO_BOTONES=false, CASCO_LUZ=false, CASCO_MIC=true;
 var CASCO={on:false,last:'',a:null,t:null,sunSaid:false};
 const cascoOn=()=>!!store.get('casco',false);
 function cascoSay(t){const v=live.voice;live.voice=true;speak(t);live.voice=v}
@@ -7051,7 +7055,7 @@ function cascoSunset(lat,lng){const d=new Date(),r=Math.PI/180;
   const cw=(Math.sin(-0.83*r)-Math.sin(lat*r)*Math.sin(dec))/(Math.cos(lat*r)*Math.cos(dec));
   if(cw<-1||cw>1)return null;return new Date((Jt+Math.acos(cw)/r/360-2440587.5)*864e5)}
 function cascoLightTick(){
-  if(!live.on||CASCO.sunSaid||!store.get('cascoLuz',true))return;
+  if(!CASCO_LUZ||!live.on||CASCO.sunSaid||!store.get('cascoLuz',true))return;
   const p=live.pts&&live.pts.at(-1);if(!p)return;
   const ss=cascoSunset(+p[0],+p[1]);if(!ss)return;
   if(Date.now()>=ss.getTime()-20*60000){CASCO.sunSaid=true;
@@ -7062,13 +7066,13 @@ function cascoLightTick(){
 function cascoStart(){
   if(!cascoOn())return;
   CASCO.on=true;CASCO.sunSaid=false;
-  if(store.get('cascoBtn',true)&&!extMus()&&'mediaSession' in navigator){
+  if(CASCO_BOTONES&&store.get('cascoBtn',true)&&!extMus()&&'mediaSession' in navigator){
     try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
       CASCO.a.play().then(()=>{cascoHandlers();
         if(!mus.a)try{navigator.mediaSession.metadata=new MediaMetadata({title:'RideSafe IA · Modo casco',artist:live.rideTitle||'En ruta'})}catch(e){}
       }).catch(e=>console.warn('casco: botones no disponibles',e))}catch(e){}
   }
-  if(store.get('cascoLuz',true))setTimeout(()=>{if(live.on)speak('Recuerda encender la luz trasera del casco.')},2500);
+  if(CASCO_LUZ&&store.get('cascoLuz',true))setTimeout(()=>{if(live.on)speak('Recuerda encender la luz trasera del casco.')},2500);
   clearInterval(CASCO.t);CASCO.t=setInterval(cascoLightTick,60000);setTimeout(cascoLightTick,15000);
 }
 function cascoStop(){
@@ -7088,6 +7092,25 @@ function cascoSet(k,on,el){
   else toast(on?'Activado':'Desactivado');
   renderCasco();
 }
+async function cascoConnect(){
+  if(!store.get('cascoLaw',0)){
+    const ok=confirm('⚠️ Antes de conectar el casco\n\nEl Reglamento General de Circulación (art. 18.2) prohíbe circular, también en bici, con cascos o auriculares conectados a aparatos de sonido. Multa de 200 €.\n\nCon los cascos con altavoces integrados la norma no está clara y algunos agentes multan. Tú decides si lo usas y bajo tu responsabilidad.\n\nRecomendación: volumen bajo y solo para indicaciones y avisos, nunca música.\n\n¿Conectar el casco?');
+    if(!ok)return;store.set('cascoLaw',1)}
+  store.set('casco',true);store.set('cascoBtn',false);store.set('cascoLuz',false);
+  let name='';
+  try{const md=navigator.mediaDevices;
+    if(CASCO_MIC&&md&&md.getUserMedia){const s=await md.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop())}
+    if(md&&md.enumerateDevices){const ds=await md.enumerateDevices();
+      const bt=ds.find(d=>/bluetooth|sena|cardo|livall|lumos|unit|headset|helmet|casco|manos libres|hands.?free/i.test(d.label||''));
+      if(bt)name=(bt.label||'').replace(/\s*\([^)]*\)/g,'').trim().slice(0,40)}
+  }catch(e){}
+  store.set('cascoName',name);
+  try{if(CASCO_MIC&&typeof vcOk==='function'&&vcOk()&&!vcOn())vozSet(true)}catch(e){}
+  toast(name?'🎧 Casco conectado: '+name:'🎧 Casco conectado',4000);
+  setTimeout(()=>cascoSay(CASCO_MIC?'Casco conectado. Me oirás por el casco, y para darme órdenes di: oye bici.':'Casco conectado. Me oirás por el casco durante la ruta.'),600);
+  renderCasco();
+}
+function cascoOff(){store.set('casco',false);cascoStop();toast('Casco desconectado de la app');renderCasco()}
 function cascoTest(){cascoSay('Hola, soy RideSafe. Si me oyes por el casco, todo funciona correctamente.')}
 function openCasco(){
   $('rideBody').innerHTML=sheetHead('🎧 Mi casco con altavoces')+'<div id="cascoBody"></div>';openRideId=null;openSheet('sh-ride');renderCasco();
@@ -7097,20 +7120,20 @@ function renderCasco(){
   const sw=(k,def,t,sub,dis)=>`<div class="set" style="flex-wrap:wrap${dis?';opacity:.5':''}">${t} <label class="sw"><input type="checkbox" ${store.get(k,def)?'checked':''} ${dis?'disabled':''} onchange="cascoSet(${jsq(k)},this.checked,this)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${sub}</small></div>`;
   b.innerHTML=`<div class="casco-hero"><svg viewBox="0 0 120 84" aria-hidden="true" style="width:100%;height:100%"><path d="M50 60 L60 80 M86 60 L66 80" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/><rect x="57" y="74" width="12" height="8" rx="2" fill="#475569"/><path d="M16 54 C16 30 40 12 66 12 C92 12 110 28 111 50 L111 56 C111 59 109 61 106 61 L24 61 C19 61 16 58 16 54Z" fill="#1E293B" stroke="#A3E635" stroke-width="2.5"/><path d="M4 49 C12 42 28 38 46 38 L44 47 C30 47 16 50 7 55 Z" fill="#334155" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"/><path d="M44 24 L57 18 L60 25 L47 31Z M63 16 L77 15 L77 22 L64 23Z M83 17 L96 23 L92 29 L81 23Z" fill="#0B1220"/><path d="M24 61 L106 61" stroke="#A3E635" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="51" r="5" fill="#A3E635"/><path d="M82 46 C85 49 85 53 82 56 M87 43 C92 48 92 54 87 59" stroke="#FDBA74" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="107" y="40" width="7" height="12" rx="2" fill="#F87171"/></svg></div>
    <div class="casco-law">⚠️ <b>Atención:</b> la ley (art. 18.2 del Reglamento General de Circulación) prohíbe circular con cascos o auriculares conectados al móvil, con multa de 200 €. Con los cascos con altavoces integrados la norma no está clara. Úsalo bajo tu responsabilidad, con volumen bajo y solo para indicaciones.</div>
-   ${sw('casco',false,'🎧 Modo casco','Se pone en marcha solo al empezar una salida.',false)}
-   ${sw('cascoBtn',true,'🔘 Botones del casco','Play/Pausa repite la última indicación · Siguiente da el resumen (km y tiempo) · Anterior dice el viento. Si suena la música de la app, controlan la música.',!on)}
-   ${sw('cascoLuz',true,'💡 Recordar la luz trasera','Al empezar la salida y 20 minutos antes de anochecer. La luz se enciende con el botón del casco.',!on)}
-   <button class="btn btn-lime" style="width:100%;margin:4px 0 14px" onclick="cascoTest()">🔊 Probar sonido del casco</button>
-   <b>Cómo conectarlo</b>
+   ${on?`<div class="casco-ok">✅ <b>Casco conectado</b>${store.get('cascoName','')?'<br><small>'+esc(store.get('cascoName',''))+'</small>':''}</div>`:''}
+   <button class="btn btn-lime" style="width:100%;margin:4px 0 14px;font-size:18px;padding:16px" onclick="${on?'cascoTest()':'cascoConnect()'}">${on?'🔊 Probar sonido del casco':'🎧 Conectar casco por Bluetooth'}</button>
+   <b>Qué hace</b>
+   <ul class="casco-steps"><li>🔊 <b>Oyes</b> por el casco las indicaciones y avisos de la ruta.</li><li>🗣️ <b>Das órdenes</b> por el micrófono del casco: di <b>«Oye bici»</b> y la orden (en iPhone, toca 🎤 y habla).</li><li>🔘 Los botones del casco no hacen nada en la app: así no se cuelga ni choca con la música.</li></ul>
+   <b>Si no se oye por el casco</b>
    <ol class="casco-steps">
-     <li>Pon el casco en modo emparejamiento (mira la guía rápida de tu casco).</li>
-     <li>En el móvil: <b>Ajustes → Bluetooth</b> → toca el casco cuando aparezca.</li>
-     <li>Pulsa <b>Probar sonido</b>: si se oye por el casco, ya está.</li>
+     <li>Enciende el casco en modo emparejamiento (mira su guía rápida).</li>
+     <li>En el móvil: <b>Ajustes → Bluetooth</b> → toca el casco.</li>
+     <li>Vuelve aquí y pulsa <b>${on?'Probar sonido':'Conectar casco'}</b>.</li>
    </ol>
-   <p class="casco-note">📱 Los botones del casco funcionan con la pantalla encendida (RideSafe la mantiene encendida durante la salida).<br>🎧 Si escuchas Spotify, apaga «Botones del casco» para que no lo interrumpa.<br>🔧 La luz y el intercomunicador entre cascos se manejan con la app de la marca del casco.</p>`;
-  const s=$('cascoSub');if(s)s.textContent=on?'Activado · voz, botones y aviso de luz':'Voz por el casco, botones y aviso de luz';
+   ${on?'<button class="sec" style="width:100%;margin:2px 0 12px" onclick="cascoOff()">Desconectar el casco de la app</button>':''}`;
+  const s=$('cascoSub');if(s)s.textContent=on?'✅ Conectado'+(store.get('cascoName','')?' · '+store.get('cascoName',''):''):'Oír y dar órdenes por el casco Bluetooth';
 }
-setTimeout(()=>{const s=$('cascoSub');if(s&&cascoOn())s.textContent='Activado · voz, botones y aviso de luz'},0);
+setTimeout(()=>{const s=$('cascoSub');if(s&&cascoOn())s.textContent='✅ Conectado'+(store.get('cascoName','')?' · '+store.get('cascoName',''):'')},0);
 function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 async function keepAwake(){try{if('wakeLock' in navigator&&live.on&&document.visibilityState==='visible')live.wake=await navigator.wakeLock.request('screen')}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(live.on&&document.visibilityState==='visible')keepAwake()});
@@ -8127,7 +8150,7 @@ function vcLater(){clearTimeout(VC.waitT);VC.waitT=setTimeout(()=>{if(!live.on||
 function vcStop(){const r=VC.rec;VC.rec=null;if(r){try{r.abort()}catch(e){}}vcChip()}
 function vcAuto(){vcChip();if(vcOn())setTimeout(()=>{if(vcPtt())vcPttArm();else vcStart()},1200)}
 /* v5.37.1 — Pulsar para hablar con el botón ▶️/⏸ del casco (Sena, etc.): la app escucha solo una orden */
-const vcPtt=()=>vcOn()&&!!store.get('vcPtt',false);
+const vcPtt=()=>CASCO_BOTONES&&vcOn()&&!!store.get('vcPtt',false);
 function vcPttArm(){
   if(!vcPtt()||!live.on||extMus()||!('mediaSession' in navigator))return;
   try{if(!CASCO.a){CASCO.a=new Audio(cascoSilence());CASCO.a.loop=true}
@@ -8222,7 +8245,7 @@ function renderVoz(){
    ${ok?'':'<div class="casco-law">⚠️ Este móvil o navegador no permite órdenes por voz. En Android funciona con Chrome.</div>'}
    <div class="set" style="flex-wrap:wrap${ok?'':';opacity:.5'}">🎙️ Activar órdenes por voz <label class="sw"><input type="checkbox" ${on?'checked':''} ${ok?'':'disabled'} onchange="vozSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">La primera vez el móvil te pedirá permiso para el micrófono: pulsa <b>Permitir</b>.</small></div>
    <button class="sec" style="width:100%;margin:6px 0 10px" onclick="vcMicTest()">🔎 Probar el micrófono (dime qué oye)</button><button class="sec" style="width:100%;margin:0 0 10px" onclick="micLogShow()">📋 Ver qué pasó con el micro en la salida</button><div id="micDiag"></div>
-   <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
+   <div class="set" style="flex-wrap:wrap${on?'':';opacity:.5'}${CASCO_BOTONES?'':';display:none'}">🎧 Pulsar el botón del casco para hablar <label class="sw"><input type="checkbox" ${store.get('vcPtt',false)?'checked':''} ${on?'':'disabled'} onchange="vcPttSet(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Mantén pulsado <b>▶️/⏸</b> en el casco (Sena: 1 segundo), espera el pitido y di la orden. Así la app solo escucha cuando tú quieres. Sin casco: toca «🎧 Pulsa ▶️ del casco» en la pantalla.</small></div>
    <div class="set" style="flex-wrap:wrap${VZ_IOS?';opacity:.5':''}">🗣️ «Oye bici» como Alexa <label class="sw"><input type="checkbox" ${VZ.cont?'checked':''} ${VZ_IOS?'disabled':''} onchange="vozSetCont(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">${VZ_IOS?'En iPhone no se puede: el iPhone no deja escuchar todo el rato. Toca 🎤 y habla.':'La app escucha siempre y solo hace caso cuando dices <b>«Oye bici»</b>. Ej.: «Oye bici, va a llover». Funciona con la app abierta en pantalla (Android). Gasta algo más de batería.'}</small></div>
    <div class="set" style="flex-wrap:wrap">🎤 Botón del micrófono en la pantalla <label class="sw"><input type="checkbox" ${store.get('vozBtnHide',false)?'':'checked'} onchange="vozBtnShow(this.checked)"><span></span></label><small style="width:100%;color:var(--txt2);font-size:12px;margin-top:4px">Tócalo y habla, también sin estar en ruta («va a llover», «ruta Lleida Balaguer»…).</small></div>
    <button class="btn btn-lime" style="width:100%;margin:10px 0 6px" onclick="try{closeSheets()}catch(e){}vmOpen(null,true)">📋 Menú por números: dices el número</button>
@@ -9055,7 +9078,7 @@ body:has(#app.live) #vozBtn{left:auto;right:12px;top:30%;width:58px;height:58px;
  <button class="vbtn" style="background:#A3E635;color:#0E1A2B" onclick="vozPanelClose();vozListen()">🎤 Probar ahora: toca y habla</button>
  <label class="vopt"><input type="checkbox" id="vozShowBtn" checked onchange="vozBtnShow(this.checked)"><div><b>Mostrar el botón 🎤 en la pantalla</b><small>Si lo quitas, sigues hablando con «Oye bici» o con el botón del casco. Para volver a ponerlo: Perfil › Órdenes por voz.</small></div></label>
  <label class="vopt"><input type="checkbox" id="vozCont" onchange="vozSetCont(this.checked)"><div><b>Escucha continua</b><small>La app escucha siempre. Di <b>«Oye bici»</b> y la orden. Ej.: «Oye bici, cuánto falta». Gasta algo más de batería.</small></div></label>
- <label class="vopt"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
+ <label class="vopt" style="display:none"><input type="checkbox" id="vozCasco" onchange="vozSetCasco(this.checked)"><div><b>Botón del casco = hablar</b><small>Con el casco Bluetooth, al pulsar el botón de reproducir/pausa la app te escucha.</small></div></label>
  <div style="margin-top:16px;font-weight:800;font-size:17px">Qué puedes decir</div>
  <table>
   <tr><td>«Ruta de Mollerussa<br>a Cervera»</td><td>Calcula la ruta. También «ruta a Cervera» (desde donde estás) o «ruta circular de 40 kilómetros»</td></tr>
@@ -9720,7 +9743,7 @@ function vozPanelClose(){document.getElementById('vozPanel').style.display='none
   if(typeof cascoHandlers!=='function')return;
   const orig=cascoHandlers;
   cascoHandlers=function(){orig.apply(this,arguments);
-    if(!store.get('vozCasco',false)||extMus()||!('mediaSession' in navigator))return;
+    if(!CASCO_BOTONES||!store.get('vozCasco',false)||extMus()||!('mediaSession' in navigator))return;
     const ms=navigator.mediaSession;const f=()=>{try{cascoKeep()}catch(e){}vozListen()};
     try{ms.setActionHandler('play',f)}catch(e){}try{ms.setActionHandler('pause',f)}catch(e){}
   };
