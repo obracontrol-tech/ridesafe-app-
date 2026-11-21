@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.99.1 — 🔊 Las respuestas largas ya no se cortan: el micrófono no se vuelve a abrir hasta que la app termina de hablar del todo (antes se abría entre trozo y trozo de la voz y Android cortaba el resto). */
 /* v5.99.0 — 📝 Ver lo que oye la app: al hablar en ruta aparece arriba lo que va entendiendo (en directo), y luego ✅ hecho / 🤔 no entendido. Lista «Lo que ha oído la app» en Órdenes por voz, para mejorar las órdenes (se puede enviar por WhatsApp). */
 /* v5.98.1 — 🎙️ Voz encendida más estable: escucha continua de verdad aunque tengas marcado «Uso Spotify» (antes quedaba en «Toca y habla» y no transcribía), y la app mantiene el sonido del móvil mientras la voz está encendida para que Spotify no siga sonando. */
 /* v5.98.0 — 🎙️/🎵 Interruptor único en ruta: VOZ ENCENDIDA = la música se para (también Spotify) y la app escucha; VOZ APAGADA = micrófono apagado del todo, ni «Oye bici» ni 🎤, y vuelve la música. Si pones música, la voz se apaga sola. */
@@ -1453,7 +1454,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.99.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.99.1</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -11981,6 +11982,18 @@ window.vcMicTest=function(){
     b.insertAdjacentHTML('beforeend','<div class="vzLog"><b>📝 Lo que ha oído la app</b><small style="display:block;color:var(--txt2);margin:4px 0 6px">✅ hecho · 🤔 no entendido · ⚪ sin «Oye bici». Sirve para ver qué palabras entiende y mejorar las órdenes.</small>'+
       (a.length?a.slice(0,30).map(x=>'<div class="it"><b>'+ic[x.k]+'</b><div>«'+esc(x.x)+'»<small>'+hh(x.t)+' · '+esc(x.r)+'</small></div></div>').join(''):'<small style="color:var(--txt2)">Todavía nada. Enciende la voz en una salida y habla.</small>')+
       '<div class="bt"><button onclick="vozLogSend()">📤 Enviar la lista</button><button onclick="vozLogClear()">🗑️ Borrar</button></div></div>')}catch(e){}};
+})();
+</script>
+<script>
+/* v5.99.1 — 🔊 No cortar las respuestas largas: mientras la app está hablando (todos los trozos de la voz de Google,
+   incluido el rato que tarda en llegar cada trozo) el micrófono espera. Al acabar, se vuelve a abrir. */
+(function(){
+  const vs0=window.voiceSay;
+  if(typeof vs0==='function')window.voiceSay=voiceSay=async function(){const n=window.__ttsN=(window.__ttsN||0)+1;window.__ttsBusyT=Date.now()+60000;
+    try{return await vs0.apply(this,arguments)}finally{if(n===window.__ttsN){window.__ttsBusyT=0;try{VC.quiet=Math.max(VC.quiet,Date.now()+1200);vcLater()}catch(e){}}}};
+  const busy=()=>Date.now()<(window.__ttsBusyT||0);
+  const ms1=window.musSpeaking;if(typeof ms1==='function')window.musSpeaking=musSpeaking=function(){if(busy()&&!(Date.now()<(window.__vcIgn||0)))return true;return ms1.apply(this,arguments)};
+  const ts1=window.ttsSpeaking;if(typeof ts1==='function')window.ttsSpeaking=ttsSpeaking=function(){if(busy())return true;return ts1.apply(this,arguments)};
 })();
 </script>
 </body>
