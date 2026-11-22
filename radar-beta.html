@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0B1426">
+<title>RideSafe IA · Radar trasero beta</title>
+<style>
+:root{--bg:#0B1426;--card:#13203A;--line:#22355A;--lime:#A3E635;--ora:#FB923C;--red:#EF4444;--txt:#E8EEF8;--mut:#8EA0BF}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:12px 12px 40px}
+.bar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.bar b{color:var(--lime);font-size:16px}
+.bar a{margin-left:auto;color:var(--txt);text-decoration:none;font-weight:700;font-size:14px;background:#0B1426;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.tag{font-size:10px;font-weight:800;background:#FDBA74;color:#0B1426;border-radius:6px;padding:2px 6px}
+.ride{display:grid;grid-template-columns:1fr 92px;gap:10px;margin-top:12px}
+.main{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;justify-content:center;min-height:330px;text-align:center}
+.big{font-size:44px;font-weight:900;line-height:1.05}
+.sub{font-size:16px;color:var(--mut);margin-top:8px}
+.strip{position:relative;border-radius:18px;background:#14532D;border:3px solid #22C55E;min-height:330px;overflow:hidden;transition:background .3s,border-color .3s}
+.strip.warn{background:#7C2D12;border-color:var(--ora)}
+.strip.danger{background:#7F1D1D;border-color:var(--red)}
+.strip .me{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:26px}
+.strip .lbl{position:absolute;left:4px;font-size:10px;color:rgba(255,255,255,.55)}
+.car{position:absolute;left:50%;width:34px;height:34px;margin-left:-17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.5);transition:top .35s linear}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:14px 10px;font-size:15px;font-weight:700;cursor:pointer}
+.btn.main2{background:var(--lime);color:#0B1426;border-color:var(--lime);grid-column:1/-1;font-size:17px}
+.btn.on{background:#1E3A8A;border-color:#3B82F6}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px;font-size:14px;line-height:1.5;color:var(--mut)}
+.box b{color:var(--txt)}
+.warnbox{background:#3B2A0B;border-color:#92400E;color:#FDE68A}
+#diag{font-family:ui-monospace,Menlo,monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;color:#9FB3D6;max-height:160px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar"><b>📡 Radar trasero</b><span class="tag">BETA</span><small style="color:var(--mut);font-size:11px">v1.0</small><a id="back" href="index.html">✕ Volver</a></div>
+
+  <div class="ride">
+    <div class="main">
+      <div class="big" id="big">Sin radar</div>
+      <div class="sub" id="sub">Conecta el radar o prueba la simulación</div>
+      <div class="sub" id="bat" style="font-size:13px"></div>
+    </div>
+    <div class="strip" id="strip">
+      <span class="lbl" style="top:6px">140 m</span>
+      <span class="lbl" style="top:50%">70 m</span>
+      <span class="me">🚴</span>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="btn main2" id="bCon">🔗 Conectar radar por Bluetooth</button>
+    <button class="btn" id="bSim">🧪 Simular coches</button>
+    <button class="btn on" id="bVoz">🔊 Voz: sí</button>
+  </div>
+
+  <div class="box warnbox" id="noBt" style="display:none">⚠️ Este navegador no permite Bluetooth. Funciona en <b>Android con Chrome</b>. En iPhone no es posible desde una app web.</div>
+
+  <div class="box">
+    <b>Cómo funciona</b><br>
+    • La barra de la derecha es la carretera detrás de ti: 🚴 eres tú, abajo.<br>
+    • <b style="color:#22C55E">Verde</b>: nadie detrás. <b style="color:#FB923C">Naranja</b>: viene un vehículo. <b style="color:#EF4444">Rojo</b>: muy cerca (menos de 30 m).<br>
+    • Pita y te avisa por voz cuando aparece un vehículo nuevo.<br>
+    • Pensado para radares compatibles con Garmin (Coospo TR70, Garmin Varia, Magene…). Antes de conectar, <b>cierra la app del radar</b> (CoospoRide) y desconéctalo del Garmin: el radar solo habla con uno a la vez.
+  </div>
+
+  <div class="box"><b>Datos técnicos</b> (si algo falla, mándame una captura de esto)<div id="diag">—</div></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var SVC='6a4e3200-667b-11e3-949a-0800200c9a66', CHR='6a4e3203-667b-11e3-949a-0800200c9a66';
+var MAXD=140, NEAR=30;
+var $=function(i){return document.getElementById(i)};
+var strip=$('strip'), cars={}, lastSeen={}, voice=true, sim=null, dev=null, logLines=[];
+try{if(new URLSearchParams(location.search).get('from')==='simple')$('back').href='simple.html';}catch(e){}
+
+function log(t){logLines.unshift(new Date().toLocaleTimeString()+'  '+t);logLines=logLines.slice(0,40);$('diag').textContent=logLines.join('\n');}
+
+// sonido y voz
+var AC=null;
+function beep(f,ms){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();
+  o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(.25,AC.currentTime);o.start();o.stop(AC.currentTime+ms/1000);}catch(e){}}
+function say(t){if(!voice||!window.speechSynthesis)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1.1;speechSynthesis.speak(u);}catch(e){}}
+function alertNew(d,danger){beep(danger?1200:880,140);setTimeout(function(){beep(danger?1200:880,140)},200);
+  try{navigator.vibrate&&navigator.vibrate(danger?[200,80,200]:150)}catch(e){}
+  say(danger?'Atención, vehículo muy cerca':'Vehículo detrás, a '+Math.round(d/10)*10+' metros');}
+
+// pintar
+function render(list){
+  // list: [{id,d}]
+  var seen={};
+  list.forEach(function(t){
+    seen[t.id]=1;
+    var el=cars[t.id];
+    if(!el){el=document.createElement('div');el.className='car';el.textContent='🚗';strip.appendChild(el);cars[t.id]=el;
+      if(!lastSeen[t.id]||Date.now()-lastSeen[t.id]>8000)alertNew(t.d,t.d<NEAR);}
+    lastSeen[t.id]=Date.now();
+    var h=strip.clientHeight-50, y=Math.max(0,Math.min(1,t.d/MAXD));
+    el.style.top=(h*(1-y))+'px';
+    el.style.background=t.d<NEAR?'#FCA5A5':t.d<70?'#FED7AA':'#fff';
+  });
+  Object.keys(cars).forEach(function(id){if(!seen[id]){strip.removeChild(cars[id]);delete cars[id];}});
+  var n=list.length, min=n?Math.min.apply(null,list.map(function(t){return t.d})):null;
+  strip.className='strip'+(n?(min<NEAR?' danger':' warn'):'');
+  $('big').textContent=n?(n===1?'🚗 1 vehículo':'🚗 '+n+' vehículos'):'✅ Vía libre';
+  $('big').style.color=n?(min<NEAR?'#F87171':'#FB923C'):'#A3E635';
+  $('sub').textContent=n?'El más cerca a '+Math.round(min)+' m':'Nadie se acerca por detrás';
+}
+
+// decodificar paquete del radar (formato compatible Garmin, servicio 6a4e3200)
+function onData(ev){
+  var v=ev.target.value, b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
+  log('RX '+b.map(function(x){return ('0'+x.toString(16)).slice(-2)}).join(' '));
+  var list=[];
+  if(b.length>=4){for(var k=1;k+2<b.length;k+=3){var id=b[k],d=b[k+1];if(d>0&&d<=255)list.push({id:'r'+id,d:d});}}
+  render(list);
+}
+
+function onDisc(){log('Radar desconectado');$('big').textContent='📴 Radar desconectado';$('big').style.color='#F87171';
+  $('sub').textContent='Toca «Conectar» para volver a enlazarlo';say('Radar desconectado');beep(400,400);render([]);$('bCon').textContent='🔗 Conectar radar por Bluetooth';}
+
+$('bCon').onclick=async function(){
+  if(!navigator.bluetooth){$('noBt').style.display='block';return;}
+  if(sim){clearInterval(sim);sim=null;$('bSim').textContent='🧪 Simular coches';render([]);}
+  try{
+    $('big').textContent='Buscando…';$('big').style.color='#E8EEF8';$('sub').textContent='Elige tu radar en la lista (p. ej. TR70)';
+    dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,'battery_service','device_information']});
+    log('Elegido: '+(dev.name||'(sin nombre)'));
+    dev.addEventListener('gattserverdisconnected',onDisc);
+    $('sub').textContent='Conectando con '+(dev.name||'el radar')+'…';
+    var srv=await dev.gatt.connect();
+    var svcs=[];try{svcs=await srv.getPrimaryServices();}catch(e){}
+    log('Servicios visibles: '+(svcs.map(function(s){return s.uuid}).join(', ')||'ninguno'));
+    try{var bs=await srv.getPrimaryService('battery_service');var bc=await bs.getCharacteristic('battery_level');var bv=await bc.readValue();
+      $('bat').textContent='🔋 Batería del radar: '+bv.getUint8(0)+'%';}catch(e){}
+    var rs;
+    try{rs=await srv.getPrimaryService(SVC);}catch(e){
+      log('No tiene el servicio de radar compatible Garmin');
+      $('big').textContent='⚠️ Conectado, pero…';$('big').style.color='#FB923C';
+      $('sub').textContent='Este aparato no usa el sistema de radar compatible Garmin por Bluetooth. Mándame captura de «Datos técnicos».';return;}
+    var ch=await rs.getCharacteristic(CHR);
+    ch.addEventListener('characteristicvaluechanged',onData);
+    await ch.startNotifications();
+    log('Recibiendo datos del radar ✔');
+    $('bCon').textContent='✅ Radar conectado ('+(dev.name||'radar')+')';
+    render([]);say('Radar conectado');beep(990,120);
+  }catch(e){log('Error: '+(e&&e.message||e));
+    if(e&&e.name==='NotFoundError'){$('big').textContent='Sin radar';$('sub').textContent='No elegiste ningún aparato';return;}
+    $('big').textContent='❌ No conecta';$('big').style.color='#F87171';
+    $('sub').textContent='Cierra CoospoRide, desenlaza el radar del Garmin y vuelve a probar. Si sigue, mándame captura de «Datos técnicos».';}
+};
+
+// simulación
+$('bSim').onclick=function(){
+  if(sim){clearInterval(sim);sim=null;this.textContent='🧪 Simular coches';render([]);$('big').textContent='Sin radar';$('big').style.color='';$('sub').textContent='Simulación parada';return;}
+  this.textContent='⏹️ Parar simulación';log('Simulación iniciada');
+  var T=[],nid=1;
+  sim=setInterval(function(){
+    if(Math.random()<0.06&&T.length<3)T.push({id:'s'+(nid++),d:MAXD,v:3+Math.random()*7});
+    T.forEach(function(t){t.d-=t.v*0.5;});
+    T=T.filter(function(t){return t.d>2;});
+    render(T.map(function(t){return {id:t.id,d:t.d}}));
+  },500);
+};
+$('bVoz').onclick=function(){voice=!voice;this.textContent=voice?'🔊 Voz: sí':'🔇 Voz: no';this.classList.toggle('on',voice);};
+if(!navigator.bluetooth)$('noBt').style.display='block';
+render([]);$('big').textContent='Sin radar';$('big').style.color='';$('sub').textContent='Conecta el radar o prueba la simulación';
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.53.0 — 📡 Nuevo botón «Radar trasero» (BETA) en «¿Qué quieres hacer?»: abre radar-beta.html (Bluetooth compatible Garmin + simulación). */
 /* v1.52.0 — 🌿 Mapas sin conexión: «Descargar mi zona» (10 km) se cambia por «Organic Maps» (comunidades enteras sin conexión y navegación sin cobertura, gratis). Sigue «Descargar un pueblo o comarca». */
 /* v1.51.0 — ⛔ Nuevo botón «Ruta evitando zonas» (BETA) en «¿Qué quieres hacer?»: abre el planificador BRouter con zonas prohibidas y la ruta vuelve sola a la app. */
 /* v1.50.0 — 🛣️ Ruta de Carretera calculada con BRouter (perfil bici «poco tráfico»: evita nacionales con muchos coches). Si BRouter no responde, se usa la de antes. Cada ruta (Carretera, Gravel, MTB) muestra su % de asfalto, tierra y tráfico. */
@@ -1289,7 +1290,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.52.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.53.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1325,6 +1326,7 @@ al grupo</button></div>
     <button onclick="closeSheets();homeCard()"><span class="em">🏠</span><div><b>Volver a casa</b><small>Desde donde estés · eliges entre 3 caminos y te guía</small></div></button>
     <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX, KML o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
+    <button onclick="closeSheets();location.href='radar-beta.html?from=simple'"><span class="em">📡</span><div><b>Radar trasero <span style="font-size:11px;background:#FDBA74;color:#0B1426;border-radius:6px;padding:1px 6px;font-weight:800">BETA</span></b><small>Coches que vienen por detrás (Coospo TR70, Varia…) · con simulación</small></div></button>
     <button onclick="closeSheets();location.href='brouter-beta.html?from=simple'"><span class="em">⛔</span><div><b>Ruta evitando zonas <span style="font-size:11px;background:#FDBA74;color:#0B1426;border-radius:6px;padding:1px 6px;font-weight:800">BETA</span></b><small>Marca obras o tramos peligrosos y la ruta los esquiva</small></div></button>
   </div>
 </div>
