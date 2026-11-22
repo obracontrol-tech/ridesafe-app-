@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.101.0 — ⛔ Nuevo botón «Ruta evitando zonas» (BETA) en «¿Qué quieres hacer?»: abre el planificador BRouter con zonas prohibidas y la ruta vuelve sola a la app. */
 /* v5.100.0 — 🛣️ Ruta de Carretera calculada con BRouter (perfil bici «poco tráfico»: evita nacionales con muchos coches). Si BRouter no responde, se usa la de antes. Cada ruta (Carretera, Gravel, MTB) muestra su % de asfalto, tierra y tráfico. */
 /* v5.99.1 — 🔊 Las respuestas largas ya no se cortan: el micrófono no se vuelve a abrir hasta que la app termina de hablar del todo (antes se abría entre trozo y trozo de la voz y Android cortaba el resto). */
 /* v5.99.0 — 📝 Ver lo que oye la app: al hablar en ruta aparece arriba lo que va entendiendo (en directo), y luego ✅ hecho / 🤔 no entendido. Lista «Lo que ha oído la app» en Órdenes por voz, para mejorar las órdenes (se puede enviar por WhatsApp). */
@@ -1455,7 +1456,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.100.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.101.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1480,6 +1481,7 @@ al grupo</button></div>
     <button onclick="closeSheets();mkNear()"><span class="em">🥾</span><div><b>Rutas marcadas</b><small>GR, PR, Caminos y BTT ya hechos, cerca de ti · o di «Oye bici, rutas marcadas»</small></div></button>
     <button onclick="closeSheets();pickFile()"><span class="em">📂</span><div><b>Subir GPX, KML o TCX</b><small>Una ruta para hacer o una salida de tu reloj</small></div></button>
     <button onclick="closeSheets();ghPlan()"><span class="em">🧭</span><div><b>Planificar en GraphHopper</b><small>Rutas de MTB por senderos · descarga el GPX y súbelo aquí</small></div></button>
+    <button onclick="closeSheets();location.href='brouter-beta.html?from=pro'"><span class="em">⛔</span><div><b>Ruta evitando zonas <span style="font-size:11px;background:#FDBA74;color:#0B1426;border-radius:6px;padding:1px 6px;font-weight:800">BETA</span></b><small>Marca obras o tramos peligrosos y la ruta los esquiva</small></div></button>
   </div>
 </div>
 
@@ -12003,6 +12005,14 @@ window.vcMicTest=function(){
   const ms1=window.musSpeaking;if(typeof ms1==='function')window.musSpeaking=musSpeaking=function(){if(busy()&&!(Date.now()<(window.__vcIgn||0)))return true;return ms1.apply(this,arguments)};
   const ts1=window.ttsSpeaking;if(typeof ts1==='function')window.ttsSpeaking=ttsSpeaking=function(){if(busy())return true;return ts1.apply(this,arguments)};
 })();
+</script>
+<script>
+/* v5.101.0 — ⛔ Ruta evitando zonas: la ruta hecha en brouter-beta.html vuelve sola a la app (como si subieras el GPX) */
+(function(){try{if(new URLSearchParams(location.search).get('gpx')!=='brouter')return;
+  var t=null;try{t=localStorage.getItem('rsBrouterGpx');localStorage.removeItem('rsBrouterGpx')}catch(e){}
+  try{history.replaceState(null,'',location.pathname)}catch(e){}if(!t)return;
+  setTimeout(function(){var inp=document.getElementById('fileIn');if(!inp||!inp.onchange)return;try{if(typeof go==='function')go('actividades')}catch(e){}
+    inp.onchange({target:{files:[new File([t],'ruta-evitando-zonas.gpx',{type:'application/gpx+xml'})],value:''}})},1500)}catch(e){}})();
 </script>
 </body>
 </html>
