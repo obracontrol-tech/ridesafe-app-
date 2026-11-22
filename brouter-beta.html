@@ -65,7 +65,7 @@ canvas{width:100%;height:80px;display:block;margin-top:6px;background:var(--card
 <div id="map"></div>
 
 <div class="top">
-  <div class="bar"><b>🚴 BRouter beta</b><span style="font-size:12px;color:var(--mut)">rutas bici OSM</span><a id="bBack" href="index.html" style="margin-left:auto;color:#E8EEF8;text-decoration:none;font-size:14px;font-weight:700;background:#13203A;border:1px solid #22355A;border-radius:10px;padding:5px 10px">✕ Volver</a><small id="ver" style="margin-left:6px">v1.2</small></div>
+  <div class="bar"><b>🚴 BRouter beta</b><span style="font-size:12px;color:var(--mut)">rutas bici OSM</span><a id="bBack" href="index.html" style="margin-left:auto;color:#E8EEF8;text-decoration:none;font-size:14px;font-weight:700;background:#13203A;border:1px solid #22355A;border-radius:10px;padding:5px 10px">✕ Volver</a><small id="ver" style="margin-left:6px">v1.3</small></div>
   <div class="search">
     <input id="q" placeholder="¿A dónde vas? (pueblo o dirección)" enterkeyhint="search">
     <button class="btn" id="bGo">🔍</button>
@@ -115,7 +115,7 @@ var PROFILES=[
 var CMP=[
   {id:'fastbike-lowtraffic',n:'Carretera',c:'#38BDF8',p:['fastbike-lowtraffic','fastbike']},
   {id:'trekking',n:'Gravel',c:'#FDBA74',p:['gravel','trekking']},
-  {id:'mtb',n:'MTB',c:'#A3E635',p:['mtb','mtb-zossebart','mtb-zossebart-hard','trekking']}
+  {id:'mtb',n:'MTB',c:'#DC2626',p:['mtb','mtb-zossebart','mtb-zossebart-hard','trekking']}
 ];
 var NOGO_R=200;
 
@@ -301,7 +301,7 @@ function calc(){
     if(my!==reqId)return;
     if(routeLayer)map.removeLayer(routeLayer);
     var ll=gj.features[0].geometry.coordinates.map(function(c){return [c[1],c[0]]});
-    routeLayer=L.polyline(ll,{color:'#A3E635',weight:6,opacity:.9}).addTo(map);
+    routeLayer=L.polyline(ll,{color:profile==='mtb'?'#DC2626':'#A3E635',weight:6,opacity:.9}).addTo(map);
     last={profile:gj._used,alt:alt};
     showOne(analyse(gj),name+(gj._used!==list[0]?' <span style="color:#FDBA74">(perfil '+gj._used+')</span>':''));
   }).catch(function(e){if(my!==reqId)return;setMsg(niceErr(e),true);});
