@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.100.0 — 🛣️ Ruta de Carretera calculada con BRouter (perfil bici «poco tráfico»: evita nacionales con muchos coches). Si BRouter no responde, se usa la de antes. Cada ruta (Carretera, Gravel, MTB) muestra su % de asfalto, tierra y tráfico. */
 /* v5.99.1 — 🔊 Las respuestas largas ya no se cortan: el micrófono no se vuelve a abrir hasta que la app termina de hablar del todo (antes se abría entre trozo y trozo de la voz y Android cortaba el resto). */
 /* v5.99.0 — 📝 Ver lo que oye la app: al hablar en ruta aparece arriba lo que va entendiendo (en directo), y luego ✅ hecho / 🤔 no entendido. Lista «Lo que ha oído la app» en Órdenes por voz, para mejorar las órdenes (se puede enviar por WhatsApp). */
 /* v5.98.1 — 🎙️ Voz encendida más estable: escucha continua de verdad aunque tengas marcado «Uso Spotify» (antes quedaba en «Toca y habla» y no transcribía), y la app mantiene el sonido del móvil mientras la voz está encendida para que Spotify no siga sonando. */
@@ -1454,7 +1455,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.99.1</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.100.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6339,6 +6340,13 @@ async function mbRouteMany(wps){
    Si no responde, se usa la ruta normal de Mapbox. Los giros salen de la forma del camino (trackSteps). */
 const camOn=()=>!!store.get('caminos',0)&&!hikeNow();
 let camT=0;function camMsg(ok){if(Date.now()-camT<60000)return;camT=Date.now();toast(ok?'🛤️ Ruta por caminos y pistas':'El servidor de caminos no responde: ruta normal',3000)}
+/* v5.100.0 — FIRME Y TRÁFICO DE CADA RUTA (datos de BRouter): % asfalto, % tierra/pista y % por carretera con tráfico (nacionales y comarcales principales) */
+function brMix(p){try{const m=p&&p.messages;if(!m||m.length<2)return null;const h=m[0],iD=h.indexOf('Distance'),iW=h.indexOf('WayTags');if(iD<0||iW<0)return null;
+  let t=0,a=0,u=0,b=0;for(let i=1;i<m.length;i++){const d=+m[i][iD]||0,g={};String(m[i][iW]||'').split(' ').forEach(kv=>{const k=kv.split('=');if(k.length===2)g[k[0]]=k[1]});
+    t+=d;const s=g.surface||'',hw=g.highway||'';let pv=/^(asphalt|paved|concrete|paving_stones|sett|chipseal)/.test(s),un=/^(gravel|fine_gravel|compacted|dirt|ground|earth|unpaved|grass|sand|mud|pebblestone|rock)/.test(s);
+    if(!s){if(/^(track|path|bridleway)$/.test(hw))un=true;else if(hw)pv=true}if(pv)a+=d;else if(un)u+=d;if(/^(trunk|primary|secondary)(_link)?$/.test(hw))b+=d}
+  if(!t)return null;const P=x=>Math.round(x*100/t);return{asf:P(a),tie:P(u),traf:P(b)}}catch(e){return null}}
+function mixTxt(x,k){return k==='road'?x.asf+'% asfalto · '+x.traf+'% con tráfico':x.tie+'% tierra · '+x.asf+'% asfalto'}
 async function brRoute(wps,prof){
   const ll=wps.map(p=>(+p.lng).toFixed(6)+','+(+p.lat).toFixed(6)).join('|');let last=null;
   for(const pr of (prof||['gravel','trekking'])){
@@ -6348,7 +6356,7 @@ async function brRoute(wps,prof){
       const d=await r.json();const f=d&&d.features&&d.features[0];if(!f||!f.geometry||!f.geometry.coordinates||f.geometry.coordinates.length<2)continue;
       const coords=f.geometry.coordinates.map(c=>[c[1],c[0]]);const cum=cumDist(coords);
       const legs=[];let prev=0,from=0;for(let k=1;k<wps.length-1;k++){const[i]=nearestIdx(coords,[wps[k].lat,wps[k].lng],from);legs.push(cum[Math.max(0,i)]-prev);prev=cum[Math.max(0,i)];from=Math.max(0,i)}legs.push(cum.at(-1)-prev);
-      return{coords,km:cum.at(-1),legs,src:'caminos'}}catch(e){last=e}}
+      const mix=brMix(f.properties);return{coords,km:cum.at(-1),legs,src:'caminos',mix}}catch(e){last=e}}
   throw last||new Error('caminos');
 }
 /* v5.51.0 — TRES RUTAS SEGÚN TU BICI, CADA UNA DE UN COLOR (como Garmin con Carretera / Gravel / MTB):
@@ -6364,11 +6372,11 @@ async function discAlts(a,b){
   const w=[a,b];
   const one=async(p,x)=>(await mbList(w,p,x,false))[0];
   const tk={
-    road:one('driving','&exclude=motorway,unpaved,toll,ferry').catch(()=>one('cycling','')),
+    road:brRoute(w,['fastbike-lowtraffic','fastbike']).catch(()=>one('driving','&exclude=motorway,unpaved,toll,ferry')).catch(()=>one('cycling','')),
     gravel:brRoute(w,DISC_PROF.gravel).catch(()=>one('cycling','').then(r=>(r.mb=1,r))),
     mtb:brRoute(w,DISC_PROF.mtb).catch(()=>null)};
   const K=Object.keys(tk),V=await Promise.all(K.map(k=>tk[k].catch(()=>null)));
-  let out=[];V.forEach((r,i)=>{if(!r)return;const D=DISC[K[i]];r.disc=K[i];r.lbl=D.lbl;r.col=D.col;r.sub=r.mb?'Ruta en bici':D.sub;if(K[i]!=='road')r.nav=[a,...altNav(r),b];out.push(r)});
+  let out=[];V.forEach((r,i)=>{if(!r)return;const D=DISC[K[i]];r.disc=K[i];r.lbl=D.lbl;r.col=D.col;r.sub=r.mb?'Ruta en bici':(r.mix?mixTxt(r.mix,K[i]):D.sub);if(K[i]!=='road')r.nav=[a,...altNav(r),b];out.push(r)});
   const same=(r,o)=>overlapFrac(r,o)>0.92&&Math.abs(r.km-o.km)<0.5;
   out=out.filter((r,i)=>!out.slice(0,i).some(o=>same(r,o)));
   if(!out.some(r=>r.disc==='mtb')){try{const r=await one('cycling','');if(!out.some(o=>same(r,o))){const D=DISC.mtb;Object.assign(r,{disc:'mtb',lbl:D.lbl,col:D.col,sub:'Ruta en bici',nav:[a,...altNav(r),b]});out.push(r)}}catch(e){}}
