@@ -27,7 +27,16 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family
 .chip{flex:0 0 auto;background:rgba(19,32,58,.95);border:1px solid var(--line);color:var(--txt);border-radius:20px;padding:7px 12px;font-size:13px;cursor:pointer}
 .chip.on{background:var(--lime);color:#0B1426;border-color:var(--lime);font-weight:700}
 .panel{position:absolute;left:0;right:0;bottom:0;z-index:1000;background:rgba(11,20,38,.97);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:10px 12px calc(12px + env(safe-area-inset-bottom));max-height:55%;overflow-y:auto}
-.grip{width:40px;height:4px;background:var(--line);border-radius:3px;margin:0 auto 8px}
+.grip{width:44px;height:5px;background:#4A5F86;border-radius:3px;margin:0 auto 6px}
+#gripZone{cursor:pointer;padding:2px 0 6px;touch-action:none}
+#mini{display:none;text-align:center;font-size:14px;font-weight:700;color:var(--txt)}
+#mini small{display:block;font-weight:400;color:var(--mut);font-size:11px;margin-top:2px}
+.panel{transition:max-height .25s}
+.panel.min{max-height:76px;overflow:hidden}
+.panel.min #out,.panel.min .row{display:none}
+.panel.min #mini{display:block}
+#gripHint{font-size:11px;color:var(--mut);text-align:center;margin:-2px 0 4px}
+.panel.min #gripHint{display:none}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .st{background:var(--card);border-radius:12px;padding:8px 4px;text-align:center}
 .st .v{font-size:19px;font-weight:800;color:var(--txt)}
@@ -56,7 +65,7 @@ canvas{width:100%;height:80px;display:block;margin-top:6px;background:var(--card
 <div id="map"></div>
 
 <div class="top">
-  <div class="bar"><b>🚴 BRouter beta</b><span style="font-size:12px;color:var(--mut)">rutas bici OSM</span><a id="bBack" href="index.html" style="margin-left:auto;color:#E8EEF8;text-decoration:none;font-size:14px;font-weight:700;background:#13203A;border:1px solid #22355A;border-radius:10px;padding:5px 10px">✕ Volver</a><small id="ver" style="margin-left:6px">v1.1</small></div>
+  <div class="bar"><b>🚴 BRouter beta</b><span style="font-size:12px;color:var(--mut)">rutas bici OSM</span><a id="bBack" href="index.html" style="margin-left:auto;color:#E8EEF8;text-decoration:none;font-size:14px;font-weight:700;background:#13203A;border:1px solid #22355A;border-radius:10px;padding:5px 10px">✕ Volver</a><small id="ver" style="margin-left:6px">v1.2</small></div>
   <div class="search">
     <input id="q" placeholder="¿A dónde vas? (pueblo o dirección)" enterkeyhint="search">
     <button class="btn" id="bGo">🔍</button>
@@ -66,7 +75,7 @@ canvas{width:100%;height:80px;display:block;margin-top:6px;background:var(--card
 </div>
 
 <div class="panel" id="panel">
-  <div class="grip"></div>
+  <div id="gripZone"><div class="grip"></div><div id="gripHint">▼ desliza o toca aquí para ver más mapa</div><div id="mini">▲ Mostrar panel<small>toca o desliza hacia arriba</small></div></div>
   <div id="out">
     <div class="help">
       <b>Cómo probar:</b> toca el mapa para poner <b>salida</b> y <b>llegada</b> (cada toque más añade un punto de paso). Puedes arrastrar los puntos.<br>
@@ -96,17 +105,17 @@ canvas{width:100%;height:80px;display:block;margin-top:6px;background:var(--card
 'use strict';
 var SERVER='https://brouter.de/brouter';
 var PROFILES=[
-  {id:'fastbike-lowtraffic',n:'🛣️ Carretera tranquila'},
-  {id:'fastbike',n:'🏁 Carretera rápida'},
-  {id:'safety',n:'🛡️ Más segura'},
-  {id:'trekking',n:'🌾 Gravel / paseo'},
-  {id:'mtb-zossebart',n:'⛰️ MTB'},
-  {id:'shortest',n:'📏 Más corta'}
+  {id:'fastbike-lowtraffic',n:'🛣️ Carretera tranquila',p:['fastbike-lowtraffic','fastbike']},
+  {id:'fastbike',n:'🏁 Carretera rápida',p:['fastbike']},
+  {id:'safety',n:'🛡️ Más segura',p:['safety','trekking']},
+  {id:'trekking',n:'🌾 Gravel / paseo',p:['gravel','trekking']},
+  {id:'mtb',n:'⛰️ MTB',p:['mtb','mtb-zossebart','mtb-zossebart-hard','trekking']},
+  {id:'shortest',n:'📏 Más corta',p:['shortest']}
 ];
 var CMP=[
-  {id:'fastbike-lowtraffic',n:'Carretera',c:'#38BDF8'},
-  {id:'trekking',n:'Gravel',c:'#FDBA74'},
-  {id:'mtb-zossebart',n:'MTB',c:'#A3E635'}
+  {id:'fastbike-lowtraffic',n:'Carretera',c:'#38BDF8',p:['fastbike-lowtraffic','fastbike']},
+  {id:'trekking',n:'Gravel',c:'#FDBA74',p:['gravel','trekking']},
+  {id:'mtb',n:'MTB',c:'#A3E635',p:['mtb','mtb-zossebart','mtb-zossebart-hard','trekking']}
 ];
 var NOGO_R=200;
 
@@ -157,7 +166,7 @@ function addNogo(ll){
 $('bNogo').onclick=function(){
   nogoMode=!nogoMode;this.classList.toggle('on',nogoMode);
   this.textContent=nogoMode?'⛔ Tocando: zona 200 m (toca aquí para acabar)':'⛔ Zona prohibida';
-  if(nogoMode)setMsg('Toca el mapa donde quieras evitar el paso. Toca un círculo rojo para quitarlo.');
+  if(nogoMode){setMsg('Toca el mapa donde quieras evitar el paso. Toca un círculo rojo para quitarlo.');miniTxt='⛔ Modo zona prohibida';curtain(true);}
 };
 
 function lonlats(){return pts.map(function(p){return p.lng.toFixed(6)+','+p.lat.toFixed(6)}).join('|');}
@@ -168,6 +177,17 @@ function url(prof,fmt,a){
   return u;
 }
 
+/* v1.2 — CORTINA: bajar el panel para ver el mapa entero, subirlo para ver datos y botones */
+var panel=$('panel'),miniTxt='';
+function curtain(down){panel.classList.toggle('min',down);
+  $('mini').innerHTML='▲ '+(miniTxt||'Mostrar panel')+'<small>toca o desliza hacia arriba</small>';}
+(function(){var z=$('gripZone'),y0=null,moved=false;
+  z.addEventListener('touchstart',function(e){y0=e.touches[0].clientY;moved=false;},{passive:true});
+  z.addEventListener('touchmove',function(e){if(y0!==null&&Math.abs(e.touches[0].clientY-y0)>30)moved=true;},{passive:true});
+  z.addEventListener('touchend',function(e){if(y0===null)return;var dy=e.changedTouches[0].clientY-y0;y0=null;
+    if(dy>30)curtain(true);else if(dy<-30)curtain(false);else curtain(!panel.classList.contains('min'));e.preventDefault();});
+  z.addEventListener('click',function(){curtain(!panel.classList.contains('min'));});
+})();
 function setMsg(t,err){out.innerHTML='<div class="msg'+(err?' err':'')+'">'+t+'</div>';}
 
 function fetchRoute(prof,a){
@@ -179,12 +199,24 @@ function fetchRoute(prof,a){
   });
 }
 
+function profList(id){var x=PROFILES.filter(function(p){return p.id===id})[0];return x?x.p:[id];}
+/* v1.2 — si un perfil falla en el servidor (p. ej. Error 500), prueba el siguiente de la lista */
+function fetchChain(list,a){
+  var i=0,lastErr=null;
+  function next(){
+    if(i>=list.length)return Promise.reject(lastErr||new Error('sin ruta'));
+    var pr=list[i++];
+    return fetchRoute(pr,a).then(function(gj){gj._used=pr;return gj;},function(e){lastErr=e;return next();});
+  }
+  return next();
+}
 function niceErr(e){
   var m=String(e&&e.message||e);
   if(/not mapped|datafile/i.test(m))return 'Un punto está fuera de las zonas con datos. Muévelo a un camino o carretera.';
   if(/from-position|to-position|via-position/i.test(m))return 'No encuentro un camino cerca de algún punto. Acércalo a una carretera o pista.';
   if(/no track found|target island/i.test(m))return 'No hay ruta posible con este tipo. Prueba otro tipo o quita alguna zona prohibida.';
   if(/profile/i.test(m))return 'Este tipo de ruta no está disponible en el servidor ahora mismo. Prueba otro.';
+  if(/^Error 5\d\d$/.test(m))return 'El servidor BRouter no ha podido con esta ruta ahora mismo. Prueba otro tipo, mueve un punto o inténtalo en un minuto.';
   if(/Failed to fetch|NetworkError|Load failed/i.test(m))return 'Sin conexión con el servidor BRouter. Revisa internet y vuelve a intentarlo.';
   return 'No se pudo calcular: '+m.slice(0,140);
 }
@@ -240,7 +272,7 @@ function drawProfile(cv,coords){
 }
 
 function showOne(r,name){
-  var t=r.total||1;
+  var t=r.total||1;miniTxt=r.km.toFixed(1).replace('.',',')+' km · '+Math.round(r.up)+' m+ · '+fmtTime(r.time);if(panel.classList.contains('min'))curtain(true);
   out.innerHTML=
     '<div style="font-size:13px;color:var(--mut);margin-bottom:6px">'+name+(alt?' · alternativa '+alt:'')+'</div>'+
     '<div class="stats">'+
@@ -264,13 +296,14 @@ function calc(){
     if(pts.length===1)setMsg('Ahora toca dónde quieres llegar.');return;}
   var my=++reqId, name=PROFILES.filter(function(p){return p.id===profile})[0].n;
   setMsg('Calculando ruta '+name+'…');
-  fetchRoute(profile,alt).then(function(gj){
+  var list=profList(profile);
+  fetchChain(list,alt).then(function(gj){
     if(my!==reqId)return;
     if(routeLayer)map.removeLayer(routeLayer);
     var ll=gj.features[0].geometry.coordinates.map(function(c){return [c[1],c[0]]});
     routeLayer=L.polyline(ll,{color:'#A3E635',weight:6,opacity:.9}).addTo(map);
-    last={profile:profile,alt:alt};
-    showOne(analyse(gj),name);
+    last={profile:gj._used,alt:alt};
+    showOne(analyse(gj),name+(gj._used!==list[0]?' <span style="color:#FDBA74">(perfil '+gj._used+')</span>':''));
   }).catch(function(e){if(my!==reqId)return;setMsg(niceErr(e),true);});
 }
 
@@ -278,7 +311,7 @@ $('bCmp').onclick=function(){
   if(pts.length<2){setMsg('Pon primero salida y llegada en el mapa.',true);return;}
   var my=++reqId;clearCmp();if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
   setMsg('Calculando Carretera, Gravel y MTB…');
-  Promise.all(CMP.map(function(c){return fetchRoute(c.id,0).then(analyse).catch(function(e){return {err:niceErr(e)};});})).then(function(rs){
+  Promise.all(CMP.map(function(c){return fetchChain(c.p,0).then(analyse).catch(function(e){return {err:niceErr(e)};});})).then(function(rs){
     if(my!==reqId)return;
     var html='<div style="font-size:13px;color:var(--mut)">Toca una para elegirla</div><div class="cmp">';
     var minUp=Infinity;rs.forEach(function(r){if(!r.err&&r.up<minUp)minUp=r.up;});
