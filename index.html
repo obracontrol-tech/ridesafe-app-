@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.102.0 — 🌿 Mapas sin conexión: «Descargar mi zona» (10 km) se cambia por «Organic Maps» (comunidades enteras sin conexión y navegación sin cobertura, gratis). Sigue «Descargar un pueblo o comarca». */
 /* v5.101.0 — ⛔ Nuevo botón «Ruta evitando zonas» (BETA) en «¿Qué quieres hacer?»: abre el planificador BRouter con zonas prohibidas y la ruta vuelve sola a la app. */
 /* v5.100.0 — 🛣️ Ruta de Carretera calculada con BRouter (perfil bici «poco tráfico»: evita nacionales con muchos coches). Si BRouter no responde, se usa la de antes. Cada ruta (Carretera, Gravel, MTB) muestra su % de asfalto, tierra y tráfico. */
 /* v5.99.1 — 🔊 Las respuestas largas ya no se cortan: el micrófono no se vuelve a abrir hasta que la app termina de hablar del todo (antes se abría entre trozo y trozo de la voz y Android cortaba el resto). */
@@ -1456,7 +1457,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.101.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.102.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -4828,10 +4829,31 @@ async function saveTownOffline(){
     saveOffline(t,name);
   }catch(e){toast('Sin conexión para buscar el pueblo')}
 }
+/* v5.102.0 — 🌿 ORGANIC MAPS (gratis, código abierto, sin anuncios): mapas sin conexión de comunidades enteras y navegación sin cobertura.
+   Sustituye al botón «Descargar mi zona» (10 km). RideSafe abre Organic Maps en tu posición; si no la tienes, te lleva a instalarla. */
+function omOpen(){const old=document.getElementById('omDlg');if(old)old.remove();
+  const ios=(()=>{try{return rsIOS()}catch(e){return /iPhone|iPad|iPod/.test(navigator.userAgent)}})();
+  const store=ios?'https://apps.apple.com/app/organic-maps/id1567437057':'https://play.google.com/store/apps/details?id=app.organicmaps';
+  let ll=null;try{ll=hereLL()}catch(e){}const ok=ll&&isFinite(+ll[0])&&isFinite(+ll[1])&&(+ll[0]||+ll[1]);
+  const lat=ok?(+ll[0]).toFixed(5):'41.61759',lon=ok?(+ll[1]).toFixed(5):'0.62001';
+  const openUrl=ios?'om://map?v=1&ll='+lat+','+lon+'&n=RideSafe':'intent:'+lat+','+lon+'#Intent;scheme=geo;package=app.organicmaps;S.browser_fallback_url='+encodeURIComponent(store)+';end';
+  const d=document.createElement('div');d.id='omDlg';d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(3,8,16,.5);display:flex;align-items:flex-end;justify-content:center;padding:12px';
+  const B='display:block;width:100%;text-align:center;border-radius:14px;padding:14px;margin-top:10px;font-weight:800;font-size:16px;text-decoration:none;font-family:inherit;cursor:pointer';
+  d.innerHTML=`<div style="background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:22px;width:100%;max-width:480px;padding:18px 16px 16px;max-height:88vh;overflow:auto">
+   <div style="font-weight:800;font-size:19px">🌿 Organic Maps</div>
+   <div style="color:var(--txt2);font-size:14.5px;margin-top:6px;line-height:1.5">App <b>gratuita</b>, sin anuncios y de código abierto. Descargas tu comunidad entera <b>una sola vez</b> y tienes mapa y navegación en bici <b>sin cobertura</b> (montaña, pueblos sin señal).</div>
+   <ol style="margin:12px 0 4px;padding-left:20px;line-height:1.55;font-size:14.5px;color:var(--txt)">
+    <li>Instálala (si ya la tienes, sáltate este paso).</li>
+    <li>Ábrela y descarga tu zona: <b>Menú ☰ › Descargar mapas</b> (por ejemplo, Cataluña). Mejor con WiFi.</li>
+    <li>Para llevar una ruta de RideSafe: guarda el <b>GPX</b> de la ruta y ábrelo con <b>Organic Maps</b>.</li></ol>
+   <a href="${store}" target="_blank" rel="noopener" style="${B};background:transparent;color:var(--txt);border:1.5px solid var(--line)">⬇️ Instalar Organic Maps</a>
+   <a href="${openUrl}" style="${B};background:#16A34A;color:#fff;border:0">🌿 Abrir mi zona en Organic Maps</a>
+   <button data-x style="${B};background:transparent;color:var(--txt2);border:0;font-weight:600">Cerrar</button></div>`;
+  d.onclick=e=>{if(e.target===d||e.target.closest('[data-x]'))d.remove()};document.body.appendChild(d)}
 function renderOffmaps(){
   const el=$('offBox');if(!el)return;const l=store.get('offmaps',[]);
   const btns=`<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
-     <button class="li" onclick="saveHereOffline()"><span class="em">📍</span><div><b>Descargar mi zona</b><small>10 km alrededor de donde estás</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+     <button class="li" onclick="omOpen()"><span class="em">🌿</span><div><b>Organic Maps · sin conexión total</b><small>Toda tu comunidad sin cobertura y navegación GPS · gratis</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
      <button class="li" onclick="saveTownOffline()"><span class="em">🔎</span><div><b>Descargar un pueblo o comarca</b><small>Escribe el nombre (ej. Marchena, Lleida)</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
   el.innerHTML=btns+(l.length?l.slice(0,6).map(m=>`<div class="li" style="cursor:default;margin-bottom:8px"><span class="em">✅</span><div><b>${esc(m.label)}</b><small>Guardado ${fmtDate(m.date)} · ${m.mb} MB · funciona sin conexión</small></div></div>`).join('')+
     `<button class="mini" style="width:100%;justify-content:center;color:var(--red)" onclick="clearOffmaps()">🗑️ Borrar todos los mapas guardados</button>`
