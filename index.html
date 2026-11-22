@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.104.0 — 📡 Radar trasero en ruta: el botón del radar ocupa el sitio de la brújula; la brújula pasa al menú ⋯ (con música y cambiar de ruta). */
 /* v5.103.0 — 📡 Nuevo botón «Radar trasero» (BETA) en «¿Qué quieres hacer?»: abre radar-beta.html (Bluetooth compatible Garmin + simulación). */
 /* v5.102.0 — 🌿 Mapas sin conexión: «Descargar mi zona» (10 km) se cambia por «Organic Maps» (comunidades enteras sin conexión y navegación sin cobertura, gratis). Sigue «Descargar un pueblo o comarca». */
 /* v5.101.0 — ⛔ Nuevo botón «Ruta evitando zonas» (BETA) en «¿Qué quieres hacer?»: abre el planificador BRouter con zonas prohibidas y la ruta vuelve sola a la app. */
@@ -1202,7 +1203,7 @@ button,.btn,.li,.chip,.mini,.lvcatch,[onclick]{touch-action:manipulation;-webkit
   <div class="lvshow" id="lvShow"><button type="button" class="lvaway lvaway2" onclick="liveAway(true)" aria-label="Ver la app sin parar la grabación">‹ App</button><button type="button" class="lvup" onclick="lvMin(false)" aria-label="Subir los datos">⌃ <b id="lvMinSp">0</b> km/h · Ver datos</button><button type="button" class="lvsosm" onclick="sos()">SOS</button></div>
   <div class="lv lvpanel">
     <div class="lvhandle" onclick="lvMin(true)" role="button" aria-label="Bajar los datos para ver solo el mapa"><i></i></div>
-    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><button type="button" class="lvaway lvaway1" onclick="liveAway(true)" aria-label="Ver la app sin parar la grabación">‹ Ver la app</button><button type="button" id="vcChip" onclick="vozSet(false)" aria-label="Escuchando órdenes por voz (toca para apagar)" style="display:none;align-items:center;justify-content:center;position:absolute;left:0;bottom:calc(100% + 8px);z-index:3;width:auto;height:34px;padding:0 12px;gap:6px;color:#fff;font:800 13px 'Plus Jakarta Sans',system-ui,sans-serif;border-radius:99px;border:2px solid #fff;background:#16A34A;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎙️ Te escucho</button><div class="lvside"><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="vozSet(!vcOn())" id="lvVozBtn" class="vzSw" aria-label="Órdenes por voz: encender o apagar"><span class="vzK"></span><b>🎙️ Voz encendida</b></button><button onclick="liveChangeRoute()" id="lvRouteBtn" aria-label="Cambiar de ruta sin perder km ni tiempo">🔀</button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button></div></div></div>
+    <div class="lvtop"><span class="lvstate" id="lvState">● GRABANDO</span><button type="button" class="lvaway lvaway1" onclick="liveAway(true)" aria-label="Ver la app sin parar la grabación">‹ Ver la app</button><button type="button" id="vcChip" onclick="vozSet(false)" aria-label="Escuchando órdenes por voz (toca para apagar)" style="display:none;align-items:center;justify-content:center;position:absolute;left:0;bottom:calc(100% + 8px);z-index:3;width:auto;height:34px;padding:0 12px;gap:6px;color:#fff;font:800 13px 'Plus Jakarta Sans',system-ui,sans-serif;border-radius:99px;border:2px solid #fff;background:#16A34A;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎙️ Te escucho</button><div class="lvside"><button id="rdBtn" class="rdb" onclick="rdTap()" aria-label="Radar trasero: conectar el radar"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="15" width="6" height="7" rx="1.5" fill="currentColor"/><path d="M7.5 11.5a6.5 6.5 0 0 1 9 0"/><path d="M4.5 8a11 11 0 0 1 15 0"/></svg></button><button onclick="toggleVoice()" id="lvVoice" aria-label="Voz">🔊</button><button onclick="toggleFollow()" aria-label="Centrar en mí"><svg class="i" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8-8-2z"/></svg></button><button class="lvmore" onclick="lvSideMore()" aria-label="Más: capas, compartir con la familia y música">⋯</button><div class="lvpop"><button onclick="vozSet(!vcOn())" id="lvVozBtn" class="vzSw" aria-label="Órdenes por voz: encender o apagar"><span class="vzK"></span><b>🎙️ Voz encendida</b></button><button onclick="liveChangeRoute()" id="lvRouteBtn" aria-label="Cambiar de ruta sin perder km ni tiempo">🔀</button><button onclick="toggleLayer()" aria-label="Capas"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button onclick="shareLive()" id="lvShare" aria-label="Compartir en vivo con la familia">📡</button><button id="lvMusBtn" onclick="musResume()" aria-label="Volver a poner la música (abre Spotify)">🎵</button><button class="cmpb" onclick="compassTap()" aria-label="Brújula"><svg viewBox="0 0 40 40" class="cmpNd"><circle cx="20" cy="20" r="18" fill="rgba(0,0,0,.18)" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><text x="20" y="7.6" font-size="6.4" font-weight="900" text-anchor="middle" fill="#EF4444" font-family="sans-serif">N</text><text x="34.2" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">E</text><text x="20" y="37" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">S</text><text x="5.8" y="22.2" font-size="5" font-weight="800" text-anchor="middle" fill="currentColor" font-family="sans-serif">O</text><path d="M20 9 L24.5 20 L15.5 20 Z" fill="#EF4444"/><path d="M20 31 L15.5 20 L24.5 20 Z" fill="#CBD5E1"/><circle cx="20" cy="20" r="2" fill="#0E1A2B"/></svg></button></div></div></div>
     <div class="lvstats">
     <div class="lvbig"><b class="num" id="lvSpeed">0</b><span>km/h</span></div>
     <div class="lvgrid" onclick="sumSay()" title="Toca para oír el resumen" style="cursor:pointer"><div><b class="num" id="lvKm">0.00</b><span>km</span></div><div><b class="num" id="lvTime">0:00:00</b><span>tiempo</span></div><div><b class="num" id="lvAlt">—</b><span>m altitud</span></div></div>
@@ -1458,7 +1459,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.103.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.104.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -12037,6 +12038,71 @@ window.vcMicTest=function(){
   try{history.replaceState(null,'',location.pathname)}catch(e){}if(!t)return;
   setTimeout(function(){var inp=document.getElementById('fileIn');if(!inp||!inp.onchange)return;try{if(typeof go==='function')go('actividades')}catch(e){}
     inp.onchange({target:{files:[new File([t],'ruta-evitando-zonas.gpx',{type:'application/gpx+xml'})],value:''}})},1500)}catch(e){}})();
+</script>
+<style>
+/* RADAR — botón y barra del radar trasero en ruta */
+.lvside button.rdb{color:#CBD5E1}
+.lvside button.rdb.rd-ok{background:#16A34A!important;border-color:#16A34A!important;color:#fff}
+.lvside button.rdb.rd-warn{background:#F97316!important;border-color:#F97316!important;color:#fff}
+.lvside button.rdb.rd-dng{background:#DC2626!important;border-color:#DC2626!important;color:#fff;animation:rdPulse .6s infinite alternate}
+.lvside button.rdb.rd-wait{background:#64748B!important;color:#fff}
+@keyframes rdPulse{to{transform:scale(1.08)}}
+#rdStrip{position:absolute;right:8px;top:90px;bottom:110px;width:38px;border-radius:19px;background:rgba(22,163,74,.82);border:3px solid #fff;z-index:6;display:none;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:background .3s}
+#rdStrip.warn{background:rgba(249,115,22,.88)}#rdStrip.dng{background:rgba(220,38,38,.92)}
+#rdStrip .rdme{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:18px}
+#rdStrip .rdc{position:absolute;left:50%;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:14px;transition:top .35s linear;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#rdStrip .rdd{position:absolute;top:4px;left:0;right:0;text-align:center;font:900 11px system-ui,sans-serif;color:#fff}
+</style>
+<script>
+/* v5.104.0 — 📡 RADAR TRASERO EN RUTA (Coospo TR70, Garmin Varia y radares compatibles Garmin por Bluetooth).
+   El botón del radar ocupa el sitio de la brújula (la brújula pasa al menú ⋯). Verde = vía libre, naranja = viene un vehículo,
+   rojo = a menos de 30 m. Barra vertical sobre el mapa con los coches, pitido y aviso por voz. Solo Android con Chrome. */
+(function(){
+  var SVC='6a4e3200-667b-11e3-949a-0800200c9a66',CHR='6a4e3203-667b-11e3-949a-0800200c9a66',MAXD=140,NEAR=30;
+  var R={dev:null,on:false,want:false,cars:{},seen:{},retry:0,ac:null,last:0};
+  function btn(){return document.getElementById('rdBtn')}
+  function tst(t,ms){try{toast(t,ms)}catch(e){}}
+  function beep(f,ms){try{R.ac=R.ac||new (window.AudioContext||window.webkitAudioContext)();var o=R.ac.createOscillator(),g=R.ac.createGain();
+    o.frequency.value=f;o.connect(g);g.connect(R.ac.destination);g.gain.setValueAtTime(.3,R.ac.currentTime);o.start();o.stop(R.ac.currentTime+ms/1000)}catch(e){}}
+  function talk(t){try{if(typeof live!=='undefined'&&live&&live.voice&&typeof speak==='function')speak(t)}catch(e){}}
+  function strip(){var s=document.getElementById('rdStrip');if(s)return s;
+    var host=null;try{host=map&&map.getContainer&&map.getContainer()}catch(e){}if(!host)return null;
+    s=document.createElement('div');s.id='rdStrip';s.innerHTML='<span class="rdd"></span><span class="rdme">🚴</span>';host.appendChild(s);return s}
+  function state(c){var b=btn();if(!b)return;b.classList.remove('rd-ok','rd-warn','rd-dng','rd-wait');if(c)b.classList.add(c)}
+  function draw(list){
+    var s=strip();if(!s)return;s.style.display=R.on?'block':'none';
+    var h=s.clientHeight-34,seen={};
+    list.forEach(function(t){seen[t.id]=1;var el=R.cars[t.id];
+      if(!el){el=document.createElement('div');el.className='rdc';el.textContent='🚗';s.appendChild(el);R.cars[t.id]=el;
+        if(!R.seen[t.id]||Date.now()-R.seen[t.id]>8000){var d=t.d<NEAR;beep(d?1250:900,130);setTimeout(function(){beep(d?1250:900,130)},190);
+          try{navigator.vibrate&&navigator.vibrate(d?[200,80,200]:150)}catch(e){}
+          if(Date.now()-R.last>5000){R.last=Date.now();talk(d?'Atención, vehículo muy cerca':'Vehículo detrás')}}}
+      R.seen[t.id]=Date.now();el.style.top=(22+h*(1-Math.max(0,Math.min(1,t.d/MAXD))))+'px';el.style.background=t.d<NEAR?'#FCA5A5':'#fff'});
+    Object.keys(R.cars).forEach(function(id){if(!seen[id]){R.cars[id].remove();delete R.cars[id]}});
+    var n=list.length,min=n?Math.min.apply(null,list.map(function(t){return t.d})):0;
+    s.className=n?(min<NEAR?'dng':'warn'):'';s.querySelector('.rdd').textContent=n?Math.round(min)+'m':'';
+    state(!R.on?null:n?(min<NEAR?'rd-dng':'rd-warn'):'rd-ok')}
+  function onData(ev){var v=ev.target.value,b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
+    var list=[];if(b.length>=4)for(var k=1;k+2<b.length;k+=3){if(b[k+1]>0)list.push({id:'r'+b[k],d:b[k+1]})}draw(list)}
+  async function link(){
+    var srv=await R.dev.gatt.connect();var sv=await srv.getPrimaryService(SVC);var ch=await sv.getCharacteristic(CHR);
+    ch.addEventListener('characteristicvaluechanged',onData);await ch.startNotifications();R.on=true;R.retry=0;draw([])}
+  function onDisc(){R.on=false;draw([]);var s=document.getElementById('rdStrip');if(s)s.style.display='none';
+    if(!R.want){state(null);return}
+    state('rd-wait');beep(420,350);talk('Radar desconectado');
+    if(R.retry<5){R.retry++;setTimeout(function(){if(!R.want)return;link().then(function(){tst('📡 Radar reconectado');talk('Radar conectado')}).catch(function(){onDisc()})},2500)}
+    else{state(null);R.want=false;tst('📡 Se perdió el radar. Toca el botón para conectarlo otra vez',5000)}}
+  window.rdTap=async function(){
+    if(R.on||R.want&&R.dev){if(confirm('¿Desconectar el radar trasero?')){R.want=false;try{R.dev.gatt.disconnect()}catch(e){}R.on=false;draw([]);state(null);tst('📡 Radar desconectado')}return}
+    if(!navigator.bluetooth){tst('📡 El radar por Bluetooth solo funciona en Android con Chrome',5000);return}
+    try{state('rd-wait');tst('Elige tu radar en la lista (p. ej. TR70). Cierra antes la app del radar y desconéctalo del Garmin',6000);
+      R.dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,'battery_service']});
+      R.dev.addEventListener('gattserverdisconnected',onDisc);R.want=true;await link();
+      var bt='';try{var bs=await R.dev.gatt.getPrimaryService('battery_service');var bv=await (await bs.getCharacteristic('battery_level')).readValue();bt=' · batería '+bv.getUint8(0)+'%'}catch(e){}
+      tst('📡 Radar conectado'+bt,4000);talk('Radar conectado');beep(990,120)}
+    catch(e){R.want=false;state(null);if(e&&e.name==='NotFoundError')return;
+      tst(/6a4e3200|No Services|service/i.test(String(e&&e.message))?'📡 Este aparato no envía datos de radar compatibles Garmin por Bluetooth':'📡 No conecta. Cierra la app del radar, desenlázalo del Garmin y prueba otra vez',6000)}};
+})();
 </script>
 </body>
 </html>
