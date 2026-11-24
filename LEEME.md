@@ -1,3 +1,7 @@
+## Asistente RideSafe v1.9 — 📘 Libro recomendado
+- Arriba del todo en el Asistente: tarjeta con la portada de «Mecánica de Bicis Ilustrada» y el botón «Ver el libro ›», que abre la página del libro (https://mecanica-de-bicis-es.crearis.online/). No se enlaza la página de descarga del comprador ni se sube el PDF.
+- Archivos: asistente.html e img/guia/libro-portada.jpg.
+
 ## Asistente RideSafe v1.8 — 🚲 Las partes de la bici
 - Nueva tarjeta «🚲 Las partes de la bici» al principio del Asistente: dibujo propio de una bici con 24 partes señaladas (img/guia/partes.svg; al tocarlo se amplía) y las palabras del mecánico de la A a la Z (48 palabras, explicadas con palabras propias) con buscador.
 - El glosario también va en la guía del Asistente: si preguntan «¿qué es la tija?» o «¿cómo se llama…?», responde con esas explicaciones.

@@ -55,6 +55,10 @@ main{padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px;min-heigh
 .ilusA{display:block;margin-top:10px;width:100%;max-width:420px;border-radius:14px;border:1px solid var(--line);cursor:zoom-in}
 #ilusOv{position:fixed;inset:0;z-index:9999;background:rgba(5,10,20,.92);display:none;align-items:center;justify-content:center;padding:14px;flex-direction:column;gap:10px}
 #ilusOv.on{display:flex}#ilusOv img{width:100%;max-width:720px;border-radius:16px}#ilusOv button{background:var(--lime);color:var(--on-lime);border:0;border-radius:12px;font:inherit;font-weight:800;font-size:15px;padding:10px 22px}
+.libro{display:flex;gap:12px;align-items:center;background:#FFF8EC;border-radius:16px;padding:10px;margin:0 0 14px;text-decoration:none;color:#14233A}
+.libro img{width:78px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.25);flex-shrink:0}
+.libro b{display:block;font-size:15.5px;color:#14233A}.libro small{display:block;font-size:12px;color:#475569;margin:3px 0 8px}
+.libro span{display:inline-block;background:#1F8A4C;color:#fff;font-weight:800;font-size:13px;border-radius:10px;padding:7px 12px}
 .partes{display:flex;align-items:center;gap:12px;width:100%;margin:6px 0 10px;background:var(--card2);border:1.5px solid #FDBA74;border-radius:16px;padding:10px 12px;color:var(--txt);font:inherit;text-align:left;cursor:pointer}
 .partes b{display:block;font-size:14.5px}.partes small{color:var(--txt2);font-size:12px}.partes span{font-size:28px}
 #glosOv{position:fixed;inset:0;z-index:9998;background:var(--bg);display:none;flex-direction:column}
@@ -137,6 +141,8 @@ textarea:focus{border-color:var(--lime)}
 
 <main id="chat">
   <div class="hello" id="hello">
+    <!-- v1.9 — 📘 Libro recomendado (enlace a la página del libro) -->
+    <a class="libro" href="https://mecanica-de-bicis-es.crearis.online/" target="_blank" rel="noopener"><img src="img/guia/libro-portada.jpg" alt="Portada del libro Mecánica de Bicis Ilustrada"><div><b>📘 Mecánica de Bicis Ilustrada</b><small>Del pinchazo al taller: ruedas, transmisión, frenos y e-bike. El libro que recomendamos.</small><span>Ver el libro ›</span></div></a>
     <h2>Hola, ¿en qué te ayudo?</h2>
     <p>Pregunta por escrito, con el micrófono o con una foto 📷: ciclismo, averías de la bici, dónde comer o parar, qué ver cerca o dudas generales de salud.</p>
     <div class="chips" id="chips"></div>
