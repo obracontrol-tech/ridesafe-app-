@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.57.0 — 🥐 «Parar aquí a desayunar»: en las paradas de la ruta (o tocando el 🥐 del mapa) se añade el bar como parada y la ruta se recalcula pasando por él. */
 /* v1.56.0 — 🥐 Los bares de «Esmorzars ciclistes» salen en las paradas de la ruta planificada (🥐 con su nota ⭐, hasta 1 km del recorrido). */
 /* v1.55.1 — 🥐 Esmorzars: mantén pulsado sobre un bar del mapa y la propuesta se rellena sola (nombre, pueblo y horario). */
 /* v1.55.0 — 🥐 Nuevo: «Esmorzars ciclistes» (bares para desayunar en ruta, provincia de Lleida). Todos los bares del mapa, ranking por estrellas y opiniones de los ciclistas que aprueba el administrador. En Inicio y en la taza ☕. */
@@ -421,6 +422,8 @@ textarea.inp{padding:14px 16px;min-height:80px;resize:vertical}
 .stp{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:6px 0;background:var(--card)}
 .stp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.stp-chips button{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:16px;padding:5px 10px;font-size:13px;font-weight:700}
 .stp-chips button.on{border-color:var(--lime);color:var(--lime)}
+.esm-add{display:block;width:100%;min-height:42px;margin:0 0 8px;border-radius:12px;border:1.5px solid #FDBA74;background:transparent;color:#FDBA74;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer}
+.esm-in{font-size:13px;font-weight:800;color:var(--lime);margin:0 0 8px 2px}
 .stp-li{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:8px 2px;color:var(--txt);font-family:inherit}
 .stp-li .k{min-width:52px;font-weight:900;color:var(--lime);font-size:13px}.stp-li b{font-size:14px;display:block}.stp-li small{color:var(--txt2);font-size:12px}
 .stp-warn{background:rgba(249,115,22,.14);border:1px solid #F97316;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:6px}
@@ -1297,7 +1300,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.56.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.57.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -3797,7 +3800,7 @@ function notifyChange(id){
 function downloadGPX(coords,name,prof,quiet){
   if(!coords||coords.length<2){toast('No hay ruta para exportar');return}
   const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RideSafe IA" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(name)}</name></metadata>\n${esmWpts(coords,x)}<trk><name>${x(name)}</name><trkseg>\n`+(()=>{const E=gpxEles(coords,prof);return coords.map((p,i)=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${E[i]!=null?`<ele>${E[i].toFixed(1)}</ele>`:''}</trkpt>`).join('\n')})()+`\n</trkseg></trk>\n</gpx>`;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
   const fn=(String(name).replace(/[^\wáéíóúñÁÉÍÓÚÑàèìòùÀÈÌÒÙçÇïüÏÜ -]/g,'').trim().replace(/\s+/g,'_')||'ruta')+'.gpx';
   a.download=fn;document.body.appendChild(a);a.click();a.remove();try{window.__lastGpx={fn,gpx}}catch(e){}
@@ -6456,7 +6459,32 @@ function stopsHTML(r){
   const warn=(r.stopsGaps||[]).map(g=>`<div class="stp-warn">⚠️ <b>${Math.round(g.len)} km sin agua ni sitios para comprar</b> (del km ${Math.round(g.a)} al ${Math.round(g.b)}). Lleva agua extra.</div>`).join('');
   const on=store.get('stopsOn',true);
   return `<div class="stp"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">☕ Paradas en la ruta</b><button class="mini" style="min-height:36px;padding:0 12px" onclick="stopsSet(${on?'false':'true'})">${on?'🙈 Quitar del mapa':'👁️ Ver en el mapa'}</button></div><small style="display:block;color:var(--txt2)">A menos de 300 m del recorrido (🥐 bares para desayunar, hasta 1 km) · toca una para verla</small>${warn}
-   ${L.length?`<div class="stp-chips">${chips}</div>${vis.map(s=>{const i=L.indexOf(s);const c=STOP_T[s.t];return `<button class="stp-li" onclick="goStop(${i})"><span class="k">km ${s.km<10?s.km.toFixed(1).replace('.',','):Math.round(s.km)}</span><span style="font-size:20px">${c[0]}</span><span style="flex:1;min-width:0"><b>${esc(s.n||c[1])}</b><small>${s.t==='esm'?(s.rn?'⭐ '+s.ra.toFixed(1).replace('.',',')+' ('+s.rn+') · ':'')+(s.pb?esc(s.pb)+' · ':'')+(s.g?'👥 grupetas · ':''):c[1]+' · '}a ${s.off>=1?s.off.toFixed(1).replace('.',',')+' km':Math.max(10,Math.round(s.off*1000/10)*10)+' m'} de la ruta</small></span></button>`}).join('')}`:'<small style="display:block;margin-top:6px">No hay paradas conocidas cerca de esta ruta. Lleva agua y comida suficiente.</small>'}</div>`;
+   ${L.length?`<div class="stp-chips">${chips}</div>${vis.map(s=>{const i=L.indexOf(s);const c=STOP_T[s.t];return `<button class="stp-li" onclick="goStop(${i})"><span class="k">km ${s.km<10?s.km.toFixed(1).replace('.',','):Math.round(s.km)}</span><span style="font-size:20px">${c[0]}</span><span style="flex:1;min-width:0"><b>${esc(s.n||c[1])}</b><small>${s.t==='esm'?(s.rn?'⭐ '+s.ra.toFixed(1).replace('.',',')+' ('+s.rn+') · ':'')+(s.pb?esc(s.pb)+' · ':'')+(s.g?'👥 grupetas · ':''):c[1]+' · '}a ${s.off>=1?s.off.toFixed(1).replace('.',',')+' km':Math.max(10,Math.round(s.off*1000/10)*10)+' m'} de la ruta</small></span></button>${s.t==='esm'?(esmInRoute(s)?`<div class="esm-in">✅ Parada para desayunar en tu ruta</div>`:`<button class="esm-add" onclick="esmAddToRoute(${i})">🥐 Parar aquí a desayunar</button>`):''}`}).join('')}`:'<small style="display:block;margin-top:6px">No hay paradas conocidas cerca de esta ruta. Lleva agua y comida suficiente.</small>'}</div>`;
+}
+/* v1.57.0 — 🥐 «Parar a desayunar»: un bar de Esmorzars de las paradas se añade a la ruta como punto de paso (se recalcula pasando por él) */
+/* Las paradas 🥐 van también en el GPX como puntos (el Garmin las enseña con su nombre) */
+function esmWpts(coords,x){try{if(!plan||!plan.route||plan.route.coords!==coords)return '';return plan.stops.filter(p=>/^🥐/.test(p.label||'')).map(p=>`<wpt lat="${(+p.lat).toFixed(6)}" lon="${(+p.lng).toFixed(6)}"><name>${x(String(p.label).replace(/^🥐\s*/,'Esmorzar: '))}</name><sym>Restaurant</sym></wpt>\n`).join('')}catch(e){return ''}}
+function esmInRoute(s){return plan.stops.some(p=>hav([p.lat,p.lng],[s.lat,s.lng])<0.06)}
+function esmAddToRoute(i){
+  const s=plan.route&&plan.route.stopsList&&plan.route.stopsList[i];if(!s)return;
+  if(plan.view){toast('Esta ruta es para ver. Para añadir paradas, planifícala de nuevo o pulsa «Editar»');return}
+  if(plan.mode==='loop'||!plan.start||!plan.dest){toast('En la ruta circular no se pueden añadir paradas. Usa «De A a B» o «Dibujar ruta»',4500);return}
+  if(esmInRoute(s)){toast('🥐 Ya está en la ruta');return}
+  if(plan.stops.length>=20){toast('Máximo 20 paradas');return}
+  const p={lat:s.lat,lng:s.lng,label:'🥐 '+String(s.n||'Esmorzar').slice(0,55)};
+  if(plan.mode==='draw'&&typeof drawSg==='function')p.sg=drawSg();
+  const w=planWps();let best=0,bd=1e9;
+  for(let k=0;k<w.length-1;k++){const d=hav([w[k].lat,w[k].lng],[p.lat,p.lng])+hav([p.lat,p.lng],[w[k+1].lat,w[k+1].lng])-hav([w[k].lat,w[k].lng],[w[k+1].lat,w[k+1].lng]);if(d<bd){bd=d;best=k}}
+  plan.stops.splice(best,0,p);vib(30);
+  redrawPlanMarkers();renderPlan();computeRoute();
+  toast('🥐 Parada para desayunar añadida: '+(s.n||'bar')+'. La ruta pasa por ahí',4000);
+}
+async function esmStopTap(i){
+  const s=plan.route&&plan.route.stopsList&&plan.route.stopsList[i];if(!s)return;
+  const inR=esmInRoute(s);
+  const o=[[inR?'✅ Ya está en la ruta':'🥐 Parar aquí a desayunar (añadir a la ruta)','','add'],['⭐ Ver opiniones y ficha del bar','','see']];
+  const k=await askChoice('🥐 '+(s.n||'Esmorzar')+(s.rn?' · ⭐ '+s.ra.toFixed(1).replace('.',','):''),o);if(k<0)return;
+  if(o[k][2]==='add'){if(!inR)esmAddToRoute(i)}else esmOpen();
 }
 function goStop(i){const s=plan.route&&plan.route.stopsList&&plan.route.stopsList[i];if(!s||!map)return;map.flyTo({center:[s.lng,s.lat],zoom:16,duration:700});vib(20)}
 /* v5.11.1 — Botón para quitar o volver a poner en el mapa las fuentes, bares y farmacias de la ruta */
@@ -6464,7 +6492,7 @@ function stopsSet(on){store.set('stopsOn',!!on);drawStops();renderPlan();toast(o
 function drawStops(){
   stopsClear();const r=plan.route;if(!map||!r||!r.stopsList||!store.get('stopsOn',true))return;
   r.stopsList.forEach((s,i)=>{if(stopFilter!=='all'&&s.t!==stopFilter)return;const el=document.createElement('div');el.className='stpm'+(s.t==='esm'?' esm':'');el.textContent=STOP_T[s.t][0];el.title=s.n||STOP_T[s.t][1];
-    el.onclick=e=>{e.stopPropagation();toast(`${STOP_T[s.t][0]} ${s.n||STOP_T[s.t][1]} · km ${Math.round(s.km)}`)};
+    el.onclick=e=>{e.stopPropagation();if(s.t==='esm'){esmStopTap(i);return}toast(`${STOP_T[s.t][0]} ${s.n||STOP_T[s.t][1]} · km ${Math.round(s.km)}`)};
     stopMk.push(new maplibregl.Marker({element:el}).setLngLat([s.lng,s.lat]).addTo(map))});
 }
 function osmType(t){if(t.amenity==='drinking_water'||t.man_made==='water_tap'||t.natural==='spring'&&t.drinking_water==='yes')return'agua';if(t.amenity==='pharmacy')return'farm';

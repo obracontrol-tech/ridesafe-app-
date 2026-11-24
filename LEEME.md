@@ -1,3 +1,11 @@
+## Versión 5.107.0 (Simple 1.57.0) — 🥐 Parar a desayunar en la ruta
+- En «☕ Paradas en la ruta», cada bar de Esmorzars (🥐) tiene el botón «🥐 Parar aquí a desayunar»: el bar se añade como parada y la ruta se recalcula pasando por él.
+- También tocando la marca 🥐 del mapa: «Parar aquí a desayunar» o «Ver opiniones y ficha del bar».
+- La parada queda con el nombre «🥐 nombre del bar», así sale en la ruta guardada, en la salida que crees con ella y cuando la compartes con el club o la envías al Garmin.
+- En el GPX (descargar o enviar al Garmin) cada parada 🥐 va como punto con el nombre «Esmorzar: bar»; el Garmin la enseña en el mapa.
+- Funciona en rutas «De A a B» y «Dibujar ruta». En la ruta circular no se pueden añadir paradas (avisa).
+- Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.106.0 (Simple 1.56.0) — 🥐 Esmorzars en la ruta planificada
 - Al planificar una ruta, en «☕ Paradas en la ruta» salen también los bares de «Esmorzars ciclistes» (los de la lista y los aprobados en la consola) que queden a menos de 1 km del recorrido.
 - Salen con 🥐 (marca naranja más grande en el mapa), el km de la ruta, su nota ⭐ y número de opiniones, el pueblo y si va bien para grupetas. Hay un filtro «🥐» para ver solo esos.
