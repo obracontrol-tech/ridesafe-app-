@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.55.0 — 🥐 Nuevo: «Esmorzars ciclistes» (bares para desayunar en ruta, provincia de Lleida). Todos los bares del mapa, ranking por estrellas y opiniones de los ciclistas que aprueba el administrador. En Inicio y en la taza ☕. */
 /* v1.54.0 — 📡 Radar trasero en ruta: el botón del radar ocupa el sitio de la brújula; la brújula pasa al menú ⋯ (con música y cambiar de ruta). */
 /* v1.53.0 — 📡 Nuevo botón «Radar trasero» (BETA) en «¿Qué quieres hacer?»: abre radar-beta.html (Bluetooth compatible Garmin + simulación). */
 /* v1.52.0 — 🌿 Mapas sin conexión: «Descargar mi zona» (10 km) se cambia por «Organic Maps» (comunidades enteras sin conexión y navegación sin cobertura, gratis). Sigue «Descargar un pueblo o comarca». */
@@ -1154,6 +1155,8 @@ al grupo</button></div>
   <button class="li" style="margin-top:12px;border-color:var(--red)" onclick="sos()"><span class="em">🆘</span><div><b>Alertas de seguridad</b><small>Llamar al 112 y enviar tu ubicación por WhatsApp</small></div></button>
   <!-- v5.15: Asistente RideSafe (beta) -->
   <a class="li" href="asistente.html" style="margin-top:12px;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(200,220,60,.16),rgba(200,220,60,.04));border-color:var(--lime)"><span class="em">✨</span><div><b>Asistente RideSafe <span style="background:var(--lime);color:var(--on-lime);font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;vertical-align:2px;margin-left:4px">BETA</span></b><small>Pregunta por voz o escrito: dónde comer, fuentes, talleres, qué ropa ponerte, pinchazos…</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+  <!-- v1.55: Esmorzars ciclistes -->
+  <button class="li" style="margin-top:12px;border-color:#FDBA74" onclick="esmOpen()"><span class="em">🥐</span><div><b>Esmorzars ciclistes</b><small>Dónde desayunar en ruta: ranking de bares y opiniones de ciclistas</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li" style="margin-top:12px;border-color:var(--lime)" onclick="openNearby('rides')"><span class="em">🌍</span><div><b>Cerca de ti: salidas abiertas y clubes</b><small>Rueda con ciclistas de tu zona aunque no sean de tu club</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <button class="li famcard" style="margin-top:12px" onclick="famShare()"><span class="em">📍</span><div><b>Ubicación para la familia</b><small>Envía un enlace por WhatsApp y verán dónde estás en el mapa. Ellos no tienen que instalar nada.</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   <!-- v5.33: Seguimiento con el móvil bloqueado (beta privada; se activa con ?trkbeta=1) -->
@@ -1291,7 +1294,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.54.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.55.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6473,10 +6476,11 @@ let osmMk=[],osmOn=false,osmList=[];
 function osmClear(){osmMk.forEach(m=>m.remove());osmMk=[];osmOn=false}
 async function poiMenu(){
   const rs=plan.active&&plan.route&&plan.route.stopsList&&plan.route.stopsList.length,so=store.get('stopsOn',true);
-  const opts=[...(rs?[[so?'🙈 Quitar las paradas de la ruta del mapa':'👁️ Ver las paradas de la ruta en el mapa','','stops']]:[]),[osmOn?'🙈 Quitar fuentes, bares y farmacias del mapa':'💧☕💊 Ver fuentes, bares y farmacias aquí','','near'],['🔋 Puntos de recarga e-bike','','bat'],['⭐ Añadir un punto ciclista (lo verá tu club)','','add']];
+  const opts=[...(rs?[[so?'🙈 Quitar las paradas de la ruta del mapa':'👁️ Ver las paradas de la ruta en el mapa','','stops']]:[]),[osmOn?'🙈 Quitar fuentes, bares y farmacias del mapa':'💧☕💊 Ver fuentes, bares y farmacias aquí','','near'],['🥐 Bares para desayunar (ranking ciclista)','','esm'],['🔋 Puntos de recarga e-bike','','bat'],['⭐ Añadir un punto ciclista (lo verá tu club)','','add']];
   const i=await askChoice('¿Qué quieres hacer?',opts);if(i<0)return;
   if(opts[i][2]==='stops'){stopsSet(!so);renderTiny();return}
   if(opts[i][2]==='add'){addPoi();return}
+  if(opts[i][2]==='esm'){esmOpen();return}
   if(opts[i][2]==='bat'){recargaOpen();return}
   if(osmOn){osmClear();toast('Quitados del mapa');return}
   osmShow();
@@ -8563,6 +8567,20 @@ function recargaOpen(){
   o.innerHTML='<iframe src="recarga.html'+q+'" style="border:0;width:100%;height:100%" allow="geolocation"></iframe>';
   document.body.appendChild(o);
 }
+/* v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (esmorzars.html). Se abre encima del mapa, sin cortar la grabación ni la navegación. */
+function esmOpen(){
+  var q='';try{if(typeof map!=='undefined'&&map){var c=map.getCenter();q='?lat='+c.lat.toFixed(5)+'&lng='+c.lng.toFixed(5)+'&embed=1'}}catch(e){}
+  if(!q)q='?embed=1';
+  var o=document.getElementById('esmOv');if(o)o.remove();
+  o=document.createElement('div');o.id='esmOv';o.style.cssText='position:fixed;inset:0;z-index:99999;background:#0E1A2B';
+  o.innerHTML='<iframe src="esmorzars.html'+q+'" style="border:0;width:100%;height:100%" allow="geolocation"></iframe>';
+  document.body.appendChild(o);
+}
+window.addEventListener('message',function(e){
+  if(e.origin!==location.origin)return;
+  var d=e.data;if(d==='esmClose'||(d&&d.t==='esmGo')){var o=document.getElementById('esmOv');if(o)o.remove()}
+  if(d&&d.t==='esmGo'&&typeof d.lat==='number'&&typeof d.lng==='number'){try{guideTo(String(d.n||'Bar').slice(0,60),{lat:d.lat,lng:d.lng})}catch(x){}}
+});
 window.addEventListener('message',function(e){if(e.data==='rcgClose'){var o=document.getElementById('rcgOv');if(o)o.remove()}});
 </script>
 <script>

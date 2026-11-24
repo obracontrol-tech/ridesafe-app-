@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Esmorzars ciclistes · RideSafe IA</title>
+<meta name="theme-color" content="#0E1A2B">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script>
+/* RideSafe IA v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
+   - Todos los bares, cafés y restaurantes del mapa (OpenStreetMap / Overpass) en la zona que miras.
+   - Bares recomendados (esmorzars-seed.json + los que añade el administrador en config/esmorzars) con ranking por estrellas.
+   - Los ciclistas dan su opinión (⭐ 1-5, grupetas sí/no, comentario) y proponen bares: van a «esmorzars_pend»
+     y SOLO salen en la app cuando el administrador los aprueba en la consola master. */
+try{if(JSON.parse(localStorage.getItem('velogo_light')))document.documentElement.dataset.theme='light'}catch(e){}
+</script>
+<style>
+:root{
+  --bg:#0E1A2B; --card:#16263D; --card2:#1C2F4A; --line:#2A3B55;
+  --lime:#C8DC3C; --on-lime:#0E1A2B; --txt:#FFFFFF; --txt2:#9AA8BC;
+  --orange:#FDBA74; --gold:#FBBF24; --red:#F87171;
+}
+[data-theme="light"]{
+  --bg:#F4F6F9; --card:#FFFFFF; --card2:#E9EEF5; --line:#C9D3DF;
+  --lime:#6F8519; --on-lime:#FFFFFF; --txt:#0B1422; --txt2:#3E4C5E;
+  --orange:#C2410C; --gold:#B45309; --red:#B91C1C;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;overflow:hidden}
+header{padding:calc(env(safe-area-inset-top) + 12px) 16px 10px;display:flex;align-items:center;gap:10px}
+.back{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);display:grid;place-items:center;text-decoration:none;flex-shrink:0}
+.back svg,.ibtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+h1{font-size:19px;font-weight:800;color:var(--orange);line-height:1.15;flex:1;min-width:0}
+h1 small{display:block;font-size:12px;font-weight:500;color:var(--txt2)}
+.search{display:flex;gap:8px;padding:0 16px 10px}
+.search input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:0 14px;font:inherit;font-size:15px}
+.search input:focus{outline:none;border-color:var(--lime)}
+.ibtn{height:44px;min-width:44px;border-radius:14px;border:0;background:var(--lime);color:var(--on-lime);font:inherit;font-weight:800;font-size:15px;padding:0 12px;cursor:pointer;display:grid;place-items:center}
+.ibtn.alt{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.chips{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;height:36px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--txt2);font:inherit;font-size:13px;font-weight:700;padding:0 13px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.chip.on{color:var(--txt);border-color:var(--lime);background:var(--card2)}
+#map{flex:1;min-height:180px;position:relative;z-index:0}
+.status{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:700;padding:7px 14px;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.status:empty{display:none}
+.panel{background:var(--bg);border-top:1px solid var(--line);max-height:42vh;overflow-y:auto;padding:10px 16px calc(env(safe-area-inset-bottom) + 12px)}
+.tabs{display:flex;gap:8px;margin-bottom:10px}
+.tab{flex:1;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt2);font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+.tab.on{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+.item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin-bottom:8px;cursor:pointer;width:100%;text-align:left;color:inherit;font:inherit}
+.item .pos{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0;background:var(--card2);color:var(--txt2)}
+.item .pos.top{background:var(--gold);color:#0E1A2B}
+.item div{flex:1;min-width:0}
+.item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item small{display:block;font-size:12px;color:var(--txt2)}
+.item .r{font-weight:800;color:var(--gold);font-size:13px;white-space:nowrap;text-align:right}
+.item .r small{color:var(--txt2);font-weight:500}
+.empty{color:var(--txt2);font-size:13px;line-height:1.5;padding:6px 2px}
+.note{font-size:11px;color:var(--txt2);line-height:1.5;margin-top:6px}
+.note a{color:var(--lime)}
+.add{width:100%;height:46px;border-radius:14px;border:1.5px dashed var(--lime);background:transparent;color:var(--lime);font:inherit;font-weight:800;font-size:14px;margin:4px 0 8px;cursor:pointer}
+.pin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);background:var(--orange)}
+.pin span{transform:rotate(45deg);font-size:15px;line-height:1}
+.pin i{position:absolute;transform:rotate(45deg);top:-12px;right:-16px;background:#0E1A2B;color:#FBBF24;font-style:normal;font-size:10px;font-weight:800;padding:1px 5px;border-radius:99px;border:1px solid #FBBF24;white-space:nowrap}
+.dot{width:22px;height:22px;border-radius:50%;background:#64748B;border:2px solid #fff;display:grid;place-items:center;font-size:11px;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.me{width:16px;height:16px;border-radius:50%;background:#3B82F6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,.25)}
+/* Ficha y formularios (hoja desde abajo) */
+.ov{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.55);display:none;align-items:flex-end}
+.ov.show{display:flex}
+.sheet{background:var(--bg);width:100%;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;border-top:1px solid var(--line);padding:16px 16px calc(env(safe-area-inset-bottom) + 18px)}
+.sheet h2{font-size:19px;font-weight:800;display:flex;gap:10px;align-items:flex-start;margin-bottom:4px}
+.sheet h2 span{flex:1}
+.x{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:18px;cursor:pointer;flex-shrink:0}
+.sub{color:var(--txt2);font-size:13px;margin-bottom:12px;line-height:1.45}
+.big{display:flex;gap:10px;margin:8px 0 12px}
+.big div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.big b{display:block;font-size:20px;color:var(--gold)}
+.big small{color:var(--txt2);font-size:11px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;margin-bottom:10px}
+.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+.op{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.45}
+.op b{color:var(--gold)}
+.op small{color:var(--txt2);display:block}
+label.l{display:block;font-size:13px;font-weight:700;color:var(--txt2);margin:12px 0 6px}
+.inp{width:100%;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:10px 12px;font:inherit;font-size:15px}
+textarea.inp{resize:vertical}
+.stars{display:flex;gap:6px}
+.stars button{flex:1;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:24px;cursor:pointer;filter:grayscale(1);opacity:.55}
+.stars button.on{filter:none;opacity:1;border-color:var(--gold)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt2);font:inherit;font-weight:700;cursor:pointer}
+.seg button.on{border-color:var(--lime);color:var(--txt);background:var(--card2)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(120px);background:var(--card);border:1px solid var(--lime);color:var(--txt);padding:12px 16px;border-radius:14px;font-size:14px;font-weight:700;z-index:3000;transition:transform .25s;max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.picking #map{outline:3px solid var(--lime);outline-offset:-3px}
+.pickbar{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:600;background:var(--card);border:1px solid var(--lime);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;gap:8px;align-items:center}
+.picking .pickbar{display:flex}
+.pickbar span{flex:1}
+.pickbar button{height:38px;border-radius:10px;border:0;padding:0 12px;font:inherit;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" id="bBack" href="index.html" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+  <h1>🥐 Esmorzars ciclistes<small>Dónde desayunar en ruta · provincia de Lleida</small></h1>
+</header>
+
+<form class="search" id="fSearch">
+  <input id="q" type="search" placeholder="Buscar pueblo…" autocomplete="off" enterkeyhint="search">
+  <button class="ibtn" type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+  <button class="ibtn alt" type="button" id="bMe" aria-label="Mi ubicación"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></button>
+</form>
+
+<div class="chips" id="chips">
+  <button class="chip on" data-k="all">☕ Todos los bares del mapa</button>
+  <button class="chip" data-k="grp">👥 Buenos para grupetas</button>
+</div>
+
+<div id="map"><div class="status" id="st"></div>
+  <div class="pickbar"><span>👆 Toca en el mapa dónde está el bar</span><button id="pkCancel" style="background:var(--card2);color:var(--txt)">Cancelar</button></div>
+</div>
+
+<div class="panel">
+  <div class="tabs"><button class="tab on" data-t="rank">🏆 Ranking</button><button class="tab" data-t="near">📍 Cerca de aquí</button></div>
+  <div id="list"><div class="empty">Cargando…</div></div>
+  <button class="add" id="bAdd">➕ Proponer un bar para desayunar</button>
+  <p class="note">⭐ El ranking lo hacéis los ciclistas con vuestras opiniones. Las opiniones y los bares nuevos los revisa el administrador antes de publicarlos.<br>Bares del mapa: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>. Pueden faltar bares o haber horarios cambiados.</p>
+</div>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var tT;function toast(m,ms){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('show')},ms||3000)}
+function status(t){$('st').textContent=t||''}
+function num(n,d){return n.toFixed(d==null?1:d).replace('.',',')}
+
+/* ---------- Firebase (misma cuenta anónima que la app) ---------- */
+var db=null,uid=null;
+try{
+  firebase.initializeApp({apiKey:"AIzaSyBlPVwuYKu3u6LS0AB4Fji9sy2poAxsTZE",authDomain:"velogo-fba42.firebaseapp.com",projectId:"velogo-fba42",storageBucket:"velogo-fba42.firebasestorage.app",messagingSenderId:"675190202425",appId:"1:675190202425:web:2040bd6db96829c8242de8"});
+  db=firebase.firestore();
+  firebase.auth().onAuthStateChanged(function(u){if(u){uid=u.uid}else firebase.auth().signInAnonymously().catch(function(){})});
+}catch(e){console.warn('firebase',e)}
+function myName(){try{var m=JSON.parse(localStorage.getItem('velogo_me'));if(m&&m.name)return String(m.name).slice(0,40)}catch(e){}return ''}
+
+/* ---------- Datos ---------- */
+var SEED={}, CFG={bars:{},ops:{}};   // CFG = config/esmorzars (lo aprobado por el administrador)
+var BARS={};      // id -> {id,n,p,lat,lng,no,h,g,src,ap,cur:true}
+var OSM={};       // id -> {id,n,p,lat,lng,h,t}
+var STATS={};     // id -> {s:suma,n:número,gy:grupeta sí,gn:grupeta no,ops:[]}
+var tab='rank', showAll=true, onlyGrp=false;
+
+function buildBars(){
+  BARS={};
+  Object.keys(SEED).forEach(function(id){BARS[id]=Object.assign({id:id,cur:1},SEED[id])});
+  var cb=CFG.bars||{};
+  Object.keys(cb).forEach(function(id){BARS[id]=Object.assign({id:id,cur:1},BARS[id]||{},cb[id])});
+  Object.keys(BARS).forEach(function(id){var b=BARS[id];if(b.del||typeof b.lat!=='number'||typeof b.lng!=='number')delete BARS[id]});
+  // Opiniones aprobadas: una por ciclista y bar (la más reciente)
+  Object.keys(OSM).forEach(function(k){delete OSM[k]._c});
+  STATS={};var last={};
+  var ops=CFG.ops||{};
+  Object.keys(ops).forEach(function(k){var o=ops[k];if(!o||!o.b)return;var key=(o.u||k)+'|'+o.b;if(!last[key]||(o.t||0)>(last[key].t||0))last[key]=o});
+  Object.keys(last).forEach(function(key){var o=last[key];var s=STATS[o.b]||(STATS[o.b]={s:0,n:0,gy:0,gn:0,ops:[]});
+    if(o.s>=1&&o.s<=5){s.s+=o.s;s.n++}if(o.g==='si')s.gy++;if(o.g==='no')s.gn++;s.ops.push(o)});
+  Object.keys(STATS).forEach(function(id){STATS[id].ops.sort(function(a,b){return (b.t||0)-(a.t||0)})});
+}
+function avg(id){var s=STATS[id];return s&&s.n?s.s/s.n:0}
+function nOps(id){var s=STATS[id];return s?s.n:0}
+function isGrp(b){var s=STATS[b.id];if(s&&(s.gy+s.gn))return s.gy>=s.gn;return !!b.g}
+function score(b){var s=STATS[b.id];var n=s?s.n:0,sum=s?s.s:0;return (sum+3.5*2)/(n+2)}   // media suavizada: pocos votos no ganan a muchos
+
+function loadData(){
+  var p1=fetch('esmorzars-seed.json?v=1').then(function(r){return r.json()}).then(function(d){SEED=(d&&d.bars)||{}}).catch(function(){SEED={}});
+  var p2=db?db.collection('config').doc('esmorzars').get().then(function(s){CFG=s.exists?(s.data()||{}):{};CFG.bars=CFG.bars||{};CFG.ops=CFG.ops||{}}).catch(function(e){console.warn(e)}):Promise.resolve();
+  return Promise.all([p1,p2]).then(function(){buildBars();render()});
+}
+
+/* ---------- Mapa ---------- */
+var map=L.map('map',{zoomControl:false,attributionControl:true}).setView([41.75,1.0],9);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+var lyCur=L.layerGroup().addTo(map), lyOsm=L.layerGroup().addTo(map), meMarker=null, meLL=null;
+
+var SERVERS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+var MIN_ZOOM=13, busy=false, done={}, timer=null;
+function fetchOverpass(q,i){i=i||0;
+  return fetch(SERVERS[i],{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+   .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+   .catch(function(e){if(i+1<SERVERS.length)return fetchOverpass(q,i+1);throw e})}
+function loadOsm(){
+  if(!showAll||map.getZoom()<MIN_ZOOM){render();return}
+  var b=map.getBounds().pad(0.2);
+  var key=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(2)}).join(',');
+  if(done[key]||busy){render();return}
+  busy=true;status('☕ Buscando bares…');
+  var bb=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(4)}).join(',');
+  fetchOverpass('[out:json][timeout:25];nwr["amenity"~"^(cafe|bar|restaurant|pub)$"]["name"]('+bb+');out center tags 600;').then(function(d){
+    done[key]=1;
+    (d.elements||[]).forEach(function(e){var t=e.tags||{};var lat=e.lat!=null?e.lat:(e.center&&e.center.lat),lng=e.lon!=null?e.lon:(e.center&&e.center.lon);if(lat==null)return;
+      var id=e.type.charAt(0)+e.id;
+      OSM[id]={id:id,n:t.name,lat:lat,lng:lng,h:t.opening_hours||'',p:t['addr:city']||t['addr:village']||t['addr:town']||'',a:t.amenity}});
+    status('');render();
+  }).catch(function(){status('Sin conexión con el servidor de mapas. Prueba en unos segundos.');setTimeout(function(){status('')},4000)})
+  .then(function(){busy=false});
+}
+function dist(a,b){var R=6371,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lng-a.lng)*r;
+  var x=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)*Math.sin(dn/2);
+  return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function center(){return meLL||{lat:map.getCenter().lat,lng:map.getCenter().lng}}
+// Un bar del mapa que ya es «recomendado» (mismo sitio y nombre parecido) no se pinta dos veces
+function curOf(o){for(var id in BARS){var b=BARS[id];if(dist(b,o)<0.08&&simil(b.n,o.n))return b}return null}
+function isCur(o){if(BARS[o.id])return true;if(o._c===undefined)o._c=!!curOf(o);return o._c}
+function simil(a,b){a=norm(a);b=norm(b);return a&&b&&(a.indexOf(b)>=0||b.indexOf(a)>=0)}
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\b(bar|restaurant|restaurante|cafe|cafeteria|esmorzars?|de|la|el|les|los|l)\b/g,'').replace(/[^a-z0-9]/g,'')}
+
+function curIcon(b){var a=avg(b.id);return L.divIcon({className:'',html:'<div class="pin"><span>🥐</span>'+(a?'<i>⭐ '+num(a)+'</i>':'')+'</div>',iconSize:[34,34],iconAnchor:[17,34]})}
+var dotIcon=L.divIcon({className:'',html:'<div class="dot">☕</div>',iconSize:[22,22],iconAnchor:[11,11]});
+
+function visibleBars(){var l=Object.keys(BARS).map(function(k){return BARS[k]});if(onlyGrp)l=l.filter(isGrp);return l}
+function render(){
+  lyCur.clearLayers();lyOsm.clearLayers();
+  var cs=visibleBars();
+  cs.forEach(function(b){L.marker([b.lat,b.lng],{icon:curIcon(b),zIndexOffset:500}).on('click',function(){openBar(b.id)}).addTo(lyCur)});
+  var bnd=map.getBounds();
+  if(showAll&&!onlyGrp&&map.getZoom()>=MIN_ZOOM)Object.keys(OSM).forEach(function(k){var o=OSM[k];if(!bnd.contains([o.lat,o.lng])||isCur(o))return;
+    L.marker([o.lat,o.lng],{icon:dotIcon}).on('click',function(){openBar(o.id)}).addTo(lyOsm)});
+  list();
+}
+function list(){
+  var c=center(),h='';
+  if(tab==='rank'){
+    var l=visibleBars().sort(function(a,b){return score(b)-score(a)||nOps(b.id)-nOps(a.id)||dist(c,a)-dist(c,b)});
+    if(!l.length){$('list').innerHTML='<div class="empty">'+(onlyGrp?'Aún no hay bares marcados para grupetas.':'Aún no hay bares en el ranking.')+'</div>';return}
+    h=l.slice(0,60).map(function(b,i){var a=avg(b.id),n=nOps(b.id);
+      return '<button class="item" data-id="'+esc(b.id)+'"><span class="pos'+(i<3&&n?' top':'')+'">'+(i+1)+'</span><div><b>'+esc(b.n)+'</b><small>'+esc(b.p||'')+(isGrp(b)?' · 👥 grupetas':'')+' · '+num(dist(c,b))+' km</small></div><span class="r">'+(n?'⭐ '+num(a)+'<small><br>'+n+(n===1?' opinión':' opiniones')+'</small>':'<small>Sin opiniones</small>')+'</span></button>'}).join('');
+  }else{
+    if(map.getZoom()<MIN_ZOOM&&showAll){h='<div class="empty">Acerca el mapa (o busca un pueblo) para ver todos los bares de la zona.</div>'}
+    var l2=visibleBars().map(function(b){return {o:b,cur:1}});
+    if(showAll&&!onlyGrp)Object.keys(OSM).forEach(function(k){var o=OSM[k];if(!isCur(o))l2.push({o:o,cur:0})});
+    l2.forEach(function(x){x.d=dist(c,x.o)});l2.sort(function(a,b){return a.d-b.d});
+    h+=l2.slice(0,50).map(function(x){var o=x.o,a=avg(o.id),n=nOps(o.id);
+      return '<button class="item" data-id="'+esc(o.id)+'"><span class="pos">'+(x.cur?'🥐':'☕')+'</span><div><b>'+esc(o.n)+'</b><small>'+esc(o.p||(o.a==='restaurant'?'Restaurante':'Bar / café'))+'</small></div><span class="r">'+(n?'⭐ '+num(a)+'<br>':'')+'<small>'+num(x.d)+' km</small></span></button>'}).join('');
+    if(!l2.length&&!h)h='<div class="empty">No hay bares conocidos en esta zona.</div>';
+  }
+  $('list').innerHTML=h;
+}
+$('list').addEventListener('click',function(e){var it=e.target.closest('.item');if(!it)return;var id=it.dataset.id,o=BARS[id]||OSM[id];if(!o)return;
+  map.setView([o.lat,o.lng],Math.max(map.getZoom(),15));openBar(id)});
+document.querySelector('.tabs').addEventListener('click',function(e){var t=e.target.closest('.tab');if(!t)return;tab=t.dataset.t;
+  document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x===t)});list()});
+$('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;
+  if(c.dataset.k==='all'){showAll=!showAll;c.classList.toggle('on',showAll);if(showAll)loadOsm()}
+  else{onlyGrp=!onlyGrp;c.classList.toggle('on',onlyGrp)}
+  render()});
+map.on('moveend',function(){clearTimeout(timer);timer=setTimeout(loadOsm,450)});
+
+/* ---------- Ficha del bar ---------- */
+function sheet(h){$('sheet').innerHTML=h;$('ov').classList.add('show');$('sheet').scrollTop=0}
+function close(){$('ov').classList.remove('show')}
+$('ov').addEventListener('click',function(e){if(e.target===$('ov'))close()});
+window.esmClose=close;
+var cur=null;
+function openBar(id){
+  var b=BARS[id]||OSM[id];if(!b)return;cur=b;
+  var s=STATS[id],a=avg(id),n=nOps(id),c=center();
+  var gTxt=s&&(s.gy+s.gn)?(s.gy+' de '+(s.gy+s.gn)+' dicen que sí'):(BARS[id]&&b.g?'Sí, según el bar':'Sin datos aún');
+  var go='https://www.google.com/maps/dir/?api=1&destination='+b.lat+','+b.lng+'&travelmode=bicycling';
+  var h='<h2><span>'+(BARS[id]?'🥐 ':'☕ ')+esc(b.n)+'</span><button class="x" onclick="esmClose()" aria-label="Cerrar">✕</button></h2>'+
+    '<div class="sub">'+esc(b.p||'')+(b.p?' · ':'')+'a '+num(dist(c,b))+' km'+(BARS[id]?'':' · bar del mapa (aún sin recomendar)')+'</div>'+
+    '<div class="big"><div><b>'+(n?'⭐ '+num(a):'—')+'</b><small>'+(n?n+(n===1?' opinión':' opiniones'):'Sin opiniones')+'</small></div><div><b style="font-size:16px;color:var(--txt)">👥</b><small>Grupetas: '+esc(gTxt)+'</small></div></div>'+
+    (b.no?'<div class="op">💬 '+esc(b.no)+'</div>':'')+
+    (b.h?'<div class="op">🕒 Horario: '+esc(b.h)+'</div>':'')+
+    (b.ap?'<div class="op"><small>📍 Ubicación aproximada (en el pueblo). Si sabes dónde está exactamente, dínoslo en tu opinión.</small></div>':'')+
+    (b.src?'<div class="op"><small>Fuente: '+esc(b.src)+'</small></div>':'')+
+    '<button class="btn lime" id="bOp">✍️ Dar mi opinión</button>'+
+    (window.parent!==window?'<button class="btn" id="bGo">🧭 Ir con RideSafe</button>':'')+
+    '<a class="btn" href="'+go+'" target="_blank" rel="noopener">🗺️ Cómo llegar (Google Maps)</a>'+
+    (s&&s.ops.length?'<label class="l">Opiniones de ciclistas</label>'+s.ops.slice(0,20).map(function(o){return '<div class="op"><b>'+'⭐'.repeat(o.s||0)+'</b> '+(o.g==='si'?'· 👥 bien para grupetas':o.g==='no'?'· 👤 mejor ir pocos':'')+(o.c?'<br>'+esc(o.c):'')+'<small>'+esc(o.n||'Ciclista')+(o.t?' · '+new Date(o.t).toLocaleDateString('es-ES'):'')+'</small></div>'}).join(''):'');
+  sheet(h);
+  $('bOp').onclick=function(){opForm(b)};
+  if($('bGo'))$('bGo').onclick=function(){window.parent.postMessage({t:'esmGo',n:b.n,lat:b.lat,lng:b.lng},'*')};
+}
+
+/* ---------- Dar opinión ---------- */
+var F={s:0,g:''};
+function opForm(b){
+  F={s:0,g:''};
+  sheet('<h2><span>✍️ Tu opinión</span><button class="x" onclick="esmClose()" aria-label="Cerrar">✕</button></h2><div class="sub">'+esc(b.n)+(b.p?' · '+esc(b.p):'')+'</div>'+
+    '<label class="l">¿Qué tal el esmorzar?</label><div class="stars" id="fS">'+[1,2,3,4,5].map(function(i){return '<button data-s="'+i+'">⭐</button>'}).join('')+'</div>'+
+    '<label class="l">¿Va bien para ir en grupeta?</label><div class="seg" id="fG"><button data-g="si">👥 Sí</button><button data-g="no">👤 Mejor pocos</button><button data-g="">No sé</button></div>'+
+    '<label class="l" for="fC">Comentario <em>(opcional)</em></label><textarea class="inp" id="fC" rows="3" maxlength="300" placeholder="Ej. Callos buenísimos, sitio para dejar las bicis a la vista, abren a las 7"></textarea>'+
+    '<label class="l" for="fN">Tu nombre</label><input class="inp" id="fN" maxlength="40" value="'+esc(myName())+'" placeholder="Ej. Joan">'+
+    '<p class="note" style="margin:10px 0">El administrador la revisa antes de publicarla.</p>'+
+    '<button class="btn lime" id="fSend">📨 Enviar opinión</button>');
+  $('fS').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.s=+x.dataset.s;$('fS').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',+y.dataset.s<=F.s)})};
+  $('fG').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.g=x.dataset.g;$('fG').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',y===x)})};
+  $('fSend').onclick=function(){
+    if(!F.s){toast('Toca las estrellas (de 1 a 5)');return}
+    send({k:'op',b:b.id,bn:String(b.n||'').slice(0,60),s:F.s,g:F.g,c:$('fC').value.trim().slice(0,300),n:($('fN').value.trim()||'Ciclista').slice(0,40),p:String(b.p||'').slice(0,40),lat:+(+b.lat).toFixed(6),lng:+(+b.lng).toFixed(6)},
+      '✅ ¡Gracias! Tu opinión saldrá cuando el administrador la apruebe');
+  };
+}
+function send(d,ok){
+  if(!db){toast('Sin conexión. Inténtalo más tarde');return}
+  var go=function(){
+    if(!uid){toast('Conectando… vuelve a pulsar en unos segundos');return}
+    d.uid=uid;d.ts=firebase.firestore.FieldValue.serverTimestamp();
+    var btn=$('fSend');if(btn)btn.disabled=true;
+    db.collection('esmorzars_pend').add(d).then(function(){close();toast(ok,4500)})
+      .catch(function(e){console.warn(e);if(btn)btn.disabled=false;toast(/permission/i.test(e&&e.code||'')?'Falta activar las opiniones en Firebase (avisa al administrador)':'No se pudo enviar. Revisa la conexión',4500)});
+  };
+  go();
+}
+
+/* ---------- Proponer un bar ---------- */
+var picking=null, pickMk=null;
+$('bAdd').onclick=function(){
+  toast('Toca en el mapa dónde está el bar',3500);
+  document.body.classList.add('picking');
+  picking=function(ll){
+    document.body.classList.remove('picking');picking=null;
+    if(pickMk)map.removeLayer(pickMk);pickMk=L.marker(ll).addTo(map);
+    var near=null,dn=0.08;Object.keys(OSM).forEach(function(k){var o=OSM[k],d=dist(o,{lat:ll.lat,lng:ll.lng});if(d<dn){dn=d;near=o}});
+    F={s:0,g:''};
+    sheet('<h2><span>➕ Proponer un bar</span><button class="x" onclick="esmClose()" aria-label="Cerrar">✕</button></h2><div class="sub">Un bar donde los ciclistas desayunáis bien. El administrador lo revisa y lo añade al ranking.</div>'+
+      '<label class="l" for="fBn">Nombre del bar</label><input class="inp" id="fBn" maxlength="60" value="'+esc(near?near.n:'')+'" placeholder="Ej. Bar Casal">'+
+      '<label class="l" for="fBp">Pueblo</label><input class="inp" id="fBp" maxlength="40" value="'+esc(near&&near.p||'')+'" placeholder="Ej. Torrebesses">'+
+      '<label class="l">¿Va bien para ir en grupeta?</label><div class="seg" id="fG"><button data-g="si">👥 Sí</button><button data-g="no">👤 Mejor pocos</button><button data-g="">No sé</button></div>'+
+      '<label class="l">Tu nota del esmorzar</label><div class="stars" id="fS">'+[1,2,3,4,5].map(function(i){return '<button data-s="'+i+'">⭐</button>'}).join('')+'</div>'+
+      '<label class="l" for="fC">¿Qué tiene de bueno? <em>(opcional)</em></label><textarea class="inp" id="fC" rows="3" maxlength="300" placeholder="Ej. Esmorzar de forquilla, abren a las 7, sitio para las bicis"></textarea>'+
+      '<label class="l" for="fN">Tu nombre</label><input class="inp" id="fN" maxlength="40" value="'+esc(myName())+'">'+
+      '<p class="note" style="margin:10px 0">📍 Ubicación marcada en el mapa.</p>'+
+      '<button class="btn lime" id="fSend">📨 Enviar propuesta</button>');
+    $('fS').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.s=+x.dataset.s;$('fS').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',+y.dataset.s<=F.s)})};
+    $('fG').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.g=x.dataset.g;$('fG').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',y===x)})};
+    $('fSend').onclick=function(){
+      var n=$('fBn').value.trim();if(!n){toast('Escribe el nombre del bar');return}
+      send({k:'bar',b:near?near.id:'',bn:n.slice(0,60),s:F.s,g:F.g,c:$('fC').value.trim().slice(0,300),n:($('fN').value.trim()||'Ciclista').slice(0,40),p:$('fBp').value.trim().slice(0,40),lat:+ll.lat.toFixed(6),lng:+ll.lng.toFixed(6)},
+        '✅ ¡Gracias! El bar saldrá cuando el administrador lo apruebe');
+    };
+  };
+};
+$('pkCancel').onclick=function(e){e.stopPropagation();document.body.classList.remove('picking');picking=null};
+map.on('click',function(e){if(picking)picking(e.latlng)});
+
+/* ---------- Ubicación y búsqueda ---------- */
+function locate(fly){
+  if(!navigator.geolocation){status('Tu móvil no permite la ubicación');return}
+  navigator.geolocation.getCurrentPosition(function(pos){
+    meLL={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    if(meMarker)meMarker.setLatLng([meLL.lat,meLL.lng]);
+    else meMarker=L.marker([meLL.lat,meLL.lng],{icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:1000}).addTo(map);
+    if(fly)map.setView([meLL.lat,meLL.lng],13);else render();
+  },function(){if(fly){status('No se pudo obtener tu ubicación. Busca un pueblo arriba.');setTimeout(function(){status('')},4000)}},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+}
+$('bMe').addEventListener('click',function(){locate(true)});
+$('fSearch').addEventListener('submit',function(e){
+  e.preventDefault();var q=$('q').value.trim();if(!q)return;$('q').blur();
+  status('Buscando “'+q+'”…');
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&accept-language=es&q='+encodeURIComponent(q))
+   .then(function(r){return r.json()}).then(function(d){
+     if(!d||!d.length){status('No encuentro ese lugar');setTimeout(function(){status('')},3000);return}
+     status('');map.setView([+d[0].lat,+d[0].lon],14);
+   }).catch(function(){status('Sin conexión. Inténtalo de nuevo.')});
+});
+
+/* ---------- Volver a la app ---------- */
+var P=new URLSearchParams(location.search),pLat=parseFloat(P.get('lat')),pLng=parseFloat(P.get('lng'));
+var EMBED=P.get('embed')==='1'&&window.parent!==window;
+$('bBack').addEventListener('click',function(e){
+  if(EMBED){e.preventDefault();window.parent.postMessage('esmClose','*');return}
+  if(document.referrer&&document.referrer.indexOf(location.origin)===0&&history.length>1){e.preventDefault();history.back()}
+});
+
+loadData();
+if(!isNaN(pLat)&&!isNaN(pLng)){map.setView([pLat,pLng],13);locate(false)}else locate(true);
+})();
+</script>
+</body>
+</html>

@@ -1,3 +1,36 @@
+## Versión 5.105.0 (Simple 1.55.0) — 🥐 Esmorzars ciclistes
+- Nueva página «Esmorzars ciclistes» (esmorzars.html): bares para desayunar en ruta, pensada para la provincia de Lleida. Se abre desde Inicio (tarjeta 🥐) y desde la taza ☕ del mapa, encima del mapa, sin cortar la grabación ni la navegación.
+- Mapa con TODOS los bares, cafés y restaurantes de OpenStreetMap de la zona que miras (al acercar el mapa) y los bares recomendados destacados con 🥐 y su nota ⭐.
+- 🏆 Ranking por estrellas (media de las opiniones; pocos votos no ganan a muchos) y 📍 Cerca de aquí. Filtro «👥 Buenos para grupetas».
+- Ficha del bar: nota, grupetas sí/no, horario, opiniones, «✍️ Dar mi opinión», «🧭 Ir con RideSafe» y Google Maps.
+- Los ciclistas dan su opinión (⭐ 1-5, grupetas, comentario) o proponen un bar tocando en el mapa. Todo llega a la consola master (pestaña 🥐 Esmorzars) y NO sale en la app hasta que el administrador lo aprueba.
+- Consola master › 🥐 Esmorzars: pendientes (✅ Publicar / ❌ Rechazar), añadir bares (por ejemplo de Facebook) pegando las coordenadas de Google Maps, editar, quitar y borrar opiniones.
+- Bares de partida: esmorzars-seed.json (los 8 de la guía de komoot + Bar-Restaurant Nou Vall d'Aran). Su ubicación es aproximada (📍≈, centro del pueblo): corrígela en la consola.
+- Lo aprobado se guarda en Firebase config/esmorzars (ya permitido por las reglas). Archivos: esmorzars.html, esmorzars-seed.json, index.html, simple.html, master.html y sw.js.
+- NECESITA pegar una vez este bloque en Firebase › proyecto velogo-fba42 › Firestore Database › Reglas, justo debajo de `match /databases/{database}/documents {`, y pulsar Publicar:
+
+```
+    match /esmorzars_pend/{id} {
+      allow read, delete: if request.auth != null
+        && request.auth.token.email == 'pedrosaborrego@gmail.com';
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['k','b','bn','s','g','c','n','p','lat','lng','uid','ts'])
+        && request.resource.data.keys().size() == 12
+        && request.resource.data.k in ['op','bar']
+        && request.resource.data.b is string && request.resource.data.b.size() <= 40
+        && request.resource.data.bn is string && request.resource.data.bn.size() <= 60
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s <= 5
+        && request.resource.data.g in ['si','no','']
+        && request.resource.data.c is string && request.resource.data.c.size() <= 300
+        && request.resource.data.n is string && request.resource.data.n.size() <= 40
+        && request.resource.data.p is string && request.resource.data.p.size() <= 40
+        && request.resource.data.lat is number && request.resource.data.lng is number
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.ts == request.time;
+    }
+```
+- Si entras en la consola master con otra cuenta de Google, cambia el correo de la segunda línea por el tuyo.
+
 ## Versión 5.81.1 (Simple 1.39.1) — Parar el seguimiento estable también para la familia
 - Antes: al tocar «⏹ Parar el seguimiento estable», Traccar dejaba de enviar pero el mapa de la familia seguía diciendo «En directo» y luego «puede estar sin cobertura».
 - Ahora: al parar, la app guarda la hora de parada y el mapa de la familia pasa a «✅ Ya no está compartiendo · última posición hace…» y «⏹ Ha parado el seguimiento». Si el ciclista vuelve a empezar, vuelve solo a «En directo».

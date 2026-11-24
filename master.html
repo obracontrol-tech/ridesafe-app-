@@ -155,6 +155,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
     <button class="nav" data-v="rep" onclick="go('rep')">⚠️ Reportes <span class="ct" id="nRep"></span></button>
     <button class="nav" data-v="eth" onclick="go('eth')">⚖️ Ética y sanciones <span class="ct" id="nSan"></span></button>
     <button class="nav" data-v="news" onclick="go('news')">🚀 Novedades</button>
+    <button class="nav" data-v="esm" onclick="go('esm')">🥐 Esmorzars <span class="ct" id="nEsm"></span></button>
     <button class="nav" data-v="shops" onclick="go('shops')">🏪 Tiendas <span class="ct" id="nShops"></span></button>
     <button class="nav" data-v="ann" onclick="go('ann')">📣 Aviso general</button>
     <button class="nav" data-v="legal" onclick="go('legal')">📄 Condiciones <span class="ct" id="nLeg"></span></button>
@@ -2521,6 +2522,7 @@ async function loadAll(manual){
   try{const s=await db.collection('config').doc('announce').get();ann=s.exists?s.data():{}}catch(e){ann={}}
   try{const s=await db.collection('config').doc('updates').get();upd=s.exists?s.data():{items:[]};upd.items=upd.items||[]}catch(e){upd={items:[]}}
   try{const s=await db.collection('config').doc('tiendas').get();shops=(s.exists&&s.data().list)||{}}catch(e){shops={}}
+  await esmLoad();
   loadedAt=Date.now();counts();render();if(manual)toast('Datos actualizados');
 }
 const clubName=c=>{const g=D.groups.find(x=>x.id===c);return g?g.name:(c?c:'Sin club')};
@@ -2531,14 +2533,15 @@ function counts(){
   $('nRides').textContent=D.rides.filter(r=>r.date>=iso(Date.now())).length;
   const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
   const na=activeSan();$('nSan').textContent=na.length||'';
+  try{const ne=esmPend().length,e=$('nEsm');if(e){e.textContent=ne||'';e.classList.toggle('alert',ne>0)}}catch(e){}
   const nsh=$('nShops');if(nsh)nsh.textContent=Object.keys(shops).length||'';
   const ns=D.support.filter(x=>!x.reply&&x.status!=='closed').length;const nsu=$('nSup');if(nsu){nsu.textContent=ns||'';nsu.classList.toggle('alert',ns>0)}
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={legal:['Condiciones de uso y privacidad','Copia del documento y registro de aceptaciones'],shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
+  const T={esm:['🥐 Esmorzars ciclistes','Bares para desayunar: opiniones y bares que proponen los ciclistas'],legal:['Condiciones de uso y privacidad','Copia del documento y registro de aceptaciones'],shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic,legal:vLegal})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic,legal:vLegal,esm:vEsm})[view]();
 }
 
 /* ---------- 🔑 Licencias de clientes (apps de marca blanca) ----------
@@ -3080,6 +3083,89 @@ function shopCartel(id){const x=shops[id];if(!x)return;const u=SHOP_URL(id);cons
    <div class="qr">${qrSVG(u,240)}</div><p class="t3">📱 Escanea y empieza a rodar</p>
    <p class="t4">Salidas del club · Rutas con mapa · Pelotón en vivo<br>Avisos de pinchazo, «esperad» y caída</p><p class="f">SALIR JUNTOS. VOLVER TODOS. · ridesafeia.es</p></div>
    <script>setTimeout(()=>print(),500)<\/script></body></html>`);w.document.close()}
+
+/* ---------- 🥐 v5.105.0 — Esmorzars ciclistes (esmorzars.html) ----------
+   Lo publicado vive en config/esmorzars: {bars:{id:{n,p,lat,lng,no,h,g,src,ap,del}}, ops:{id:{b,s,g,c,n,u,t}}, done:{idPendiente:1|0}}
+   Lo que envían los ciclistas llega a «esmorzars_pend» y solo sale en la app cuando lo apruebas aquí. */
+let ESM={cfg:{bars:{},ops:{},done:{}},seed:{},pend:[],err:''};
+async function esmLoad(){
+  try{const r=await fetch('esmorzars-seed.json?v='+Date.now());ESM.seed=((await r.json())||{}).bars||{}}catch(e){ESM.seed={}}
+  try{const s=await db.collection('config').doc('esmorzars').get();const d=s.exists?s.data():{};ESM.cfg={bars:d.bars||{},ops:d.ops||{},done:d.done||{}}}catch(e){ESM.cfg={bars:{},ops:{},done:{}}}
+  try{const s=await db.collection('esmorzars_pend').orderBy('ts','desc').limit(500).get();ESM.pend=s.docs.map(d=>({id:d.id,...d.data()}));ESM.err=''}
+  catch(e){ESM.pend=[];ESM.err=e.code||e.message||'error'}
+}
+const esmPend=()=>ESM.pend.filter(x=>!(x.id in ESM.cfg.done));
+function esmBars(){const B={};Object.entries(ESM.seed).forEach(([k,v])=>B[k]={...v,seed:1});Object.entries(ESM.cfg.bars).forEach(([k,v])=>B[k]={...(B[k]||{}),...v});return B}
+function esmStats(id){const L=Object.values(ESM.cfg.ops).filter(o=>o.b===id&&o.s);return{n:L.length,a:L.length?L.reduce((s,o)=>s+o.s,0)/L.length:0}}
+async function esmSave(obj){await db.collection('config').doc('esmorzars').set(obj,{merge:true})}
+const esmSlug=s=>'c_'+String(s||'bar').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30)+'_'+Date.now().toString(36).slice(-4);
+function esmParseLL(t){t=String(t||'');let m=t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/)||t.match(/(-?\d{1,2}\.\d{3,})\s*[, ]\s*(-?\d{1,3}\.\d{3,})/);return m?[+m[1],+m[2]]:null}
+function vEsm(){
+  const P=esmPend(),B=esmBars();
+  const rows=Object.entries(B).filter(([k,b])=>!b.del).map(([k,b])=>({k,b,st:esmStats(k)})).sort((x,y)=>y.st.a-x.st.a||y.st.n-x.st.n);
+  const ops=Object.entries(ESM.cfg.ops).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).slice(0,60);
+  const st=n=>n?'⭐'.repeat(n):'sin nota';
+  $('view').innerHTML=`${ESM.err?`<div class="box" style="border-color:var(--bad)"><h3>⚠️ No se pueden leer las propuestas</h3><div class="d">Firebase dice: ${esc(ESM.err)}. Falta pegar el bloque «esmorzars_pend» en las reglas de Firestore (está en LEEME.md, versión 5.105.0).</div></div>`:''}
+  <div class="grid2">
+   <div class="box"><h3>📨 Pendientes de revisar (${P.length})</h3><div class="d">Opiniones y bares que mandan los ciclistas. No salen en la app hasta que los apruebas.</div>
+    ${P.length?P.map(x=>`<div class="opt" style="cursor:default;align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:200px"><b>${x.k==='bar'?'➕ Bar nuevo: ':'✍️ Opinión: '}${esc(x.bn)}</b>${x.p?` <small style="color:var(--txt3)">· ${esc(x.p)}</small>`:''}
+       <small style="display:block">${st(x.s)}${x.g==='si'?' · 👥 bien para grupetas':x.g==='no'?' · 👤 mejor pocos':''}</small>
+       ${x.c?`<small style="display:block">«${esc(x.c)}»</small>`:''}
+       <small style="display:block;color:var(--txt3)">${esc(x.n||'Ciclista')} · ${x.ts&&x.ts.toDate?fmtS(x.ts.toDate()):''} · <a href="https://www.google.com/maps?q=${+x.lat},${+x.lng}" target="_blank" rel="noopener" style="color:var(--lime)">ver en el mapa</a></small></span>
+      <span style="display:flex;flex-direction:column;gap:6px">${x.k==='bar'?`<button class="btn sm lime" onclick="esmEdit(null,${jsq(x.id)})">✅ Añadir al ranking</button>`:`<button class="btn sm lime" onclick="esmOk(${jsq(x.id)})">✅ Publicar</button>`}<button class="btn sm" style="color:var(--bad)" onclick="esmNo(${jsq(x.id)})">❌ Rechazar</button></span></div>`).join(''):'<div class="empty">No hay nada pendiente 👍</div>'}
+   </div>
+   <div class="box"><h3>➕ Añadir un bar</h3><div class="d">Por ejemplo, uno que veas en Facebook («Esmorzars de forquilla»). Para la ubicación: en Google Maps mantén pulsado el sitio, copia las coordenadas y pégalas.</div>
+    <button class="btn lime" onclick="esmEdit(null)">🥐 Añadir bar al ranking</button>
+    <div class="d" style="margin-top:12px">Página de los ciclistas: <a href="esmorzars.html" target="_blank" style="color:var(--lime)">esmorzars.html</a></div></div>
+  </div>
+  <div class="box"><h3>🏆 Bares del ranking (${rows.length})</h3><div class="d">📍≈ = ubicación aproximada (en el pueblo): edítalo y pega las coordenadas buenas.</div>
+   ${rows.map(({k,b,st:s})=>`<div class="opt" style="cursor:default;align-items:center;gap:10px">
+     <span style="flex:1;min-width:0"><b>${esc(b.n)}</b>${b.ap?' 📍≈':''}${b.g?' 👥':''} <small style="color:var(--txt3)">· ${esc(b.p||'')}</small><small style="display:block;color:var(--lime);font-weight:800">${s.n?'⭐ '+s.a.toFixed(1).replace('.',',')+' · '+s.n+' opiniones':'Sin opiniones'}</small>${b.no?`<small style="display:block;color:var(--txt3)">${esc(b.no)}</small>`:''}</span>
+     <span style="display:flex;flex-direction:column;gap:6px"><button class="btn sm" onclick="esmEdit(${jsq(k)})">✏️ Editar</button><button class="btn sm" style="color:var(--bad)" onclick="esmDel(${jsq(k)})">🙈 Quitar</button></span></div>`).join('')||'<div class="empty">Aún no hay bares.</div>'}
+  </div>
+  <div class="box"><h3>💬 Opiniones publicadas (${Object.keys(ESM.cfg.ops).length})</h3>
+   ${ops.map(([k,o])=>`<div class="opt" style="cursor:default;align-items:center;gap:10px"><span style="flex:1;min-width:0"><b>${esc((B[o.b]||{}).n||o.bn||o.b)}</b> <small>${st(o.s)}</small>${o.c?`<small style="display:block">«${esc(o.c)}»</small>`:''}<small style="display:block;color:var(--txt3)">${esc(o.n||'')}${o.t?' · '+fmtS(o.t):''}</small></span><button class="btn sm" style="color:var(--bad)" onclick="esmOpDel(${jsq(k)})">🗑️ Quitar</button></div>`).join('')||'<div class="empty">Aún no hay opiniones publicadas.</div>'}
+  </div>`;
+}
+async function esmMarkDone(pid,v){ESM.cfg.done[pid]=v;await esmSave({done:{[pid]:v}});db.collection('esmorzars_pend').doc(pid).delete().then(()=>{ESM.pend=ESM.pend.filter(x=>x.id!==pid)}).catch(()=>{})}
+async function esmOk(pid){
+  const x=ESM.pend.find(y=>y.id===pid);if(!x)return;const B=esmBars();
+  const op={b:x.b,s:x.s|0,g:x.g||'',c:x.c||'',n:x.n||'Ciclista',u:x.uid||'',t:x.ts&&x.ts.toMillis?x.ts.toMillis():Date.now()};
+  const up={ops:{[pid]:op},done:{[pid]:1}};
+  if(!B[x.b]||B[x.b].del)up.bars={[x.b]:{n:x.bn,p:x.p||'',lat:+x.lat,lng:+x.lng,src:'Opinión de ciclista',del:FV.delete()}};
+  try{await esmSave(up);ESM.cfg.ops[pid]=op;ESM.cfg.done[pid]=1;if(up.bars){ESM.cfg.bars[x.b]={...(ESM.cfg.bars[x.b]||{}),n:x.bn,p:x.p||'',lat:+x.lat,lng:+x.lng,src:'Opinión de ciclista'};delete ESM.cfg.bars[x.b].del}
+    db.collection('esmorzars_pend').doc(pid).delete().catch(()=>{});counts();toast('✅ Opinión publicada');vEsm()}catch(e){err(e)}
+}
+async function esmNo(pid){if(!await confirmDlg('❌ Rechazar','No saldrá en la app.','Rechazar',true))return;try{await esmMarkDone(pid,0);counts();toast('Rechazado');vEsm()}catch(e){err(e)}}
+function esmEdit(id,pid){
+  const B=esmBars(),x=pid?ESM.pend.find(y=>y.id===pid):null;
+  const b=id?B[id]:x?{n:x.bn,p:x.p,lat:x.lat,lng:x.lng,no:x.c,g:x.g==='si',src:'Propuesto por '+(x.n||'un ciclista')}:{n:'',p:'',no:'',src:''};
+  dlg(`<h3>${id?'✏️ Editar bar':'🥐 Bar para el ranking'}</h3>
+   <label class="d">Nombre</label><input class="inp" id="eN" style="width:100%" maxlength="60" value="${esc(b.n||'')}">
+   <label class="d">Pueblo (comarca)</label><input class="inp" id="eP" style="width:100%" maxlength="60" value="${esc(b.p||'')}" placeholder="Ej. Torrebesses (Segrià)">
+   <label class="d">Ubicación: pega las coordenadas o el enlace de Google Maps</label><input class="inp" id="eL" style="width:100%" value="${b.lat!=null?esc(b.lat+', '+b.lng):''}" placeholder="41.6176, 0.6200">
+   <label class="d">Nota (especialidad, ruta típica…)</label><input class="inp" id="eNo" style="width:100%" maxlength="200" value="${esc(b.no||'')}" placeholder="Ej. Callos de esmorzar de forquilla">
+   <label class="d">Horario de esmorzars (opcional)</label><input class="inp" id="eH" style="width:100%" maxlength="80" value="${esc(b.h||'')}" placeholder="Ej. Sábados y domingos desde las 7:00">
+   <label class="d">Fuente</label><input class="inp" id="eS" style="width:100%" maxlength="80" value="${esc(b.src||'')}" placeholder="Ej. Facebook · Esmorzars de forquilla">
+   <label class="d" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="eG" ${b.g?'checked':''}> 👥 Va bien para grupetas</label>
+   <div class="row"><button class="btn" onclick="closeDlg()">Cancelar</button><button class="btn lime" id="eOk">Guardar</button></div>`);
+  $('eOk').onclick=async()=>{
+    const n=$('eN').value.trim();if(!n){toast('Pon el nombre');return}
+    const ll=esmParseLL($('eL').value);if(!ll){toast('No entiendo la ubicación: pega algo como 41.6176, 0.6200');return}
+    const key=id||esmSlug(n);
+    const rec={n,p:$('eP').value.trim(),lat:ll[0],lng:ll[1],no:$('eNo').value.trim(),h:$('eH').value.trim(),src:$('eS').value.trim(),g:$('eG').checked,ap:0,del:FV.delete()};
+    const up={bars:{[key]:rec}};
+    if(pid){up.done={[pid]:1};if(x&&x.s){up.ops={[pid]:{b:key,s:x.s|0,g:x.g||'',c:x.c||'',n:x.n||'Ciclista',u:x.uid||'',t:x.ts&&x.ts.toMillis?x.ts.toMillis():Date.now()}}}}
+    try{await esmSave(up);const r2={...rec};delete r2.del;ESM.cfg.bars[key]={...(ESM.cfg.bars[key]||{}),...r2};delete ESM.cfg.bars[key].del;
+      if(pid){ESM.cfg.done[pid]=1;if(up.ops)ESM.cfg.ops[pid]=up.ops[pid];db.collection('esmorzars_pend').doc(pid).delete().catch(()=>{})}
+      closeDlg();counts();toast('🥐 Guardado: ya sale en la app');vEsm()}catch(e){err(e)}
+  };
+}
+async function esmDel(id){if(!await confirmDlg('🙈 Quitar del ranking','El bar deja de salir como recomendado (sus opiniones se guardan).','Quitar',true))return;
+  try{await esmSave({bars:{[id]:{del:1}}});ESM.cfg.bars[id]={...(ESM.cfg.bars[id]||{}),del:1};toast('Quitado');vEsm()}catch(e){err(e)}}
+async function esmOpDel(k){if(!await confirmDlg('🗑️ Quitar opinión','Deja de salir en la app y en el ranking.','Quitar',true))return;
+  try{await db.collection('config').doc('esmorzars').update({['ops.'+k]:FV.delete()});delete ESM.cfg.ops[k];toast('Opinión quitada');vEsm()}catch(e){err(e)}}
 /* ---------- Ventanas y utilidades ---------- */
 function dlg(h){$('dlg').innerHTML=h;$('ov').classList.add('show')}
 function closeDlg(){$('ov').classList.remove('show')}

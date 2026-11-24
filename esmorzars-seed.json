@@ -1,0 +1,14 @@
+{
+  "_info": "Bares de partida de «Esmorzars ciclistes» (RideSafe IA). Lo que cambies en la consola master (config/esmorzars) manda sobre esta lista. ap=1: ubicación aproximada (centro del pueblo), corrígela en la consola.",
+  "bars": {
+    "c_ca_la_rosa_gimenells": {"n": "Esmorzars Bar Ca La Rosa", "p": "Gimenells (Segrià)", "lat": 41.6567, "lng": 0.3897, "ap": 1, "no": "Parada clásica de carretera y BTT. Bucle desde Lleida de unos 66 km.", "src": "komoot"},
+    "c_bar_casal_torrebesses": {"n": "Bar Casal", "p": "Torrebesses (Segrià)", "lat": 41.4294, "lng": 0.5975, "ap": 1, "no": "BTT: pantano de Utxesa – Butsènit, unos 52 km.", "src": "komoot"},
+    "c_bar_malda": {"n": "Bar Restaurante Maldà", "p": "Maldà (Urgell)", "lat": 41.5490, "lng": 1.0410, "ap": 1, "no": "Carretera hacia Vallbona de les Monges, unos 44 km.", "src": "komoot"},
+    "c_la_garriguenca_llardecans": {"n": "Bar-Restaurant La Garriguenca", "p": "Llardecans (Segrià)", "lat": 41.3716, "lng": 0.5486, "ap": 1, "no": "BTT por Les Garrigues y Maials, unos 34 km.", "src": "komoot"},
+    "c_zona_esportiva_fuliola": {"n": "Bar de la zona esportiva", "p": "La Fuliola (Urgell)", "lat": 41.7067, "lng": 1.0230, "ap": 1, "no": "Carretera junto al Canal d'Urgell (paso de brevets).", "src": "komoot"},
+    "c_la_sentiu": {"n": "Esmorzar a La Sentiu", "p": "La Sentiu de Sió (Noguera)", "lat": 41.8017, "lng": 0.8700, "ap": 1, "no": "Carretera: Bellcaire – Cubells – Butsènit.", "src": "komoot"},
+    "c_bar_pallargues_osso": {"n": "Bar de les Pallargues", "p": "Ossó de Sió (Urgell)", "lat": 41.7517, "lng": 1.1650, "ap": 1, "no": "BTT desde Agramunt, unos 27 km.", "src": "komoot"},
+    "c_el_mirador_montgai": {"n": "Restaurante Bar El Mirador", "p": "Pantà de Sant Llorenç de Montgai (Noguera)", "lat": 41.8700, "lng": 0.8350, "ap": 1, "no": "Carretera y cicloturismo desde Balaguer, unos 44 km.", "src": "komoot"},
+    "c_nou_vall_d_aran": {"n": "Bar-Restaurant Nou Vall d'Aran", "p": "Lleida", "lat": 41.6400, "lng": 0.6150, "ap": 1, "no": "Esmorzar de forquilla: callos muy recomendados.", "src": "Facebook · Esmorzars de forquilla"}
+  }
+}
