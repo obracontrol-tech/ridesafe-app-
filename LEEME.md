@@ -1,3 +1,8 @@
+## Asistente RideSafe v1.5.1 — 🔧 Guía de taller ampliada con el libro «Mecánica de bicis ilustrada»
+- asistente-mecanica.json pasa a la versión 1.1 (18 temas): añadidos medidas ETRTO, presiones del libro, rodaje y purga de frenos, grosor mínimo de pastillas y discos (Shimano), orden del ajuste del cambio (patilla, topes H/L, tensión, tornillo B), altura del desviador, centrado de ruedas, ejes y núcleos, estándares de pedalier, SAG de suspensiones, pares de apriete del libro, diagnóstico de e-bike paso a paso, cuidado de batería, normas de circulación y la tabla «síntoma, causa y primer paso».
+- Explicado con palabras propias; no se copian textos ni imágenes del libro.
+- Archivos: asistente-mecanica.json y asistente.html.
+
 ## Asistente RideSafe v1.5 — 🔧 Guía de taller (averías)
 - Nuevo archivo asistente-mecanica.json: guía de reparación propia, en lenguaje sencillo, hecha a partir de la documentación de JM (casos resueltos del taller, revisión final de e-bike, diccionario, electricidad de e-bike), con 17 temas: pinchazo (cámara y tubeless), presión y neumáticos, frenos de disco, frenos de zapata, cadena, cambio, ruedas y ejes, dirección, pedalier y pedales, sillín y tija, suspensión, ruidos, e-bike (batería, encendido, conectores), e-bike (motor, sensores, Shimano EP8 y códigos), pares de apriete, normativa y kit de ruta.
 - En cada consulta de avería, el Asistente añade a la pregunta las 2 partes de la guía que más se parecen (no la guía entera: así gasta poco y responde rápido). En las preguntas siguientes la guía no se repite.
