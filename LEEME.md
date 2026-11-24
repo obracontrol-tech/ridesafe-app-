@@ -12,7 +12,7 @@
 ```
     match /esmorzars_pend/{id} {
       allow read, delete: if request.auth != null
-        && request.auth.token.email == 'info@ridesafeia.es';
+        && request.auth.token.email == 'pedrosaborrego@gmail.com';
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['k','b','bn','s','g','c','n','p','lat','lng','uid','ts'])
         && request.resource.data.keys().size() == 12
@@ -29,7 +29,7 @@
         && request.resource.data.ts == request.time;
     }
 ```
-- El correo es el de la cuenta con la que entras en la consola master (info@ridesafeia.es).
+- El correo es el de la cuenta de Google con la que entras en la consola master (pedrosaborrego@gmail.com).
 
 ## Versión 5.81.1 (Simple 1.39.1) — Parar el seguimiento estable también para la familia
 - Antes: al tocar «⏹ Parar el seguimiento estable», Traccar dejaba de enviar pero el mapa de la familia seguía diciendo «En directo» y luego «puede estar sin cobertura».
