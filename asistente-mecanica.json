@@ -109,6 +109,206 @@
 "t": "Tabla rápida: síntoma, causa y primer paso",
 "k": "no s[eé] qu[eé]|qu[eé] le pasa|s[ií]ntoma|diagn[oó]stic|avería|aver[ií]a|falla|problema",
 "txt": "Empieza siempre por la causa más sencilla y barata: casi siempre es la buena. Cada ruido viene de un bloque (cuadro y horquilla, ruedas, transmisión, frenos y mandos): primero averigua el bloque y luego la pieza.\n- Pinchazos continuos -> espina en la cubierta o fondo de llanta -> revisar con los dedos por dentro.\n- Rueda que hace ochos -> radios flojos o rotos -> centrar.\n- Holgura en la rueda -> eje flojo o rodamientos del buje -> apretar, ajustar o cambiar.\n- Cadena que salta -> cadena y piñones gastados, cable flojo o patilla doblada -> medir la cadena, revisar patilla y tensor.\n- Cambio impreciso -> cable o patilla -> topes y tensor.\n- Crujido al pedalear -> pedales, sillín, tija o pedalier -> limpiar, engrasar y apretar al par.\n- Maneta de freno esponjosa -> aire en el circuito -> purgar.\n- Freno que chirría -> pastillas contaminadas, pinza torcida o disco sucio -> pastillas nuevas y disco limpio con alcohol.\n- Holgura en la dirección -> dirección floja -> ajustar desde el tapón.\n- Horquilla que se hunde -> presión o juntas -> revisar presión y SAG, mantenimiento.\n- La e-bike no ayuda -> batería mal encajada, imán movido o conector húmedo.\nRevisión en 6 pasos: escuchar cuándo aparece el problema (subidas, frenadas, baches) -> ruedas y cubiertas -> frenos -> transmisión -> dirección y tornillos -> prueba en la calle."
+},
+{
+"id": "glosario",
+"t": "Palabras del mecánico (qué es cada pieza)",
+"k": "qu[eé] es (el|la|un|una)|c[oó]mo se llama|qu[eé] significa|para qu[eé] sirve|nombre de la pieza|partes de la bici",
+"txt": "- Bielas: Las dos palancas donde van los pedales; giran sobre el eje del pedalier y la derecha lleva los platos.\n- Buje: La pieza del centro de la rueda, con los rodamientos; de él salen los radios.\n- Cadena: Une los platos con los piñones y lleva la fuerza de tus piernas a la rueda de atrás.\n- Cámara: El tubo de goma con aire que va dentro de la cubierta (si no es tubeless).\n- Cambio trasero: El mecanismo que mueve la cadena de un piñón a otro.\n- Cassette: El bloque de piñones de la rueda trasera.\n- Cierre rápido: Palanca que sujeta la rueda sin herramientas; se cierra con fuerza, no se enrosca.\n- Cubierta: El neumático: la goma que toca el suelo.\n- Cuadro: El esqueleto de la bici: los tubos donde se monta todo lo demás.\n- Desmontables: Palancas de plástico para sacar la cubierta de la llanta.\n- Desviador delantero: El mecanismo que pasa la cadena de un plato a otro.\n- Disco de freno: El disco metálico que gira con la rueda y sobre el que aprietan las pastillas.\n- DOT: Un tipo de líquido de frenos hidráulicos (SRAM y otras marcas); estropea la pintura.\n- Eje pasante: Eje grueso que atraviesa el buje y se rosca al cuadro u horquilla; más rígido que el cierre rápido.\n- EPAC: Bici de pedaleo asistido legal: motor de hasta 250 W que solo ayuda al pedalear y hasta 25 km/h.\n- ETRTO: El código de medida de la cubierta, por ejemplo 37-622: ancho y diámetro en milímetros.\n- Fondo de llanta: La cinta que tapa los agujeros de los radios por dentro de la llanta.\n- Horquilla: La pieza delantera que sujeta la rueda y gira con el manillar; puede llevar suspensión.\n- Juego de dirección: Los rodamientos que dejan girar la horquilla dentro del cuadro.\n- Latiguillo: El tubo con líquido que va de la maneta a la pinza en los frenos hidráulicos.\n- Llanta: El aro de la rueda donde se monta la cubierta.\n- Maneta: La palanca del manillar para frenar (o para cambiar).\n- Manillar: La barra que agarras para dirigir la bici.\n- Monoplato (1x): Transmisión con un solo plato delante y sin desviador.\n- Núcleo: La pieza del buje trasero donde se monta el cassette (Shimano HG, Micro Spline, SRAM XD).\n- Par de apriete: La fuerza con la que se aprieta un tornillo, en Nm, medida con llave dinamométrica.\n- Pastillas: Las piezas que aprietan el disco para frenar.\n- Patilla de cambio: La pieza del cuadro donde va el cambio trasero; se dobla con los golpes para proteger el cuadro.\n- Pedalier: El eje y los rodamientos de la parte baja del cuadro sobre los que giran las bielas.\n- Piñones: Las ruedas dentadas de atrás; el grande es la marcha más suave.\n- Pinza de freno: La pieza que abraza el disco y aprieta las pastillas.\n- Platos: Las ruedas dentadas de delante, unidas a la biela derecha.\n- Potencia: La pieza que une el manillar con la horquilla.\n- Press-fit: Pedalier con rodamientos metidos a presión en el cuadro, sin rosca.\n- Purga o sangrado: Cambiar el líquido de los frenos hidráulicos para sacar el aire.\n- Radios: Las varillas que unen el buje con la llanta.\n- Roldanas: Las dos ruedecitas del cambio trasero por donde pasa la cadena.\n- SAG: Lo que se hunde la suspensión con el ciclista encima, parado.\n- Sensor de par: En la e-bike, mide la fuerza que haces en los pedales para dar la ayuda justa.\n- Sillín: El asiento.\n- Tensor: La ruedecita roscada donde entra el cable del cambio; sirve para el ajuste fino.\n- Tija: El tubo que sujeta el sillín y entra en el cuadro.\n- Tirantes y vainas: Los tubos de atrás del cuadro que llegan a la rueda: los tirantes arriba, las vainas abajo.\n- Topes H y L: Los tornillos del cambio que limitan hasta dónde va la cadena (H: piñón pequeño, L: grande).\n- Tubeless: Cubierta sin cámara, con líquido que tapa solo los agujeros pequeños.\n- Tubo de dirección: El tubo de delante del cuadro donde va la horquilla.\n- Válvula: Por donde se infla: Presta (fina) o Schrader (como la de los coches).\n- Zapatas: Las gomas que frenan contra la llanta en los frenos V-brake y de carretera."
 }
+],
+"glos": [
+[
+"Bielas",
+"Las dos palancas donde van los pedales; giran sobre el eje del pedalier y la derecha lleva los platos."
+],
+[
+"Buje",
+"La pieza del centro de la rueda, con los rodamientos; de él salen los radios."
+],
+[
+"Cadena",
+"Une los platos con los piñones y lleva la fuerza de tus piernas a la rueda de atrás."
+],
+[
+"Cámara",
+"El tubo de goma con aire que va dentro de la cubierta (si no es tubeless)."
+],
+[
+"Cambio trasero",
+"El mecanismo que mueve la cadena de un piñón a otro."
+],
+[
+"Cassette",
+"El bloque de piñones de la rueda trasera."
+],
+[
+"Cierre rápido",
+"Palanca que sujeta la rueda sin herramientas; se cierra con fuerza, no se enrosca."
+],
+[
+"Cubierta",
+"El neumático: la goma que toca el suelo."
+],
+[
+"Cuadro",
+"El esqueleto de la bici: los tubos donde se monta todo lo demás."
+],
+[
+"Desmontables",
+"Palancas de plástico para sacar la cubierta de la llanta."
+],
+[
+"Desviador delantero",
+"El mecanismo que pasa la cadena de un plato a otro."
+],
+[
+"Disco de freno",
+"El disco metálico que gira con la rueda y sobre el que aprietan las pastillas."
+],
+[
+"DOT",
+"Un tipo de líquido de frenos hidráulicos (SRAM y otras marcas); estropea la pintura."
+],
+[
+"Eje pasante",
+"Eje grueso que atraviesa el buje y se rosca al cuadro u horquilla; más rígido que el cierre rápido."
+],
+[
+"EPAC",
+"Bici de pedaleo asistido legal: motor de hasta 250 W que solo ayuda al pedalear y hasta 25 km/h."
+],
+[
+"ETRTO",
+"El código de medida de la cubierta, por ejemplo 37-622: ancho y diámetro en milímetros."
+],
+[
+"Fondo de llanta",
+"La cinta que tapa los agujeros de los radios por dentro de la llanta."
+],
+[
+"Horquilla",
+"La pieza delantera que sujeta la rueda y gira con el manillar; puede llevar suspensión."
+],
+[
+"Juego de dirección",
+"Los rodamientos que dejan girar la horquilla dentro del cuadro."
+],
+[
+"Latiguillo",
+"El tubo con líquido que va de la maneta a la pinza en los frenos hidráulicos."
+],
+[
+"Llanta",
+"El aro de la rueda donde se monta la cubierta."
+],
+[
+"Maneta",
+"La palanca del manillar para frenar (o para cambiar)."
+],
+[
+"Manillar",
+"La barra que agarras para dirigir la bici."
+],
+[
+"Monoplato (1x)",
+"Transmisión con un solo plato delante y sin desviador."
+],
+[
+"Núcleo",
+"La pieza del buje trasero donde se monta el cassette (Shimano HG, Micro Spline, SRAM XD)."
+],
+[
+"Par de apriete",
+"La fuerza con la que se aprieta un tornillo, en Nm, medida con llave dinamométrica."
+],
+[
+"Pastillas",
+"Las piezas que aprietan el disco para frenar."
+],
+[
+"Patilla de cambio",
+"La pieza del cuadro donde va el cambio trasero; se dobla con los golpes para proteger el cuadro."
+],
+[
+"Pedalier",
+"El eje y los rodamientos de la parte baja del cuadro sobre los que giran las bielas."
+],
+[
+"Piñones",
+"Las ruedas dentadas de atrás; el grande es la marcha más suave."
+],
+[
+"Pinza de freno",
+"La pieza que abraza el disco y aprieta las pastillas."
+],
+[
+"Platos",
+"Las ruedas dentadas de delante, unidas a la biela derecha."
+],
+[
+"Potencia",
+"La pieza que une el manillar con la horquilla."
+],
+[
+"Press-fit",
+"Pedalier con rodamientos metidos a presión en el cuadro, sin rosca."
+],
+[
+"Purga o sangrado",
+"Cambiar el líquido de los frenos hidráulicos para sacar el aire."
+],
+[
+"Radios",
+"Las varillas que unen el buje con la llanta."
+],
+[
+"Roldanas",
+"Las dos ruedecitas del cambio trasero por donde pasa la cadena."
+],
+[
+"SAG",
+"Lo que se hunde la suspensión con el ciclista encima, parado."
+],
+[
+"Sensor de par",
+"En la e-bike, mide la fuerza que haces en los pedales para dar la ayuda justa."
+],
+[
+"Sillín",
+"El asiento."
+],
+[
+"Tensor",
+"La ruedecita roscada donde entra el cable del cambio; sirve para el ajuste fino."
+],
+[
+"Tija",
+"El tubo que sujeta el sillín y entra en el cuadro."
+],
+[
+"Tirantes y vainas",
+"Los tubos de atrás del cuadro que llegan a la rueda: los tirantes arriba, las vainas abajo."
+],
+[
+"Topes H y L",
+"Los tornillos del cambio que limitan hasta dónde va la cadena (H: piñón pequeño, L: grande)."
+],
+[
+"Tubeless",
+"Cubierta sin cámara, con líquido que tapa solo los agujeros pequeños."
+],
+[
+"Tubo de dirección",
+"El tubo de delante del cuadro donde va la horquilla."
+],
+[
+"Válvula",
+"Por donde se infla: Presta (fina) o Schrader (como la de los coches)."
+],
+[
+"Zapatas",
+"Las gomas que frenan contra la llanta en los frenos V-brake y de carretera."
+]
 ]
 }

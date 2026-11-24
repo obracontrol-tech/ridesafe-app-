@@ -55,6 +55,16 @@ main{padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px;min-heigh
 .ilusA{display:block;margin-top:10px;width:100%;max-width:420px;border-radius:14px;border:1px solid var(--line);cursor:zoom-in}
 #ilusOv{position:fixed;inset:0;z-index:9999;background:rgba(5,10,20,.92);display:none;align-items:center;justify-content:center;padding:14px;flex-direction:column;gap:10px}
 #ilusOv.on{display:flex}#ilusOv img{width:100%;max-width:720px;border-radius:16px}#ilusOv button{background:var(--lime);color:var(--on-lime);border:0;border-radius:12px;font:inherit;font-weight:800;font-size:15px;padding:10px 22px}
+.partes{display:flex;align-items:center;gap:12px;width:100%;margin:6px 0 10px;background:var(--card2);border:1.5px solid #FDBA74;border-radius:16px;padding:10px 12px;color:var(--txt);font:inherit;text-align:left;cursor:pointer}
+.partes b{display:block;font-size:14.5px}.partes small{color:var(--txt2);font-size:12px}.partes span{font-size:28px}
+#glosOv{position:fixed;inset:0;z-index:9998;background:var(--bg);display:none;flex-direction:column}
+#glosOv.on{display:flex}
+#glosOv header{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 8px}
+#glosOv header b{flex:1;font-size:17px;color:#FDBA74}#glosOv header button{background:var(--lime);color:var(--on-lime);border:0;border-radius:12px;font:inherit;font-weight:800;padding:9px 16px}
+#glosOv .gb{overflow-y:auto;padding:0 14px 30px}
+#glosOv .gimg{width:100%;border-radius:14px;cursor:zoom-in;margin-bottom:10px}
+#glosQ{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:0 12px;font:inherit;font-size:15px;margin-bottom:10px}
+.gi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:7px;font-size:13.5px;line-height:1.45}.gi b{color:var(--lime)}
 .srcs{margin-top:14px}.srcs p{margin:0 0 6px;font-size:12.5px}
 .err{align-self:center;color:#FCA5A5;font-size:13.5px;text-align:center;max-width:90%}
 .dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--txt2);animation:b 1s infinite}
@@ -132,6 +142,7 @@ textarea:focus{border-color:var(--lime)}
     <div class="chips" id="chips"></div>
     <p class="sub">🔧 ¿Avería en la bici? Elige, cuéntalo y añade una foto</p>
     <div class="chips" id="chipsMec"></div>
+    <button class="partes" id="bPartes"><span>🚲</span><div><b>Las partes de la bici</b><small>Dibujo con los nombres y las palabras del mecánico de la A a la Z</small></div></button>
     <p class="sub">📘 Guías ilustradas (toca para ver en grande)</p>
     <div class="ilus" id="ilus"></div>
   </div>
@@ -188,7 +199,7 @@ MEC_CHIPS.forEach(([l,q])=>{const b=document.createElement('button');b.className
 const MEC=/(aver[ií]a|\bfren|pastillas? de freno|\bdiscos?\b|cadena|desviador|\bcambios?\b|pi[ñn][oó]n|cassette|ruido|cruj|chirr|holgura|suelt|manillar|juego de direcci|\bruedas?\b|\bradios?\b|llanta|\bbuje|\beje\b|cubierta|c[aá]mara de la rueda|pinch|tubeless|v[aá]lvula|\bpedal(es)?\b|biela|tija|horquilla|amortigu|\bcuadro\b|e-?bike|bici el[eé]ctrica|bater[ií]a|\bmotor\b)/i;
 const MEC_INST='[Consulta de avería mecánica de bicicleta. Instrucciones para la IA: empieza tu respuesta SIEMPRE con una primera línea exacta "GRAVEDAD: VERDE" (puede seguir rodando con precaución), "GRAVEDAD: ÁMBAR" (hay que arreglarlo antes de seguir; se puede hacer en ruta) o "GRAVEDAD: ROJO" (no debe seguir rodando; llevarla al taller). Frenos que no frenan bien, dirección o manillar suelto, cuadro u horquilla con grietas, rueda o eje suelto, radios rotos o llanta dañada son siempre ROJO. Ante la duda en algo de seguridad, elige la gravedad más alta. Después da: la causa probable (nunca la des por segura), pasos sencillos numerados para revisarlo o arreglarlo y las herramientas necesarias. Si hay fotos y no se ve bien el problema, pide otra foto más cerca o con más luz. Lenguaje sencillo, para alguien sin experiencia en mecánica.]\n\nPregunta del ciclista: ';
 /* v1.5 — 🔧 Guía de taller RideSafe (asistente-mecanica.json): en cada consulta de avería se añaden las 2 partes de la guía que más se parecen a la pregunta */
-let GUIA=null;fetch('asistente-mecanica.json?v=2').then(r=>r.json()).then(d=>{GUIA=(d&&d.s)||null}).catch(()=>{});
+let GUIA=null;fetch('asistente-mecanica.json?v=3').then(r=>r.json()).then(d=>{GUIA=(d&&d.s)||null;GLOS=(d&&d.glos)||[]}).catch(()=>{});
 function guiaPara(text){
   if(!GUIA)return '';
   const sc=GUIA.map(g=>{let n=0;try{const m=String(text).match(new RegExp(g.k,'gi'));n=m?m.length:0}catch(e){}return {g,n}}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,2);
@@ -202,6 +213,20 @@ let ultGuia='';
 function verIlus(f,t){let o=document.getElementById('ilusOv');if(!o){o=document.createElement('div');o.id='ilusOv';o.innerHTML='<img alt=""><button>Cerrar</button>';o.onclick=()=>o.classList.remove('on');document.body.appendChild(o)}
   const im=o.querySelector('img');im.src='img/guia/'+f+'.svg';im.alt=t||'Guía ilustrada';o.classList.add('on')}
 ['pinchazo','cadena','cambio','freno_disco','direccion','ruedas','ebike_motor'].forEach(k=>{const [f,t]=ILUS[k];const b=document.createElement('button');b.innerHTML='<img src="img/guia/'+f+'.svg" alt="" loading="lazy">';b.appendChild(document.createTextNode(t));b.onclick=()=>verIlus(f,t);$('ilus').appendChild(b)});
+/* v1.8 — 🚲 Las partes de la bici: dibujo propio (img/guia/partes.svg) + glosario A-Z con buscador (asistente-mecanica.json → glos) */
+let GLOS=[];
+function abrirPartes(){let o=document.getElementById('glosOv');
+  if(!o){o=document.createElement('div');o.id='glosOv';
+    o.innerHTML='<header><b>🚲 Las partes de la bici</b><button id="glosX">Cerrar</button></header><div class="gb"><img class="gimg" src="img/guia/partes.svg" alt="Dibujo de una bici con el nombre de cada parte"><input id="glosQ" type="search" placeholder="Buscar una palabra (ej. tija, patilla…)"><div id="glosL"></div></div>';
+    document.body.appendChild(o);
+    o.querySelector('#glosX').onclick=()=>o.classList.remove('on');
+    o.querySelector('.gimg').onclick=()=>verIlus('partes','Las partes de la bici');
+    const pinta=()=>{const q=(o.querySelector('#glosQ').value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const L=o.querySelector('#glosL');L.innerHTML='';
+      GLOS.filter(([a,b])=>!q||(a+' '+b).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q)).forEach(([a,b])=>{const d=document.createElement('div');d.className='gi';const t=document.createElement('b');t.textContent=a;d.append(t,document.createTextNode(' — '+b));L.appendChild(d)});
+      if(!L.children.length)L.innerHTML='<div class="gi">No está en la lista. Pregúntaselo al Asistente.</div>'};
+    o.querySelector('#glosQ').oninput=pinta;o._pinta=pinta}
+  o._pinta();o.classList.add('on')}
+$('bPartes').onclick=abrirPartes;
 function sinGuia(m){if(typeof m.content==='string')return {role:m.role,content:m.content.replace(/⟦GUÍA⟧[\s\S]*?⟦\/GUÍA⟧\n*/,'')};return m}
 const GRAV={VERDE:['🟢 Puedes seguir con precaución','Gravedad baja: puedes seguir con precaución'],'ÁMBAR':['🟠 Arréglalo antes de seguir','Gravedad media: arréglalo antes de seguir'],ROJO:['🔴 No sigas rodando · llévala al taller','Gravedad alta: no sigas rodando y llévala al taller']};
 async function shrink(file){const url=URL.createObjectURL(file);try{

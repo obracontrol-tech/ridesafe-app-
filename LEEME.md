@@ -1,3 +1,8 @@
+## Asistente RideSafe v1.8 — 🚲 Las partes de la bici
+- Nueva tarjeta «🚲 Las partes de la bici» al principio del Asistente: dibujo propio de una bici con 24 partes señaladas (img/guia/partes.svg; al tocarlo se amplía) y las palabras del mecánico de la A a la Z (48 palabras, explicadas con palabras propias) con buscador.
+- El glosario también va en la guía del Asistente: si preguntan «¿qué es la tija?» o «¿cómo se llama…?», responde con esas explicaciones.
+- Archivos: asistente.html, asistente-mecanica.json e img/guia/partes.svg.
+
 ## Asistente RideSafe v1.7 — 📘 Guías ilustradas propias
 - 7 ilustraciones nuevas, dibujadas de cero para RideSafe IA (no son las del libro): pinchazo, cadena gastada, ajustar el cambio, centrar el freno de disco, holgura de la dirección, centrar la rueda y «la e-bike no ayuda». Están en img/guia/*.svg.
 - Salen al principio del Asistente («📘 Guías ilustradas»), en una fila que se desliza; al tocar una se ve en grande.
