@@ -1,3 +1,9 @@
+## Versión 5.109.0 (Simple 1.59.0) — 🥐 Pasar mis restaurantes a Esmorzars
+- Actividades › Mis sitios › 🍽️ Restaurantes: nuevo botón «🥐 Pasar a Esmorzars ciclistes». Envía los restaurantes guardados (con su pueblo, sacado del mapa) a la lista de bares para desayunar.
+- Llegan a la consola master › 🥐 Esmorzars como «➕ Bar nuevo» y salen en la app cuando pulsas «✅ Añadir al ranking».
+- No repite: se salta los que ya están en la lista o ya se enviaron desde ese móvil.
+- Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.108.0 (Simple 1.58.0) — ⚡ Paradas de la ruta más rápidas
 - En «☕ Paradas en la ruta» ahora solo salen 💧 fuentes de agua (a menos de 300 m) y 🥐 bares recomendados de Esmorzars (hasta 1 km). Se quitan los bares normales, farmacias, talleres, tiendas y puntos de la comunidad: la búsqueda es mucho más ligera y carga antes.
 - Se mantienen los ⚠️ peligros avisados por los ciclistas (seguridad).

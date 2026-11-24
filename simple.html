@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.59.0 — 🥐 Carpeta 🍽️ Restaurantes: botón «Pasar a Esmorzars ciclistes» (envía tus restaurantes guardados a la lista, para aprobarlos en la consola). */
 /* v1.58.0 — ⚡ Paradas de la ruta más rápidas: solo 💧 fuentes de agua y 🥐 bares recomendados (y ⚠️ peligros avisados). */
 /* v1.57.0 — 🥐 «Parar aquí a desayunar»: en las paradas de la ruta (o tocando el 🥐 del mapa) se añade el bar como parada y la ruta se recalcula pasando por él. */
 /* v1.56.0 — 🥐 Los bares de «Esmorzars ciclistes» salen en las paradas de la ruta planificada (🥐 con su nota ⭐, hasta 1 km del recorrido). */
@@ -1301,7 +1302,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.58.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.59.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5839,6 +5840,24 @@ function gmapsRest(){
   const open=ll=>{const u='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('restaurantes cerca de mí');
     const w=window.open(u,'_blank','noopener');if(!w)location.href=u};
   open(null)}
+/* v1.59.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
+async function esmSendRest(){
+  const A=placesAll().filter(p=>placeCat(p)==='rest');
+  if(!A.length){toast('No hay sitios en 🍽️ Restaurantes');return}
+  if(!db||!uid){toast('Sin conexión. Inténtalo en unos segundos');return}
+  let have=[];try{have=await esmData()}catch(e){}
+  const sent=store.get('esmSent',{})||{};
+  const todo=A.filter(p=>!sent[p.k]&&!have.some(b=>hav([b.lat,b.lng],[p.lat,p.lng])<0.1));
+  if(!todo.length){toast('🥐 Tus restaurantes ya están enviados o en la lista');return}
+  if(!await askConfirm('🥐 Enviar a Esmorzars ciclistes',todo.length+(todo.length===1?' restaurante':' restaurantes')+' de tu carpeta irán a la lista de bares para desayunar. Antes los apruebas en la consola master.','Enviar'))return;
+  const me=store.get('me',null)||{},nm=String(me.name||'Ciclista').slice(0,40);let ok=0,bad=0;
+  for(let i=0;i<todo.length;i++){const p=todo[i];toast(`🥐 Enviando ${i+1} de ${todo.length}…`,1500);
+    let town='';try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=14&accept-language=ca&lat='+p.lat+'&lon='+p.lng);const d=await r.json();const a=(d&&d.address)||{};town=a.village||a.town||a.city||a.municipality||''}catch(e){}
+    try{await db.collection('esmorzars_pend').add({k:'bar',b:'',bn:String(p.n||'Bar').slice(0,60),s:0,g:'',c:'De mis sitios guardados (Restaurantes)',n:nm,p:String(town).slice(0,40),lat:+(+p.lat).toFixed(6),lng:+(+p.lng).toFixed(6),uid,ts:firebase.firestore.FieldValue.serverTimestamp()});sent[p.k]=1;ok++}catch(e){console.warn(e);bad++}
+    if(i<todo.length-1)await new Promise(r=>setTimeout(r,1100))}
+  store.set('esmSent',sent);
+  toast(bad?`🥐 Enviados ${ok}. ${bad} no se pudieron enviar (revisa la conexión)`:`🥐 ¡${ok} enviados! Apruébalos en la consola master › 🥐 Esmorzars`,5000);
+}
 function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c);
   const rows=[{html:`<div style="color:var(--txt2);font-size:14px;margin-top:6px">${A.length?'Toca un sitio para ir, verlo en el mapa, cambiarle el nombre o borrarlo.':'Aún no hay sitios en esta carpeta. Añade el primero:'}</div>`}];
   A.forEach(p=>rows.push({t:`${p.e} ${esc(p.n)}`,f:()=>placeOne(p.k)}));
@@ -5847,6 +5866,7 @@ function placesFolder(c){const F=plF(c),A=placesAll().filter(p=>placeCat(p)===c)
     if(!placeGet('trabajo'))rows.push({t:'💼 Guardar trabajo',f:()=>placeSetMenu('trabajo',()=>placesFolder('casa'))})}
   else rows.push({t:'➕ Añadir sitio',main:1,f:()=>placeAddIn(c)});
   if(c==='rest')rows.splice(1,0,{t:'🔎 Buscar restaurantes cerca en Google Maps',main:1,f:gmapsRest});
+  if(c==='rest'&&A.length)rows.splice(2,0,{t:'🥐 Pasar a Esmorzars ciclistes (bares para desayunar)',f:esmSendRest});
   rows.push({t:'↩️ Carpetas',f:()=>setTimeout(placesManage,150)});
   placeDlg(`${F[1]} ${F[2]}`,rows)}
 /* Tocar un sitio = ir. Borrar y lo demás van dentro */
