@@ -1,3 +1,10 @@
+## Versión 5.108.0 (Simple 1.58.0) — ⚡ Paradas de la ruta más rápidas
+- En «☕ Paradas en la ruta» ahora solo salen 💧 fuentes de agua (a menos de 300 m) y 🥐 bares recomendados de Esmorzars (hasta 1 km). Se quitan los bares normales, farmacias, talleres, tiendas y puntos de la comunidad: la búsqueda es mucho más ligera y carga antes.
+- Se mantienen los ⚠️ peligros avisados por los ciclistas (seguridad).
+- El aviso de tramo largo ahora dice «km sin fuentes ni bares recomendados».
+- La taza ☕ del mapa sigue igual (allí se pueden buscar farmacias, talleres, etc.).
+- Archivos: index.html, simple.html y sw.js.
+
 ## Versión 5.107.0 (Simple 1.57.0) — 🥐 Parar a desayunar en la ruta
 - En «☕ Paradas en la ruta», cada bar de Esmorzars (🥐) tiene el botón «🥐 Parar aquí a desayunar»: el bar se añade como parada y la ruta se recalcula pasando por él.
 - También tocando la marca 🥐 del mapa: «Parar aquí a desayunar» o «Ver opiniones y ficha del bar».

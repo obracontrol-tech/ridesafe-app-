@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.108.0 — ⚡ Paradas de la ruta más rápidas: solo 💧 fuentes de agua y 🥐 bares recomendados (y ⚠️ peligros avisados). */
 /* v5.107.0 — 🥐 «Parar aquí a desayunar»: en las paradas de la ruta (o tocando el 🥐 del mapa) se añade el bar como parada y la ruta se recalcula pasando por él. */
 /* v5.106.0 — 🥐 Los bares de «Esmorzars ciclistes» salen en las paradas de la ruta planificada (🥐 con su nota ⭐, hasta 1 km del recorrido). */
 /* v5.105.1 — 🥐 Esmorzars: mantén pulsado sobre un bar del mapa y la propuesta se rellena sola (nombre, pueblo y horario). */
@@ -1468,7 +1469,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.107.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.108.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6627,15 +6628,15 @@ let stopMk=[],stopFilter='all';
 function stopsClear(){stopMk.forEach(m=>m.remove());stopMk=[]}
 function stopsHTML(r){
   if(!r||!r.coords||r.coords.length<2)return '';
-  if(r.stopsBusy)return `<div class="stp"><b>☕ Paradas en la ruta</b><small style="display:block;color:var(--txt2)">Buscando fuentes, bares, farmacias y talleres…</small></div>`;
+  if(r.stopsBusy)return `<div class="stp"><b>☕ Paradas en la ruta</b><small style="display:block;color:var(--txt2)">Buscando fuentes de agua y bares recomendados…</small></div>`;
   if(!r.stopsList)return `<button class="btn btn-line" style="margin:6px 0;min-height:48px" onclick="loadStops()">☕ Ver paradas en la ruta</button>${r.stopsErr?'<small style="color:var(--txt2);display:block;text-align:center">No se pudieron cargar. Revisa la conexión e inténtalo otra vez.</small>':''}`;
   if(!stopMk.length&&!r.stopsDrawn){r.stopsDrawn=1;setTimeout(drawStops,50)}
   const L=r.stopsList,cnt={};L.forEach(s=>cnt[s.t]=(cnt[s.t]||0)+1);
   const chips=['all',...Object.keys(STOP_T).filter(k=>cnt[k])].map(k=>`<button class="${stopFilter===k?'on':''}" onclick="stopFilter=${jsq(k)};renderPlan();drawStops()">${k==='all'?'Todas ('+L.length+')':STOP_T[k][0]+' '+cnt[k]}</button>`).join('');
   const vis=L.filter(s=>stopFilter==='all'||s.t===stopFilter).slice(0,60);
-  const warn=(r.stopsGaps||[]).map(g=>`<div class="stp-warn">⚠️ <b>${Math.round(g.len)} km sin agua ni sitios para comprar</b> (del km ${Math.round(g.a)} al ${Math.round(g.b)}). Lleva agua extra.</div>`).join('');
+  const warn=(r.stopsGaps||[]).map(g=>`<div class="stp-warn">⚠️ <b>${Math.round(g.len)} km sin fuentes ni bares recomendados</b> (del km ${Math.round(g.a)} al ${Math.round(g.b)}). Lleva agua extra.</div>`).join('');
   const on=store.get('stopsOn',true);
-  return `<div class="stp"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">☕ Paradas en la ruta</b><button class="mini" style="min-height:36px;padding:0 12px" onclick="stopsSet(${on?'false':'true'})">${on?'🙈 Quitar del mapa':'👁️ Ver en el mapa'}</button></div><small style="display:block;color:var(--txt2)">A menos de 300 m del recorrido (🥐 bares para desayunar, hasta 1 km) · toca una para verla</small>${warn}
+  return `<div class="stp"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">☕ Paradas en la ruta</b><button class="mini" style="min-height:36px;padding:0 12px" onclick="stopsSet(${on?'false':'true'})">${on?'🙈 Quitar del mapa':'👁️ Ver en el mapa'}</button></div><small style="display:block;color:var(--txt2)">💧 Agua a menos de 300 m · 🥐 bares recomendados hasta 1 km · toca una para verla</small>${warn}
    ${L.length?`<div class="stp-chips">${chips}</div>${vis.map(s=>{const i=L.indexOf(s);const c=STOP_T[s.t];return `<button class="stp-li" onclick="goStop(${i})"><span class="k">km ${s.km<10?s.km.toFixed(1).replace('.',','):Math.round(s.km)}</span><span style="font-size:20px">${c[0]}</span><span style="flex:1;min-width:0"><b>${esc(s.n||c[1])}</b><small>${s.t==='esm'?(s.rn?'⭐ '+s.ra.toFixed(1).replace('.',',')+' ('+s.rn+') · ':'')+(s.pb?esc(s.pb)+' · ':'')+(s.g?'👥 grupetas · ':''):c[1]+' · '}a ${s.off>=1?s.off.toFixed(1).replace('.',',')+' km':Math.max(10,Math.round(s.off*1000/10)*10)+' m'} de la ruta</small></span></button>${s.t==='esm'?(esmInRoute(s)?`<div class="esm-in">✅ Parada para desayunar en tu ruta</div>`:`<button class="esm-add" onclick="esmAddToRoute(${i})">🥐 Parar aquí a desayunar</button>`):''}`}).join('')}`:'<small style="display:block;margin-top:6px">No hay paradas conocidas cerca de esta ruta. Lleva agua y comida suficiente.</small>'}</div>`;
 }
 /* v5.107.0 — 🥐 «Parar a desayunar»: un bar de Esmorzars de las paradas se añade a la ruta como punto de paso (se recalcula pasando por él) */
@@ -6734,7 +6735,8 @@ async function loadStops(){
   try{
     const c=r.coords;let s=90,w=180,n=-90,e=-180;c.forEach(p=>{s=Math.min(s,p[0]);n=Math.max(n,p[0]);w=Math.min(w,p[1]);e=Math.max(e,p[1])});
     const pd=0.004,bb=`${(s-pd).toFixed(4)},${(w-pd).toFixed(4)},${(n+pd).toFixed(4)},${(e+pd).toFixed(4)}`;
-    const q=OSM_Q(bb);
+    /* v5.108.0 — Más rápido: en la ruta solo se buscan fuentes de agua (los bares son los recomendados de Esmorzars) */
+    const q=`[out:json][timeout:20];(nwr["amenity"="drinking_water"](${bb});nwr["man_made"="water_tap"](${bb});nwr["natural"="spring"]["drinking_water"="yes"](${bb}););out center 800;`;
     const d=await overpassQ(q);
     // Muestras de la ruta (~cada 100 m) con su km
     const cd=cumDist(c),samp=[];let lastD=-1;for(let i=0;i<c.length;i++){if(cd[i]-lastD>=0.1||i===c.length-1){samp.push([c[i][0],c[i][1],cd[i]]);lastD=cd[i]}}
@@ -6743,7 +6745,7 @@ async function loadStops(){
     (d.elements||[]).forEach(el=>{const t=el.tags||{};const ty=osmType(t);if(!ty)return;const lat=el.lat??(el.center&&el.center.lat),lng=el.lon??(el.center&&el.center.lon);if(lat==null)return;
       const [off,km]=near(lat,lng);if(off>0.3)return;out.push({t:ty,n:t.name||'',lat,lng,km,off})});
     try{(await esmData()).forEach(b=>{const [off,km]=near(b.lat,b.lng);if(off>1)return;out.push({t:'esm',n:b.n,lat:b.lat,lng:b.lng,km,off,ra:b.a,rn:b.k,pb:b.p,g:b.g});for(let j=out.length-2;j>=0;j--){const y=out[j];if(y.t==='cafe'&&hav([y.lat,y.lng],[b.lat,b.lng])<0.12)out.splice(j,1)}})}catch(e){}
-    (typeof pois!=='undefined'?pois:[]).forEach(p=>{if(p.lat==null)return;const [off,km]=near(+p.lat,+p.lng);if(off>0.3)return;out.push({t:p.cat==='peligro'?'peligro':'com',n:p.name||'',lat:+p.lat,lng:+p.lng,km,off})});
+    (typeof pois!=='undefined'?pois:[]).forEach(p=>{if(p.lat==null||p.cat!=='peligro')return;const [off,km]=near(+p.lat,+p.lng);if(off>0.3)return;out.push({t:'peligro',n:p.name||'',lat:+p.lat,lng:+p.lng,km,off})});
     // Quitar repetidos (mismo tipo a menos de 60 m)
     out.sort((a,b)=>a.km-b.km);const L=[];out.forEach(x=>{if(!L.some(y=>y.t===x.t&&hav([y.lat,y.lng],[x.lat,x.lng])<0.06))L.push(x)});
     r.stopsList=L;stopsGaps(r);
@@ -6752,7 +6754,7 @@ async function loadStops(){
 }
 function stopsGaps(r){
   const tot=r.km||cumDist(r.coords).at(-1);const loop=r.mode==='loop';
-  const ws=[0,...r.stopsList.filter(s=>['agua','cafe','tienda','esm'].includes(s.t)||(s.t==='com'&&/agua|fuente|bar|caf/i.test(s.n))).map(s=>s.km),...(loop?[tot]:[])].sort((a,b)=>a-b);
+  const ws=[0,...r.stopsList.filter(s=>['agua','esm'].includes(s.t)).map(s=>s.km),...(loop?[tot]:[])].sort((a,b)=>a-b);
   if(!loop)ws.push(tot);
   const g=[];for(let i=1;i<ws.length;i++){const len=ws[i]-ws[i-1];if(len>=25)g.push({a:ws[i-1],b:ws[i],len})}
   r.stopsGaps=g.slice(0,3);
