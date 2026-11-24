@@ -126,7 +126,6 @@ textarea:focus{border-color:var(--lime)}
     <div class="chips" id="chips"></div>
     <p class="sub">🔧 ¿Avería en la bici? Elige, cuéntalo y añade una foto</p>
     <div class="chips" id="chipsMec"></div>
-    <details class="srcs lee" id="srcs"><summary style="cursor:pointer;font-weight:700">📚 Para saber más: webs de ciclismo recomendadas</summary></details>
   </div>
 </main>
 
@@ -232,7 +231,7 @@ const TEMAS=[
 function fuentesPara(t){const out=[];for(const [re,ks] of TEMAS){if(re.test(t))for(const k of ks)if(!out.includes(k))out.push(k);if(out.length>=2)break}return out.slice(0,2)}
 function linkFuente(k){const f=FUENTES[k];const a=document.createElement('a');a.href=f.u;a.target='_blank';a.rel='noopener';
   const sp=document.createElement('span');sp.textContent='📖';const dv=document.createElement('div');dv.textContent=f.n;const sm=document.createElement('small');sm.textContent=f.d;dv.appendChild(sm);a.append(sp,dv);return a}
-Object.keys(FUENTES).forEach(k=>{if(k!=='cofM')$('srcs').appendChild(linkFuente(k))});
+/* v1.6 — quitado el apartado «webs de ciclismo recomendadas» (a petición de JM) */
 
 /* ---------- Utilidades ---------- */
 function add(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;$('chat').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d}
@@ -378,7 +377,6 @@ async function ask(text){
   act.append(b1,b2);
   if(grav&&grav!=='VERDE'){const b3=document.createElement('button');b3.textContent='🔧 Talleres cerca';b3.onclick=async()=>{if(!ctx.ll)await getLoc();if(ctx.ll){$('near').open=true;$('near').scrollIntoView({behavior:'smooth',block:'start'})}};act.appendChild(b3)}
   d.appendChild(act);
-  const fs=fuentesPara(text);if(fs.length){const lee=document.createElement('div');lee.className='lee';lee.textContent='Para leer más:';fs.forEach(k=>lee.appendChild(linkFuente(k)));d.appendChild(lee)}
   d.scrollIntoView({behavior:'smooth',block:'end'});
   if(tts)speak(dice,()=>{if(conv)listen()});else if(conv)listen();
 }

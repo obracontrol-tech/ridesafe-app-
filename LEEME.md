@@ -1,3 +1,7 @@
+## Asistente RideSafe v1.6 — sin webs recomendadas
+- Quitado el apartado «📚 Para saber más: webs de ciclismo recomendadas» de la pantalla de inicio del Asistente y los enlaces «Para leer más» debajo de las respuestas.
+- Archivo: asistente.html.
+
 ## Asistente RideSafe v1.5.1 — 🔧 Guía de taller ampliada con el libro «Mecánica de bicis ilustrada»
 - asistente-mecanica.json pasa a la versión 1.1 (18 temas): añadidos medidas ETRTO, presiones del libro, rodaje y purga de frenos, grosor mínimo de pastillas y discos (Shimano), orden del ajuste del cambio (patilla, topes H/L, tensión, tornillo B), altura del desviador, centrado de ruedas, ejes y núcleos, estándares de pedalier, SAG de suspensiones, pares de apriete del libro, diagnóstico de e-bike paso a paso, cuidado de batería, normas de circulación y la tabla «síntoma, causa y primer paso».
 - Explicado con palabras propias; no se copian textos ni imágenes del libro.
