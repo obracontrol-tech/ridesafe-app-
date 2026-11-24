@@ -10,7 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
-/* RideSafe IA v5.105.1 — mantener pulsado sobre un bar del mapa rellena la propuesta sola (nombre, pueblo, horario).
+/* RideSafe IA v5.111.0 — cortina: deslizar la lista hacia abajo (o «⛶ Mapa grande») para ver el mapa a pantalla casi completa.
+   v5.105.1 — mantener pulsado sobre un bar del mapa rellena la propuesta sola (nombre, pueblo, horario).
    v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
    - Todos los bares, cafés y restaurantes del mapa (OpenStreetMap / Overpass) en la zona que miras.
    - Bares recomendados (esmorzars-seed.json + los que añade el administrador en config/esmorzars) con ranking por estrellas.
@@ -102,6 +103,16 @@ textarea.inp{resize:vertical}
 .pickbar{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:600;background:var(--card);border:1px solid var(--lime);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;gap:8px;align-items:center}
 .picking .pickbar{display:flex}
 .pickbar span{flex:1}
+/* v5.111 — Cortina: deslizar hacia abajo (o el botón ⛶) para ver el mapa grande */
+.handle{display:flex;flex-direction:column;align-items:center;gap:4px;padding:2px 0 8px;cursor:pointer;touch-action:none;user-select:none}
+.handle i{display:block;width:44px;height:5px;border-radius:3px;background:var(--line)}
+.handle span{font-size:12px;font-weight:700;color:var(--txt2)}
+.fullbtn{position:absolute;bottom:14px;left:12px;z-index:550;height:44px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer}
+body.full .search,body.full .chips,body.full h1 small{display:none}
+body.full header{padding-bottom:6px}
+body.full .panel{max-height:58px;overflow:hidden;padding-bottom:calc(env(safe-area-inset-bottom) + 6px)}
+body.full .panel > :not(.handle){display:none}
+.panel{transition:max-height .25s}
 .pickbar button{height:38px;border-radius:10px;border:0;padding:0 12px;font:inherit;font-weight:800;cursor:pointer}
 </style>
 </head>
@@ -122,11 +133,12 @@ textarea.inp{resize:vertical}
   <button class="chip" data-k="grp">👥 Buenos para grupetas</button>
 </div>
 
-<div id="map"><div class="status" id="st"></div>
+<div id="map"><div class="status" id="st"></div><button class="fullbtn" id="bFull" aria-label="Mapa grande">⛶ Mapa grande</button>
   <div class="pickbar"><span>👆 Toca en el mapa el bar que quieres añadir</span><button id="pkCancel" style="background:var(--card2);color:var(--txt)">Cancelar</button></div>
 </div>
 
 <div class="panel">
+  <div class="handle" id="hdl"><i></i><span id="hdlT">▼ Desliza hacia abajo para ver el mapa grande</span></div>
   <div class="tabs"><button class="tab on" data-t="rank">🏆 Ranking</button><button class="tab" data-t="near">📍 Cerca de aquí</button></div>
   <div id="list"><div class="empty">Cargando…</div></div>
   <button class="add" id="bAdd">➕ Proponer un bar para desayunar</button>
@@ -413,6 +425,23 @@ $('bBack').addEventListener('click',function(e){
   if(EMBED){e.preventDefault();window.parent.postMessage('esmClose','*');return}
   if(document.referrer&&document.referrer.indexOf(location.origin)===0&&history.length>1){e.preventDefault();history.back()}
 });
+
+/* ---------- Cortina (mapa grande) ---------- */
+function setFull(on){
+  document.body.classList.toggle('full',on);
+  $('bFull').textContent=on?'▲ Ver lista':'⛶ Mapa grande';
+  $('hdlT').textContent=on?'▲ Desliza hacia arriba para ver la lista':'▼ Desliza hacia abajo para ver el mapa grande';
+  try{localStorage.setItem('esm_full',on?'1':'0')}catch(e){}
+  setTimeout(function(){map.invalidateSize()},280);
+}
+$('bFull').addEventListener('click',function(e){e.stopPropagation();setFull(!document.body.classList.contains('full'))});
+(function(){var y0=null,hd=$('hdl');
+  hd.addEventListener('touchstart',function(e){y0=e.touches[0].clientY},{passive:true});
+  hd.addEventListener('touchend',function(e){if(y0==null)return;var dy=e.changedTouches[0].clientY-y0;y0=null;
+    if(dy>30)setFull(true);else if(dy<-30)setFull(false);else setFull(!document.body.classList.contains('full'))});
+  hd.addEventListener('click',function(e){if(e.pointerType==='mouse'||e.detail>0&&!('ontouchstart' in window))setFull(!document.body.classList.contains('full'))});
+})();
+try{if(localStorage.getItem('esm_full')==='1')setFull(true)}catch(e){}
 
 loadData();
 if(!isNaN(pLat)&&!isNaN(pLng)){map.setView([pLat,pLng],13);locate(false)}else locate(true);
