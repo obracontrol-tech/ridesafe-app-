@@ -1,3 +1,8 @@
+## Versión 5.111.0 (Simple 1.61.0) — 🥐 Esmorzars: mapa grande
+- En «Esmorzars ciclistes», cortina para ver el mapa casi a pantalla completa: desliza la lista hacia abajo (o pulsa «⛶ Mapa grande», abajo a la izquierda del mapa). Para volver, desliza hacia arriba o pulsa «▲ Ver lista».
+- Se esconden el buscador, los filtros y la lista; la app recuerda cómo lo dejaste.
+- Archivos: esmorzars.html, index.html, simple.html y sw.js.
+
 ## Versión 5.110.0 (Simple 1.60.0) — 📱 Consola: uso real de la app
 - La app (Pro y Simple) apunta, al abrirse (como mucho cada 3 horas), que ese ciclista la usa: qué app (Pro o Simple), versión, móvil (Android / iPhone / PC), si está instalada o en el navegador, el día y cuántas veces la abre. Se guarda en la colección «uso» (un documento por ciclista).
 - Consola master › nueva pestaña «📱 Uso de la app»: activos hoy, 7 días y 30 días; registrados que no la usan; gráfica de ciclistas por día; Pro frente a Simple; móviles; versiones; instalada o navegador; y la lista numerada de quién la usa (último uso, días de uso y aperturas).

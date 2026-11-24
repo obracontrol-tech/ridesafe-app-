@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.61.0 — 🥐 Esmorzars: cortina para ver el mapa grande (deslizar la lista hacia abajo o «⛶ Mapa grande»). */
 /* v1.60.0 — 📱 Uso real de la app para la consola (quién la usa de verdad, no solo altas): colección «uso». */
 /* v1.59.0 — 🥐 Carpeta 🍽️ Restaurantes: botón «Pasar a Esmorzars ciclistes» (envía tus restaurantes guardados a la lista, para aprobarlos en la consola). */
 /* v1.58.0 — ⚡ Paradas de la ruta más rápidas: solo 💧 fuentes de agua y 🥐 bares recomendados (y ⚠️ peligros avisados). */
@@ -1303,7 +1304,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.60.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.61.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5843,7 +5844,7 @@ function gmapsRest(){
   open(null)}
 /* v1.59.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
 /* v1.60.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
-const USO_APP='simple',USO_VER='1.60.0';let usoT=0;
+const USO_APP='simple',USO_VER='1.61.0';let usoT=0;
 function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
 function usoPing(){
   try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();
