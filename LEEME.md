@@ -1,3 +1,10 @@
+## Versión 5.106.0 (Simple 1.56.0) — 🥐 Esmorzars en la ruta planificada
+- Al planificar una ruta, en «☕ Paradas en la ruta» salen también los bares de «Esmorzars ciclistes» (los de la lista y los aprobados en la consola) que queden a menos de 1 km del recorrido.
+- Salen con 🥐 (marca naranja más grande en el mapa), el km de la ruta, su nota ⭐ y número de opiniones, el pueblo y si va bien para grupetas. Hay un filtro «🥐» para ver solo esos.
+- Si un bar normal del mapa (☕) es el mismo que uno de la lista, solo sale una vez, como 🥐.
+- Se actualiza solo: lo que apruebas en la consola sale en las rutas nuevas (como mucho 10 minutos después).
+- Archivos: index.html, simple.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.105.1 (Simple 1.55.1) — 🥐 Esmorzars: añadir un bar manteniendo pulsado
 - En «Esmorzars ciclistes», mantén pulsado sobre un bar del mapa: la app busca ese bar en OpenStreetMap y rellena sola el nombre, el pueblo y el horario. Solo hay que poner la nota (opcional) y «📨 Enviar para la lista».
 - En la ficha de cualquier bar del mapa (☕) hay un botón «➕ Añadir al ranking» que hace lo mismo.
