@@ -1,3 +1,29 @@
+## Versión 5.110.0 (Simple 1.60.0) — 📱 Consola: uso real de la app
+- La app (Pro y Simple) apunta, al abrirse (como mucho cada 3 horas), que ese ciclista la usa: qué app (Pro o Simple), versión, móvil (Android / iPhone / PC), si está instalada o en el navegador, el día y cuántas veces la abre. Se guarda en la colección «uso» (un documento por ciclista).
+- Consola master › nueva pestaña «📱 Uso de la app»: activos hoy, 7 días y 30 días; registrados que no la usan; gráfica de ciclistas por día; Pro frente a Simple; móviles; versiones; instalada o navegador; y la lista numerada de quién la usa (último uso, días de uso y aperturas).
+- Resumen: la tarjeta «🟢 Usan la app hoy» (con semana y mes) sustituye a «Activos 24 h».
+- Ciclistas: columna «#» (número), columna «Último uso» (con Pro/Simple), filtros «🟢 Usan la app», «💤 No la usan» y «👯 Repetidos», y botón «🧹 Marcar repetidos»: de cada nombre repetido deja el que más se usa y marca los demás; luego se borran con «❌ Eliminar seleccionados» (no borra nada solo).
+- Consola con aspecto más moderno (tarjetas de cristal y colores por dato).
+- Los datos de uso empiezan a contar desde esta versión: los primeros días saldrán pocos.
+- NECESITA pegar una vez este bloque en Firebase › velogo-fba42 › Firestore Database › Reglas, justo debajo del bloque «esmorzars_pend» (dentro de `match /databases/{database}/documents {`), y pulsar Publicar:
+
+```
+    match /uso/{id} {
+      allow read, delete: if request.auth != null
+        && request.auth.token.email == 'pedrosaborrego@gmail.com';
+      allow create, update: if request.auth != null
+        && id == request.auth.uid
+        && request.resource.data.keys().hasOnly(['app','ver','os','pwa','last','first','opens','days'])
+        && request.resource.data.app in ['pro','simple']
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 20
+        && request.resource.data.os is string && request.resource.data.os.size() <= 10
+        && request.resource.data.last is int
+        && request.resource.data.opens is int
+        && request.resource.data.days is map && request.resource.data.days.size() <= 800;
+    }
+```
+- Archivos: index.html, simple.html, master.html y sw.js.
+
 ## Versión 5.109.0 (Simple 1.59.0) — 🥐 Pasar mis restaurantes a Esmorzars
 - Actividades › Mis sitios › 🍽️ Restaurantes: nuevo botón «🥐 Pasar a Esmorzars ciclistes». Envía los restaurantes guardados (con su pueblo, sacado del mapa) a la lista de bares para desayunar.
 - Llegan a la consola master › 🥐 Esmorzars como «➕ Bar nuevo» y salen en la app cuando pulsas «✅ Añadir al ranking».

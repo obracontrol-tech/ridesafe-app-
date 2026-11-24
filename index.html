@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.110.0 — 📱 Uso real de la app para la consola (quién la usa de verdad, no solo altas): colección «uso». */
 /* v5.109.0 — 🥐 Carpeta 🍽️ Restaurantes: botón «Pasar a Esmorzars ciclistes» (envía tus restaurantes guardados a la lista, para aprobarlos en la consola). */
 /* v5.108.0 — ⚡ Paradas de la ruta más rápidas: solo 💧 fuentes de agua y 🥐 bares recomendados (y ⚠️ peligros avisados). */
 /* v5.107.0 — 🥐 «Parar aquí a desayunar»: en las paradas de la ruta (o tocando el 🥐 del mapa) se añade el bar como parada y la ruta se recalcula pasando por él. */
@@ -1470,7 +1471,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.109.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.110.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -6005,6 +6006,18 @@ function gmapsRest(){
     const w=window.open(u,'_blank','noopener');if(!w)location.href=u};
   open(null)}
 /* v5.109.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
+/* v5.110.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
+const USO_APP='pro',USO_VER='5.110.0';let usoT=0;
+function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
+function usoPing(){
+  try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();
+    const d=new Date(),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let pwa=false;try{pwa=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){}
+    const o={app:USO_APP,ver:USO_VER,os:usoOs(),pwa,last:Date.now(),opens:firebase.firestore.FieldValue.increment(1),days:{[k]:true}};
+    if(store.get('usoFirst',0)!==uid){o.first=Date.now();store.set('usoFirst',uid)}
+    db.collection('uso').doc(uid).set(o,{merge:true}).catch(()=>{usoT=0});
+  }catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')usoPing()});
 async function esmSendRest(){
   const A=placesAll().filter(p=>placeCat(p)==='rest');
   if(!A.length){toast('No hay sitios en 🍽️ Restaurantes');return}
@@ -8751,6 +8764,7 @@ function startFirebase(){
     if(!u){auth.signInAnonymously().catch(e=>{console.error(e);toast('No se pudo conectar con RideSafe IA');});return}
     if(uid===u.uid)return;
     uid=u.uid;
+    setTimeout(usoPing,4000);
     // Perfil
     db.collection('users').doc(uid).onSnapshot(s=>{
       if(s.exists&&s.data().name){me={...me,...s.data()};store.set('me',me);if(!(onbI===3&&$('onb').classList.contains('show')))$('onb').classList.remove('show');if(!window.__sn)setTimeout(safetyNudge,5000);setTimeout(legalGate,2500)}   // v5.30: aceptar condiciones

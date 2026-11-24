@@ -129,6 +129,25 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
   .kpi .v{font-size:26px}
   .tbl .hide-m{display:none}
 }
+
+/* v5.110.0 — Consola más moderna: tarjetas de cristal, acentos de color, números grandes */
+.kpi{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .18s,border-color .18s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--line2)}
+.kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(closest-side,rgba(200,220,60,.16),transparent);pointer-events:none}
+.kpi.k-ok::after{background:radial-gradient(closest-side,rgba(74,222,128,.2),transparent)}.kpi.k-ok .v{color:var(--ok)}
+.kpi.k-lime .v{color:var(--lime)}
+.kpi.k-blue::after{background:radial-gradient(closest-side,rgba(96,165,250,.2),transparent)}.kpi.k-blue .v{color:var(--blue)}
+.kpi.k-warn::after{background:radial-gradient(closest-side,rgba(251,191,36,.18),transparent)}.kpi.k-warn .v{color:var(--warn)}
+.kpi .v{font-size:36px;line-height:1.05}
+.box{border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,.005)),var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)}
+.side{background:linear-gradient(180deg,rgba(14,26,43,.96),rgba(7,13,23,.96))}
+.nav{transition:background .15s,color .15s,transform .15s}.nav:hover{transform:translateX(2px)}
+.nav.on{background:linear-gradient(90deg,rgba(200,220,60,.2),rgba(200,220,60,.04));box-shadow:inset 3px 0 0 var(--lime)}
+.top h2{font-size:28px}
+.tbl tr:hover td{background:rgba(200,220,60,.04)}
+.chip{transition:all .15s}.chip:hover{border-color:var(--lime);color:var(--txt)}
+.rank .row .bw{height:10px;border-radius:6px}.rank .row .bw i{border-radius:6px}
+@media (max-width:980px){.kpi .v{font-size:28px}.nav.on{box-shadow:inset 0 -3px 0 var(--lime)}.nav:hover{transform:none}}
 </style></head><body>
 
 <!-- ===== Acceso ===== -->
@@ -147,6 +166,7 @@ select.inp,.inp{background:var(--card);border:1px solid var(--line2);border-radi
   <nav class="side" id="side">
     <div class="brand"><img src="icons/icon-192.png" alt=""><div><b>RideSafe <span>IA</span></b><small>MASTER</small></div></div>
     <button class="nav on" data-v="res" onclick="go('res')">📊 Resumen</button>
+    <button class="nav" data-v="uso" onclick="go('uso')">📱 Uso de la app <span class="ct" id="nUso"></span></button>
     <button class="nav" data-v="clubs" onclick="go('clubs')">🏅 Clubes <span class="ct" id="nClubs"></span></button>
     <button class="nav" data-v="users" onclick="go('users')">👥 Ciclistas <span class="ct" id="nUsers"></span></button>
     <button class="nav" data-v="rides" onclick="go('rides')">📅 Salidas <span class="ct" id="nRides"></span></button>
@@ -2513,8 +2533,8 @@ auth.onAuthStateChanged(async u=>{
 });
 
 /* ---------- Datos ---------- */
-let D={users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[],support:[]},ann={},upd={items:[]},shops={},loadedAt=0,view='res';
-const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions','support'];
+let D={uso:[],users:[],groups:[],rides:[],feed:[],routes:[],pois:[],reports:[],nearby:[],rank:[],mod:[],sanctions:[],support:[]},ann={},upd={items:[]},shops={},loadedAt=0,view='res';
+const COLS=['users','groups','rides','feed','routes','pois','reports','nearby','rank','mod','sanctions','support','uso'];
 async function loadAll(manual){
   $('view').innerHTML='<div class="empty">Cargando datos de la app…</div>';
   const res=await Promise.all(COLS.map(c=>db.collection(c).limit(5000).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{console.warn(c,e);return[]})));
@@ -2534,14 +2554,15 @@ function counts(){
   const nr=$('nRep');nr.textContent=D.reports.length||'';nr.classList.toggle('alert',D.reports.length>0);
   const na=activeSan();$('nSan').textContent=na.length||'';
   try{const ne=esmPend().length,e=$('nEsm');if(e){e.textContent=ne||'';e.classList.toggle('alert',ne>0)}}catch(e){}
+  try{const e=$('nUso');if(e)e.textContent=usoAct(1).length||''}catch(e){}
   const nsh=$('nShops');if(nsh)nsh.textContent=Object.keys(shops).length||'';
   const ns=D.support.filter(x=>!x.reply&&x.status!=='closed').length;const nsu=$('nSup');if(nsu){nsu.textContent=ns||'';nsu.classList.toggle('alert',ns>0)}
 }
 function go(v){view=v;$('tip').style.display='none';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));render();window.scrollTo(0,0)}
 function render(){
-  const T={esm:['🥐 Esmorzars ciclistes','Bares para desayunar: opiniones y bares que proponen los ciclistas'],legal:['Condiciones de uso y privacidad','Copia del documento y registro de aceptaciones'],shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
+  const T={uso:['📱 Uso de la app','Quién usa RideSafe IA de verdad: Pro y Simple, móviles, versiones y días de uso'],esm:['🥐 Esmorzars ciclistes','Bares para desayunar: opiniones y bares que proponen los ciclistas'],legal:['Condiciones de uso y privacidad','Copia del documento y registro de aceptaciones'],shops:['Tiendas amigas','Tiendas que recomiendan la app con su QR'],res:['Resumen','Todo RideSafe IA de un vistazo'],clubs:['Clubes','Cada club es un espacio privado'],users:['Ciclistas','Todos los usuarios de la app'],rides:['Salidas','Todas las salidas de todos los clubes'],cont:['Contenido','Rutas, actividad y puntos ciclistas'],rep:['Reportes','Lo que denuncian los usuarios'],sup:['Consultas e incidencias','Lo que preguntan los ciclistas desde la app · contesta y les llega un aviso'],ann:['Aviso general','Mensaje para todos los usuarios'],eth:['Ética y sanciones','Código ético, avisos, suspensiones y expulsiones'],news:['Novedades','Anuncia lo nuevo y las próximas actualizaciones'],mnt:['Copias y restaurar','Copia de seguridad, restauración y mantenimiento'],lic:['Licencias de clientes','Activa, avisa o suspende las apps de tus clientes']}[view];
   $('vTitle').textContent=T[0];$('vSub').textContent=T[1]+' · datos de las '+new Date(loadedAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic,legal:vLegal,esm:vEsm})[view]();
+  ({res:vRes,clubs:vClubs,users:vUsers,rides:vRides,cont:vCont,rep:vRep,sup:vSup,ann:vAnn,mnt:vMnt,eth:vEth,news:vNews,shops:vShops,lic:vLic,legal:vLegal,esm:vEsm,uso:vUso})[view]();
 }
 
 /* ---------- 🔑 Licencias de clientes (apps de marca blanca) ----------
@@ -2617,7 +2638,7 @@ function vRes(){
    <div class="kpis">
     <div class="kpi"><div class="l">🏅 Clubes</div><div class="v num">${nf(D.groups.length)}</div><div class="h">${D.groups.filter(g=>g.club).length} oficiales</div></div>
     <div class="kpi"><div class="l">👥 Ciclistas</div><div class="v num">${nf(U.length)}</div><div class="h">${U.filter(u=>u.google).length} con Google · ${noClubUsers} sin club</div></div>
-    <div class="kpi"><div class="l">🟢 Activos 24 h</div><div class="v num">${nf(act)}</div><div class="h">con la app abierta</div></div>
+    <div class="kpi k-ok" onclick="go('uso')" style="cursor:pointer"><div class="l">🟢 Usan la app hoy</div><div class="v num">${nf(D.uso.length?usoAct(1).length:act)}</div><div class="h">${D.uso.length?nf(usoAct(7).length)+' esta semana · '+nf(usoAct(30).length)+' este mes':'con la app abierta'}</div></div>
     <div class="kpi"><div class="l">📅 Salidas próximas</div><div class="v num">${nf(up)}</div><div class="h">${nf(D.rides.length)} en total</div></div>
     <div class="kpi"><div class="l">🗺️ Rutas</div><div class="v num">${nf(D.routes.length)}</div><div class="h">compartidas en clubes</div></div>
     <div class="kpi"><div class="l">📰 Actividad</div><div class="v num">${nf(D.feed.length)}</div><div class="h">salidas publicadas</div></div>
@@ -2683,7 +2704,7 @@ async function clubDelete(id){
 let qUser='',fUser='all',sUser='new';const selU=new Set();   // v5.13.8: sUser = orden (new = altas más recientes, old = más antiguas, pts = puntos)
 function vUsers(){
   let l=D.users.filter(u=>u.name).map(u=>({...u,_c:userClub(u.id)}));
-  if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);
+  if(fUser==='ban')l=l.filter(u=>u.banned||isSan(u.id));if(fUser==='noclub')l=l.filter(u=>!u._c);if(fUser==='google')l=l.filter(u=>u.google);if(fUser==='act')l=l.filter(u=>usoDays(u.id)<=30);if(fUser==='inact')l=l.filter(u=>usoDays(u.id)>30);if(fUser==='dup'){const G=dupGroups();l=l.filter(u=>G.has(nameKey(u.name)));l.sort((a,b)=>nameKey(a.name).localeCompare(nameKey(b.name)))}
   if(qUser)l=l.filter(u=>(u.name+' '+(u._c?u._c.name:'')).toLowerCase().includes(qUser.toLowerCase()));
   if(sUser==='pts')l.sort((a,b)=>(b.pts||0)-(a.pts||0));
   else l.sort((a,b)=>{const x=tsMs(a.since),y=tsMs(b.since);if(!x&&!y)return 0;if(!x)return 1;if(!y)return -1;return sUser==='old'?x-y:y-x});
@@ -2692,15 +2713,16 @@ function vUsers(){
   const mKey=u=>{const t=tsMs(u.since);if(!t)return 'Sin fecha de alta';const d=new Date(t);const m=d.toLocaleDateString('es-ES',{month:'long',year:'numeric'});return m.charAt(0).toUpperCase()+m.slice(1)};
   const mCount={};if(sUser!=='pts')l.forEach(u=>{const k=mKey(u);mCount[k]=(mCount[k]||0)+1});
   let lastM='';
-  const row=u=>{let h='';if(sUser!=='pts'){const k=mKey(u);if(k!==lastM){lastM=k;h=`<tr class="mh"><td colspan="7" style="background:var(--card2);color:var(--lime);font-weight:800;font-size:13px;padding:8px 12px">📅 ${esc(k)} · ${mCount[k]} ${mCount[k]===1?'alta':'altas'}</td></tr>`}}return h};
+  const row=u=>{let h='';if(sUser!=='pts'){const k=mKey(u);if(k!==lastM){lastM=k;h=`<tr class="mh"><td colspan="9" style="background:var(--card2);color:var(--lime);font-weight:800;font-size:13px;padding:8px 12px">📅 ${esc(k)} · ${mCount[k]} ${mCount[k]===1?'alta':'altas'}</td></tr>`}}return h};
   $('view').innerHTML=`<p style="color:var(--txt2);font-size:13.5px;margin:0 2px 10px">🆕 Altas este mes: <b style="color:var(--lime)">${nMes}</b> · últimos 7 días: <b style="color:var(--lime)">${n7}</b> · total: <b>${D.users.filter(u=>u.name).length}</b></p><div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUser)}" oninput="qUser=this.value;vUsers();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
-    <div class="chips">${[['all','Todos'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
+    <div class="chips">${[['all','Todos'],['act','🟢 Usan la app'],['inact','💤 No la usan'],['dup','👯 Repetidos ('+dupCount()+')'],['noclub','Sin club'],['google','Con Google'],['ban','Sancionados']].map(([k,t])=>`<button class="chip${fUser===k?' on':''}" onclick="fUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
     <div class="chips">${[['new','🆕 Más nuevos'],['old','📅 Más antiguos'],['pts','⭐ Puntos']].map(([k,t])=>`<button class="chip${sUser===k?' on':''}" onclick="sUser=${jsq(k)};vUsers()">${t}</button>`).join('')}</div>
-    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
+    <button class="btn sm" onclick="csvUsers()">⬇️ Excel/CSV</button>${dupCount()?`<button class="btn sm" onclick="dupSelect()" title="Marca las copias de un mismo nombre y deja la que más se usa">🧹 Marcar repetidos</button>`:''}${selU.size?`<button class="btn sm red" onclick="userDelSel()">❌ Eliminar ${selU.size} seleccionado${selU.size===1?'':'s'}</button><button class="btn sm" onclick="selU.clear();vUsers()">Quitar selección</button>`:''}</div>
    <p style="color:var(--txt3);font-size:12.5px;margin:-4px 2px 10px">Marca la casilla de los nombres de prueba para eliminarlos de golpe. «✏️ Nombre» cambia el nombre en todos los sitios (club, salidas, ranking y su móvil).</p>
-   <div class="box tw"><table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
-   ${l.slice(0,400).map(u=>row(u)+`<tr><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'} · alta ${fDate(u.since)}</small></div></div></td>
+   <div class="box tw"><table class="tbl"><thead><tr><th class="r" style="width:34px">#</th><th style="width:30px"><input type="checkbox" title="Marcar todos los de la lista" onclick="userSelAll(this.checked)" ${l.length&&l.slice(0,400).every(u=>selU.has(u.id))?'checked':''}></th><th>Ciclista</th><th class="hide-m">Club</th><th class="r">Puntos</th><th class="hide-m">Desde</th><th class="hide-m">Último uso</th><th class="hide-m">Estado</th><th class="r">Acciones</th></tr></thead><tbody>
+   ${l.slice(0,400).map((u,ix)=>row(u)+`<tr><td class="r num" style="color:var(--txt3);font-weight:800">${ix+1}</td><td><input type="checkbox" data-id="${esc(u.id)}" ${selU.has(u.id)?'checked':''} onclick="userSel(${jsq(u.id)},this.checked)"></td><td><div class="who"><div class="av" style="background:${colorOf(u.name)}">${esc(ini(u.name))}</div><div><b>${esc(u.name)}</b><small>${u.google?'Google ✓':'Anónimo'} · alta ${fDate(u.since)}</small></div></div></td>
      <td class="hide-m" style="color:var(--txt2)">${u._c?esc(u._c.name):'<span class="pill mut">Sin club</span>'}</td><td class="r num">${nf(u.pts||0)}</td><td class="hide-m" style="color:var(--txt2)">${fDate(u.since)}</td>
+     <td class="hide-m">${usoCell(u.id)}</td>
      <td class="hide-m">${userState(u.id,u)}</td>
      <td class="r"><div class="acts"><button class="btn sm" onclick="userPts(${jsq(u.id)})">Puntos</button>${isSan(u.id)||u.banned?`<button class="btn sm" onclick="liftUser(${jsq(u.id)})">✓ Levantar</button>`:''}<button class="btn sm red" onclick="sanctionUser(${jsq(u.id)})">⚖️ Sancionar</button><button class="btn sm" onclick="userRename(${jsq(u.id)})">✏️ Nombre</button><button class="btn sm red" onclick="userWipe(${jsq(u.id)})">🗑️ Contenido</button><button class="btn sm red" onclick="userDel(${jsq(u.id)})">❌ Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nadie con este filtro</div></td></tr>'}
    </tbody></table>${l.length>400?`<div class="empty">Mostrando 400 de ${l.length}. Usa el buscador.</div>`:''}</div>`;
@@ -3084,6 +3106,70 @@ function shopCartel(id){const x=shops[id];if(!x)return;const u=SHOP_URL(id);cons
    <p class="t4">Salidas del club · Rutas con mapa · Pelotón en vivo<br>Avisos de pinchazo, «esperad» y caída</p><p class="f">SALIR JUNTOS. VOLVER TODOS. · ridesafeia.es</p></div>
    <script>setTimeout(()=>print(),500)<\/script></body></html>`);w.document.close()}
 
+
+/* ---------- 📱 v5.110.0 — Uso real de la app (colección «uso», la escribe cada móvil al abrir la app) ---------- */
+const DAY=86400000;
+const usoOf=id=>D.uso.find(x=>x.id===id);
+const usoDays=id=>{const u=usoOf(id);return u&&u.last?(Date.now()-u.last)/DAY:1e9};
+const usoAct=n=>D.uso.filter(x=>x.last&&Date.now()-x.last<=n*DAY);
+function agoTxt(t){if(!t)return '—';const m=(Date.now()-t)/60000;if(m<60)return 'hace '+Math.max(1,Math.round(m))+' min';const hh=m/60;if(hh<24)return 'hace '+Math.round(hh)+' h';const d=Math.round(hh/24);if(d<31)return 'hace '+d+(d===1?' día':' días');return fDate(t)}
+const APPN={pro:['Pro','lime'],simple:['Simple','ok']},OSN={android:'🤖 Android',ios:'🍏 iPhone',windows:'🪟 PC',mac:'💻 Mac',otro:'❔ Otro'};
+function usoPill(id){const u=usoOf(id);if(!u||!u.last)return '<span class="pill mut">Sin datos</span>';const d=usoDays(id);
+  return `<span class="pill ${d<=1?'ok':d<=7?'lime':d<=30?'warn':'mut'}">${d<=1?'🟢':d<=30?'🟡':'💤'} ${agoTxt(u.last)}</span>`}
+function usoCell(id){const u=usoOf(id);if(!u||!u.last)return usoPill(id);const a=APPN[u.app]||['?','mut'];return usoPill(id)+` <span class="pill ${a[1]}">${a[0]}</span>`}
+function nameKey(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'')}
+function dupGroups(){const m={};D.users.filter(u=>u.name).forEach(u=>{const k=nameKey(u.name);if(k)(m[k]=m[k]||[]).push(u)});const s=new Map();Object.entries(m).forEach(([k,a])=>{if(a.length>1)s.set(k,a)});return s}
+function dupCount(){let n=0;dupGroups().forEach(a=>n+=a.length-1);return n}
+function dupSelect(){
+  /* De cada nombre repetido se queda el que más se usa (último uso, club, puntos) y se marcan los demás. No borra nada: luego pulsas «❌ Eliminar seleccionados». */
+  const score=u=>((usoOf(u.id)||{}).last||0)/1e3+(userClub(u.id)?1e10:0)+(u.pts||0)*1e3+(tsMs(u.since)||0)/1e6;
+  selU.clear();dupGroups().forEach(a=>{const keep=[...a].sort((x,y)=>score(y)-score(x))[0];a.forEach(u=>{if(u!==keep)selU.add(u.id)})});
+  fUser='dup';vUsers();toast('🧹 Marcados '+selU.size+' repetidos. Revísalos y pulsa «❌ Eliminar seleccionados»',5000)}
+function usoBars(rows,color){const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?`<div class="rank">${rows.map(([n,c])=>`<div class="row"><div class="n">${n}</div><div class="bw"><i style="width:${Math.round(c/mx*100)}%;background:${color||'var(--lime)'}"></i></div><div class="c num">${nf(c)}</div></div>`).join('')}</div>`:'<div class="empty">Sin datos</div>'}
+let qUso='',fUso='30';
+function vUso(){
+  const U=D.uso.filter(x=>x.last),reg=D.users.filter(u=>u.name);
+  const a1=usoAct(1),a7=usoAct(7),a30=usoAct(30);
+  const days=[...Array(30)].map((_,i)=>iso(Date.now()-(29-i)*DAY));
+  const perDay=days.map(d=>U.filter(x=>x.days&&x.days[d]).length);
+  const cnt=(arr,f)=>{const m={};arr.forEach(x=>{const k=f(x);m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+  const base=a30.length?a30:U;
+  const apps=cnt(base,x=>x.app||'?').map(([k,c])=>[k==='pro'?'🚀 RideSafe IA Pro':k==='simple'?'🌱 RideSafe IA Simple':k,c]);
+  const oss=cnt(base,x=>x.os||'otro').map(([k,c])=>[OSN[k]||k,c]);
+  const vers=cnt(base,x=>(x.app==='simple'?'Simple ':'Pro ')+(x.ver||'?')).slice(0,8);
+  const inst=cnt(base,x=>x.pwa?'📲 Instalada en el móvil':'🌐 En el navegador');
+  const regNo=reg.filter(u=>usoDays(u.id)>30).length;
+  const since=U.length?Math.min(...U.map(x=>x.first||x.last)):0;
+  let L=U.map(x=>{const u=D.users.find(y=>y.id===x.id);return {...x,name:u&&u.name||'(sin nombre)',club:userClub(x.id)}});
+  if(fUso!=='all')L=L.filter(x=>Date.now()-x.last<=(+fUso)*DAY);
+  if(qUso)L=L.filter(x=>(x.name+' '+(x.club?x.club.name:'')).toLowerCase().includes(qUso.toLowerCase()));
+  L.sort((a,b)=>b.last-a.last);
+  const d30=x=>days.filter(d=>x.days&&x.days[d]).length;
+  $('view').innerHTML=`
+   <div class="kpis">
+    <div class="kpi k-ok"><div class="l">🟢 Hoy</div><div class="v num">${nf(a1.length)}</div><div class="h">ciclistas han usado la app</div></div>
+    <div class="kpi k-lime"><div class="l">📅 Últimos 7 días</div><div class="v num">${nf(a7.length)}</div><div class="h">activos esta semana</div></div>
+    <div class="kpi k-blue"><div class="l">🗓️ Últimos 30 días</div><div class="v num">${nf(a30.length)}</div><div class="h">activos este mes</div></div>
+    <div class="kpi k-warn"><div class="l">💤 Registrados sin usarla</div><div class="v num">${nf(regNo)}</div><div class="h">de ${nf(reg.length)} registrados · más de 30 días</div></div>
+   </div>
+   ${U.length?'':`<div class="box" style="border-color:var(--warn)"><h3>⏳ Aún no hay datos de uso</h3><div class="d">Empiezan a llegar cuando los ciclistas abren la versión 5.110.0 (Simple 1.60.0) o posterior. Si sigues sin ver nada después de abrir tú la app, falta pegar el bloque «uso» en las reglas de Firestore (está en LEEME.md, versión 5.110.0).</div></div>`}
+   <div class="box"><h3>Ciclistas que usan la app cada día</h3><div class="d">Últimos 30 días${since?' · contando desde el '+fDate(since):''}</div>${barChart('uso',perDay,days,'#4ADE80',['ciclista','ciclistas'])}</div>
+   <div class="grid2">
+    <div class="box"><h3>Aplicaciones</h3><div class="d">Activos en 30 días por versión de la app</div>${usoBars(apps)}</div>
+    <div class="box"><h3>Móviles</h3><div class="d">Activos en 30 días por sistema</div>${usoBars(oss,'var(--blue)')}</div>
+   </div>
+   <div class="grid2">
+    <div class="box"><h3>Versión que tienen</h3><div class="d">Si alguien sigue en una versión vieja, que cierre y abra la app</div>${usoBars(vers,'#A78BFA')}</div>
+    <div class="box"><h3>Cómo la usan</h3><div class="d">Instalada como app o desde el navegador</div>${usoBars(inst,'var(--warn)')}</div>
+   </div>
+   <div class="bar"><input class="search" placeholder="Buscar ciclista o club…" value="${esc(qUso)}" oninput="qUso=this.value;vUso();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
+    <div class="chips">${[['1','🟢 Hoy'],['7','7 días'],['30','30 días'],['all','Todos']].map(([k,t])=>`<button class="chip${fUso===k?' on':''}" onclick="fUso=${jsq(k)};vUso()">${t}</button>`).join('')}</div></div>
+   <div class="box tw"><h3 style="margin-bottom:10px">👥 Quién la usa (${nf(L.length)})</h3><table class="tbl"><thead><tr><th class="r" style="width:34px">#</th><th>Ciclista</th><th>App</th><th class="hide-m">Móvil</th><th class="hide-m">Versión</th><th>Último uso</th><th class="r hide-m">Días (30)</th><th class="r hide-m">Aperturas</th></tr></thead><tbody>
+    ${L.slice(0,500).map((x,i)=>{const a=APPN[x.app]||['?','mut'];return `<tr><td class="r num" style="color:var(--txt3);font-weight:800">${i+1}</td><td><div class="who"><div class="av" style="background:${colorOf(x.name)}">${esc(ini(x.name))}</div><div><b>${esc(x.name)}</b><small>${x.club?esc(x.club.name):'Sin club'}</small></div></div></td>
+      <td><span class="pill ${a[1]}">${a[0]}</span></td><td class="hide-m" style="color:var(--txt2)">${OSN[x.os]||'—'}${x.pwa?' · 📲':''}</td><td class="hide-m" style="color:var(--txt2)">${esc(x.ver||'—')}</td>
+      <td>${usoPill(x.id)}</td><td class="r num hide-m">${d30(x)}</td><td class="r num hide-m">${nf(x.opens||0)}</td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty">Nadie en este periodo</div></td></tr>'}
+   </tbody></table></div>`;
+}
 /* ---------- 🥐 v5.105.0 — Esmorzars ciclistes (esmorzars.html) ----------
    Lo publicado vive en config/esmorzars: {bars:{id:{n,p,lat,lng,no,h,g,src,ap,del}}, ops:{id:{b,s,g,c,n,u,t}}, done:{idPendiente:1|0}}
    Lo que envían los ciclistas llega a «esmorzars_pend» y solo sale en la app cuando lo apruebas aquí. */
