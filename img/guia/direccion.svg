@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 210" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+<rect width="345" height="210" rx="18" fill="#16263D"/>
+<g transform="translate(0,18)"><rect x="120" y="60" width="22" height="70" rx="6" fill="#475569"/><line x1="131" y1="130" x2="112" y2="196" stroke="#94A3B8" stroke-width="8" stroke-linecap="round"/><line x1="131" y1="130" x2="150" y2="196" stroke="#94A3B8" stroke-width="8" stroke-linecap="round"/><rect x="126" y="34" width="10" height="28" fill="#94A3B8"/><rect x="124" y="26" width="58" height="14" rx="4" fill="#64748B"/><line x1="182" y1="33" x2="232" y2="40" stroke="#94A3B8" stroke-width="6" stroke-linecap="round"/><circle cx="131" cy="22" r="7" fill="#C8DC3C"/></g><path d="M60 120 h40" stroke="#FDBA74" stroke-width="4" marker-end="url(#a)"/><path d="M100 140 h-40" stroke="#FDBA74" stroke-width="4"/><defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FDBA74"/></marker></defs><path d="M66 134 l-8 6 l8 6" fill="none" stroke="#FDBA74" stroke-width="4"/><text x="16" y="30" font-size="13" fill="#E2E8F0" font-weight="800" text-anchor="start">¿Holgura en la dirección?</text>
+<circle cx="24" cy="60" r="9" fill="#C8DC3C"/><text x="24" y="64" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">1</text>
+<text x="38" y="64" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Freno delantero</text>
+<text x="38" y="76" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">apretado</text>
+<text x="16" y="165" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Empuja adelante y</text>
+<text x="16" y="177" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">atrás: «clac» =</text>
+<text x="16" y="189" font-size="10" fill="#EF4444" font-weight="800" text-anchor="start">holgura</text>
+<circle cx="200" cy="90" r="9" fill="#C8DC3C"/><text x="200" y="94" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">2</text>
+<text x="213" y="86" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Afloja tornillos</text>
+<text x="213" y="98" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">de la potencia</text>
+<circle cx="200" cy="140" r="9" fill="#C8DC3C"/><text x="200" y="144" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">3</text>
+<text x="213" y="136" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Ajusta desde el</text>
+<text x="213" y="148" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">tapón (arriba)</text>
+<text x="200" y="185" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">y aprieta la potencia</text>
+<text x="200" y="197" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">al par (4-6 Nm)</text>
+</svg>

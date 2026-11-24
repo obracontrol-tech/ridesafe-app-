@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 210" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+<rect width="345" height="210" rx="18" fill="#16263D"/>
+<line x1="20" y1="150" x2="200" y2="120" stroke="#94A3B8" stroke-width="12" stroke-linecap="round"/><rect x="108" y="112" width="34" height="18" rx="4" fill="#FDBA74" transform="rotate(-9 125 121)"/><text x="125" y="124" font-size="8" fill="#0E1A2B" font-weight="800" text-anchor="middle">SENSOR</text>
+<line x1="60" y1="40" x2="160" y2="104" stroke="#64748B" stroke-width="2"/><rect x="120" y="82" width="20" height="10" rx="2" fill="#C8DC3C" transform="rotate(33 130 87)"/><text x="84" y="80" font-size="9" fill="#C8DC3C" font-weight="700" text-anchor="middle">imán en el radio</text>
+<line x1="150" y1="98" x2="150" y2="110" stroke="#E2E8F0" stroke-width="1.5"/><text x="158" y="104" font-size="10" fill="#E2E8F0" font-weight="800">1-3 mm</text><text x="16" y="28" font-size="13" fill="#E2E8F0" font-weight="800" text-anchor="start">La e-bike no ayuda</text>
+<circle cx="206" cy="40" r="9" fill="#C8DC3C"/><text x="206" y="44" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">1</text>
+<text x="219" y="44" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Apunta el código</text>
+<text x="219" y="56" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">de error</text>
+<circle cx="206" cy="80" r="9" fill="#C8DC3C"/><text x="206" y="84" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">2</text>
+<text x="219" y="84" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Batería cargada y</text>
+<text x="219" y="96" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">bien encajada (clic)</text>
+<circle cx="206" cy="120" r="9" fill="#C8DC3C"/><text x="206" y="124" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">3</text>
+<text x="219" y="124" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Conectores limpios</text>
+<text x="219" y="136" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">y secos</text>
+<circle cx="206" cy="160" r="9" fill="#C8DC3C"/><text x="206" y="164" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">4</text>
+<text x="219" y="164" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Imán en su sitio</text>
+<text x="219" y="176" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">junto al sensor</text>
+<text x="16" y="200" font-size="10" fill="#EF4444" font-weight="700" text-anchor="start">Motor y batería no se abren nunca</text>
+</svg>

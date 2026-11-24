@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 210" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+<rect width="345" height="210" rx="18" fill="#16263D"/>
+<circle cx="95" cy="110" r="70" fill="none" stroke="#94A3B8" stroke-width="14"/><circle cx="165.0" cy="110.0" r="3" fill="#16263D"/><circle cx="148.6" cy="155.0" r="3" fill="#16263D"/><circle cx="107.2" cy="178.9" r="3" fill="#16263D"/><circle cx="60.0" cy="170.6" r="3" fill="#16263D"/><circle cx="29.2" cy="133.9" r="3" fill="#16263D"/><circle cx="29.2" cy="86.1" r="3" fill="#16263D"/><circle cx="60.0" cy="49.4" r="3" fill="#16263D"/><circle cx="107.2" cy="41.1" r="3" fill="#16263D"/><circle cx="148.6" cy="65.0" r="3" fill="#16263D"/><circle cx="95" cy="110" r="18" fill="#475569"/><rect x="140" y="38" width="46" height="62" rx="10" fill="#FDBA74" transform="rotate(30 163 69)"/><circle cx="150" cy="44" r="5" fill="#0E1A2B" stroke="#E2E8F0" stroke-width="2"/><circle cx="182" cy="84" r="5" fill="#0E1A2B" stroke="#E2E8F0" stroke-width="2"/><text x="160" y="70" font-size="9" fill="#0E1A2B" font-weight="800" text-anchor="middle">PINZA</text>
+<circle cx="214" cy="40" r="9" fill="#C8DC3C"/><text x="214" y="44" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">1</text>
+<text x="227" y="44" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Afloja un poco</text>
+<text x="227" y="56" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">los 2 tornillos</text>
+<circle cx="214" cy="90" r="9" fill="#C8DC3C"/><text x="214" y="94" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">2</text>
+<text x="227" y="94" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Aprieta la maneta</text>
+<text x="227" y="106" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">y mantenla</text>
+<circle cx="214" cy="140" r="9" fill="#C8DC3C"/><text x="214" y="144" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">3</text>
+<text x="227" y="144" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Aprieta tornillos</text>
+<text x="227" y="156" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">alternando, 6-8 Nm</text>
+<text x="214" y="190" font-size="10" fill="#FDBA74" font-weight="700" text-anchor="start">El disco no se toca</text>
+<text x="214" y="202" font-size="10" fill="#FDBA74" font-weight="700" text-anchor="start">con los dedos</text>
+</svg>

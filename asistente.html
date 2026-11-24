@@ -49,6 +49,12 @@ main{padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px;min-heigh
 .lee{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px;color:var(--txt2)}
 .lee a{display:flex;align-items:center;gap:8px;margin-top:6px;background:var(--card2);border-radius:12px;padding:8px 10px;text-decoration:none;color:var(--txt);font-size:13.5px;font-weight:600}
 .lee a small{display:block;color:var(--txt2);font-weight:500;font-size:11.5px}
+.ilus{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}.ilus::-webkit-scrollbar{display:none}
+.ilus button{flex:0 0 150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;color:var(--txt);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-align:center}
+.ilus img{display:block;width:100%;border-radius:10px;margin-bottom:5px}
+.ilusA{display:block;margin-top:10px;width:100%;max-width:420px;border-radius:14px;border:1px solid var(--line);cursor:zoom-in}
+#ilusOv{position:fixed;inset:0;z-index:9999;background:rgba(5,10,20,.92);display:none;align-items:center;justify-content:center;padding:14px;flex-direction:column;gap:10px}
+#ilusOv.on{display:flex}#ilusOv img{width:100%;max-width:720px;border-radius:16px}#ilusOv button{background:var(--lime);color:var(--on-lime);border:0;border-radius:12px;font:inherit;font-weight:800;font-size:15px;padding:10px 22px}
 .srcs{margin-top:14px}.srcs p{margin:0 0 6px;font-size:12.5px}
 .err{align-self:center;color:#FCA5A5;font-size:13.5px;text-align:center;max-width:90%}
 .dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--txt2);animation:b 1s infinite}
@@ -126,6 +132,8 @@ textarea:focus{border-color:var(--lime)}
     <div class="chips" id="chips"></div>
     <p class="sub">🔧 ¿Avería en la bici? Elige, cuéntalo y añade una foto</p>
     <div class="chips" id="chipsMec"></div>
+    <p class="sub">📘 Guías ilustradas (toca para ver en grande)</p>
+    <div class="ilus" id="ilus"></div>
   </div>
 </main>
 
@@ -184,9 +192,16 @@ let GUIA=null;fetch('asistente-mecanica.json?v=2').then(r=>r.json()).then(d=>{GU
 function guiaPara(text){
   if(!GUIA)return '';
   const sc=GUIA.map(g=>{let n=0;try{const m=String(text).match(new RegExp(g.k,'gi'));n=m?m.length:0}catch(e){}return {g,n}}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,2);
+  ultGuia=sc.length?sc[0].g.id:'';
   if(!sc.length)return '';
   return '⟦GUÍA⟧Guía de taller de RideSafe IA (úsala como referencia principal; si algo no está aquí, usa tu conocimiento con prudencia y sin inventar datos ni códigos):\n'+sc.map(x=>'## '+x.g.t+'\n'+x.g.txt).join('\n\n')+'\n⟦/GUÍA⟧\n\n';
 }
+/* v1.7 — 📘 Guías ilustradas propias (img/guia/*.svg): al inicio y debajo de la respuesta de avería que corresponda */
+const ILUS={pinchazo:['pinchazo','🛞 Pinchazo'],cadena:['cadena','⛓️ Cadena gastada'],cambio:['cambio','⚙️ Ajustar el cambio'],freno_disco:['freno','🛑 Centrar el freno'],direccion:['direccion','🎯 Holgura dirección'],ruedas:['rueda','⭕ Centrar la rueda'],ebike_motor:['ebike','⚡ E-bike no ayuda'],ebike_bateria:['ebike','⚡ E-bike no ayuda']};
+let ultGuia='';
+function verIlus(f,t){let o=document.getElementById('ilusOv');if(!o){o=document.createElement('div');o.id='ilusOv';o.innerHTML='<img alt=""><button>Cerrar</button>';o.onclick=()=>o.classList.remove('on');document.body.appendChild(o)}
+  const im=o.querySelector('img');im.src='img/guia/'+f+'.svg';im.alt=t||'Guía ilustrada';o.classList.add('on')}
+['pinchazo','cadena','cambio','freno_disco','direccion','ruedas','ebike_motor'].forEach(k=>{const [f,t]=ILUS[k];const b=document.createElement('button');b.innerHTML='<img src="img/guia/'+f+'.svg" alt="" loading="lazy">';b.appendChild(document.createTextNode(t));b.onclick=()=>verIlus(f,t);$('ilus').appendChild(b)});
 function sinGuia(m){if(typeof m.content==='string')return {role:m.role,content:m.content.replace(/⟦GUÍA⟧[\s\S]*?⟦\/GUÍA⟧\n*/,'')};return m}
 const GRAV={VERDE:['🟢 Puedes seguir con precaución','Gravedad baja: puedes seguir con precaución'],'ÁMBAR':['🟠 Arréglalo antes de seguir','Gravedad media: arréglalo antes de seguir'],ROJO:['🔴 No sigas rodando · llévala al taller','Gravedad alta: no sigas rodando y llévala al taller']};
 async function shrink(file){const url=URL.createObjectURL(file);try{
@@ -345,7 +360,7 @@ async function ask(text){
   if(ctx.ll&&!ctx.sitios.length&&/(comer|como|cenar|desayun|almorz|restaurant|bar|caf[eé]|tapa|bocadillo|fuente|agua|taller|tienda de bici|cerca|visitar|ver )/i.test(text)){
     $('locT').lastChild&&($('near').querySelector('summary').textContent='Buscando sitios cercanos…');
     ctx.sitios=await overpass(ctx.ll);renderNear()}
-  const envTxt=esMec?MEC_INST+guiaPara(text)+text:text;
+  ultGuia='';const envTxt=esMec?MEC_INST+guiaPara(text)+text:text;
   hist.push({role:'user',content:fotosEnv.length?[...fotosEnv.map(s=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:s.split(',')[1]}})),{type:'text',text:envTxt}]:envTxt});
   busy=true;$('send').disabled=true;
   const w=document.createElement('div');w.className='msg ai dots';w.innerHTML='<span></span><span></span><span></span>';$('chat').appendChild(w);w.scrollIntoView({behavior:'smooth',block:'end'});
@@ -377,6 +392,7 @@ async function ask(text){
   act.append(b1,b2);
   if(grav&&grav!=='VERDE'){const b3=document.createElement('button');b3.textContent='🔧 Talleres cerca';b3.onclick=async()=>{if(!ctx.ll)await getLoc();if(ctx.ll){$('near').open=true;$('near').scrollIntoView({behavior:'smooth',block:'start'})}};act.appendChild(b3)}
   d.appendChild(act);
+  if(esMec&&ILUS[ultGuia]){const [f,t]=ILUS[ultGuia];const im=document.createElement('img');im.className='ilusA';im.src='img/guia/'+f+'.svg';im.alt=t;im.onclick=()=>verIlus(f,t);d.appendChild(im)}
   d.scrollIntoView({behavior:'smooth',block:'end'});
   if(tts)speak(dice,()=>{if(conv)listen()});else if(conv)listen();
 }

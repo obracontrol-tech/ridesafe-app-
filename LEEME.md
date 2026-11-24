@@ -1,3 +1,9 @@
+## Asistente RideSafe v1.7 — 📘 Guías ilustradas propias
+- 7 ilustraciones nuevas, dibujadas de cero para RideSafe IA (no son las del libro): pinchazo, cadena gastada, ajustar el cambio, centrar el freno de disco, holgura de la dirección, centrar la rueda y «la e-bike no ayuda». Están en img/guia/*.svg.
+- Salen al principio del Asistente («📘 Guías ilustradas»), en una fila que se desliza; al tocar una se ve en grande.
+- Debajo de cada respuesta de avería sale la ilustración del tema (por ejemplo, freno esponjoso → centrar el freno); al tocarla se amplía.
+- Archivos: asistente.html e img/guia/ (7 SVG).
+
 ## Asistente RideSafe v1.6 — sin webs recomendadas
 - Quitado el apartado «📚 Para saber más: webs de ciclismo recomendadas» de la pantalla de inicio del Asistente y los enlaces «Para leer más» debajo de las respuestas.
 - Archivo: asistente.html.

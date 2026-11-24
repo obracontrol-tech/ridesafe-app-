@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 210" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+<rect width="345" height="210" rx="18" fill="#16263D"/>
+<rect x="30" y="50.0" width="6" height="120" rx="2" fill="#94A3B8"/><rect x="39" y="56.0" width="6" height="108" rx="2" fill="#94A3B8"/><rect x="48" y="62.0" width="6" height="96" rx="2" fill="#94A3B8"/><rect x="57" y="68.0" width="6" height="84" rx="2" fill="#94A3B8"/><rect x="66" y="74.0" width="6" height="72" rx="2" fill="#94A3B8"/><rect x="75" y="79.0" width="6" height="62" rx="2" fill="#94A3B8"/><rect x="84" y="84.0" width="6" height="52" rx="2" fill="#94A3B8"/><rect x="93" y="88.0" width="6" height="44" rx="2" fill="#94A3B8"/><text x="36" y="180" font-size="9" fill="#9AA8BC" font-weight="500" text-anchor="middle">grande</text>
+<text x="96" y="180" font-size="9" fill="#9AA8BC" font-weight="500" text-anchor="middle">pequeño</text>
+<rect x="130" y="70" width="48" height="56" rx="10" fill="#334155" stroke="#E2E8F0" stroke-width="2"/><circle cx="150" cy="140" r="9" fill="none" stroke="#E2E8F0" stroke-width="3"/><circle cx="150" cy="172" r="9" fill="none" stroke="#E2E8F0" stroke-width="3"/><line x1="140" y1="126" x2="146" y2="132" stroke="#E2E8F0" stroke-width="3"/><circle cx="168" cy="80" r="5" fill="#C8DC3C"/><text x="168" y="83.5" font-size="8" font-weight="800" fill="#0E1A2B" text-anchor="middle">H</text><circle cx="168" cy="94" r="5" fill="#C8DC3C"/><text x="168" y="97.5" font-size="8" font-weight="800" fill="#0E1A2B" text-anchor="middle">L</text><rect x="176" y="58" width="16" height="10" rx="3" fill="#FDBA74"/><line x1="192" y1="63" x2="214" y2="40" stroke="#E2E8F0" stroke-width="2"/><text x="196" y="28" font-size="10" fill="#FDBA74" font-weight="800" text-anchor="start">TENSOR DEL CABLE</text>
+<circle cx="200" cy="62" r="9" fill="#C8DC3C"/><text x="200" y="66" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">1</text>
+<text x="213" y="58" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Sube lenta a los</text>
+<text x="213" y="70" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">piñones grandes:</text>
+<text x="213" y="82" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">DESENROSCA ¼</text>
+<circle cx="200" cy="112" r="9" fill="#C8DC3C"/><text x="200" y="116" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">2</text>
+<text x="213" y="108" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Baja lenta a los</text>
+<text x="213" y="120" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">pequeños:</text>
+<text x="213" y="132" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">ENROSCA ¼</text>
+<circle cx="200" cy="160" r="9" fill="#C8DC3C"/><text x="200" y="164" font-size="11" font-weight="800" fill="#0E1A2B" text-anchor="middle">3</text>
+<text x="213" y="156" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">Se sale de los</text>
+<text x="213" y="168" font-size="10" fill="#E2E8F0" font-weight="600" text-anchor="start">extremos: topes</text>
+<text x="213" y="180" font-size="10" fill="#C8DC3C" font-weight="800" text-anchor="start">H y L</text>
+<text x="12" y="200" font-size="9" fill="#9AA8BC" font-weight="500" text-anchor="start">Primero comprueba que la patilla está recta</text>
+</svg>
