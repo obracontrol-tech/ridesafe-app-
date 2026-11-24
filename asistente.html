@@ -180,6 +180,15 @@ MEC_CHIPS.forEach(([l,q])=>{const b=document.createElement('button');b.className
   const f=$('foto');f.classList.remove('hint');void f.offsetWidth;f.classList.add('hint')};$('chipsMec').appendChild(b)});
 const MEC=/(aver[ií]a|\bfren|pastillas? de freno|\bdiscos?\b|cadena|desviador|\bcambios?\b|pi[ñn][oó]n|cassette|ruido|cruj|chirr|holgura|suelt|manillar|juego de direcci|\bruedas?\b|\bradios?\b|llanta|\bbuje|\beje\b|cubierta|c[aá]mara de la rueda|pinch|tubeless|v[aá]lvula|\bpedal(es)?\b|biela|tija|horquilla|amortigu|\bcuadro\b|e-?bike|bici el[eé]ctrica|bater[ií]a|\bmotor\b)/i;
 const MEC_INST='[Consulta de avería mecánica de bicicleta. Instrucciones para la IA: empieza tu respuesta SIEMPRE con una primera línea exacta "GRAVEDAD: VERDE" (puede seguir rodando con precaución), "GRAVEDAD: ÁMBAR" (hay que arreglarlo antes de seguir; se puede hacer en ruta) o "GRAVEDAD: ROJO" (no debe seguir rodando; llevarla al taller). Frenos que no frenan bien, dirección o manillar suelto, cuadro u horquilla con grietas, rueda o eje suelto, radios rotos o llanta dañada son siempre ROJO. Ante la duda en algo de seguridad, elige la gravedad más alta. Después da: la causa probable (nunca la des por segura), pasos sencillos numerados para revisarlo o arreglarlo y las herramientas necesarias. Si hay fotos y no se ve bien el problema, pide otra foto más cerca o con más luz. Lenguaje sencillo, para alguien sin experiencia en mecánica.]\n\nPregunta del ciclista: ';
+/* v1.5 — 🔧 Guía de taller RideSafe (asistente-mecanica.json): en cada consulta de avería se añaden las 2 partes de la guía que más se parecen a la pregunta */
+let GUIA=null;fetch('asistente-mecanica.json?v=1').then(r=>r.json()).then(d=>{GUIA=(d&&d.s)||null}).catch(()=>{});
+function guiaPara(text){
+  if(!GUIA)return '';
+  const sc=GUIA.map(g=>{let n=0;try{const m=String(text).match(new RegExp(g.k,'gi'));n=m?m.length:0}catch(e){}return {g,n}}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,2);
+  if(!sc.length)return '';
+  return '⟦GUÍA⟧Guía de taller de RideSafe IA (úsala como referencia principal; si algo no está aquí, usa tu conocimiento con prudencia y sin inventar datos ni códigos):\n'+sc.map(x=>'## '+x.g.t+'\n'+x.g.txt).join('\n\n')+'\n⟦/GUÍA⟧\n\n';
+}
+function sinGuia(m){if(typeof m.content==='string')return {role:m.role,content:m.content.replace(/⟦GUÍA⟧[\s\S]*?⟦\/GUÍA⟧\n*/,'')};return m}
 const GRAV={VERDE:['🟢 Puedes seguir con precaución','Gravedad baja: puedes seguir con precaución'],'ÁMBAR':['🟠 Arréglalo antes de seguir','Gravedad media: arréglalo antes de seguir'],ROJO:['🔴 No sigas rodando · llévala al taller','Gravedad alta: no sigas rodando y llévala al taller']};
 async function shrink(file){const url=URL.createObjectURL(file);try{
   const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
@@ -337,17 +346,17 @@ async function ask(text){
   if(ctx.ll&&!ctx.sitios.length&&/(comer|como|cenar|desayun|almorz|restaurant|bar|caf[eé]|tapa|bocadillo|fuente|agua|taller|tienda de bici|cerca|visitar|ver )/i.test(text)){
     $('locT').lastChild&&($('near').querySelector('summary').textContent='Buscando sitios cercanos…');
     ctx.sitios=await overpass(ctx.ll);renderNear()}
-  const envTxt=esMec?MEC_INST+text:text;
+  const envTxt=esMec?MEC_INST+guiaPara(text)+text:text;
   hist.push({role:'user',content:fotosEnv.length?[...fotosEnv.map(s=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:s.split(',')[1]}})),{type:'text',text:envTxt}]:envTxt});
   busy=true;$('send').disabled=true;
   const w=document.createElement('div');w.className='msg ai dots';w.innerHTML='<span></span><span></span><span></span>';$('chat').appendChild(w);w.scrollIntoView({behavior:'smooth',block:'end'});
-  const msgs=hist.slice(-8).map((m,i,a)=>i===a.length-1?m:sinFotos(m));
+  const msgs=hist.slice(-8).map((m,i,a)=>i===a.length-1?m:sinGuia(sinFotos(m)));
   let {res,err}=await llamarIA(msgs);
   let fotoFallo=false;
   if(!res&&fotosEnv.length&&!['offline','limite_diario','no_permitido'].includes(err)){
     // Si el servidor no acepta fotos, repetimos solo con el texto
     hist[hist.length-1]={role:'user',content:envTxt+' (El ciclista intentó enviar una foto pero no se pudo; pídele que describa lo que ve.)'};
-    ({res,err}=await llamarIA(hist.slice(-8).map(sinFotos)));fotoFallo=!!res}
+    ({res,err}=await llamarIA(hist.slice(-8).map((m,i,a)=>i===a.length-1?sinFotos(m):sinGuia(sinFotos(m)))));fotoFallo=!!res}
   if(hist.length&&Array.isArray(hist[hist.length-1].content))hist[hist.length-1]=sinFotos(hist[hist.length-1]);
   w.remove();busy=false;$('send').disabled=!$('q').value.trim();
   if(!res){hist.pop();

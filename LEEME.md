@@ -1,3 +1,10 @@
+## Asistente RideSafe v1.5 — 🔧 Guía de taller (averías)
+- Nuevo archivo asistente-mecanica.json: guía de reparación propia, en lenguaje sencillo, hecha a partir de la documentación de JM (casos resueltos del taller, revisión final de e-bike, diccionario, electricidad de e-bike), con 17 temas: pinchazo (cámara y tubeless), presión y neumáticos, frenos de disco, frenos de zapata, cadena, cambio, ruedas y ejes, dirección, pedalier y pedales, sillín y tija, suspensión, ruidos, e-bike (batería, encendido, conectores), e-bike (motor, sensores, Shimano EP8 y códigos), pares de apriete, normativa y kit de ruta.
+- En cada consulta de avería, el Asistente añade a la pregunta las 2 partes de la guía que más se parecen (no la guía entera: así gasta poco y responde rápido). En las preguntas siguientes la guía no se repite.
+- Se mantiene el semáforo de gravedad (VERDE / ÁMBAR / ROJO).
+- Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
+- Archivos: asistente.html y asistente-mecanica.json.
+
 ## Versión 5.111.0 (Simple 1.61.0) — 🥐 Esmorzars: mapa grande
 - En «Esmorzars ciclistes», cortina para ver el mapa casi a pantalla completa: desliza la lista hacia abajo (o pulsa «⛶ Mapa grande», abajo a la izquierda del mapa). Para volver, desliza hacia arriba o pulsa «▲ Ver lista».
 - Se esconden el buscador, los filtros y la lista; la app recuerda cómo lo dejaste.
