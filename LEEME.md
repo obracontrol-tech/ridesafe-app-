@@ -1,3 +1,10 @@
+## Versión 5.105.1 (Simple 1.55.1) — 🥐 Esmorzars: añadir un bar manteniendo pulsado
+- En «Esmorzars ciclistes», mantén pulsado sobre un bar del mapa: la app busca ese bar en OpenStreetMap y rellena sola el nombre, el pueblo y el horario. Solo hay que poner la nota (opcional) y «📨 Enviar para la lista».
+- En la ficha de cualquier bar del mapa (☕) hay un botón «➕ Añadir al ranking» que hace lo mismo.
+- Si el bar ya está en la lista, abre su ficha en vez de repetirlo.
+- Como siempre, la propuesta llega a la consola master (🥐 Esmorzars) y sale en la lista cuando la apruebas.
+- Archivos: esmorzars.html, index.html, simple.html y sw.js. Las reglas de Firebase no cambian.
+
 ## Versión 5.105.0 (Simple 1.55.0) — 🥐 Esmorzars ciclistes
 - Nueva página «Esmorzars ciclistes» (esmorzars.html): bares para desayunar en ruta, pensada para la provincia de Lleida. Se abre desde Inicio (tarjeta 🥐) y desde la taza ☕ del mapa, encima del mapa, sin cortar la grabación ni la navegación.
 - Mapa con TODOS los bares, cafés y restaurantes de OpenStreetMap de la zona que miras (al acercar el mapa) y los bares recomendados destacados con 🥐 y su nota ⭐.

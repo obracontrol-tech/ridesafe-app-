@@ -10,7 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
-/* RideSafe IA v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
+/* RideSafe IA v5.105.1 — mantener pulsado sobre un bar del mapa rellena la propuesta sola (nombre, pueblo, horario).
+   v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
    - Todos los bares, cafés y restaurantes del mapa (OpenStreetMap / Overpass) en la zona que miras.
    - Bares recomendados (esmorzars-seed.json + los que añade el administrador en config/esmorzars) con ranking por estrellas.
    - Los ciclistas dan su opinión (⭐ 1-5, grupetas sí/no, comentario) y proponen bares: van a «esmorzars_pend»
@@ -122,14 +123,14 @@ textarea.inp{resize:vertical}
 </div>
 
 <div id="map"><div class="status" id="st"></div>
-  <div class="pickbar"><span>👆 Toca en el mapa dónde está el bar</span><button id="pkCancel" style="background:var(--card2);color:var(--txt)">Cancelar</button></div>
+  <div class="pickbar"><span>👆 Toca en el mapa el bar que quieres añadir</span><button id="pkCancel" style="background:var(--card2);color:var(--txt)">Cancelar</button></div>
 </div>
 
 <div class="panel">
   <div class="tabs"><button class="tab on" data-t="rank">🏆 Ranking</button><button class="tab" data-t="near">📍 Cerca de aquí</button></div>
   <div id="list"><div class="empty">Cargando…</div></div>
   <button class="add" id="bAdd">➕ Proponer un bar para desayunar</button>
-  <p class="note">⭐ El ranking lo hacéis los ciclistas con vuestras opiniones. Las opiniones y los bares nuevos los revisa el administrador antes de publicarlos.<br>Bares del mapa: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>. Pueden faltar bares o haber horarios cambiados.</p>
+  <p class="note">👆 <b>Mantén pulsado sobre un bar del mapa</b> para añadirlo a la lista: el nombre y el pueblo se rellenan solos.<br>⭐ El ranking lo hacéis los ciclistas con vuestras opiniones. Las opiniones y los bares nuevos los revisa el administrador antes de publicarlos.<br>Bares del mapa: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>. Pueden faltar bares o haber horarios cambiados.</p>
 </div>
 
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
@@ -287,12 +288,14 @@ function openBar(id){
     (b.h?'<div class="op">🕒 Horario: '+esc(b.h)+'</div>':'')+
     (b.ap?'<div class="op"><small>📍 Ubicación aproximada (en el pueblo). Si sabes dónde está exactamente, dínoslo en tu opinión.</small></div>':'')+
     (b.src?'<div class="op"><small>Fuente: '+esc(b.src)+'</small></div>':'')+
-    '<button class="btn lime" id="bOp">✍️ Dar mi opinión</button>'+
+    (BARS[id]?'':'<button class="btn lime" id="bAddR">➕ Añadir al ranking</button>')+
+    '<button class="btn'+(BARS[id]?' lime':'')+'" id="bOp">✍️ Dar mi opinión</button>'+
     (window.parent!==window?'<button class="btn" id="bGo">🧭 Ir con RideSafe</button>':'')+
     '<a class="btn" href="'+go+'" target="_blank" rel="noopener">🗺️ Cómo llegar (Google Maps)</a>'+
     (s&&s.ops.length?'<label class="l">Opiniones de ciclistas</label>'+s.ops.slice(0,20).map(function(o){return '<div class="op"><b>'+'⭐'.repeat(o.s||0)+'</b> '+(o.g==='si'?'· 👥 bien para grupetas':o.g==='no'?'· 👤 mejor ir pocos':'')+(o.c?'<br>'+esc(o.c):'')+'<small>'+esc(o.n||'Ciclista')+(o.t?' · '+new Date(o.t).toLocaleDateString('es-ES'):'')+'</small></div>'}).join(''):'');
   sheet(h);
   $('bOp').onclick=function(){opForm(b)};
+  if($('bAddR'))$('bAddR').onclick=function(){propForm({lat:b.lat,lng:b.lng},b)};
   if($('bGo'))$('bGo').onclick=function(){window.parent.postMessage({t:'esmGo',n:b.n,lat:b.lat,lng:b.lng},'*')};
 }
 
@@ -330,31 +333,55 @@ function send(d,ok){
 /* ---------- Proponer un bar ---------- */
 var picking=null, pickMk=null;
 $('bAdd').onclick=function(){
-  toast('Toca en el mapa dónde está el bar',3500);
+  toast('Toca en el mapa el bar (o mantén pulsado sobre él)',3500);
   document.body.classList.add('picking');
-  picking=function(ll){
-    document.body.classList.remove('picking');picking=null;
-    if(pickMk)map.removeLayer(pickMk);pickMk=L.marker(ll).addTo(map);
-    var near=null,dn=0.08;Object.keys(OSM).forEach(function(k){var o=OSM[k],d=dist(o,{lat:ll.lat,lng:ll.lng});if(d<dn){dn=d;near=o}});
-    F={s:0,g:''};
-    sheet('<h2><span>➕ Proponer un bar</span><button class="x" onclick="esmClose()" aria-label="Cerrar">✕</button></h2><div class="sub">Un bar donde los ciclistas desayunáis bien. El administrador lo revisa y lo añade al ranking.</div>'+
-      '<label class="l" for="fBn">Nombre del bar</label><input class="inp" id="fBn" maxlength="60" value="'+esc(near?near.n:'')+'" placeholder="Ej. Bar Casal">'+
-      '<label class="l" for="fBp">Pueblo</label><input class="inp" id="fBp" maxlength="40" value="'+esc(near&&near.p||'')+'" placeholder="Ej. Torrebesses">'+
-      '<label class="l">¿Va bien para ir en grupeta?</label><div class="seg" id="fG"><button data-g="si">👥 Sí</button><button data-g="no">👤 Mejor pocos</button><button data-g="">No sé</button></div>'+
-      '<label class="l">Tu nota del esmorzar</label><div class="stars" id="fS">'+[1,2,3,4,5].map(function(i){return '<button data-s="'+i+'">⭐</button>'}).join('')+'</div>'+
-      '<label class="l" for="fC">¿Qué tiene de bueno? <em>(opcional)</em></label><textarea class="inp" id="fC" rows="3" maxlength="300" placeholder="Ej. Esmorzar de forquilla, abren a las 7, sitio para las bicis"></textarea>'+
-      '<label class="l" for="fN">Tu nombre</label><input class="inp" id="fN" maxlength="40" value="'+esc(myName())+'">'+
-      '<p class="note" style="margin:10px 0">📍 Ubicación marcada en el mapa.</p>'+
-      '<button class="btn lime" id="fSend">📨 Enviar propuesta</button>');
-    $('fS').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.s=+x.dataset.s;$('fS').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',+y.dataset.s<=F.s)})};
-    $('fG').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.g=x.dataset.g;$('fG').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',y===x)})};
-    $('fSend').onclick=function(){
-      var n=$('fBn').value.trim();if(!n){toast('Escribe el nombre del bar');return}
-      send({k:'bar',b:near?near.id:'',bn:n.slice(0,60),s:F.s,g:F.g,c:$('fC').value.trim().slice(0,300),n:($('fN').value.trim()||'Ciclista').slice(0,40),p:$('fBp').value.trim().slice(0,40),lat:+ll.lat.toFixed(6),lng:+ll.lng.toFixed(6)},
-        '✅ ¡Gracias! El bar saldrá cuando el administrador lo apruebe');
-    };
-  };
+  picking=function(ll){document.body.classList.remove('picking');picking=null;proposeAt(ll)};
 };
+/* v5.105.1 — Mantener pulsado sobre el mapa: busca el bar que hay ahí (OpenStreetMap) y su pueblo, y rellena la propuesta sola */
+map.on('contextmenu',function(e){if(e.originalEvent&&e.originalEvent.preventDefault)e.originalEvent.preventDefault();document.body.classList.remove('picking');picking=null;proposeAt(e.latlng)});
+function nearestOsm(ll,maxKm){var best=null,bd=maxKm;Object.keys(OSM).forEach(function(k){var o=OSM[k],d=dist(o,ll);if(d<bd){bd=d;best=o}});return best}
+function proposeAt(ll){
+  ll={lat:ll.lat,lng:ll.lng};
+  if(pickMk)map.removeLayer(pickMk);pickMk=L.marker([ll.lat,ll.lng]).addTo(map);
+  status('🔎 Buscando el bar…');
+  var found=nearestOsm(ll,0.06);
+  var pBar=found?Promise.resolve(found):fetchOverpass('[out:json][timeout:10];nwr(around:70,'+ll.lat.toFixed(6)+','+ll.lng.toFixed(6)+')["amenity"~"^(cafe|bar|restaurant|pub)$"]["name"];out center tags 10;').then(function(d){
+      var best=null,bd=1;(d.elements||[]).forEach(function(e){var t=e.tags||{};var lat=e.lat!=null?e.lat:(e.center&&e.center.lat),lng=e.lon!=null?e.lon:(e.center&&e.center.lon);if(lat==null)return;
+        var o={id:e.type.charAt(0)+e.id,n:t.name,lat:lat,lng:lng,h:t.opening_hours||'',p:t['addr:city']||t['addr:village']||t['addr:town']||'',a:t.amenity};OSM[o.id]=o;var dd=dist(o,ll);if(dd<bd){bd=dd;best=o}});
+      return best}).catch(function(){return null});
+  pBar.then(function(bar){
+    var at=bar?{lat:bar.lat,lng:bar.lng}:ll;
+    var pTown=bar&&bar.p?Promise.resolve(bar.p):fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=14&accept-language=ca&lat='+at.lat+'&lon='+at.lng)
+      .then(function(r){return r.json()}).then(function(d){var a=(d&&d.address)||{};return a.village||a.town||a.city||a.municipality||a.hamlet||''}).catch(function(){return ''});
+    return pTown.then(function(town){status('');
+      if(bar&&BARS[bar.id]){openBar(bar.id);toast('Este bar ya está en el ranking');return}
+      var cb=bar&&curOf(bar);if(cb){openBar(cb.id);toast('Este bar ya está en el ranking');return}
+      propForm(at,bar,town)});
+  });
+}
+function propForm(ll,near,town){
+  if(town===undefined&&near&&!near.p){
+    fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=14&accept-language=ca&lat='+ll.lat+'&lon='+ll.lng).then(function(r){return r.json()})
+      .then(function(d){var a=(d&&d.address)||{};propForm(ll,near,a.village||a.town||a.city||a.municipality||'')}).catch(function(){propForm(ll,near,'')});return}
+  town=(near&&near.p)||town||'';
+  F={s:0,g:''};
+  sheet('<h2><span>➕ Añadir al ranking</span><button class="x" onclick="esmClose()" aria-label="Cerrar">✕</button></h2><div class="sub">'+(near?'✅ Datos sacados del mapa. Revisa y envía.':'No hay ningún bar con nombre en ese punto del mapa: escribe sus datos.')+' El administrador lo revisa y lo añade a la lista.</div>'+
+    '<label class="l" for="fBn">Nombre del bar</label><input class="inp" id="fBn" maxlength="60" value="'+esc(near?near.n:'')+'" placeholder="Ej. Bar Casal">'+
+    '<label class="l" for="fBp">Pueblo</label><input class="inp" id="fBp" maxlength="40" value="'+esc(town)+'" placeholder="Ej. Torrebesses">'+
+    (near&&near.h?'<div class="op">🕒 Horario en el mapa: '+esc(near.h)+'</div>':'')+
+    '<label class="l">¿Va bien para ir en grupeta?</label><div class="seg" id="fG"><button data-g="si">👥 Sí</button><button data-g="no">👤 Mejor pocos</button><button data-g="">No sé</button></div>'+
+    '<label class="l">Tu nota del esmorzar</label><div class="stars" id="fS">'+[1,2,3,4,5].map(function(i){return '<button data-s="'+i+'">⭐</button>'}).join('')+'</div>'+
+    '<label class="l" for="fC">¿Qué tiene de bueno? <em>(opcional)</em></label><textarea class="inp" id="fC" rows="3" maxlength="300" placeholder="Ej. Esmorzar de forquilla, abren a las 7, sitio para las bicis"></textarea>'+
+    '<label class="l" for="fN">Tu nombre</label><input class="inp" id="fN" maxlength="40" value="'+esc(myName())+'">'+
+    '<button class="btn lime" id="fSend" style="margin-top:14px">📨 Enviar para la lista</button>');
+  $('fS').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.s=+x.dataset.s;$('fS').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',+y.dataset.s<=F.s)})};
+  $('fG').onclick=function(e){var x=e.target.closest('button');if(!x)return;F.g=x.dataset.g;$('fG').querySelectorAll('button').forEach(function(y){y.classList.toggle('on',y===x)})};
+  $('fSend').onclick=function(){
+    var n=$('fBn').value.trim();if(!n){toast('Escribe el nombre del bar');return}
+    send({k:'bar',b:near?near.id:'',bn:n.slice(0,60),s:F.s,g:F.g,c:$('fC').value.trim().slice(0,300),n:($('fN').value.trim()||'Ciclista').slice(0,40),p:$('fBp').value.trim().slice(0,40),lat:+(+ll.lat).toFixed(6),lng:+(+ll.lng).toFixed(6)},
+      '✅ ¡Gracias! El bar saldrá en la lista cuando el administrador lo apruebe');
+  };
+}
 $('pkCancel').onclick=function(e){e.stopPropagation();document.body.classList.remove('picking');picking=null};
 map.on('click',function(e){if(picking)picking(e.latlng)});
 
