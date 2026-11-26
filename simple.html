@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.62.1 — 📡 Radar más visual: la barra va siempre en la parte del mapa que se ve (no queda tapada por el panel, ni en vertical ni en horizontal), más grande, y el borde del mapa se ilumina naranja/rojo cuando viene un coche. */
 /* v1.62.0 — 📡 Radar: ahora funciona con el Coospo TR70 (su Bluetooth propio FDB0: la app lo activa y lo mantiene despierto cada 2 s). Sigue valiendo para Garmin Varia y compatibles. */
 /* v1.61.1 — 📡 Radar: sale de pantalla completa antes de abrir la lista de Bluetooth (en horizontal no aparecía) y explica en cada paso qué falla. */
 /* v1.61.0 — 🥐 Esmorzars: cortina para ver el mapa grande (deslizar la lista hacia abajo o «⛶ Mapa grande»). */
@@ -1306,7 +1307,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.62.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.62.1 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5846,7 +5847,7 @@ function gmapsRest(){
   open(null)}
 /* v1.59.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
 /* v1.60.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
-const USO_APP='simple',USO_VER='1.62.0';let usoT=0;
+const USO_APP='simple',USO_VER='1.62.1';let usoT=0;
 function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
 function usoPing(){
   try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();
@@ -10104,11 +10105,16 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
 .lvside button.rdb.rd-dng{background:#DC2626!important;border-color:#DC2626!important;color:#fff;animation:rdPulse .6s infinite alternate}
 .lvside button.rdb.rd-wait{background:#64748B!important;color:#fff}
 @keyframes rdPulse{to{transform:scale(1.08)}}
-#rdStrip{position:absolute;right:8px;top:90px;bottom:110px;width:38px;border-radius:19px;background:rgba(22,163,74,.82);border:3px solid #fff;z-index:6;display:none;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:background .3s}
-#rdStrip.warn{background:rgba(249,115,22,.88)}#rdStrip.dng{background:rgba(220,38,38,.92)}
-#rdStrip .rdme{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:18px}
-#rdStrip .rdc{position:absolute;left:50%;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:14px;transition:top .35s linear;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-#rdStrip .rdd{position:absolute;top:4px;left:0;right:0;text-align:center;font:900 11px system-ui,sans-serif;color:#fff}
+#rdStrip{position:fixed;width:46px;border-radius:23px;background:rgba(22,163,74,.85);border:3px solid #fff;z-index:39;display:none;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:background .3s;pointer-events:none}
+#rdStrip.warn{background:rgba(249,115,22,.92)}#rdStrip.dng{background:rgba(220,38,38,.95)}
+#rdStrip .rdme{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:20px}
+#rdStrip .rdc{position:absolute;left:50%;width:34px;height:34px;margin-left:-17px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:19px;transition:top .35s linear;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+#rdStrip .rdd{position:absolute;top:5px;left:0;right:0;text-align:center;font:900 13px system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+#rdStrip i{position:absolute;left:8px;right:8px;height:2px;background:rgba(255,255,255,.35);border-radius:2px}
+#rdGlow{position:fixed;z-index:38;pointer-events:none;display:none;border-radius:4px;transition:box-shadow .3s}
+#rdGlow.warn{display:block;box-shadow:inset 0 0 0 6px rgba(249,115,22,.95),inset 0 0 38px rgba(249,115,22,.55)}
+#rdGlow.dng{display:block;box-shadow:inset 0 0 0 9px rgba(220,38,38,.98),inset 0 0 52px rgba(220,38,38,.7);animation:rdGl .5s infinite alternate}
+@keyframes rdGl{to{opacity:.55}}
 </style>
 <script>
 /* v1.54.0 — 📡 RADAR TRASERO EN RUTA (Coospo TR70, Garmin Varia y radares compatibles Garmin por Bluetooth).
@@ -10122,13 +10128,29 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
   function beep(f,ms){try{R.ac=R.ac||new (window.AudioContext||window.webkitAudioContext)();var o=R.ac.createOscillator(),g=R.ac.createGain();
     o.frequency.value=f;o.connect(g);g.connect(R.ac.destination);g.gain.setValueAtTime(.3,R.ac.currentTime);o.start();o.stop(R.ac.currentTime+ms/1000)}catch(e){}}
   function talk(t){try{if(typeof live!=='undefined'&&live&&live.voice&&typeof speak==='function')speak(t)}catch(e){}}
+  /* v1.62.1 — la barra del radar se coloca SOLO en la parte del mapa que se ve: debajo de los botones de arriba y por encima
+     del panel de datos (vertical) o a la izquierda del panel (horizontal). Con coches, el borde del mapa se ilumina
+     en naranja (o rojo parpadeando si está a menos de 30 m), para verlo de un vistazo. */
   function strip(){var s=document.getElementById('rdStrip');if(s)return s;
-    var host=null;try{host=map&&map.getContainer&&map.getContainer()}catch(e){}if(!host)return null;
-    s=document.createElement('div');s.id='rdStrip';s.innerHTML='<span class="rdd"></span><span class="rdme">🚴</span>';host.appendChild(s);return s}
+    s=document.createElement('div');s.id='rdStrip';s.innerHTML='<i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i><span class="rdd"></span><span class="rdme">🚴</span>';document.body.appendChild(s);
+    var g=document.createElement('div');g.id='rdGlow';document.body.appendChild(g);
+    window.addEventListener('resize',place);setInterval(function(){if(R.on)place()},1000);return s}
+  function place(){var s=document.getElementById('rdStrip'),g=document.getElementById('rdGlow');if(!s)return false;
+    var me=null;try{me=map&&map.getContainer&&map.getContainer()}catch(e){}
+    var pn=document.querySelector('#s-rutas.live .lvpanel');
+    if(!R.on||!me||!pn){s.style.display='none';if(g)g.style.display='';return false}
+    var W=innerWidth,H=innerHeight,m=me.getBoundingClientRect(),p=pn.getBoundingClientRect();
+    var V={l:Math.max(m.left,0),t:Math.max(m.top,0),r:Math.min(m.right,W),b:Math.min(m.bottom,H)};
+    var land=p.left>W*.3&&p.left<W;
+    if(land)V.r=Math.min(V.r,p.left);else if(p.top<H&&p.top>V.t)V.b=Math.min(V.b,p.top);
+    var top=V.t+(land?14:96),bot=V.b-12;if(bot-top<130)top=Math.max(V.t+8,bot-130);
+    s.style.display='block';s.style.top=top+'px';s.style.height=Math.max(90,bot-top)+'px';s.style.left=(V.r-46-10)+'px';
+    if(g){g.style.left=V.l+'px';g.style.top=V.t+'px';g.style.width=(V.r-V.l)+'px';g.style.height=(V.b-V.t)+'px';g.style.display=''}
+    return true}
   function state(c){var b=btn();if(!b)return;b.classList.remove('rd-ok','rd-warn','rd-dng','rd-wait');if(c)b.classList.add(c)}
   function draw(list){
-    var s=strip();if(!s)return;s.style.display=R.on?'block':'none';
-    var h=s.clientHeight-34,seen={};
+    var s=strip();if(!s)return;place();
+    var h=s.clientHeight-44,seen={};
     list.forEach(function(t){seen[t.id]=1;var el=R.cars[t.id];
       if(!el){el=document.createElement('div');el.className='rdc';el.textContent='🚗';s.appendChild(el);R.cars[t.id]=el;
         if(!R.seen[t.id]||Date.now()-R.seen[t.id]>8000){var d=t.d<NEAR;beep(d?1250:900,130);setTimeout(function(){beep(d?1250:900,130)},190);
@@ -10137,7 +10159,8 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
       R.seen[t.id]=Date.now();el.style.top=(22+h*(1-Math.max(0,Math.min(1,t.d/MAXD))))+'px';el.style.background=t.d<NEAR?'#FCA5A5':'#fff'});
     Object.keys(R.cars).forEach(function(id){if(!seen[id]){R.cars[id].remove();delete R.cars[id]}});
     var n=list.length,min=n?Math.min.apply(null,list.map(function(t){return t.d})):0;
-    s.className=n?(min<NEAR?'dng':'warn'):'';s.querySelector('.rdd').textContent=n?Math.round(min)+'m':'';
+    s.className=n?(min<NEAR?'dng':'warn'):'';s.querySelector('.rdd').textContent=n?Math.round(min)+' m':'';
+    var gl=document.getElementById('rdGlow');if(gl)gl.className=R.on&&n?(min<NEAR?'dng':'warn'):'';
     state(!R.on?null:n?(min<NEAR?'rd-dng':'rd-warn'):'rd-ok')}
   function onData(ev){var v=ev.target.value,b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
     var list=[];if(b.length>=4)for(var k=1;k+2<b.length;k+=3){if(b[k+1]>0)list.push({id:'r'+b[k],d:b[k+1]})}draw(list)}

@@ -29,6 +29,11 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.112.1 (Simple 1.62.1) — 📡 Radar más visual
+- La barra del radar se coloca sola en la parte del mapa que se ve: debajo de los botones de arriba y encima del panel (vertical) o pegada al panel (horizontal). Ya no queda cortada ni tapada.
+- Barra más ancha, coches más grandes, metros del más cercano arriba y marcas de 25/50/75 %.
+- Con un coche detrás, todo el borde del mapa se ilumina en naranja; a menos de 30 m, en rojo parpadeando.
+
 ## Versión 5.112.0 (Simple 1.62.0) — 📡 Radar Coospo TR70
 - El TR70 no habla el Bluetooth de Garmin, sino uno propio (servicio FDB0). La app lo activa (orden en FDB2), lo mantiene despierto cada 2 s y lee los vehículos de FDB1 (página 24: metros en el byte 6 de cada bloque).
 - Sigue funcionando con Garmin Varia y radares compatibles Garmin. Radar beta 1.1 con el mismo arreglo y registro «TR70 …» en Datos técnicos.
