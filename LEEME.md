@@ -29,6 +29,10 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.111.1 (Simple 1.61.1) — 📡 Radar: arreglo al conectar
+- Al tocar el botón del radar en horizontal (pantalla completa), la app sale primero de pantalla completa para que Chrome enseñe la lista de Bluetooth.
+- En cada paso dice qué pasa: lista sin elegir, conectando, no conecta o aparato sin datos de radar compatibles Garmin.
+
 ## Versión 5.111.0 (Simple 1.61.0) — 🥐 Esmorzars: mapa grande
 - En «Esmorzars ciclistes», cortina para ver el mapa casi a pantalla completa: desliza la lista hacia abajo (o pulsa «⛶ Mapa grande», abajo a la izquierda del mapa). Para volver, desliza hacia arriba o pulsa «▲ Ver lista».
 - Se esconden el buscador, los filtros y la lista; la app recuerda cómo lo dejaste.
