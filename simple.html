@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.62.0 — 📡 Radar: ahora funciona con el Coospo TR70 (su Bluetooth propio FDB0: la app lo activa y lo mantiene despierto cada 2 s). Sigue valiendo para Garmin Varia y compatibles. */
 /* v1.61.1 — 📡 Radar: sale de pantalla completa antes de abrir la lista de Bluetooth (en horizontal no aparecía) y explica en cada paso qué falla. */
 /* v1.61.0 — 🥐 Esmorzars: cortina para ver el mapa grande (deslizar la lista hacia abajo o «⛶ Mapa grande»). */
 /* v1.60.0 — 📱 Uso real de la app para la consola (quién la usa de verdad, no solo altas): colección «uso». */
@@ -1305,7 +1306,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.61.1 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.62.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5845,7 +5846,7 @@ function gmapsRest(){
   open(null)}
 /* v1.59.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
 /* v1.60.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
-const USO_APP='simple',USO_VER='1.61.1';let usoT=0;
+const USO_APP='simple',USO_VER='1.62.0';let usoT=0;
 function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
 function usoPing(){
   try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();
@@ -10140,23 +10141,40 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
     state(!R.on?null:n?(min<NEAR?'rd-dng':'rd-warn'):'rd-ok')}
   function onData(ev){var v=ev.target.value,b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
     var list=[];if(b.length>=4)for(var k=1;k+2<b.length;k+=3){if(b[k+1]>0)list.push({id:'r'+b[k],d:b[k+1]})}draw(list)}
+  /* v1.62.0 — COOSPO TR70: no usa el sistema Garmin por Bluetooth, sino uno propio (servicio FDB0). Hay que «despertarlo»
+     escribiendo una orden en FDB2 y repetirla cada 2 s; entonces envía tramas por FDB1:
+     [C8][largo][página][datos…][suma]. Página 24 = vehículos: bloques de 14 bytes (byte 6 = metros, byte 10 = m/s).
+     Protocolo documentado públicamente por el proyecto CycleHUD (github.com/paulrobinson010/CycleHUD). */
+  var CS=0xfdb0,CD=0xfdb1,CC=0xfdb2,CMD_ON=[0xB8,0x05,0x02,0x01,0xC0],CMD_ACT=[0xB8,0x05,0x23,0x01,0xE1];
+  function cwrite(c,a){var u=new Uint8Array(a);return (c.writeValueWithoutResponse?c.writeValueWithoutResponse(u):c.writeValue(u)).catch(function(){})}
+  function onCoospo(ev){var v=ev.target.value,b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
+    if(b.length<4||b[0]!==0xC8||b[1]!==b.length)return;var s=0;for(var j=0;j<b.length-1;j++)s+=b[j];if((s&255)!==b[b.length-1])return;
+    R.lastRx=Date.now();if(b[2]!==0x24||b.length<18)return;
+    var p=b.slice(3,b.length-1),list=[];for(var o=0;o+14<=p.length;o+=14){var d=p[o+6];if(d>=1&&d<=200)list.push({id:'c'+(o/14),d:d})}
+    draw(list)}
   async function link(){
-    var srv=await R.dev.gatt.connect();var sv=await srv.getPrimaryService(SVC);var ch=await sv.getCharacteristic(CHR);
-    ch.addEventListener('characteristicvaluechanged',onData);await ch.startNotifications();R.on=true;R.retry=0;draw([])}
-  function onDisc(){R.on=false;draw([]);var s=document.getElementById('rdStrip');if(s)s.style.display='none';
+    var srv=await R.dev.gatt.connect();
+    try{var sv=await srv.getPrimaryService(SVC);var ch=await sv.getCharacteristic(CHR);
+      ch.addEventListener('characteristicvaluechanged',onData);await ch.startNotifications();R.kind='garmin'}
+    catch(eg){var cs=await srv.getPrimaryService(CS);var cd=await cs.getCharacteristic(CD);var cc=await cs.getCharacteristic(CC);
+      cd.addEventListener('characteristicvaluechanged',onCoospo);await cd.startNotifications();R.kind='coospo';
+      await cwrite(cc,CMD_ACT);await cwrite(cc,CMD_ON);
+      clearInterval(R.ka);R.ka=setInterval(function(){if(R.dev&&R.dev.gatt.connected)cwrite(cc,CMD_ON);else clearInterval(R.ka)},2000)}
+    R.on=true;R.retry=0;draw([])}
+  function onDisc(){clearInterval(R.ka);R.on=false;draw([]);var s=document.getElementById('rdStrip');if(s)s.style.display='none';
     if(!R.want){state(null);return}
     state('rd-wait');beep(420,350);talk('Radar desconectado');
     if(R.retry<5){R.retry++;setTimeout(function(){if(!R.want)return;link().then(function(){tst('📡 Radar reconectado');talk('Radar conectado')}).catch(function(){onDisc()})},2500)}
     else{state(null);R.want=false;tst('📡 Se perdió el radar. Toca el botón para conectarlo otra vez',5000)}}
   window.rdTap=async function(){
-    if(R.on||R.want&&R.dev){if(confirm('¿Desconectar el radar trasero?')){R.want=false;try{R.dev.gatt.disconnect()}catch(e){}R.on=false;draw([]);state(null);tst('📡 Radar desconectado')}return}
+    if(R.on||R.want&&R.dev){if(confirm('¿Desconectar el radar trasero?')){R.want=false;clearInterval(R.ka);try{R.dev.gatt.disconnect()}catch(e){}R.on=false;draw([]);state(null);tst('📡 Radar desconectado')}return}
     if(!navigator.bluetooth){tst('📡 El radar por Bluetooth solo funciona en Android con Chrome',5000);return}
     var paso='lista';
     try{state('rd-wait');
       /* v1.61.1: en horizontal a pantalla completa Chrome puede no enseñar la lista de Bluetooth: salimos de pantalla completa antes */
       try{if(document.fullscreenElement&&document.exitFullscreen)await document.exitFullscreen()}catch(e){}
       tst('Elige tu radar en la lista (p. ej. TR70)',4000);
-      R.dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,'battery_service']});
+      R.dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,0xfdb0,'battery_service']});
       paso='conectar';tst('📡 Conectando con '+(R.dev.name||'el radar')+'…',4000);
       R.dev.addEventListener('gattserverdisconnected',onDisc);R.want=true;await link();paso='ok';
       var bt='';try{var bs=await R.dev.gatt.getPrimaryService('battery_service');var bv=await (await bs.getCharacteristic('battery_level')).readValue();bt=' · batería '+bv.getUint8(0)+'%'}catch(e){}
@@ -10164,7 +10182,7 @@ html.gmx .lvalert .a-ptt::first-line{font-size:30px;line-height:1.25}
     catch(e){R.want=false;state(null);try{if(R.dev&&R.dev.gatt.connected)R.dev.gatt.disconnect()}catch(x){}
       var m=String(e&&e.message||e),nm=e&&e.name||'';
       if(paso==='lista'){tst(nm==='NotFoundError'?'📡 No se eligió ningún radar. Si no salió la lista, activa Bluetooth y Ubicación del móvil y prueba otra vez':'📡 No se pudo abrir la lista de Bluetooth ('+nm+')',7000);return}
-      tst(/6a4e3200|No Services|service|characteristic/i.test(m)?'📡 '+(R.dev&&R.dev.name||'Este aparato')+' conecta, pero no envía datos de radar compatibles Garmin. Prueba la Radar beta y mándame captura de «Datos técnicos»':'📡 No conecta con '+(R.dev&&R.dev.name||'el radar')+' ('+nm+'). Cierra CoospoRide, desenlázalo del Garmin y prueba otra vez',9000)}};
+      tst(/6a4e3200|fdb0|No Services|service|characteristic/i.test(m)?'📡 '+(R.dev&&R.dev.name||'Este aparato')+' conecta, pero no envía datos de radar compatibles Garmin. Prueba la Radar beta y mándame captura de «Datos técnicos»':'📡 No conecta con '+(R.dev&&R.dev.name||'el radar')+' ('+nm+'). Cierra CoospoRide, desenlázalo del Garmin y prueba otra vez',9000)}};
 })();
 </script>
 </body>

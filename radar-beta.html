@@ -36,7 +36,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-fa
 </head>
 <body>
 <div class="wrap">
-  <div class="bar"><b>📡 Radar trasero</b><span class="tag">BETA</span><small style="color:var(--mut);font-size:11px">v1.0</small><a id="back" href="index.html">✕ Volver</a></div>
+  <div class="bar"><b>📡 Radar trasero</b><span class="tag">BETA</span><small style="color:var(--mut);font-size:11px">v1.1</small><a id="back" href="index.html">✕ Volver</a></div>
 
   <div class="ride">
     <div class="main">
@@ -121,7 +121,16 @@ function onData(ev){
   render(list);
 }
 
-function onDisc(){log('Radar desconectado');$('big').textContent='📴 Radar desconectado';$('big').style.color='#F87171';
+/* v1.1 — Coospo TR70: tramas [C8][largo][página][datos][suma]; página 24 = vehículos (bloques de 14 bytes, byte 6 = metros) */
+function onCoospo(ev){
+  var v=ev.target.value,b=[];for(var i=0;i<v.byteLength;i++)b.push(v.getUint8(i));
+  log('TR70 '+b.map(function(x){return ('0'+x.toString(16)).slice(-2)}).join(' '));
+  if(b.length<4||b[0]!==0xC8||b[1]!==b.length)return;var s=0;for(var j=0;j<b.length-1;j++)s+=b[j];if((s&255)!==b[b.length-1])return;
+  if(b[2]!==0x24||b.length<18)return;
+  var p=b.slice(3,b.length-1),list=[];for(var o=0;o+14<=p.length;o+=14){var d=p[o+6];if(d>=1&&d<=200)list.push({id:'c'+(o/14),d:d});}
+  render(list);
+}
+function onDisc(){clearInterval(window._ka);log('Radar desconectado');$('big').textContent='📴 Radar desconectado';$('big').style.color='#F87171';
   $('sub').textContent='Toca «Conectar» para volver a enlazarlo';say('Radar desconectado');beep(400,400);render([]);$('bCon').textContent='🔗 Conectar radar por Bluetooth';}
 
 $('bCon').onclick=async function(){
@@ -129,7 +138,7 @@ $('bCon').onclick=async function(){
   if(sim){clearInterval(sim);sim=null;$('bSim').textContent='🧪 Simular coches';render([]);}
   try{
     $('big').textContent='Buscando…';$('big').style.color='#E8EEF8';$('sub').textContent='Elige tu radar en la lista (p. ej. TR70)';
-    dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,'battery_service','device_information']});
+    dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC,0xfdb0,'battery_service','device_information']});
     log('Elegido: '+(dev.name||'(sin nombre)'));
     dev.addEventListener('gattserverdisconnected',onDisc);
     $('sub').textContent='Conectando con '+(dev.name||'el radar')+'…';
@@ -140,6 +149,16 @@ $('bCon').onclick=async function(){
       $('bat').textContent='🔋 Batería del radar: '+bv.getUint8(0)+'%';}catch(e){}
     var rs;
     try{rs=await srv.getPrimaryService(SVC);}catch(e){
+      log('Sin servicio Garmin: pruebo el Bluetooth propio de Coospo (FDB0)');
+      try{
+        var cs=await srv.getPrimaryService(0xfdb0),cd=await cs.getCharacteristic(0xfdb1),cc=await cs.getCharacteristic(0xfdb2);
+        var wr=function(a){var u=new Uint8Array(a);return (cc.writeValueWithoutResponse?cc.writeValueWithoutResponse(u):cc.writeValue(u)).catch(function(x){log('Error orden: '+x.message)});};
+        cd.addEventListener('characteristicvaluechanged',onCoospo);await cd.startNotifications();
+        await wr([0xB8,0x05,0x23,0x01,0xE1]);await wr([0xB8,0x05,0x02,0x01,0xC0]);
+        clearInterval(window._ka);window._ka=setInterval(function(){if(dev&&dev.gatt.connected)wr([0xB8,0x05,0x02,0x01,0xC0]);else clearInterval(window._ka);},2000);
+        log('Coospo TR70 activado: recibiendo datos ✔');
+        $('bCon').textContent='✅ Radar conectado ('+(dev.name||'radar')+')';render([]);say('Radar conectado');beep(990,120);return;
+      }catch(e2){log('Tampoco Coospo FDB0: '+(e2&&e2.message||e2));}
       log('No tiene el servicio de radar compatible Garmin');
       $('big').textContent='⚠️ Conectado, pero…';$('big').style.color='#FB923C';
       $('sub').textContent='Este aparato no usa el sistema de radar compatible Garmin por Bluetooth. Mándame captura de «Datos técnicos».';return;}

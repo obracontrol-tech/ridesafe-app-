@@ -29,6 +29,11 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.112.0 (Simple 1.62.0) — 📡 Radar Coospo TR70
+- El TR70 no habla el Bluetooth de Garmin, sino uno propio (servicio FDB0). La app lo activa (orden en FDB2), lo mantiene despierto cada 2 s y lee los vehículos de FDB1 (página 24: metros en el byte 6 de cada bloque).
+- Sigue funcionando con Garmin Varia y radares compatibles Garmin. Radar beta 1.1 con el mismo arreglo y registro «TR70 …» en Datos técnicos.
+- Protocolo documentado públicamente por el proyecto CycleHUD (github.com/paulrobinson010/CycleHUD).
+
 ## Versión 5.111.1 (Simple 1.61.1) — 📡 Radar: arreglo al conectar
 - Al tocar el botón del radar en horizontal (pantalla completa), la app sale primero de pantalla completa para que Chrome enseñe la lista de Bluetooth.
 - En cada paso dice qué pasa: lista sin elegir, conectando, no conecta o aparato sin datos de radar compatibles Garmin.
