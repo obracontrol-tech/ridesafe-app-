@@ -29,6 +29,11 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.113.0 (Simple 1.63.0) — 🥐 Esmorzars de Forquilla
+- «Esmorzars ciclistes» suma 158 bares y restaurantes (143 de Lleida y 15 de Aragón) del mapa de Esmorzars de Forquilla (esmorzarsdeforquilla.cat · @esmorzarsdeforquilla.cat).
+- Cada uno con su nombre, pueblo y comarca, ubicación exacta y la fuente «Esmorzars de Forquilla». No se han copiado sus reseñas.
+- Datos en esmorzars-seed.json (se pueden corregir o quitar desde la consola, en config/esmorzars).
+
 ## Versión 5.112.1 (Simple 1.62.1) — 📡 Radar más visual
 - La barra del radar se coloca sola en la parte del mapa que se ve: debajo de los botones de arriba y encima del panel (vertical) o pegada al panel (horizontal). Ya no queda cortada ni tapada.
 - Barra más ancha, coches más grandes, metros del más cercano arriba y marcas de 25/50/75 %.

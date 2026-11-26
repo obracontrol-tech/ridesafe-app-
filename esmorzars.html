@@ -10,7 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
-/* RideSafe IA v5.111.0 — cortina: deslizar la lista hacia abajo (o «⛶ Mapa grande») para ver el mapa a pantalla casi completa.
+/* RideSafe IA v5.113.0 — 🥐 158 bares nuevos de Esmorzars de Forquilla (Lleida y Aragón), con su nombre como fuente.
+   v5.111.0 — cortina: deslizar la lista hacia abajo (o «⛶ Mapa grande») para ver el mapa a pantalla casi completa.
    v5.105.1 — mantener pulsado sobre un bar del mapa rellena la propuesta sola (nombre, pueblo, horario).
    v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
    - Todos los bares, cafés y restaurantes del mapa (OpenStreetMap / Overpass) en la zona que miras.
@@ -198,7 +199,7 @@ function isGrp(b){var s=STATS[b.id];if(s&&(s.gy+s.gn))return s.gy>=s.gn;return !
 function score(b){var s=STATS[b.id];var n=s?s.n:0,sum=s?s.s:0;return (sum+3.5*2)/(n+2)}   // media suavizada: pocos votos no ganan a muchos
 
 function loadData(){
-  var p1=fetch('esmorzars-seed.json?v=1').then(function(r){return r.json()}).then(function(d){SEED=(d&&d.bars)||{}}).catch(function(){SEED={}});
+  var p1=fetch('esmorzars-seed.json?v=2').then(function(r){return r.json()}).then(function(d){SEED=(d&&d.bars)||{}}).catch(function(){SEED={}});
   var p2=db?db.collection('config').doc('esmorzars').get().then(function(s){CFG=s.exists?(s.data()||{}):{};CFG.bars=CFG.bars||{};CFG.ops=CFG.ops||{}}).catch(function(e){console.warn(e)}):Promise.resolve();
   return Promise.all([p1,p2]).then(function(){buildBars();render()});
 }

@@ -1,14 +1,1350 @@
 {
-  "_info": "Bares de partida de «Esmorzars ciclistes» (RideSafe IA). Lo que cambies en la consola master (config/esmorzars) manda sobre esta lista. ap=1: ubicación aproximada (centro del pueblo), corrígela en la consola.",
-  "bars": {
-    "c_ca_la_rosa_gimenells": {"n": "Esmorzars Bar Ca La Rosa", "p": "Gimenells (Segrià)", "lat": 41.6567, "lng": 0.3897, "ap": 1, "no": "Parada clásica de carretera y BTT. Bucle desde Lleida de unos 66 km.", "src": "komoot"},
-    "c_bar_casal_torrebesses": {"n": "Bar Casal", "p": "Torrebesses (Segrià)", "lat": 41.4294, "lng": 0.5975, "ap": 1, "no": "BTT: pantano de Utxesa – Butsènit, unos 52 km.", "src": "komoot"},
-    "c_bar_malda": {"n": "Bar Restaurante Maldà", "p": "Maldà (Urgell)", "lat": 41.5490, "lng": 1.0410, "ap": 1, "no": "Carretera hacia Vallbona de les Monges, unos 44 km.", "src": "komoot"},
-    "c_la_garriguenca_llardecans": {"n": "Bar-Restaurant La Garriguenca", "p": "Llardecans (Segrià)", "lat": 41.3716, "lng": 0.5486, "ap": 1, "no": "BTT por Les Garrigues y Maials, unos 34 km.", "src": "komoot"},
-    "c_zona_esportiva_fuliola": {"n": "Bar de la zona esportiva", "p": "La Fuliola (Urgell)", "lat": 41.7067, "lng": 1.0230, "ap": 1, "no": "Carretera junto al Canal d'Urgell (paso de brevets).", "src": "komoot"},
-    "c_la_sentiu": {"n": "Esmorzar a La Sentiu", "p": "La Sentiu de Sió (Noguera)", "lat": 41.8017, "lng": 0.8700, "ap": 1, "no": "Carretera: Bellcaire – Cubells – Butsènit.", "src": "komoot"},
-    "c_bar_pallargues_osso": {"n": "Bar de les Pallargues", "p": "Ossó de Sió (Urgell)", "lat": 41.7517, "lng": 1.1650, "ap": 1, "no": "BTT desde Agramunt, unos 27 km.", "src": "komoot"},
-    "c_el_mirador_montgai": {"n": "Restaurante Bar El Mirador", "p": "Pantà de Sant Llorenç de Montgai (Noguera)", "lat": 41.8700, "lng": 0.8350, "ap": 1, "no": "Carretera y cicloturismo desde Balaguer, unos 44 km.", "src": "komoot"},
-    "c_nou_vall_d_aran": {"n": "Bar-Restaurant Nou Vall d'Aran", "p": "Lleida", "lat": 41.6400, "lng": 0.6150, "ap": 1, "no": "Esmorzar de forquilla: callos muy recomendados.", "src": "Facebook · Esmorzars de forquilla"}
+ "_info": "Bares de partida de «Esmorzars ciclistes» (RideSafe IA). Lo que cambies en la consola master (config/esmorzars) manda sobre esta lista. ap=1: ubicación aproximada (centro del pueblo), corrígela en la consola. Noviembre 2026: añadidos 158 bares de Lleida y Aragón del mapa de Esmorzars de Forquilla (esmorzarsdeforquilla.cat), con su nombre y ubicación.",
+ "bars": {
+  "c_ca_la_rosa_gimenells": {
+   "n": "Esmorzars Bar Ca La Rosa",
+   "p": "Gimenells (Segrià)",
+   "lat": 41.6567,
+   "lng": 0.3897,
+   "ap": 1,
+   "no": "Parada clásica de carretera y BTT. Bucle desde Lleida de unos 66 km.",
+   "src": "komoot"
+  },
+  "c_bar_casal_torrebesses": {
+   "n": "Bar Casal",
+   "p": "Torrebesses (Segrià)",
+   "lat": 41.4294,
+   "lng": 0.5975,
+   "ap": 1,
+   "no": "BTT: pantano de Utxesa – Butsènit, unos 52 km.",
+   "src": "komoot"
+  },
+  "c_bar_malda": {
+   "n": "Bar Restaurante Maldà",
+   "p": "Maldà (Urgell)",
+   "lat": 41.549,
+   "lng": 1.041,
+   "ap": 1,
+   "no": "Carretera hacia Vallbona de les Monges, unos 44 km.",
+   "src": "komoot"
+  },
+  "c_la_garriguenca_llardecans": {
+   "n": "Bar-Restaurant La Garriguenca",
+   "p": "Llardecans (Segrià)",
+   "lat": 41.3716,
+   "lng": 0.5486,
+   "ap": 1,
+   "no": "BTT por Les Garrigues y Maials, unos 34 km.",
+   "src": "komoot"
+  },
+  "c_zona_esportiva_fuliola": {
+   "n": "Bar de la zona esportiva",
+   "p": "La Fuliola (Urgell)",
+   "lat": 41.7067,
+   "lng": 1.023,
+   "ap": 1,
+   "no": "Carretera junto al Canal d'Urgell (paso de brevets).",
+   "src": "komoot"
+  },
+  "c_la_sentiu": {
+   "n": "Esmorzar a La Sentiu",
+   "p": "La Sentiu de Sió (Noguera)",
+   "lat": 41.8017,
+   "lng": 0.87,
+   "ap": 1,
+   "no": "Carretera: Bellcaire – Cubells – Butsènit.",
+   "src": "komoot"
+  },
+  "c_bar_pallargues_osso": {
+   "n": "Bar de les Pallargues",
+   "p": "Ossó de Sió (Urgell)",
+   "lat": 41.7517,
+   "lng": 1.165,
+   "ap": 1,
+   "no": "BTT desde Agramunt, unos 27 km.",
+   "src": "komoot"
+  },
+  "c_el_mirador_montgai": {
+   "n": "Restaurante Bar El Mirador",
+   "p": "Pantà de Sant Llorenç de Montgai (Noguera)",
+   "lat": 41.87,
+   "lng": 0.835,
+   "ap": 1,
+   "no": "Carretera y cicloturismo desde Balaguer, unos 44 km.",
+   "src": "komoot"
+  },
+  "c_nou_vall_d_aran": {
+   "n": "Bar-Restaurant Nou Vall d'Aran",
+   "p": "Lleida",
+   "lat": 41.64,
+   "lng": 0.615,
+   "ap": 1,
+   "no": "Esmorzar de forquilla: callos muy recomendados.",
+   "src": "Facebook · Esmorzars de forquilla"
+  },
+  "f_aem_bar_braseria_lleida": {
+   "n": "Aem Bar & Braseria",
+   "p": "Lleida (Segrià)",
+   "lat": 41.64291,
+   "lng": 0.62511,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_antiga_casa_escola_s_l_lleida": {
+   "n": "Antiga Casa Escolà S.L.",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61018,
+   "lng": 0.6164,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_asador_gorka_lleida": {
+   "n": "Asador Gorka",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62965,
+   "lng": 0.63306,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_bellavista_lleida": {
+   "n": "Bar Bellavista",
+   "p": "Lleida (Segrià)",
+   "lat": 41.6051,
+   "lng": 0.63882,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_cal_ros_bellaguarda": {
+   "n": "Bar Cal Ros",
+   "p": "Bellaguarda (Garrigues)",
+   "lat": 41.33681,
+   "lng": 0.73814,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_canal_lleida": {
+   "n": "Bar Canal",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61567,
+   "lng": 0.64033,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_casa_roso_lleida": {
+   "n": "Bar Casa Roso",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60916,
+   "lng": 0.62729,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_casal_l_albages_l_albages": {
+   "n": "Bar Casal L'Albagés",
+   "p": "l'Albagés (Garrigues)",
+   "lat": 41.4489,
+   "lng": 0.73928,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_club_atletic_segre_lleida": {
+   "n": "Bar Club Atletic Segre",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60798,
+   "lng": 0.63129,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_chiriveta_lleida": {
+   "n": "Bar CHIRIVETA",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60131,
+   "lng": 0.64291,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_elena_penya_barcelonista_som_un_sent": {
+   "n": "Bar Elena - Penya Barcelonista som un Sentiment",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61365,
+   "lng": 0.61252,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_essers_lleida": {
+   "n": "Bar Essers",
+   "p": "Lleida (Segrià)",
+   "lat": 41.6121,
+   "lng": 0.63008,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_genesis_lleida": {
+   "n": "Bar Génesis",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63173,
+   "lng": 0.63122,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_juventud_lleida": {
+   "n": "Bar Juventud",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60566,
+   "lng": 0.64364,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_ilerpesca_lleida": {
+   "n": "Bar Ilerpesca",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62052,
+   "lng": 0.66173,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_intims_lleida": {
+   "n": "Bar Íntims",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62596,
+   "lng": 0.63809,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_la_botera_torrefarrera": {
+   "n": "Bar La Botera",
+   "p": "Torrefarrera (Segrià)",
+   "lat": 41.67327,
+   "lng": 0.60757,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_la_cope_gimenells_gimenells_i_el_pla": {
+   "n": "Bar La Cope - Gimenells",
+   "p": "Gimenells i el Pla de la Font (Segrià)",
+   "lat": 41.65401,
+   "lng": 0.38946,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_la_disco_seros_seros": {
+   "n": "Bar La Disco Seròs",
+   "p": "Seròs (Segrià)",
+   "lat": 41.46559,
+   "lng": 0.41388,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_la_placa_almatret_almatret": {
+   "n": "Bar La plaça Almatret",
+   "p": "Almatret (Segrià)",
+   "lat": 41.30524,
+   "lng": 0.42428,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_ledesma_lleida": {
+   "n": "Bar Ledesma",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61143,
+   "lng": 0.68424,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_lidia_lleida": {
+   "n": "Bar Lidia",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63012,
+   "lng": 0.63333,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_madisson_lleida": {
+   "n": "Bar Madisson",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63487,
+   "lng": 0.63011,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_merino_lleida": {
+   "n": "Bar Merino",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60862,
+   "lng": 0.66499,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_quesada_lleida": {
+   "n": "Bar Quesada",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60045,
+   "lng": 0.64344,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_marina_anglesola": {
+   "n": "Bar Marina",
+   "p": "Anglesola (Urgell)",
+   "lat": 41.65905,
+   "lng": 1.08414,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_passarella_lleida": {
+   "n": "Bar Passarel·la",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61323,
+   "lng": 0.62495,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_rafa_lleida": {
+   "n": "Bar Rafa",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61346,
+   "lng": 0.61196,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_ramon_puigcerda": {
+   "n": "Bar Ramon",
+   "p": "Puigcerdà (Cerdanya)",
+   "lat": 42.43174,
+   "lng": 1.92365,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_blanc_i_negre_lleida": {
+   "n": "Bar Restaurant blanc i negre",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60976,
+   "lng": 0.62679,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_cafeteria_can_toni_s_llei": {
+   "n": "Bar - Restaurant Cafeteria Can Toni's",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61841,
+   "lng": 0.63169,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_casal_juncosa": {
+   "n": "Bar Restaurant Casal",
+   "p": "Juncosa (Garrigues)",
+   "lat": 41.37144,
+   "lng": 0.77549,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_de_montoliu_montoliu_de_l": {
+   "n": "Bar-Restaurant de Montoliu",
+   "p": "Montoliu de Lleida (Segrià)",
+   "lat": 41.56052,
+   "lng": 0.58832,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_jordi_puigverd_de_lleida": {
+   "n": "Bar-Restaurant Jordi",
+   "p": "Puigverd de Lleida (Segrià)",
+   "lat": 41.54451,
+   "lng": 0.73413,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_josep_de_la_quadra_lleida": {
+   "n": "Bar Restaurant Josep de la Quadra",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61601,
+   "lng": 0.6219,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_la_placa_maials": {
+   "n": "Bar-Restaurant La Plaça",
+   "p": "Maials (Segrià)",
+   "lat": 41.36358,
+   "lng": 0.50671,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_les_forques_vallfogona_de": {
+   "n": "Bar - Restaurant Les Forques",
+   "p": "Vallfogona de Balaguer (Noguera)",
+   "lat": 41.78765,
+   "lng": 0.82361,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_torrent_juneda": {
+   "n": "Bar Restaurant Torrent",
+   "p": "Juneda (Garrigues)",
+   "lat": 41.55452,
+   "lng": 0.81208,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_sisco_florida_alcarras": {
+   "n": "Bar-Restaurant Sisco Florida",
+   "p": "Alcarràs (Segrià)",
+   "lat": 41.57326,
+   "lng": 0.54904,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_roma_lleida": {
+   "n": "Bar Roma",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61431,
+   "lng": 0.6192,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_sandu_lleida": {
+   "n": "Bar Sandu",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63603,
+   "lng": 0.62952,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_sangenis_lleida": {
+   "n": "Bar Sangenís",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61338,
+   "lng": 0.61432,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_sau_vilanova_de_segria": {
+   "n": "BAR SAU",
+   "p": "Vilanova de Segrià (Segrià)",
+   "lat": 41.71389,
+   "lng": 0.61583,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_tiell_lleida": {
+   "n": "Bar Tiell",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61243,
+   "lng": 0.61421,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_tofol_lleida": {
+   "n": "Bar Tòfol",
+   "p": "Lleida (Segrià)",
+   "lat": 41.622,
+   "lng": 0.62409,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_u_e_gardeny_lleida": {
+   "n": "BAR U.E.GARDENY",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61567,
+   "lng": 0.60752,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_valero_lleida": {
+   "n": "Bar Valero",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62713,
+   "lng": 0.62523,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_arroceria_casa_paco_lleida": {
+   "n": "Brasería Arrocería Casa Paco",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61066,
+   "lng": 0.63711,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_casa_tere_lleida": {
+   "n": "Braseria Casa Tere",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61372,
+   "lng": 0.6555,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_isern_lleida": {
+   "n": "Braseria Isern",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60016,
+   "lng": 0.64238,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_la_tasca_lleida": {
+   "n": "Braseria, La Tasca",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63755,
+   "lng": 0.62847,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_l_alzina_sant_guim_de_freixenet": {
+   "n": "Braseria L'alzina",
+   "p": "Sant Guim de Freixenet (Segarra)",
+   "lat": 41.65432,
+   "lng": 1.42088,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_les_falles_la_pobla_de_segur": {
+   "n": "Braseria les Falles",
+   "p": "la Pobla de Segur (Pallars Jussà)",
+   "lat": 42.24235,
+   "lng": 0.96543,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_tuluc_torres_de_segre": {
+   "n": "Braseria Tuluc",
+   "p": "Torres de Segre (Segrià)",
+   "lat": 41.53298,
+   "lng": 0.51526,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bufet_restaurant_bonarea_guissona_guisso": {
+   "n": "Bufet Restaurant bonÀrea Guissona",
+   "p": "Guissona (Segarra)",
+   "lat": 41.78141,
+   "lng": 1.27794,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cafe_modern_castellnou_de_seana": {
+   "n": "Café Modern",
+   "p": "Castellnou de Seana (Pla d'Urgell)",
+   "lat": 41.64727,
+   "lng": 0.96955,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cafe_7_torrebesses": {
+   "n": "Cafè 7",
+   "p": "Torrebesses (Segrià)",
+   "lat": 41.42621,
+   "lng": 0.59436,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cafeteria_restaurante_tosca_lleida": {
+   "n": "Cafeteria Restaurante Tosca",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62184,
+   "lng": 0.65732,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cal_benito_restaurant_lleida": {
+   "n": "Cal Benito Restaurant",
+   "p": "Lleida (Segrià)",
+   "lat": 41.5952,
+   "lng": 0.59192,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cal_juanito_soses": {
+   "n": "Cal Juanito",
+   "p": "Soses (Segrià)",
+   "lat": 41.55091,
+   "lng": 0.49187,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cal_juanito_de_sucs_lleida": {
+   "n": "Cal Juanito de Sucs",
+   "p": "Lleida (Segrià)",
+   "lat": 41.7015,
+   "lng": 0.41191,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cal_petit_oliana_oliana": {
+   "n": "Cal Petit Oliana",
+   "p": "Oliana (Alt Urgell)",
+   "lat": 42.05941,
+   "lng": 1.31213,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_camp_de_tir_la_nora_alcoletge": {
+   "n": "Camp De Tir La Nora",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.66203,
+   "lng": 0.70565,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_camping_el_solsones_solsona": {
+   "n": "Camping El Solsonès",
+   "p": "Solsona (Solsonès)",
+   "lat": 42.01264,
+   "lng": 1.51574,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_camping_la_noguera_camarasa": {
+   "n": "Camping la Noguera",
+   "p": "Camarasa (Noguera)",
+   "lat": 41.86082,
+   "lng": 0.83234,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_can_mariano_soriguera": {
+   "n": "Can Mariano",
+   "p": "Soriguera (Pallars Sobirà)",
+   "lat": 42.35952,
+   "lng": 1.08248,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_can_rapid_cafe_lleida": {
+   "n": "Can Rapid café",
+   "p": "Lleida (Segrià)",
+   "lat": 41.6262,
+   "lng": 0.63008,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_aragonesa_bar_cafeteria_lleida": {
+   "n": "Casa Aragonesa Bar Cafeteria",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61043,
+   "lng": 0.61592,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_ester_torrefarrera": {
+   "n": "Casa Ester",
+   "p": "Torrefarrera (Segrià)",
+   "lat": 41.67434,
+   "lng": 0.60445,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_extremadura_lleida": {
+   "n": "Casa Extremadura",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61057,
+   "lng": 0.61428,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_pepita_alpicat": {
+   "n": "Casa Pepita",
+   "p": "Alpicat (Segrià)",
+   "lat": 41.66413,
+   "lng": 0.55585,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_rural_casa_leonardo_hotel_eco_bouti": {
+   "n": "Casa rural Casa Leonardo Hotel Eco Boutique",
+   "p": "Senterada (Pallars Jussà)",
+   "lat": 42.32447,
+   "lng": 0.93666,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_teo_alcoletge": {
+   "n": "Casa Teo",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.6485,
+   "lng": 0.69525,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casa_xalets_ager": {
+   "n": "Casa Xalets",
+   "p": "Àger (Noguera)",
+   "lat": 42.0008,
+   "lng": 0.7631,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_casal_d_alfes_alfes": {
+   "n": "Casal d'Alfés",
+   "p": "Alfés (Segrià)",
+   "lat": 41.52157,
+   "lng": 0.6191,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_celler_del_segre_torres_de_segre": {
+   "n": "Celler del Segre",
+   "p": "Torres de Segre (Segrià)",
+   "lat": 41.53656,
+   "lng": 0.51473,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_centre_gallec_de_lleida_lleida": {
+   "n": "Centre Gallec de Lleida",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61811,
+   "lng": 0.61096,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_club_de_tir_olimpic_lleida_lleida": {
+   "n": "Club de Tir Olímpic Lleida",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60346,
+   "lng": 0.60586,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cram_restaurante_maials": {
+   "n": "CRAM RESTAURANTE",
+   "p": "Maials (Segrià)",
+   "lat": 41.35902,
+   "lng": 0.51372,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_cuina_de_trinxera_almatret_almatret": {
+   "n": "Cuina de Trinxera Almatret",
+   "p": "Almatret (Segrià)",
+   "lat": 41.30545,
+   "lng": 0.42631,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_meson_de_amalia_lleida": {
+   "n": "El Mesón de Amalia",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63595,
+   "lng": 0.63012,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_moli_d_alos_alos_de_balaguer": {
+   "n": "El Molí d'Alòs",
+   "p": "Alòs de Balaguer (Noguera)",
+   "lat": 41.91176,
+   "lng": 0.96231,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_nou_vall_d_aran_lleida": {
+   "n": "El Nou Vall D'aran",
+   "p": "Lleida (Segrià)",
+   "lat": 41.63151,
+   "lng": 0.62193,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_pastisser_del_pont_coll_de_nargo": {
+   "n": "El Pastisser del Pont",
+   "p": "Coll de Nargó (Alt Urgell)",
+   "lat": 42.12492,
+   "lng": 1.22564,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_raco_de_l_albages_l_albages": {
+   "n": "El Racó de l'Albagés",
+   "p": "l'Albagés (Garrigues)",
+   "lat": 41.4482,
+   "lng": 0.73944,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_raco_de_sarroca_sarroca_de_lleida": {
+   "n": "El Racó de Sarroca",
+   "p": "Sarroca de Lleida (Segrià)",
+   "lat": 41.46005,
+   "lng": 0.56227,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_raco_de_solsona_solsona": {
+   "n": "El Racó de Solsona",
+   "p": "Solsona (Solsonès)",
+   "lat": 41.99699,
+   "lng": 1.5138,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_el_tir_bellpuig_bellpuig": {
+   "n": "El Tir Bellpuig",
+   "p": "Bellpuig (Urgell)",
+   "lat": 41.62885,
+   "lng": 1.02632,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_fonda_ca_l_agusti_oden": {
+   "n": "Fonda Ca L'Agustí",
+   "p": "Odèn (Solsonès)",
+   "lat": 42.13914,
+   "lng": 1.39042,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_galindo_restaurante_lleida": {
+   "n": "Galindo Restaurante",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61028,
+   "lng": 0.61167,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_gasolinera_d_ager_ager": {
+   "n": "Gasolinera d'Àger",
+   "p": "Àger (Noguera)",
+   "lat": 42.00238,
+   "lng": 0.76581,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hotel_arturo_la_torre_de_cabdella": {
+   "n": "Hotel Arturo",
+   "p": "la Torre de Cabdella (Pallars Jussà)",
+   "lat": 42.34405,
+   "lng": 0.96019,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hotel_restaurant_hostal_del_carme_vilagr": {
+   "n": "Hotel Restaurant Hostal del Carme",
+   "p": "Vilagrassa (Urgell)",
+   "lat": 41.64706,
+   "lng": 1.10365,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_lisard_restaurant_juneda": {
+   "n": "L´Isard Restaurant",
+   "p": "Juneda (Garrigues)",
+   "lat": 41.54719,
+   "lng": 0.82731,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_barretina_alfarras": {
+   "n": "La Barretina",
+   "p": "Alfarràs (Segrià)",
+   "lat": 41.82902,
+   "lng": 0.56873,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_cuina_de_martin_lleida": {
+   "n": "La Cuina de Martín",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62631,
+   "lng": 0.62936,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_masieta_lleida": {
+   "n": "LA MASIETA",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61635,
+   "lng": 0.61812,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_masovera_lleida": {
+   "n": "La Masovera",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62942,
+   "lng": 0.62508,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_parra_lleida": {
+   "n": "La Parra",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62204,
+   "lng": 0.6354,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_roda_de_la_senia_albatarrec": {
+   "n": "La roda de la Sėnia",
+   "p": "Albatàrrec (Segrià)",
+   "lat": 41.57054,
+   "lng": 0.60102,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_lo_nen_alcarras_alcarras": {
+   "n": "Lo Nen Alcarrás",
+   "p": "Alcarràs (Segrià)",
+   "lat": 41.57534,
+   "lng": 0.55567,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_los_penas_alcoletge": {
+   "n": "Los Peñas",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.65459,
+   "lng": 0.69286,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hotel_restaurant_blanc_i_negre_2_agramun": {
+   "n": "Hotel Restaurant Blanc i Negre 2",
+   "p": "Agramunt (Urgell)",
+   "lat": 41.78124,
+   "lng": 1.11056,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hotel_terradets_cellers": {
+   "n": "Hotel Terradets",
+   "p": "Cellers (Pallars Jussà)",
+   "lat": 42.06902,
+   "lng": 0.88311,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_mercat_municipal_de_ronda_fleming_lleida": {
+   "n": "Mercat Municipal de Ronda-Fleming",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61953,
+   "lng": 0.61616,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_neoparc_lleida": {
+   "n": "Neoparc",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61555,
+   "lng": 0.65942,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_paquita_bar_restaurant_lleida": {
+   "n": "Paquita Bar Restaurant",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60888,
+   "lng": 0.66459,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_pensio_samarra_vall_de_cardos": {
+   "n": "Pensió Samarra",
+   "p": "Vall de Cardós (Pallars Sobirà)",
+   "lat": 42.58188,
+   "lng": 1.23545,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_casa_del_vermut_lleida": {
+   "n": "La Casa del Vermut",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62324,
+   "lng": 0.63828,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_petanca_la_bordeta_lleida": {
+   "n": "Petanca la Bordeta",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60112,
+   "lng": 0.64665,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_pub_jack_s_restaurant_artesa_de_segre": {
+   "n": "Pub jack's restaurant",
+   "p": "Artesa de Segre (Noguera)",
+   "lat": 41.89318,
+   "lng": 1.04476,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_punt_eco_lleida": {
+   "n": "PUNT ECO",
+   "p": "Lleida (Segrià)",
+   "lat": 41.60281,
+   "lng": 0.61985,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_quatre_llops_sidamon": {
+   "n": "Quatre Llops",
+   "p": "Sidamon (Pla d'Urgell)",
+   "lat": 41.6282,
+   "lng": 0.8302,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_resquitx_golmes": {
+   "n": "Resquitx",
+   "p": "Golmés (Pla d'Urgell)",
+   "lat": 41.62982,
+   "lng": 0.90343,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_alborada_alcoletge": {
+   "n": "Restaurant Alborada",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.64945,
+   "lng": 0.69477,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_bar_moderno_el_teule_rossell": {
+   "n": "Restaurante bar Moderno & El Teulé",
+   "p": "Rosselló (Segrià)",
+   "lat": 41.69257,
+   "lng": 0.59561,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_brasa_d_or_lleida": {
+   "n": "Restaurant Brasa d'Or",
+   "p": "Lleida (Segrià)",
+   "lat": 41.611,
+   "lng": 0.66182,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_braseria_tarres_tarres": {
+   "n": "Restaurante Braseria Tarres",
+   "p": "Tarrés (Garrigues)",
+   "lat": 41.4176,
+   "lng": 1.01051,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_can_quel_camarasa": {
+   "n": "Restaurant Can Quel",
+   "p": "Camarasa (Noguera)",
+   "lat": 41.96971,
+   "lng": 0.85853,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_cal_nenet_lleida": {
+   "n": "Restaurant Cal Nenet",
+   "p": "Lleida (Segrià)",
+   "lat": 41.58076,
+   "lng": 0.57459,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_cal_toni_albesa": {
+   "n": "Restaurant Cal Toni",
+   "p": "Albesa (Noguera)",
+   "lat": 41.75209,
+   "lng": 0.66023,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_el_caliu_lleida": {
+   "n": "Restaurante El Caliu",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61318,
+   "lng": 0.61455,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_els_alamus_lleida": {
+   "n": "Restaurant Els Alamús",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62582,
+   "lng": 0.71811,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_el_moli_tornabous": {
+   "n": "Restaurant El Molí",
+   "p": "Tornabous (Urgell)",
+   "lat": 41.69741,
+   "lng": 1.05543,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_ideal_almenar": {
+   "n": "Restaurant Ideal",
+   "p": "Almenar (Segrià)",
+   "lat": 41.79595,
+   "lng": 0.5683,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_julian_lleida": {
+   "n": "Restaurant Julián",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61099,
+   "lng": 0.61981,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_llobregat_lleida": {
+   "n": "Restaurante Llobregat",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61094,
+   "lng": 0.63408,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_mil_lenium_alcoletge": {
+   "n": "Restaurant mil.lenium",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.65342,
+   "lng": 0.68978,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_nova_font_blanca_balaguer": {
+   "n": "Restaurante Nova Font Blanca",
+   "p": "Balaguer (Noguera)",
+   "lat": 41.7787,
+   "lng": 0.82017,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_de_la_rosa_lleida": {
+   "n": "Restaurante De la Rosa",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62633,
+   "lng": 0.63624,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_el_galeo_lleida": {
+   "n": "Restaurant El Galeó",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62033,
+   "lng": 0.63051,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_i_apartaments_rurals_el_sindi": {
+   "n": "Restaurant i Apartaments Rurals El Sindicat de Tarrés",
+   "p": "Tarrés (Garrigues)",
+   "lat": 41.42306,
+   "lng": 1.01824,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_illa_mitjana_lleida": {
+   "n": "Restaurant Illa Mitjana",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62666,
+   "lng": 0.6378,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_la_mina_lleida": {
+   "n": "Restaurant La Mina",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61229,
+   "lng": 0.60211,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_ricardo_bar_bodega_lleida": {
+   "n": "Ricardo Bar Bodega",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61935,
+   "lng": 0.61885,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_roch_hotel_sort": {
+   "n": "Roch Hotel",
+   "p": "Sort (Pallars Sobirà)",
+   "lat": 42.45062,
+   "lng": 1.10318,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_runrun_tapeo_lleida": {
+   "n": "RUNRUN&TAPEO",
+   "p": "Lleida (Segrià)",
+   "lat": 41.6032,
+   "lng": 0.64791,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_taverna_la_magda_alcoletge": {
+   "n": "Taverna La Magda",
+   "p": "Alcoletge (Segrià)",
+   "lat": 41.64844,
+   "lng": 0.6945,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_sant_bertino_lleida": {
+   "n": "Sant Bertino",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62316,
+   "lng": 0.61914,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_tasta_i_atipa_t_lleida": {
+   "n": "Tasta i Atipa't",
+   "p": "Lleida (Segrià)",
+   "lat": 41.61063,
+   "lng": 0.61968,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_unio_recreativa_maialenca_la_societat_ma": {
+   "n": "Unió Recreativa Maialenca - la Societat",
+   "p": "Maials (Segrià)",
+   "lat": 41.36364,
+   "lng": 0.5071,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_xavier_font_areste_braseria_coloma_maial": {
+   "n": "Xavier Font Aresté \"BRASERIA COLOMA\"",
+   "p": "Maials (Segrià)",
+   "lat": 41.36354,
+   "lng": 0.50672,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_xurreria_xocolateria_j_moreno_lleida": {
+   "n": "Xurreria Xocolateria J. Moreno",
+   "p": "Lleida (Segrià)",
+   "lat": 41.62148,
+   "lng": 0.62426,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_campsa_fraga": {
+   "n": "Bar Campsa",
+   "p": "Fraga (Baix Cinca)",
+   "lat": 41.52417,
+   "lng": 0.36223,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_pirineo_binefar_binefar": {
+   "n": "Bar Pirineo - Binéfar",
+   "p": "Binéfar (La Llitera)",
+   "lat": 41.85443,
+   "lng": 0.29021,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurante_el_ventorrillo_fraga": {
+   "n": "Bar Restaurante el Ventorrillo",
+   "p": "Fraga (Baix Cinca)",
+   "lat": 41.51448,
+   "lng": 0.26941,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_bar_restaurant_san_miguel_belver_de_cinc": {
+   "n": "Bar Restaurant San Miguel",
+   "p": "Belver de Cinca (Baix Cinca)",
+   "lat": 41.68555,
+   "lng": 0.31057,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_braseria_la_litera_de_fraga_fraga": {
+   "n": "Braseria La Litera de Fraga",
+   "p": "Fraga (Baix Cinca)",
+   "lat": 41.53644,
+   "lng": 0.42288,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_edelweiss_fraga_fraga": {
+   "n": "Edelweiss Fraga",
+   "p": "Fraga (Baix Cinca)",
+   "lat": 41.51958,
+   "lng": 0.33108,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hotel_restaurante_siskets_torrent_de_cin": {
+   "n": "Hotel Restaurante Siskets",
+   "p": "Torrent de Cinca (Baix Cinca)",
+   "lat": 41.47144,
+   "lng": 0.33663,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_hostal_isidro_pont_de_montanyana": {
+   "n": "Hostal Isidro",
+   "p": "Pont de Montanyana (Ribagorça)",
+   "lat": 42.15167,
+   "lng": 0.6923,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_la_bodega_del_somontano_el_grado": {
+   "n": "La Bodega del Somontano",
+   "p": "El Grado (Somontano de Barbastro)",
+   "lat": 42.1417,
+   "lng": 0.22567,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_pena_taurina_oscense_huesca": {
+   "n": "Peña Taurina Oscense",
+   "p": "Huesca (Hoya de Huesca)",
+   "lat": 42.13885,
+   "lng": -0.40621,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_caballo_blanco_binefar": {
+   "n": "Restaurante Caballo Blanco",
+   "p": "Binéfar (La Llitera)",
+   "lat": 41.85471,
+   "lng": 0.28305,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_la_brecha_torla_ordesa": {
+   "n": "Restaurante La Brecha",
+   "p": "Torla-Ordesa (Sobrarbe)",
+   "lat": 42.62806,
+   "lng": -0.11222,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_la_masia_jaca": {
+   "n": "Restaurante la Masía",
+   "p": "Jaca (Jacetania)",
+   "lat": 42.57563,
+   "lng": -0.54842,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurante_mars_benabarre_benabarre": {
+   "n": "Restaurante Mars Benabarre",
+   "p": "Benabarre (Ribagorça)",
+   "lat": 42.12892,
+   "lng": 0.46086,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+  },
+  "f_restaurant_tres_parrilles_mequinenza": {
+   "n": "Restaurant Tres Parrilles",
+   "p": "Mequinenza (Bajo Cinca)",
+   "lat": 41.3682,
+   "lng": 0.30043,
+   "no": "Recomanat per Esmorzars de Forquilla.",
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
   }
+ }
 }
