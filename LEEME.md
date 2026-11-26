@@ -29,6 +29,10 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.114.0 (Simple 1.64.0) — 🥐 Esmorzars: Lleida y Aragón
+- «Esmorzars ciclistes» pasa a ser de Lleida y Aragón. Nuevos botones «📍 Lleida» y «📍 Aragón» que llevan el mapa a los bares de cada zona.
+- Los bares de Aragón llevan z:'aragon' en esmorzars-seed.json.
+
 ## Versión 5.113.0 (Simple 1.63.0) — 🥐 Esmorzars de Forquilla
 - «Esmorzars ciclistes» suma 158 bares y restaurantes (143 de Lleida y 15 de Aragón) del mapa de Esmorzars de Forquilla (esmorzarsdeforquilla.cat · @esmorzarsdeforquilla.cat).
 - Cada uno con su nombre, pueblo y comarca, ubicación exacta y la fuente «Esmorzars de Forquilla». No se han copiado sus reseñas.

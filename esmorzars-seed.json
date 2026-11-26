@@ -1232,7 +1232,8 @@
    "lat": 41.52417,
    "lng": 0.36223,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_bar_pirineo_binefar_binefar": {
    "n": "Bar Pirineo - Binéfar",
@@ -1240,7 +1241,8 @@
    "lat": 41.85443,
    "lng": 0.29021,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_bar_restaurante_el_ventorrillo_fraga": {
    "n": "Bar Restaurante el Ventorrillo",
@@ -1248,7 +1250,8 @@
    "lat": 41.51448,
    "lng": 0.26941,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_bar_restaurant_san_miguel_belver_de_cinc": {
    "n": "Bar Restaurant San Miguel",
@@ -1256,7 +1259,8 @@
    "lat": 41.68555,
    "lng": 0.31057,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_braseria_la_litera_de_fraga_fraga": {
    "n": "Braseria La Litera de Fraga",
@@ -1264,7 +1268,8 @@
    "lat": 41.53644,
    "lng": 0.42288,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_edelweiss_fraga_fraga": {
    "n": "Edelweiss Fraga",
@@ -1272,7 +1277,8 @@
    "lat": 41.51958,
    "lng": 0.33108,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_hotel_restaurante_siskets_torrent_de_cin": {
    "n": "Hotel Restaurante Siskets",
@@ -1280,7 +1286,8 @@
    "lat": 41.47144,
    "lng": 0.33663,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_hostal_isidro_pont_de_montanyana": {
    "n": "Hostal Isidro",
@@ -1288,7 +1295,8 @@
    "lat": 42.15167,
    "lng": 0.6923,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_la_bodega_del_somontano_el_grado": {
    "n": "La Bodega del Somontano",
@@ -1296,7 +1304,8 @@
    "lat": 42.1417,
    "lng": 0.22567,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_pena_taurina_oscense_huesca": {
    "n": "Peña Taurina Oscense",
@@ -1304,7 +1313,8 @@
    "lat": 42.13885,
    "lng": -0.40621,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_restaurante_caballo_blanco_binefar": {
    "n": "Restaurante Caballo Blanco",
@@ -1312,7 +1322,8 @@
    "lat": 41.85471,
    "lng": 0.28305,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_restaurante_la_brecha_torla_ordesa": {
    "n": "Restaurante La Brecha",
@@ -1320,7 +1331,8 @@
    "lat": 42.62806,
    "lng": -0.11222,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_restaurante_la_masia_jaca": {
    "n": "Restaurante la Masía",
@@ -1328,7 +1340,8 @@
    "lat": 42.57563,
    "lng": -0.54842,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_restaurante_mars_benabarre_benabarre": {
    "n": "Restaurante Mars Benabarre",
@@ -1336,7 +1349,8 @@
    "lat": 42.12892,
    "lng": 0.46086,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   },
   "f_restaurant_tres_parrilles_mequinenza": {
    "n": "Restaurant Tres Parrilles",
@@ -1344,7 +1358,8 @@
    "lat": 41.3682,
    "lng": 0.30043,
    "no": "Recomanat per Esmorzars de Forquilla.",
-   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)"
+   "src": "Esmorzars de Forquilla (@esmorzarsdeforquilla.cat)",
+   "z": "aragon"
   }
  }
 }

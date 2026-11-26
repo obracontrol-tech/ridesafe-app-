@@ -10,7 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
-/* RideSafe IA v5.113.0 — 🥐 158 bares nuevos de Esmorzars de Forquilla (Lleida y Aragón), con su nombre como fuente.
+/* RideSafe IA v5.114.0 — 📍 botones «Lleida» y «Aragón» para ir a los bares de cada zona (los de Aragón llevan z:'aragon' en esmorzars-seed.json).
+   v5.113.0 — 🥐 158 bares nuevos de Esmorzars de Forquilla (Lleida y Aragón), con su nombre como fuente.
    v5.111.0 — cortina: deslizar la lista hacia abajo (o «⛶ Mapa grande») para ver el mapa a pantalla casi completa.
    v5.105.1 — mantener pulsado sobre un bar del mapa rellena la propuesta sola (nombre, pueblo, horario).
    v5.105.0 — 🥐 Esmorzars ciclistes: bares para desayunar en ruta (provincia de Lleida).
@@ -120,7 +121,7 @@ body.full .panel > :not(.handle){display:none}
 <body>
 <header>
   <a class="back" id="bBack" href="index.html" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
-  <h1>🥐 Esmorzars ciclistes<small>Dónde desayunar en ruta · provincia de Lleida</small></h1>
+  <h1>🥐 Esmorzars ciclistes<small>Dónde desayunar en ruta · Lleida y Aragón</small></h1>
 </header>
 
 <form class="search" id="fSearch">
@@ -132,6 +133,8 @@ body.full .panel > :not(.handle){display:none}
 <div class="chips" id="chips">
   <button class="chip on" data-k="all">☕ Todos los bares del mapa</button>
   <button class="chip" data-k="grp">👥 Buenos para grupetas</button>
+  <button class="chip" data-k="zl">📍 Lleida</button>
+  <button class="chip" data-k="za">📍 Aragón</button>
 </div>
 
 <div id="map"><div class="status" id="st"></div><button class="fullbtn" id="bFull" aria-label="Mapa grande">⛶ Mapa grande</button>
@@ -199,7 +202,7 @@ function isGrp(b){var s=STATS[b.id];if(s&&(s.gy+s.gn))return s.gy>=s.gn;return !
 function score(b){var s=STATS[b.id];var n=s?s.n:0,sum=s?s.s:0;return (sum+3.5*2)/(n+2)}   // media suavizada: pocos votos no ganan a muchos
 
 function loadData(){
-  var p1=fetch('esmorzars-seed.json?v=2').then(function(r){return r.json()}).then(function(d){SEED=(d&&d.bars)||{}}).catch(function(){SEED={}});
+  var p1=fetch('esmorzars-seed.json?v=3').then(function(r){return r.json()}).then(function(d){SEED=(d&&d.bars)||{}}).catch(function(){SEED={}});
   var p2=db?db.collection('config').doc('esmorzars').get().then(function(s){CFG=s.exists?(s.data()||{}):{};CFG.bars=CFG.bars||{};CFG.ops=CFG.ops||{}}).catch(function(e){console.warn(e)}):Promise.resolve();
   return Promise.all([p1,p2]).then(function(){buildBars();render()});
 }
@@ -278,6 +281,9 @@ $('list').addEventListener('click',function(e){var it=e.target.closest('.item');
 document.querySelector('.tabs').addEventListener('click',function(e){var t=e.target.closest('.tab');if(!t)return;tab=t.dataset.t;
   document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x===t)});list()});
 $('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;
+  if(c.dataset.k==='zl'||c.dataset.k==='za'){   /* v5.114 — ir a los bares de Lleida o de Aragón */
+    var ar=c.dataset.k==='za',pts=visibleBars().filter(function(b){return (b.z==='aragon')===ar}).map(function(b){return [b.lat,b.lng]});
+    if(pts.length){map.fitBounds(L.latLngBounds(pts),{padding:[30,30],maxZoom:12});toast((ar?'Aragón':'Lleida')+': '+pts.length+' bares',2500)}else toast('Aún no hay bares en esta zona');return}
   if(c.dataset.k==='all'){showAll=!showAll;c.classList.toggle('on',showAll);if(showAll)loadOsm()}
   else{onlyGrp=!onlyGrp;c.classList.toggle('on',onlyGrp)}
   render()});

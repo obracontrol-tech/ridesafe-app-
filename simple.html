@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* v1.64.0 — 🥐 Esmorzars ciclistes: Lleida y Aragón, con botones para ir a los bares de cada zona. */
 /* v1.63.0 — 🥐 Esmorzars ciclistes: 158 bares y restaurantes nuevos de Lleida y Aragón recomendados por Esmorzars de Forquilla (aparecen como fuente). */
 /* v1.62.1 — 📡 Radar más visual: la barra va siempre en la parte del mapa que se ve (no queda tapada por el panel, ni en vertical ni en horizontal), más grande, y el borde del mapa se ilumina naranja/rojo cuando viene un coche. */
 /* v1.62.0 — 📡 Radar: ahora funciona con el Coospo TR70 (su Bluetooth propio FDB0: la app lo activa y lo mantiene despierto cada 2 s). Sigue valiendo para Garmin Varia y compatibles. */
@@ -1308,7 +1309,7 @@ al grupo</button></div>
   </div>
   <button class="li rs-pro" style="margin-top:14px" onclick="openPro()"><span class="em">⭐</span><div><b>Pasar a RideSafe IA Pro</b><small><b style="color:var(--lime)">Totalmente gratis.</b> Todas las funciones. Misma cuenta, mismos datos.</small></div></button>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.63.0 (base 5.81.1)</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Simple · versión 1.64.0 (base 5.81.1)</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -5848,7 +5849,7 @@ function gmapsRest(){
   open(null)}
 /* v1.59.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
 /* v1.60.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
-const USO_APP='simple',USO_VER='1.63.0';let usoT=0;
+const USO_APP='simple',USO_VER='1.64.0';let usoT=0;
 function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
 function usoPing(){
   try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();
@@ -6478,7 +6479,7 @@ let esmCache=null,esmCacheT=0;
 async function esmData(){
   if(esmCache&&Date.now()-esmCacheT<6e5)return esmCache;
   let seed={},cfg={};
-  try{const r=await fetch('esmorzars-seed.json?v=2');seed=((await r.json())||{}).bars||{}}catch(e){}
+  try{const r=await fetch('esmorzars-seed.json?v=3');seed=((await r.json())||{}).bars||{}}catch(e){}
   try{if(db){const s=await db.collection('config').doc('esmorzars').get();cfg=s.exists?(s.data()||{}):{}}}catch(e){}
   const B={};Object.entries(seed).forEach(([k,v])=>B[k]={...v});Object.entries(cfg.bars||{}).forEach(([k,v])=>B[k]={...(B[k]||{}),...v});
   const S={};Object.values(cfg.ops||{}).forEach(o=>{if(!o||!o.b||!(o.s>=1))return;const x=S[o.b]||(S[o.b]={s:0,n:0});x.s+=o.s;x.n++});
