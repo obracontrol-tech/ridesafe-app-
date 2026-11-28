@@ -2,6 +2,7 @@
 <html lang="es" class="gmx">
 <head>
 <script>
+/* v5.115.0 — ⏰📍❌ Avisos rápidos a la vista: el día de la salida, la tarjeta muestra «Llego tarde», «Ya estoy» y «No puedo» de un toque. */
 /* v5.114.0 — 🥐 Esmorzars ciclistes: Lleida y Aragón, con botones para ir a los bares de cada zona. */
 /* v5.113.0 — 🥐 Esmorzars ciclistes: 158 bares y restaurantes nuevos de Lleida y Aragón recomendados por Esmorzars de Forquilla (aparecen como fuente). */
 /* v5.112.1 — 📡 Radar más visual: la barra va siempre en la parte del mapa que se ve (no queda tapada por el panel, ni en vertical ni en horizontal), más grande, y el borde del mapa se ilumina naranja/rojo cuando viene un coche. */
@@ -270,6 +271,12 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .pt b{color:var(--txt);font-weight:600}
 .pt .ico{width:22px;text-align:center;flex-shrink:0}
 .ride .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px}
+.ride .qrow{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.ride .qrow small{display:block;font-size:12.5px;font-weight:700;color:var(--txt2);margin-bottom:8px}
+.ride .qrow>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.ride .qrb{min-height:52px;border-radius:14px;border:2px solid var(--lime);background:transparent;color:var(--txt);font-weight:800;font-size:15px;line-height:1.1;font-family:inherit;padding:6px;cursor:pointer}
+.ride .qrb:active{transform:scale(.97)}
+.ride .qrb.no{border-color:#EF4444}
 .faces{display:flex;align-items:center}
 .face{width:30px;height:30px;border-radius:50%;border:2px solid var(--card);margin-left:-8px;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--on-lime)}
 .face:first-child{margin-left:0}
@@ -1477,7 +1484,7 @@ al grupo</button></div>
     <button class="li" onclick="deleteAccount()"><span class="em">🗑️</span><div><b style="color:var(--red)">Borrar mi cuenta y mis datos</b><small>No se puede deshacer</small></div><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <div class="shopline" id="shopLine" style="display:none"></div>
-  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.114.0</p>
+  <p style="color:var(--txt2);font-size:13px;text-align:center;margin-top:20px">RideSafe IA Pro · versión 5.115.0</p>
 </section>
 
 <!-- ============ BARRA INFERIOR ============ -->
@@ -1935,7 +1942,30 @@ function rideCard(r,full){
     ${r.wind&&r.wind.spd!=null?`<div class="pt pl"><span class="ptag">Viento</span><span>${esc(windShort(r.wind))} · <b>${esc(r.wind.short||'')}</b></span></div>`:''}
     ${rideLL(r)?`<span class="tag wx" data-wx="${esc(r.id)}" style="display:none;margin-top:4px"></span>`:''}
     <div class="foot">${faces(r)}${isOwner(r)?'<span class="join org">👑 Organizas tú</span>':inR?`<button class="join on" onclick="event.stopPropagation();toggleJoin(${jsq(r.id)})">Apuntado ✓<small>Toca para cancelar</small></button>`:`<button class="join" onclick="event.stopPropagation();toggleJoin(${jsq(r.id)})">✋ Voy</button>`}</div>
+    ${quickRow(r)}
   </div>`;
+}
+/* v5.115.0 — AVISOS RÁPIDOS A LA VISTA: el día de la salida, en la tarjeta (Inicio y Mis salidas), tres botones grandes
+   de un toque para quien va apuntado: «⏰ Llego tarde», «📍 Ya estoy» y «❌ No puedo». Se envían como comentario
+   de la salida (lo ve todo el grupo, como los botones rápidos de dentro). «No puedo» ofrece desapuntarse. */
+function quickRow(r){
+  try{if(!r||r.date!==iso(new Date())||!joined(r))return '';
+    const own=isOwner(r),b=(k,t,c)=>`<button class="qrb${c?' '+c:''}" onclick="event.stopPropagation();quickRide(${jsq(r.id)},'${k}')">${t}</button>`;
+    return `<div class="qrow"><small>Hoy · avisa al grupo con un toque</small><div>${b('late','⏰ Llego tarde')}${b('here','📍 Ya estoy')}${own?'':b('no','❌ No puedo','no')}</div></div>`;
+  }catch(e){return ''}
+}
+const QR_TXT={late:'Llego 5 min tarde',here:'Ya estoy en el punto 📍',no:'Hoy no puedo 😔'};
+async function quickRide(id,k){
+  if(!ready())return;const text=QR_TXT[k];if(!text)return;
+  const r=rides.find(x=>x.id===id);const now=Date.now();
+  try{await db.collection('rides').doc(id).collection('msgs').add({uid,name:myName(),text,ts:now});
+    db.collection('rides').doc(id).update({lastMsg:{uid,name:myName(),text:text.slice(0,60),t:now}}).catch(()=>{});
+  }catch(e){netErr(e);return}
+  try{vib(30)}catch(e){}toast('✅ Enviado al grupo: «'+text+'»');
+  if(k==='no'&&r&&!isOwner(r)&&joined(r)){
+    if(await askConfirm('¿Te desapunto de la salida?','Así el grupo sabrá que no vienes y no te esperará.','Desapuntarme'))
+      db.collection('rides').doc(id).update({['people.'+uid]:FV.delete()}).then(()=>toast('Te has desapuntado de la salida')).catch(netErr);
+  }
 }
 function renderRides(){
   const up=upcoming();
@@ -6013,7 +6043,7 @@ function gmapsRest(){
   open(null)}
 /* v5.109.0 — 🥐 Pasar los sitios de la carpeta 🍽️ Restaurantes a «Esmorzars ciclistes» (llegan a la consola para aprobarlos) */
 /* v5.110.0 — 📱 Uso real: cada vez que se abre la app (como mucho cada 3 h) se apunta que este ciclista la usa (app, versión, móvil y día). Lo ve el administrador en la consola. */
-const USO_APP='pro',USO_VER='5.114.0';let usoT=0;
+const USO_APP='pro',USO_VER='5.115.0';let usoT=0;
 function usoOs(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'windows':/Macintosh/.test(u)?'mac':'otro'}
 function usoPing(){
   try{if(!db||!uid||Date.now()-usoT<3*3600e3)return;usoT=Date.now();

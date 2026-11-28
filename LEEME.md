@@ -29,6 +29,10 @@
 - Para ampliar la guía basta con editar asistente-mecanica.json (cada tema tiene título, palabras clave y texto).
 - Archivos: asistente.html y asistente-mecanica.json.
 
+## Versión 5.115.0 (Simple 1.65.0) — ⏰ Avisos rápidos a la vista
+- El día de la salida, quien va apuntado ve en la tarjeta (Inicio y Mis salidas) tres botones grandes: «⏰ Llego tarde», «📍 Ya estoy» y «❌ No puedo».
+- Se envían como comentario de la salida (lo ve todo el grupo). «No puedo» pregunta si quieres desapuntarte. El organizador no ve «No puedo».
+
 ## Versión 5.114.0 (Simple 1.64.0) — 🥐 Esmorzars: Lleida y Aragón
 - «Esmorzars ciclistes» pasa a ser de Lleida y Aragón. Nuevos botones «📍 Lleida» y «📍 Aragón» que llevan el mapa a los bares de cada zona.
 - Los bares de Aragón llevan z:'aragon' en esmorzars-seed.json.
